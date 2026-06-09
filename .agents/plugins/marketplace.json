@@ -1,0 +1,20 @@
+{
+  "name": "laicluse-agent-tools",
+  "interface": {
+    "displayName": "l'Aicluse Agent Tools"
+  },
+  "plugins": [
+    {
+      "name": "how-plugins-work",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/how-plugins-work"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

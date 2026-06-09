@@ -1,0 +1,231 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CODEX_MARKETPLACE_FILE=".agents/plugins/marketplace.json"
+CLAUDE_MARKETPLACE_FILE=".claude-plugin/marketplace.json"
+
+die() {
+  printf 'plugin-adapters: %s\n' "$1" >&2
+  exit 1
+}
+
+repo_root() {
+  local repo="${1:-$PWD}"
+  (cd "$repo" 2>/dev/null && pwd) || die "directory does not exist: ${1:-$PWD}"
+}
+
+require_marketplace() {
+  local repo="$1"
+  [ -f "$repo/$CLAUDE_MARKETPLACE_FILE" ] || die "missing $CLAUDE_MARKETPLACE_FILE in $repo"
+}
+
+validate_source() {
+  local name="$1" source="$2"
+  case "$source" in
+    ./*) ;;
+    *) die "plugin $name source must start with ./: $source" ;;
+  esac
+  [ "$source" != "./" ] || die "plugin $name source may not be the repo root"
+  case "$source" in *../*|*/..|../*) die "plugin $name source may not escape the repo: $source" ;; esac
+}
+
+display_name() {
+  jq -nr --arg name "$1" '$name | split("-") | map(if length > 0 then (.[0:1] | ascii_upcase) + .[1:] else . end) | join(" ")'
+}
+
+codex_plugin_payload() {
+  local manifest="$1" plugin="$2"
+  jq -n --slurpfile manifest "$manifest" --arg plugin "$plugin" --arg category "Productivity" '
+    def titlecase: split("-") | map(if length > 0 then (.[0:1] | ascii_upcase) + .[1:] else . end) | join(" ");
+    def shortdesc: if length <= 120 then . else .[0:117] + "..." end;
+    ($manifest[0]) as $m |
+    ($m.description // "") as $desc |
+    (($m.author | if type == "object" then .name else . end) // "local") as $author |
+    {
+      name: $m.name,
+      version: $m.version,
+      description: $desc,
+      author: {
+        name: ($author | tostring)
+      },
+      keywords: (($m.keywords // []) + [$plugin, "agent-skills"] | unique),
+      skills: "./skills/",
+      interface: {
+        displayName: ($m.displayName // ($m.name | titlecase)),
+        shortDescription: ($desc | shortdesc),
+        longDescription: $desc,
+        developerName: ($author | tostring),
+        category: $category,
+        capabilities: ["Read"],
+        defaultPrompt: ["Use the " + ($m.name | titlecase) + " plugin."]
+      }
+    }
+    + (if ($m.repository // "") != "" then {repository: $m.repository} else {} end)
+    + (if ($m.homepage // "") != "" then {homepage: $m.homepage} else {} end)
+    + (if ($m.license // "") != "" then {license: $m.license} else {} end)
+  '
+}
+
+codex_marketplace_entry() {
+  local name="$1" source="$2"
+  jq -n --arg name "$name" --arg source "$source" --arg category "Productivity" '
+    {
+      name: $name,
+      source: {
+        source: "local",
+        path: $source
+      },
+      policy: {
+        installation: "AVAILABLE",
+        authentication: "ON_INSTALL"
+      },
+      category: $category
+    }
+  '
+}
+
+needs_sanitized_skills() {
+  local plugin_dir="$1"
+  grep -R -E -q '^[[:space:]]*(disable[-_]model[-_]invocation|user[-_]invocable):' "$plugin_dir/skills" 2>/dev/null
+}
+
+copy_sanitized_skills() {
+  local plugin_dir="$1" target_dir="$2" file rel out
+  rm -rf "$target_dir/skills"
+  mkdir -p "$target_dir/skills"
+  while IFS= read -r file; do
+    rel="${file#$plugin_dir/}"
+    out="$target_dir/$rel"
+    mkdir -p "$(dirname "$out")"
+    if [ "$(basename "$file")" = "SKILL.md" ]; then
+      awk 'tolower($0) !~ /^[[:space:]]*(disable[-_]model[-_]invocation|user[-_]invocable):/' "$file" > "$out"
+    else
+      cp "$file" "$out"
+    fi
+  done < <(find "$plugin_dir/skills" -type f | sort)
+}
+
+generate_into() {
+  local repo="$1" out_root="$2"
+  require_marketplace "$repo"
+  mkdir -p "$out_root/.agents/plugins"
+
+  local entries_file marketplace_name market_display
+  entries_file="$out_root/.agents/plugins/.entries.jsonl"
+  : > "$entries_file"
+
+  local name source plugin_dir manifest target_dir codex_source
+  while IFS=$'\t' read -r name source; do
+    validate_source "$name" "$source"
+    plugin_dir="$repo/${source#./}"
+    manifest="$plugin_dir/.claude-plugin/plugin.json"
+    [ -f "$manifest" ] || die "plugin $name is missing .claude-plugin/plugin.json"
+    [ -d "$plugin_dir/skills" ] || die "plugin $name is missing skills/"
+
+    if needs_sanitized_skills "$plugin_dir"; then
+      codex_source="./.agents/plugins/generated/$name"
+      target_dir="$out_root/.agents/plugins/generated/$name"
+      rm -rf "$target_dir"
+      mkdir -p "$target_dir/.codex-plugin"
+      copy_sanitized_skills "$plugin_dir" "$target_dir"
+      codex_plugin_payload "$manifest" "$name" > "$target_dir/.codex-plugin/plugin.json"
+    else
+      codex_source="$source"
+      target_dir="$out_root/${source#./}/.codex-plugin"
+      mkdir -p "$target_dir"
+      codex_plugin_payload "$manifest" "$name" > "$target_dir/plugin.json"
+    fi
+
+    codex_marketplace_entry "$name" "$codex_source" >> "$entries_file"
+  done < <(jq -r '.plugins[] | [.name, .source] | @tsv' "$repo/$CLAUDE_MARKETPLACE_FILE")
+
+  marketplace_name="$(jq -r '.name' "$repo/$CLAUDE_MARKETPLACE_FILE")"
+  market_display="$(jq -r '.owner.name // .interface.displayName // .displayName // empty' "$repo/$CLAUDE_MARKETPLACE_FILE")"
+  [ -n "$market_display" ] || market_display="$(display_name "$marketplace_name")"
+
+  jq -s --arg name "$marketplace_name" --arg display "$market_display" '
+    {
+      name: $name,
+      interface: {
+        displayName: $display
+      },
+      plugins: .
+    }
+  ' "$entries_file" > "$out_root/$CODEX_MARKETPLACE_FILE"
+  rm -f "$entries_file"
+}
+
+expected_files() {
+  local out_root="$1"
+  {
+    find "$out_root/.agents" -type f 2>/dev/null
+    find "$out_root" -path "*/.codex-plugin/plugin.json" -type f 2>/dev/null
+  } | sort -u
+}
+
+cmd_build() {
+  local repo
+  repo="$(repo_root "${1:-$PWD}")"
+  generate_into "$repo" "$repo"
+  printf 'plugin-adapters: wrote %s and .codex-plugin manifests (%s)\n' "$CODEX_MARKETPLACE_FILE" "$repo"
+}
+
+cmd_check() {
+  local repo tmp expected rel rc=0
+  repo="$(repo_root "${1:-$PWD}")"
+  tmp="$(mktemp -d)"
+  trap "rm -rf '$tmp'" EXIT
+  generate_into "$repo" "$tmp"
+
+  while IFS= read -r expected; do
+    rel="${expected#$tmp/}"
+    if [ ! -f "$repo/$rel" ]; then
+      printf 'DRIFT  %s missing\n' "$rel"
+      rc=1
+    elif cmp -s "$repo/$rel" "$expected"; then
+      printf 'ok     %s\n' "$rel"
+    else
+      printf 'DRIFT  %s differs from Claude marketplace source\n' "$rel"
+      rc=1
+    fi
+  done < <(expected_files "$tmp")
+  return "$rc"
+}
+
+cmd_diff() {
+  local repo tmp expected rel
+  repo="$(repo_root "${1:-$PWD}")"
+  tmp="$(mktemp -d)"
+  trap "rm -rf '$tmp'" EXIT
+  generate_into "$repo" "$tmp"
+
+  while IFS= read -r expected; do
+    rel="${expected#$tmp/}"
+    printf '=== %s ===\n' "$rel"
+    if [ -f "$repo/$rel" ]; then
+      diff -u "$repo/$rel" "$expected" || true
+    else
+      printf '(target does not exist)\n'
+      cat "$expected"
+    fi
+  done < <(expected_files "$tmp")
+}
+
+usage() {
+  cat <<'EOF'
+plugin-adapters - build agent-specific plugin metadata from Claude marketplace source
+
+  bin/plugin-adapters build [repo]   write .agents/plugins and .codex-plugin manifests
+  bin/plugin-adapters check [repo]   report drift between source and generated targets
+  bin/plugin-adapters diff [repo]    show generated target diffs
+EOF
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  build) cmd_build "$@" ;;
+  check) cmd_check "$@" ;;
+  diff)  cmd_diff "$@" ;;
+  ""|-h|--help|help) usage ;;
+  *) die "unknown command: $cmd" ;;
+esac

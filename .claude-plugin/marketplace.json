@@ -1,0 +1,16 @@
+{
+  "name": "laicluse-agent-tools",
+  "owner": {
+    "name": "l'Aicluse Agent Tools"
+  },
+  "metadata": {
+    "description": "Public multi-agent skills marketplace for Claude Code, Codex, and future coding agents"
+  },
+  "plugins": [
+    {
+      "name": "how-plugins-work",
+      "description": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and the plugin:skill invocation pattern in practice. During the l'Aicluse migration it records how @leclause and @laicluse-agent-tools coexist, and ships a local test-before-push workflow for both Claude and Codex.",
+      "source": "./packages/how-plugins-work"
+    }
+  ]
+}

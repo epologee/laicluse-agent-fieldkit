@@ -1,0 +1,26 @@
+{
+  "name": "how-plugins-work",
+  "version": "1.0.0",
+  "description": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and the plugin:skill invocation pattern in practice. During the l'Aicluse migration it records how @leclause and @laicluse-agent-tools coexist, and ships a local test-before-push workflow for both Claude and Codex.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "how-plugins-work"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "How Plugins Work",
+    "shortDescription": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and the plu...",
+    "longDescription": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and the plugin:skill invocation pattern in practice. During the l'Aicluse migration it records how @leclause and @laicluse-agent-tools coexist, and ships a local test-before-push workflow for both Claude and Codex.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the How Plugins Work plugin."
+    ]
+  }
+}

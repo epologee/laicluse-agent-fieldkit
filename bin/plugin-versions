@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+#
+# plugin-versions: enforce per-plugin semver based on commit count.
+#
+# Each plugin in .claude-plugin/marketplace.json gets version 1.0.{N}
+# where N is the number of commits touching packages/<name>/ or skills/<name>/.
+#
+# Modes:
+#   --check      Exit 1 if any plugin.json version or marketplace description drifts.
+#   --write      Rewrite plugin.json versions to current count, sync descriptions.
+#   --bootstrap  Like --write but anticipates the upcoming commit (count+1 for every plugin).
+#   --staged     Used by the pre-commit hook. Only bumps plugins with staged changes.
+#                Uses count+1 normally, count on amend. Detects -a via PLUGIN_VERSIONS_GIT_CMD.
+
+set -eu
+
+cd "$(git rev-parse --show-toplevel)"
+
+MARKETPLACE_FILE=".claude-plugin/marketplace.json"
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 {--check|--write|--bootstrap|--staged}" >&2
+  exit 1
+fi
+
+MODE="$1"
+
+plugin_names() {
+  jq -r '.plugins[].name' "$MARKETPLACE_FILE" | sort
+}
+
+# Echoes every path whose history belongs to this plugin, space-separated.
+# Includes the current packages/<plugin>/ tree, every historical top-level
+# skills/<skill>/ path for each skill this plugin currently owns (for monotonic
+# versioning across the symlink-to-flat flatten), and the predecessor paths of
+# any current SKILL.md discovered via `git log --follow` together with any
+# SKILL.md being removed in the current staged diff. Without that union, a
+# same-commit skill rename (delete skills/<old> + add skills/<new>) silently
+# dropped the retired path's history from the count and needed a force-bump.
+paths_for() {
+  local name="$1"
+  local paths="packages/$name"
+  local skill_dir skill_name
+  for skill_dir in packages/"$name"/skills/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name=$(basename "$skill_dir")
+    paths="$paths skills/$skill_name"
+  done
+  local past
+  while IFS= read -r past; do
+    [ -n "$past" ] || continue
+    case " $paths " in
+      *" $past "*) ;;
+      *) paths="$paths $past" ;;
+    esac
+  done < <(retired_paths_for "$name")
+  echo "$paths"
+}
+
+# Emits directories that once held a SKILL.md for this plugin but no longer do.
+# Two sources: (1) `git log --follow` on each current SKILL.md, which exposes
+# prior paths of a renamed skill, and (2) the currently-staged deletion set,
+# which covers pre-commit runs where HEAD does not yet know about the rename.
+retired_paths_for() {
+  local name="$1"
+  local skill_md
+  {
+    for skill_md in packages/"$name"/skills/*/SKILL.md; do
+      [ -f "$skill_md" ] || continue
+      git log --follow --format= --name-only -- "$skill_md" 2>/dev/null
+    done
+    git diff --cached --diff-filter=D --name-only 2>/dev/null
+  } | awk -v n="$name" '
+      /\/SKILL\.md$/ {
+        sub(/\/SKILL\.md$/, "");
+        if ($0 ~ "^skills/[^/]+$") { print; next }
+        pfx = "packages/" n "/skills/"
+        if (index($0, pfx) == 1) {
+          rest = substr($0, length(pfx) + 1)
+          if (rest ~ "^[^/]+$") print
+        }
+      }
+    ' | sort -u
+}
+
+count_commits() {
+  local name="$1"
+  if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
+    echo 0
+    return
+  fi
+  # shellcheck disable=SC2086
+  git rev-list --count HEAD -- $(paths_for "$name")
+}
+
+current_version() {
+  jq -r '.version' "packages/$1/.claude-plugin/plugin.json"
+}
+
+current_plugin_description() {
+  jq -r '.description' "packages/$1/.claude-plugin/plugin.json"
+}
+
+current_marketplace_description() {
+  jq -r --arg n "$1" '.plugins[] | select(.name == $n) | .description' "$MARKETPLACE_FILE"
+}
+
+write_plugin_version() {
+  local name="$1"
+  local version="$2"
+  local file="packages/$name/.claude-plugin/plugin.json"
+  local tmp
+  tmp=$(mktemp)
+  jq --indent 2 --arg v "$version" '.version = $v' "$file" > "$tmp"
+  mv "$tmp" "$file"
+}
+
+sync_marketplace_description() {
+  local name="$1"
+  local desc
+  desc=$(current_plugin_description "$name")
+  local tmp
+  tmp=$(mktemp)
+  jq --indent 2 --arg n "$name" --arg d "$desc" \
+    '(.plugins[] | select(.name == $n).description) = $d' \
+    "$MARKETPLACE_FILE" > "$tmp"
+  mv "$tmp" "$MARKETPLACE_FILE"
+}
+
+has_staged_changes() {
+  local name="$1"
+  # shellcheck disable=SC2086
+  [ -n "$(git diff --cached --name-only -- $(paths_for "$name"))" ]
+}
+
+has_working_changes() {
+  local name="$1"
+  if git rev-parse --verify HEAD >/dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    [ -n "$(git diff --name-only HEAD -- $(paths_for "$name"))" ]
+  else
+    # shellcheck disable=SC2086
+    [ -n "$(git diff --name-only -- $(paths_for "$name"))" ]
+  fi
+}
+
+is_amend() {
+  case "${PLUGIN_VERSIONS_GIT_CMD:-}" in
+    *--amend*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_all_flag() {
+  local cmd=" ${PLUGIN_VERSIONS_GIT_CMD:-} "
+  case "$cmd" in
+    *" --all "*) return 0 ;;
+  esac
+  # Short flag cluster containing 'a', preceded by single dash and whitespace.
+  if [[ "$cmd" =~ [[:space:]]-[a-zA-Z]*a[a-zA-Z]*[[:space:]] ]]; then
+    return 0
+  fi
+  return 1
+}
+
+mode_check() {
+  local drift=0
+  local name expected actual plugin_desc market_desc
+  while IFS= read -r name; do
+    expected="1.0.$(count_commits "$name")"
+    actual=$(current_version "$name")
+    if [ "$expected" != "$actual" ]; then
+      echo "VERSION DRIFT: $name expected $expected, got $actual" >&2
+      drift=1
+    fi
+    plugin_desc=$(current_plugin_description "$name")
+    market_desc=$(current_marketplace_description "$name")
+    if [ "$plugin_desc" != "$market_desc" ]; then
+      echo "DESCRIPTION DRIFT: $name marketplace.json out of sync with plugin.json" >&2
+      drift=1
+    fi
+  done < <(plugin_names)
+  exit $drift
+}
+
+mode_write() {
+  local name version
+  while IFS= read -r name; do
+    version="1.0.$(count_commits "$name")"
+    if [ "$(current_version "$name")" != "$version" ]; then
+      write_plugin_version "$name" "$version"
+      echo "Wrote $name $version"
+    fi
+    if [ "$(current_plugin_description "$name")" != "$(current_marketplace_description "$name")" ]; then
+      sync_marketplace_description "$name"
+      echo "Synced $name description"
+    fi
+  done < <(plugin_names)
+}
+
+mode_bootstrap() {
+  local name count version
+  while IFS= read -r name; do
+    count=$(count_commits "$name")
+    version="1.0.$((count + 1))"
+    write_plugin_version "$name" "$version"
+    sync_marketplace_description "$name"
+    echo "Bootstrapped $name $version"
+  done < <(plugin_names)
+}
+
+mode_staged() {
+  local delta=1
+  local use_all=0
+  local name dirty count version
+  if is_amend; then
+    delta=0
+  fi
+  if is_all_flag; then
+    use_all=1
+  fi
+  while IFS= read -r name; do
+    dirty=0
+    if [ $use_all -eq 1 ]; then
+      has_working_changes "$name" && dirty=1
+    else
+      has_staged_changes "$name" && dirty=1
+    fi
+    [ $dirty -eq 1 ] || continue
+    count=$(count_commits "$name")
+    version="1.0.$((count + delta))"
+    if [ "$(current_version "$name")" != "$version" ]; then
+      write_plugin_version "$name" "$version"
+      git add "packages/$name/.claude-plugin/plugin.json"
+      echo "Bumped $name to $version" >&2
+    fi
+    if [ "$(current_plugin_description "$name")" != "$(current_marketplace_description "$name")" ]; then
+      sync_marketplace_description "$name"
+      git add "$MARKETPLACE_FILE"
+      echo "Synced $name description" >&2
+    fi
+  done < <(plugin_names)
+}
+
+case "$MODE" in
+  --check) mode_check ;;
+  --write) mode_write ;;
+  --bootstrap) mode_bootstrap ;;
+  --staged) mode_staged ;;
+  *)
+    echo "Unknown mode: $MODE" >&2
+    echo "Usage: $0 {--check|--write|--bootstrap|--staged}" >&2
+    exit 1
+    ;;
+esac

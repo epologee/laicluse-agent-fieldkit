@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# check-no-symlinks: fail if the repo holds a symlink in the git index or on
+# disk. Same check shared by hooks/pre-commit and the no-symlinks GitHub
+# Action so the two cannot drift. Exit 0 when clean, exit 1 with a list
+# otherwise.
+
+set -eu
+
+cd "$(git rev-parse --show-toplevel)"
+
+status=0
+
+indexed=$(git ls-files -s | awk '$1 == "120000" {print $4}')
+if [ -n "$indexed" ]; then
+  echo "ERROR: symlinks detected in git index."
+  echo "$indexed" | sed 's/^/  - /'
+  status=1
+fi
+
+on_disk=$(find . -type l -not -path './.git/*' -not -path './.autonomous/*')
+if [ -n "$on_disk" ]; then
+  echo "ERROR: symlinks detected in working tree."
+  echo "$on_disk" | sed 's/^/  - /'
+  status=1
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo ""
+  echo "Replace each symlink with real file content. Windows consumers clone"
+  echo "with core.symlinks=false by default, which turns symlinks into text"
+  echo "files and breaks plugin loading."
+fi
+
+exit "$status"

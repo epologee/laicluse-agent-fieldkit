@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Require a "PII-Doublecheck:" trailer in the commit message body.
+# This forces a conscious check before every commit: is this content
+# safe to publish? The trailer must sit in the trailer block alongside
+# Slice / Verified so that `git interpret-trailers` keeps the block
+# contiguous and the gitgit validator does not trip on it.
+#
+# Setup: git config core.hooksPath hooks
+
+rest=$(tail -n +2 "$1")
+
+if ! echo "$rest" | grep -qE '^PII-Doublecheck:[[:space:]]+[^[:space:]]'; then
+  echo "ERROR: Missing 'PII-Doublecheck:' trailer."
+  echo ""
+  echo "Every commit in this repo becomes publicly visible. Review the staged diff"
+  echo "for personal names, emails, internal URLs, .test domains, API keys, and"
+  echo "/Users/... paths, then add this trailer in the trailer block:"
+  echo ""
+  echo "  PII-Doublecheck: yes"
+  exit 1
+fi
