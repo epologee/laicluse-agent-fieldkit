@@ -12,7 +12,7 @@ The steps below are the job; how you phrase any of it is for the local context t
 ## The log (global, it accumulates)
 
 One pile for every session and every repo:
-`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/anger-management/friction.jsonl` (each line: ts, word, cwd,
+`${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl` (each line: ts, word, cwd,
 git, note). Repair history: `repairs.jsonl` (past fixes, each with a `covered_through`
 watermark). A background diagnosis the cooled-down agent may have written:
 `findings.md`.

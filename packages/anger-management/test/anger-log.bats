@@ -7,7 +7,7 @@ setup() {
   NODE_BIN="$(asdf which node 2>/dev/null || command -v node)"
   HOME="$BATS_TEST_TMPDIR/home"
   mkdir -p "$HOME"
-  LOG="$HOME/.laicluse-agent/anger-management/friction.jsonl"
+  LOG="$HOME/.laicluse/anger-management/friction.jsonl"
 }
 
 # Read field <key> from the last JSONL line via node.
@@ -67,7 +67,7 @@ PN
   printf '{"ts":"2026-06-01T10:00:00.000Z","word":"fuck","cwd":"/tmp","git":"","note":"legacy capture"}\n' > "$LEGACY/friction.jsonl"
   printf 'as-of: 2026-06-01T11:00:00.000Z\n' > "$LEGACY/findings.md"
   HOME="$HOME" "$NODE_BIN" "$LOG_BIN" damn </dev/null
-  [ -f "$HOME/.laicluse-agent/anger-management/findings.md" ]
+  [ -f "$HOME/.laicluse/anger-management/findings.md" ]
   run grep -c . "$LOG"
   [ "$output" = "2" ]
   run grep legacy "$LOG"

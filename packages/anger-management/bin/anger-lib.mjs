@@ -4,7 +4,7 @@ import { homedir } from 'node:os';
 
 // allow-comment: legacy leclause storage migrates here once; new writes never land there
 export function angerDir() {
-  const agentHome = process.env.LAICLUSE_AGENT_HOME || join(homedir(), '.laicluse-agent');
+  const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
   const dir = join(agentHome, 'anger-management');
   mkdirSync(dir, { recursive: true });
   const legacy = join(homedir(), '.claude', 'var', 'leclause', 'anger-management');

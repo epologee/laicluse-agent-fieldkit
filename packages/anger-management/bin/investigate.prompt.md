@@ -4,11 +4,11 @@ whether there is ONE concrete, recurring thing worth fixing, or honestly conclud
 there is not. Do not edit any files. Write a short diagnosis to stdout.
 
 Read (use your tools):
-- The capture log `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/anger-management/friction.jsonl`. Each line:
+- The capture log `${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl`. Each line:
   ts, word, cwd, git, note. Focus on the OPEN captures: those with a ts AFTER the
   newest `covered_through` in the repair history below (if there is no history, all
   are open).
-- The repair history `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/anger-management/repairs.jsonl` if it
+- The repair history `${LAICLUSE_HOME:-~/.laicluse}/anger-management/repairs.jsonl` if it
   exists: what was diagnosed and changed before, and which captures it covered.
 - Recent session transcripts (Claude Code: `~/.claude/projects/`; Codex:
   `~/.codex/sessions/`) for real context on what

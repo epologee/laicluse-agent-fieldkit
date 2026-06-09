@@ -8,7 +8,7 @@ setup() {
   RESOLVE="$REPO/packages/anger-management/bin/anger-resolve"
   NODE_BIN="$(asdf which node 2>/dev/null || command -v node)"
   HOME="$BATS_TEST_TMPDIR/home"
-  DIR="$HOME/.laicluse-agent/anger-management"
+  DIR="$HOME/.laicluse/anger-management"
   mkdir -p "$DIR"
   LOG="$DIR/friction.jsonl"
   # a mock runner keeps the test off the real claude CLI and fast
@@ -58,7 +58,7 @@ run_arm() { HOME="$HOME" ANGER_ARM_RUNNER="$ANGER_ARM_RUNNER" ANGER_ARM_DELAY="$
   run env HOME="$HOME" "$NODE_BIN" "$RESOLVE" "loosened the reformat rule"
   [ "$status" -eq 0 ]
   [ -f "$DIR/repairs.jsonl" ]
-  HOME="$HOME" "$NODE_BIN" -e 'const fs=require("fs");const o=JSON.parse(fs.readFileSync(process.env.HOME+"/.laicluse-agent/anger-management/repairs.jsonl","utf8").trim());if(o.covered_through!=="2026-06-05T09:05:00.000Z")process.exit(1);if(o.verdict!=="fix")process.exit(1)'
+  HOME="$HOME" "$NODE_BIN" -e 'const fs=require("fs");const o=JSON.parse(fs.readFileSync(process.env.HOME+"/.laicluse/anger-management/repairs.jsonl","utf8").trim());if(o.covered_through!=="2026-06-05T09:05:00.000Z")process.exit(1);if(o.verdict!=="fix")process.exit(1)'
 }
 
 @test "anger-resolve refuses an empty note" {

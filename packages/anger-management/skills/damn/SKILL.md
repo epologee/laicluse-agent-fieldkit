@@ -41,7 +41,7 @@ skill file was loaded (two directories up) and substitute it.
    anger-management check-in job exists yet, schedule a recurring poll so the
    diagnosis can surface when it lands: a modest interval (e.g. `*/5 * * * *`) whose
    prompt is: "Read
-   `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/anger-management/findings.md`. If it
+   `${LAICLUSE_HOME:-~/.laicluse}/anger-management/findings.md`. If it
    exists, tell the operator a repair diagnosis is ready and offer
    `/anger-management:repair`, then delete this job. If it is absent, do nothing this
    tick." The exact 22m22s timing lives in the background worker; this just polls
