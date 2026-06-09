@@ -12,8 +12,8 @@ Report the current state of the git-discipline guards for this session.
 ## What is reported
 
 - Current session_id (if derivable).
-- Whether the session-specific sentinel exists (`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-disabled-<session_id>`).
-- Whether the global sentinel exists (`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-disabled-global`).
+- Whether the session-specific sentinel exists (`${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-disabled-<session_id>`).
+- Whether the global sentinel exists (`${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-disabled-global`).
 - Conclusion: guards ACTIVE or DISABLED.
 - Active git-discipline plugin version (read from `~/.claude/plugins/installed_plugins.json`).
 - Guard scripts present under the active plugin install.
@@ -32,8 +32,8 @@ if [[ -z "$SESSION_ID" ]]; then
 fi
 
 # 2. Sentinel paths
-SESSION_SENTINEL="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-${SESSION_ID}"
-GLOBAL_SENTINEL="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global"
+SESSION_SENTINEL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-${SESSION_ID}"
+GLOBAL_SENTINEL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
 
 # 3. Check status
 [[ -f "$SESSION_SENTINEL" ]] && SESSION_DISABLED=yes || SESSION_DISABLED=no

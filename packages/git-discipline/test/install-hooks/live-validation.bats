@@ -94,7 +94,7 @@ BODY
 
   popd >/dev/null
 
-  local log="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-no-verify.log"
+  local log="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-no-verify.log"
   [ -f "$log" ]
   # Format is ts|sha|branch (3 fields, no email column since Fix 8).
   # Pattern anchors to exactly 3 pipe-delimited fields so a 4-field regression
@@ -114,7 +114,7 @@ BODY
 
   popd >/dev/null
 
-  local log="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-no-verify.log"
+  local log="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-no-verify.log"
   # File may exist from earlier tests in other repos, but this commit's SHA
   # must not be in the log.
   if [[ -f "$log" ]]; then

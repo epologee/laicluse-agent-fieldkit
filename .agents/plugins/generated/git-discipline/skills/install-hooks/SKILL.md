@@ -19,7 +19,7 @@ The four hooks:
 |------|---------|
 | `commit-msg` | Validates the commit message against `validate-body.sh` (the same lib as the PreToolUse guard). |
 | `prepare-commit-msg` | Pre-fills the editor window with a structured body template based on the staged diff. |
-| `post-commit` | Detects `--no-verify` usage and logs it to `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log`. |
+| `post-commit` | Detects `--no-verify` usage and logs it to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log`. |
 | `pre-push` | Re-runs the wip-gate on the push range: commits with `Slice: wip` are blocked. |
 
 ## Why
@@ -80,7 +80,7 @@ needs no further arguments.
 - Existing hook with identical content: silent no-op (idempotent).
 - `--no-verify` on `git commit` is the only audit-logged emergency bypass; the
   installed `post-commit` logs that usage to
-  `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log` so it is reviewable after the fact.
+  `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` so it is reviewable after the fact.
 
 ## Example output
 

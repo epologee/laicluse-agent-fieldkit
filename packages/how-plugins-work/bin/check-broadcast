@@ -3,7 +3,7 @@
 //
 // Emits the CHANGELOG section for the active plugin version when the user
 // has not yet seen it on this machine. Sentinel lives at
-// ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/broadcasts/<plugin>-broadcast-seen and stores the last-shown
+// ${LAICLUSE_HOME:-~/.laicluse}/broadcasts/<plugin>-broadcast-seen and stores the last-shown
 // version string. Idempotent: a second run for the same version is a no-op.
 //
 // Usage:
@@ -21,7 +21,7 @@ import { dirname, join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-const agentHome = process.env.LAICLUSE_AGENT_HOME || join(homedir(), '.laicluse-agent');
+const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
 const SENTINEL_DIR = join(agentHome, 'broadcasts');
 const LEGACY_SENTINEL_DIR = join(homedir(), '.claude', 'var', 'leclause');
 

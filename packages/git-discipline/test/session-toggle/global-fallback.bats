@@ -3,7 +3,7 @@
 #
 # When the JSON input has no session_id (e.g. older Claude Code version or
 # a context where session_id is not injected), dispatch.sh checks the global
-# sentinel at ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-disabled-global. If that file exists, all
+# sentinel at ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-disabled-global. If that file exists, all
 # guards are suppressed for every session until it is removed.
 
 load helpers

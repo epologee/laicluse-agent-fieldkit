@@ -26,7 +26,7 @@ run_dispatch_with_session() {
 
 setup_session_test_env() {
   local fake_home="$BATS_TEST_TMPDIR/home"
-  mkdir -p "$fake_home/.laicluse-agent/git-discipline"
+  mkdir -p "$fake_home/.laicluse/git-discipline"
   export HOME="$fake_home"
   unset GIT_DISCIPLINE_COMMIT_RULE_STATE_FILE
 }
@@ -62,10 +62,10 @@ session_key_for() {
   [ "$status" -eq 2 ]
 
   local count
-  count=$(ls "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}-"* 2>/dev/null | wc -l | tr -d ' ')
+  count=$(ls "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}-"* 2>/dev/null | wc -l | tr -d ' ')
   [ "$count" = "2" ]
-  [ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}-$(session_key_for "alpha-sid-1")" ]
-  [ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}-$(session_key_for "beta-sid-22")" ]
+  [ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}-$(session_key_for "alpha-sid-1")" ]
+  [ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}-$(session_key_for "beta-sid-22")" ]
 
   unset GIT_SHIM_TOPLEVEL
 }
@@ -83,9 +83,9 @@ session_key_for() {
   [ "$status" -eq 2 ]
 
   local count
-  count=$(ls "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}-"* 2>/dev/null | wc -l | tr -d ' ')
+  count=$(ls "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}-"* 2>/dev/null | wc -l | tr -d ' ')
   [ "$count" = "1" ]
-  [ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}-$(session_key_for "stable-sid-001")" ]
+  [ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}-$(session_key_for "stable-sid-001")" ]
 
   unset GIT_SHIM_TOPLEVEL
 }
@@ -96,7 +96,7 @@ session_key_for() {
   mkdir -p "$GIT_SHIM_TOPLEVEL"
   local h per_toplevel
   h=$(toplevel_hash_for "$GIT_SHIM_TOPLEVEL")
-  per_toplevel="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}"
+  per_toplevel="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}"
 
   run_dispatch "git commit -m 'Drop bad reading on transaction events'"
   [ "$status" -eq 2 ]
@@ -115,7 +115,7 @@ session_key_for() {
   mkdir -p "$GIT_SHIM_TOPLEVEL"
   local h per_toplevel per_session
   h=$(toplevel_hash_for "$GIT_SHIM_TOPLEVEL")
-  per_toplevel="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}"
+  per_toplevel="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}"
   per_session="${per_toplevel}-$(session_key_for "alpha-inherit")"
   printf 'pv=-1\npr=-1\nrp=7\nack_pending_sha=\n' > "$per_toplevel"
 
@@ -140,7 +140,7 @@ session_key_for() {
   mkdir -p "$GIT_SHIM_TOPLEVEL"
   local h per_toplevel per_alpha
   h=$(toplevel_hash_for "$GIT_SHIM_TOPLEVEL")
-  per_toplevel="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}"
+  per_toplevel="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}"
   per_alpha="${per_toplevel}-$(session_key_for "alpha-race-x")"
   printf 'pv=-1\npr=-1\nrp=6\nack_pending_sha=\n' > "$per_toplevel"
 
@@ -166,7 +166,7 @@ session_key_for() {
   mkdir -p "$GIT_SHIM_TOPLEVEL"
   local h per_toplevel stale_sibling fresh_sibling new_session
   h=$(toplevel_hash_for "$GIT_SHIM_TOPLEVEL")
-  per_toplevel="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}"
+  per_toplevel="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}"
   stale_sibling="${per_toplevel}-deadold0"
   fresh_sibling="${per_toplevel}-recently"
   new_session="${per_toplevel}-$(session_key_for "fresh-prune-test")"
@@ -192,7 +192,7 @@ session_key_for() {
   mkdir -p "$GIT_SHIM_TOPLEVEL"
   local h per_toplevel per_session
   h=$(toplevel_hash_for "$GIT_SHIM_TOPLEVEL")
-  per_toplevel="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}"
+  per_toplevel="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}"
   per_session="${per_toplevel}-$(session_key_for "fresh-isolation")"
   printf 'pv=2\npr=4\nrp=5\nack_pending_sha=feedfacefeedface\n' > "$per_toplevel"
 
@@ -213,7 +213,7 @@ session_key_for() {
   mkdir -p "$GIT_SHIM_TOPLEVEL"
   local h per_toplevel
   h=$(toplevel_hash_for "$GIT_SHIM_TOPLEVEL")
-  per_toplevel="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${h}"
+  per_toplevel="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${h}"
   printf 'pv=-1\npr=-1\nrp=4\nack_pending_sha=\n' > "$per_toplevel"
 
   run_dispatch_with_session "git commit -m 'Drop bad reading on transaction events'" "first-sess"

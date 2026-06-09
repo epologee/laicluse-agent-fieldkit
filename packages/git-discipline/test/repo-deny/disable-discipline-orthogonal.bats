@@ -9,8 +9,8 @@ load helpers
 
 @test "global disable-discipline does NOT lift the per-repo lock" {
   write_sentinel "safety lock"
-  mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-  touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global"
+  mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+  touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
 
   run_dispatch 'git commit -m foo'
 
@@ -21,8 +21,8 @@ load helpers
 @test "session disable-discipline does NOT lift the per-repo lock" {
   write_sentinel
   local sid="test-session-orth"
-  mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-  touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$sid"
+  mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+  touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$sid"
 
   local json
   json=$(jq -cn --arg c 'git checkout main' --arg s "$sid" \
@@ -35,8 +35,8 @@ load helpers
 @test "global disable-discipline still skips OTHER guards on read-only commands" {
   # No sentinel here. Without the sentinel and with global-disable, dispatch
   # should silently pass through.
-  mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-  touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global"
+  mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+  touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
 
   run_dispatch 'git status'
   [ "$status" -eq 0 ]

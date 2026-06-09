@@ -36,7 +36,7 @@ the version without producing an entry here).
 ### Changed
 
 - **Runtime state moved under l'Aicluse storage.** New first-party state is
-  written under `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline`.
+  written under `${LAICLUSE_HOME:-~/.laicluse}/git-discipline`.
   The broadcast helper still reads the old `~/.claude/var/leclause` sentinel as
   a legacy fallback.
 
@@ -320,7 +320,7 @@ the version without producing an entry here).
 - **Post-update broadcasts.** After an update, the next git-discipline slash
   command shows a one-line summary of what changed. Runs once per
   machine per version; sentinel at
-  `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/broadcasts/git-discipline-broadcast-seen`.
+  `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/broadcasts/git-discipline-broadcast-seen`.
 - **Shared marketplace whats-new reader.** Re-prints this file's section for
   the current version on demand, regardless of whether the broadcast already
   fired. This was part of the legacy `@leclause` marketplace utilities; a

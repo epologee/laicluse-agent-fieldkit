@@ -11,7 +11,7 @@
 # hook always runs against the same logic as the PreToolUse:Bash guard.
 #
 # Side effects:
-# - Writes a single trace line to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/.git-discipline-commit-msg-trace.log
+# - Writes a single trace line to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/.git-discipline-commit-msg-trace.log
 #   at the start of execution. The post-commit hook reads that line to detect
 #   bypass via --no-verify (when post-commit fires without a matching recent
 #   trace, --no-verify was used).
@@ -43,7 +43,7 @@ msg_file="${1:-}"
 # (timestamp) and accepts it as "hook ran" if it is fresher than 30 seconds.
 # Stale traces from earlier sessions are ignored by the recency check.
 
-trace_dir="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
+trace_dir="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
 trace_log="$trace_dir/.git-discipline-commit-msg-trace.log"
 mkdir -p "$trace_dir" 2>/dev/null || true
 printf '%s|%s\n' "$(date +%s)" "$$" >> "$trace_log" 2>/dev/null || true
@@ -142,7 +142,7 @@ opt_out_list="docs-only, config-only, migration-only, spec-only, chore-deps, rev
   printf 'Expected body format:\n\n%s\n\n' "$example"
   printf 'Opt-out tokens for Slice: %s\n\n' "$opt_out_list"
   printf 'No magic-comment bypass exists. Use git commit --no-verify\n'
-  printf '(logged to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log) as an emergency bypass.\n'
+  printf '(logged to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log) as an emergency bypass.\n'
 } >&2
 
 exit 1

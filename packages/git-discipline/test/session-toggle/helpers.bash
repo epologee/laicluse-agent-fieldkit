@@ -2,7 +2,7 @@
 # Shared setup for the session-toggle BATS suite.
 #
 # Strategy: override $HOME via env so sentinels land in BATS_TEST_TMPDIR
-# and never touch the real ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/. The dispatch.sh script reads
+# and never touch the real ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/. The dispatch.sh script reads
 # $HOME directly for sentinel paths, so this is the correct intercept point.
 #
 # The git shim here is minimal: we only need dispatch.sh to reach the
@@ -133,12 +133,12 @@ run_dispatch_no_session() {
 # write_session_sentinel <session_id>
 write_session_sentinel() {
   local sid="$1"
-  mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-  touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$sid"
+  mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+  touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$sid"
 }
 
 # write_global_sentinel
 write_global_sentinel() {
-  mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-  touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global"
+  mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+  touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
 }

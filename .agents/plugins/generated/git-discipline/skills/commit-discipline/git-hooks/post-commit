@@ -3,11 +3,11 @@
 #
 # git-native post-commit hook. Detects whether the previous commit-msg hook
 # actually ran. If it did NOT (i.e. --no-verify was used), logs the bypass
-# to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log so the operator can audit later.
+# to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log so the operator can audit later.
 #
 # Detection mechanism (chosen over per-PID sentinels):
 #   commit-msg appends a line "<unix-ts>|<pid>" to
-#   ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/.git-discipline-commit-msg-trace.log at the start of its run.
+#   ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/.git-discipline-commit-msg-trace.log at the start of its run.
 #   post-commit reads the most recent line. If the timestamp is within the
 #   last 30 seconds, the hook ran. If absent or older, --no-verify was used.
 #
@@ -20,7 +20,7 @@
 
 set -uo pipefail
 
-trace_dir="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
+trace_dir="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
 trace_log="$trace_dir/.git-discipline-commit-msg-trace.log"
 no_verify_log="$trace_dir/git-discipline-no-verify.log"
 

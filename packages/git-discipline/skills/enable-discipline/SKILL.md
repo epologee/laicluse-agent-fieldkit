@@ -36,7 +36,7 @@ Perform the following steps:
 2. Remove the session-specific sentinel if it exists:
 
    ```bash
-   SENTINEL="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$SESSION_ID"
+   SENTINEL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$SESSION_ID"
    if [[ -f "$SENTINEL" ]]; then
      rm "$SENTINEL"
      echo "git-discipline guards re-enabled for session $SESSION_ID"
@@ -50,7 +50,7 @@ Perform the following steps:
    a global one):
 
    ```bash
-   GLOBAL="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global"
+   GLOBAL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
    if [[ -f "$GLOBAL" ]]; then
      rm "$GLOBAL"
      echo "global git-discipline sentinel removed"

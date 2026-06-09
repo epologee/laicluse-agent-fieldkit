@@ -46,4 +46,4 @@ Only then may the real legacy plugin disappear.
 
 Work plugin by plugin. Keep Claude metadata as the source and generate Codex
 adapters with `bin/plugin-adapters`. Keep runtime state under
-`${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}`.
+`${LAICLUSE_HOME:-$HOME/.laicluse}`.

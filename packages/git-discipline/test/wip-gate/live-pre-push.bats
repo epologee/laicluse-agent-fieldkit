@@ -24,10 +24,10 @@ setup() {
   popd >/dev/null
 
   export HOME="$BATS_TEST_TMPDIR/home"
-  install -d "$HOME/.claude/plugins" "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
+  install -d "$HOME/.claude/plugins" "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
 
   # Override the wip-push log location so we do not clobber the operator's.
-  export GIT_DISCIPLINE_WIP_PUSH_LOG="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-wip-pushes.log"
+  export GIT_DISCIPLINE_WIP_PUSH_LOG="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-wip-pushes.log"
 }
 
 teardown() {

@@ -22,8 +22,8 @@ skill's matching behavior.
 ## Local Storage
 
 All first-party runtime state for l'Aicluse Agent Tools projects uses
-`${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}` as its root. Create
-subdirectories by component name, for example `~/.laicluse-agent/circus/`, not
+`${LAICLUSE_HOME:-$HOME/.laicluse}` as its root. Create
+subdirectories by component name, for example `~/.laicluse/circus/`, not
 by marketplace or repository name (`toolbox`, `public`, `private`) and not
 under new `~/.laicluse-*` or `~/.leclause-*` roots.
 
@@ -31,7 +31,7 @@ Agent-harness caches managed by Claude or Codex themselves
 (`~/.claude/plugins/cache`, `~/.codex/plugins/cache`, install indexes) stay
 where the harness expects them. Do not write first-party state there unless the
 harness API requires it. For legacy state: read or migrate from old paths, then
-write only to `~/.laicluse-agent`.
+write only to `~/.laicluse`.
 
 ## Migration Status
 

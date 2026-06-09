@@ -25,10 +25,10 @@ case "$EVENT" in
     guard_repo_deny "$INPUT"
 
     SESSION_ID=$(dd_session_id "$INPUT")
-    if [[ -n "$SESSION_ID" ]] && [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$SESSION_ID" ]]; then
+    if [[ -n "$SESSION_ID" ]] && [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$SESSION_ID" ]]; then
       exit 0
     fi
-    if [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global" ]]; then
+    if [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global" ]]; then
       exit 0
     fi
 
@@ -70,10 +70,10 @@ case "$EVENT" in
     [ "$TOOL" = "Bash" ] || exit 0
 
     SESSION_ID=$(dd_session_id "$INPUT")
-    if [[ -n "$SESSION_ID" ]] && [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$SESSION_ID" ]]; then
+    if [[ -n "$SESSION_ID" ]] && [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$SESSION_ID" ]]; then
       exit 0
     fi
-    if [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global" ]]; then
+    if [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global" ]]; then
       exit 0
     fi
 

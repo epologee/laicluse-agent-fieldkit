@@ -2,7 +2,7 @@
 # Smoke tests for packages/git-discipline/bin/check-broadcast.
 #
 # Drives the helper against a fixture plugin tree (synthetic plugin.json +
-# CHANGELOG.md) under a temp HOME so the real ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/broadcasts is
+# CHANGELOG.md) under a temp HOME so the real ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/broadcasts is
 # never touched. Each test asserts on stdout and on whether the sentinel
 # was written.
 #
@@ -71,7 +71,7 @@ run_helper() {
   else
     fail "first run output missing expected lines: $out"
   fi
-  sentinel="$fake_home/.laicluse-agent/git-discipline/broadcasts/test-plugin-broadcast-seen"
+  sentinel="$fake_home/.laicluse/git-discipline/broadcasts/test-plugin-broadcast-seen"
   if [[ -f "$sentinel" ]] && grep -q '^9.9.9$' "$sentinel"; then
     ok 'first run writes sentinel with current version'
   else
@@ -112,7 +112,7 @@ run_helper() {
   fake_home2="$fixture2/home"
   mkdir -p "$fake_home2"
   out=$(run_helper "$fake_home2" "$fixture2/plugin" --peek)
-  sentinel2="$fake_home2/.laicluse-agent/git-discipline/broadcasts/test-plugin-broadcast-seen"
+  sentinel2="$fake_home2/.laicluse/git-discipline/broadcasts/test-plugin-broadcast-seen"
   if grep -q '## \[v9.9.9\]' <<< "$out" && [[ ! -f "$sentinel2" ]]; then
     ok '--peek emits without writing sentinel'
   else
@@ -129,7 +129,7 @@ run_helper() {
   mkdir -p "$fake_home3"
   rm "$fixture3/plugin/CHANGELOG.md"
   out=$(run_helper "$fake_home3" "$fixture3/plugin")
-  sentinel3="$fake_home3/.laicluse-agent/git-discipline/broadcasts/test-plugin-broadcast-seen"
+  sentinel3="$fake_home3/.laicluse/git-discipline/broadcasts/test-plugin-broadcast-seen"
   if [[ -z "$out" ]] && [[ ! -f "$sentinel3" ]]; then
     ok 'missing CHANGELOG: silent and no sentinel'
   else

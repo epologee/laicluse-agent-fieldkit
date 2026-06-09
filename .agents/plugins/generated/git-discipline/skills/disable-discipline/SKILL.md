@@ -2,7 +2,7 @@
 name: disable-discipline
 description: >
   Disable the git-discipline PreToolUse:Bash guards for the current Claude session by
-  writing a sentinel file to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/. Other sessions are not affected.
+  writing a sentinel file to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/. Other sessions are not affected.
 ---
 
 # /git-discipline:disable-discipline
@@ -41,8 +41,8 @@ Perform the following steps:
 2. If session_id is available:
 
    ```bash
-   mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-   touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$SESSION_ID"
+   mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+   touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$SESSION_ID"
    echo "git-discipline guards disabled for session $SESSION_ID"
    echo "Re-enable with /git-discipline:enable-discipline"
    ```
@@ -50,8 +50,8 @@ Perform the following steps:
 3. If session_id is NOT available (fallback to the global sentinel):
 
    ```bash
-   mkdir -p "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
-   touch "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-global"
+   mkdir -p "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+   touch "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
    echo "git-discipline guards disabled globally (session_id not available)"
    echo "WARNING: this sentinel disables guards for ALL sessions until removed."
    echo "Re-enable with /git-discipline:enable-discipline"

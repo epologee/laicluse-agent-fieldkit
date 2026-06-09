@@ -81,11 +81,11 @@ _vb_sha1() {
 }
 
 # _vb_log_skip <label> <reason>
-# Append a skip-log entry to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-skips.log.
+# Append a skip-log entry to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-skips.log.
 _vb_log_skip() {
   local label="$1"
   local reason="$2"
-  local log_dir="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline"
+  local log_dir="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
   local log_file="$log_dir/git-discipline-skips.log"
   # Create dir if it does not exist.  The Write-tool note says never use
   # mkdir; this is runtime bash, not a repo file, so mkdir -p is fine here.

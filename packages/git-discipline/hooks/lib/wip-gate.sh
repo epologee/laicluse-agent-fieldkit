@@ -33,7 +33,7 @@
 #       Multi-line human-readable message naming each wip commit with its
 #       short SHA + subject, plus the bypass instructions.
 #   wip_gate_log_bypass <sha-csv> <branch> <mechanism>
-#       Appends a single line to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-wip-pushes.log:
+#       Appends a single line to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-wip-pushes.log:
 #         <ISO>|<sha-csv>|<branch>|<mechanism>
 #       The log path can be overridden via $GIT_DISCIPLINE_WIP_PUSH_LOG (used by tests).
 #
@@ -237,7 +237,7 @@ wip_gate_format_message() {
   out+=$'\nBypass options:\n'
   out+=$'  GIT_DISCIPLINE_ALLOW_WIP_PUSH=1 git push ...   (env-var bypass)\n'
   out+=$'  git push ...   # allow-wip-push        (magic-comment bypass)\n'
-  out+=$'\nUse of either bypass is logged to ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-wip-pushes.log.\n'
+  out+=$'\nUse of either bypass is logged to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-wip-pushes.log.\n'
 
   printf '%s' "$out"
 }
@@ -247,7 +247,7 @@ wip_gate_log_bypass() {
   local branch="$2"
   local mechanism="$3"
 
-  local log="${GIT_DISCIPLINE_WIP_PUSH_LOG:-${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-wip-pushes.log}"
+  local log="${GIT_DISCIPLINE_WIP_PUSH_LOG:-${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-wip-pushes.log}"
   local dir
   dir=$(dirname "$log")
   mkdir -p "$dir" 2>/dev/null || true

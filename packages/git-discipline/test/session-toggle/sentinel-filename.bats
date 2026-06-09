@@ -11,7 +11,7 @@ load helpers
   local sid="unique-session-deadbeef"
   write_session_sentinel "$sid"
 
-  [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$sid" ]]
+  [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$sid" ]]
 }
 
 @test "two session sentinels coexist independently" {
@@ -20,8 +20,8 @@ load helpers
   write_session_sentinel "$sid_a"
   write_session_sentinel "$sid_b"
 
-  [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$sid_a" ]]
-  [[ -f "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$sid_b" ]]
+  [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$sid_a" ]]
+  [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$sid_b" ]]
 }
 
 @test "sentinel for session A suppresses guards for A but not for B" {
@@ -58,7 +58,7 @@ load helpers
   [ "$status" -eq 0 ]
 
   # Remove sentinel (simulates /git-discipline:enable-discipline).
-  rm "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-disabled-$sid"
+  rm "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$sid"
 
   # Now guards should run for a non-trivial commit.
   export GIT_SHIM_SHORTSTAT=" 3 files changed, 20 insertions(+)"

@@ -48,7 +48,7 @@ without a `## [vX.Y.Z]` section stays silent on every update.
 
 - **Multi-agent local marketplace baseline.** The skill now covers both Claude
   Code and Codex local marketplace installs, and stores broadcast state under
-  `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}`.
+  `${LAICLUSE_HOME:-~/.laicluse}`.
 
 ## [v1.0.31]
 

@@ -77,7 +77,7 @@ generated targets. The commit-msg hook requires `PII-Doublecheck: yes`.
 All first-party runtime state for l'Aicluse Agent Tools uses:
 
 ```bash
-${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}
+${LAICLUSE_HOME:-$HOME/.laicluse}
 ```
 
 Agent-harness caches stay where the harness expects them, for example

@@ -69,7 +69,7 @@ guard_commit_body() {
   local violation_code
   violation_code=$(printf '%s' "$violation_line" | cut -d':' -f1)
 
-  local logfile="${GIT_DISCIPLINE_SHADOW_LOG:-${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-shadow.log}"
+  local logfile="${GIT_DISCIPLINE_SHADOW_LOG:-${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-shadow.log}"
   mkdir -p "$(dirname "$logfile")"
 
   local timestamp branch short_sha subject_50

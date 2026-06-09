@@ -74,7 +74,7 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
 - **run-spec** runs a single test/spec file through the project's
   auto-detected runner (RSpec, Jest, Vitest, Go test, pytest) and prints
   a PASS/FAIL summary. No cache side-effects.
-- **disable-session** writes a sentinel file at `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-disabled-<session_id>`
+- **disable-session** writes a sentinel file at `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-disabled-<session_id>`
   that tells the dispatcher to skip all guards for the current session. Other
   sessions are not affected. Only fire on explicit user invocation.
 - **enable-session** removes the session sentinel (and the global fallback
@@ -119,7 +119,7 @@ sourced from `skills/commit-discipline/git-hooks/`):
 |------|---------|
 | `commit-msg` | runs `validate-body.sh` on every non-Claude commit |
 | `prepare-commit-msg` | pre-fills the editor with a layer-classified template |
-| `post-commit` | logs `--no-verify` usage to `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log` |
+| `post-commit` | logs `--no-verify` usage to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` |
 | `pre-push` | re-runs the wip-gate on the push range |
 
 Both layers source the same `hooks/lib/validate-body.sh`, so behavior never
@@ -175,7 +175,7 @@ requirement.
 
 Escape-hatches, each logged for later auditing:
 
-- `git commit --no-verify` (logged to `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log`
+- `git commit --no-verify` (logged to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log`
   via the `post-commit` hook)
 - `GIT_DISCIPLINE_ALLOW_AI_COAUTHOR=1` to allow a single `@anthropic.com`
   `Co-Authored-By:` trailer
@@ -184,7 +184,7 @@ Escape-hatches, each logged for later auditing:
   or ` & ` when the joined form is genuinely atomic
 - `GIT_DISCIPLINE_ALLOW_WIP_PUSH=1` or the magic-comment `# allow-wip-push` to
   push a range that contains `Slice: wip` commits (logged to
-  `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-wip-pushes.log`). Note: `# allow-wip-push` only
+  `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-wip-pushes.log`). Note: `# allow-wip-push` only
   works when Claude issues the push (the PreToolUse:Bash guard reads the
   bash command string). For terminal-issued `git push`, only
   `GIT_DISCIPLINE_ALLOW_WIP_PUSH=1` works.

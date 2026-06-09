@@ -10,13 +10,13 @@
 #
 # State file: key=value text (pv, pr, rp, ack_pending_sha) at
 # $GIT_DISCIPLINE_COMMIT_RULE_STATE_FILE, falling back to
-# ${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-<8char-hex-of-toplevel>.
+# ${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-<8char-hex-of-toplevel>.
 # Written atomically via temp-file rename. The reader also accepts the
 # two legacy positional formats (three-line and four-line) so existing
 # installations migrate seamlessly on first read.
 #
 # Migration chain: when the per-toplevel file does not exist, copy from
-# the global git-discipline file (${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state)
+# the global git-discipline file (${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state)
 # if present, otherwise from the dont-do-that legacy file. The global
 # source is renamed to *.migrated after the first successful copy so
 # subsequent new repos start fresh instead of inheriting stale state.
@@ -161,7 +161,7 @@ _dd_state_file_per_toplevel() {
     printf '%s' "$GIT_DISCIPLINE_COMMIT_RULE_STATE_FILE"
     return 0
   fi
-  local global_state="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state"
+  local global_state="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state"
   local toplevel
   toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if [[ -z "$toplevel" ]]; then
@@ -174,7 +174,7 @@ _dd_state_file_per_toplevel() {
     printf '%s' "$global_state"
     return 0
   fi
-  printf '%s' "${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state-${toplevel_hash}"
+  printf '%s' "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state-${toplevel_hash}"
 }
 
 # allow-comment: one-shot migration from the legacy global state file (or
@@ -187,13 +187,13 @@ _dd_state_file_migrate() {
   local per_toplevel="$1"
   [[ -z "$per_toplevel" ]] && return 0
   [[ -f "$per_toplevel" ]] && return 0
-  local global_state="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state"
+  local global_state="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state"
   local migration_src=""
   if [[ "$per_toplevel" != "$global_state" && -f "$global_state" ]]; then
     migration_src="$global_state"
   fi
   if [[ -z "$migration_src" ]]; then
-    local old_state_file="${CLAUDE_COMMIT_RULE_STATE_FILE:-${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/commit-rule-state}"
+    local old_state_file="${CLAUDE_COMMIT_RULE_STATE_FILE:-${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/commit-rule-state}"
     [[ -f "$old_state_file" ]] && migration_src="$old_state_file"
   fi
   [[ -z "$migration_src" ]] && return 0
@@ -216,7 +216,7 @@ _dd_state_file_session_fork() {
   local per_toplevel="$1" input="$2"
   [[ -n "${GIT_DISCIPLINE_COMMIT_RULE_STATE_FILE:-}" ]] && { printf '%s' "$per_toplevel"; return 0; }
   [[ -z "$per_toplevel" ]] && { printf ''; return 0; }
-  local global_state="${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-commit-rule-state"
+  local global_state="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-commit-rule-state"
   [[ "$per_toplevel" = "$global_state" ]] && { printf '%s' "$per_toplevel"; return 0; }
 
   local session_id session_key

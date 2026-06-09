@@ -407,7 +407,7 @@ to the rule, so looking it up forces one exposure per cycle.
 Rule 3 (subject length 50/72) is enforced structurally by
 `commit-format.sh` and is not in the rotation. Rules 1 and 2 only
 land on you after a real violation in the subject; rules 4-15 rotate in
-slot order, one per commit. State lives under `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/`,
+slot order, one per commit. State lives under `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/`,
 namespaced first by the worktree's toplevel hash (so two repos do not
 share state) and then by the Claude session id (so two concurrent
 Claude sessions in the same repo do not race each other's slot, see
@@ -629,7 +629,7 @@ trailer for commits a rebase carried along (see below).
 `git commit --no-verify` skips all git-native hooks. The PreToolUse:Bash
 guard does not intercept this pattern (the flag is in the command string, not a
 separate hook). The post-commit hook logs `--no-verify` usage to
-`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-no-verify.log` for after-the-fact auditing.
+`${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` for after-the-fact auditing.
 
 **Race window limitation:** the detector uses a trace window of 30
 seconds. Concurrent commits in another shell can refresh the trace
@@ -647,7 +647,7 @@ already shipped under their pre-rebase SHA. Amending the trailer
 onto such a commit marks it as carried-along; the shared validator then exempts
 it from the schema, so every enforcement path (PreToolUse commit/push guards and
 the git-native `commit-msg`) honours it from one source. The skip is logged to
-`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-skips.log`.
+`${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-skips.log`.
 
 This is a deliberate "discipline bankruptcy" admission, not a blanket bypass:
 stamp it only on commits a rebase carried along, not on fresh work you are
@@ -664,7 +664,7 @@ bypass that specific block (e.g. for explicit attribution requirements).
 ### `GIT_DISCIPLINE_ALLOW_WIP_PUSH=1` or `# allow-wip-push`
 
 Bypasses the pre-push wip-gate for the current push. Both forms are logged
-to `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-wip-pushes.log`. Use the magic-comment form
+to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-wip-pushes.log`. Use the magic-comment form
 when you want to document the bypass in the command itself without
 exporting an environment variable.
 
@@ -762,7 +762,7 @@ for the push and report the edge case.
 
 When you want to temporarily turn off the git-discipline guards without disabling
 the plugin globally, use `/git-discipline:disable-discipline`. That writes a sentinel file in
-`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/` with your session id; the dispatcher exits early on every
+`${LAICLUSE_HOME:-~/.laicluse}/git-discipline/` with your session id; the dispatcher exits early on every
 `git commit` or `git push`. Re-enable with `/git-discipline:enable-discipline`. Status check with
 `/git-discipline:discipline-status`. The skills are user-invocable; Claude does not
 invoke them itself to bypass the discipline.

@@ -24,7 +24,7 @@ without a `## [vX.Y.Z]` section stays silent on every update.
   It replaces `intervision@leclause`; uninstall that copy if you still have it.
 - **`second-opinion` is multi-agent.** Claude asks Codex via `codex exec`,
   while Codex asks Claude via `claude -p`. Runtime state lives under
-  `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/intervision`.
+  `${LAICLUSE_HOME:-~/.laicluse}/intervision`.
 
 ## [v1.0.7]
 

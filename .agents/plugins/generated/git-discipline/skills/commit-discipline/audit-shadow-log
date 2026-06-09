@@ -1,5 +1,5 @@
 #!/bin/bash
-# Idempotent audit-helper for ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-shadow.log.
+# Idempotent audit-helper for ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-shadow.log.
 # Reads the log, prints a per-commit summary with optional --since=<date>
 # and --branch=<name> filters, plus a labeling-aid mode (--label) that
 # prompts for true/false labels per event and writes them to a sidecar file.
@@ -18,8 +18,8 @@
 
 set -euo pipefail
 
-SHADOW_LOG="${GIT_DISCIPLINE_SHADOW_LOG:-${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-shadow.log}"
-LABELS_LOG="${GIT_DISCIPLINE_SHADOW_LOG:-${LAICLUSE_AGENT_HOME:-$HOME/.laicluse-agent}/git-discipline/git-discipline-shadow.log}-labels.log"
+SHADOW_LOG="${GIT_DISCIPLINE_SHADOW_LOG:-${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-shadow.log}"
+LABELS_LOG="${GIT_DISCIPLINE_SHADOW_LOG:-${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-shadow.log}-labels.log"
 
 # ---------------------------------------------------------------------------
 # Argument parsing
