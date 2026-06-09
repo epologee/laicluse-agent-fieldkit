@@ -4,17 +4,17 @@
     "name": "l'Aicluse Agent Tools"
   },
   "metadata": {
-    "description": "Public multi-agent skills marketplace for Claude Code, Codex, and future coding agents"
+    "description": "Agent skills marketplace for Claude Code and Codex"
   },
   "plugins": [
     {
       "name": "how-plugins-work",
-      "description": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, local test-before-push flow, and the plugin:skill invocation pattern in practice.",
+      "description": "Reference for plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and plugin:skill invocation.",
       "source": "./packages/how-plugins-work"
     },
     {
       "name": "git-discipline",
-      "description": "Multi-agent git discipline bundle: reusable commit/rebase/merge skills, repo-aware push policy, Claude PreToolUse guards, Codex-ready skill adapters, and git-native hooks for direct CLI commits.",
+      "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
       "source": "./packages/git-discipline"
     }
   ]

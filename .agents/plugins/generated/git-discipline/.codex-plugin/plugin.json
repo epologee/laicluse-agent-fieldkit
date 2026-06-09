@@ -1,7 +1,7 @@
 {
   "name": "git-discipline",
-  "version": "2.0.3",
-  "description": "Multi-agent git discipline bundle: reusable commit/rebase/merge skills, repo-aware push policy, Claude PreToolUse guards, Codex-ready skill adapters, and git-native hooks for direct CLI commits.",
+  "version": "2.0.4",
+  "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
   "author": {
     "name": "local"
   },
@@ -12,8 +12,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Git Discipline",
-    "shortDescription": "Multi-agent git discipline bundle: reusable commit/rebase/merge skills, repo-aware push policy, Claude PreToolUse gua...",
-    "longDescription": "Multi-agent git discipline bundle: reusable commit/rebase/merge skills, repo-aware push policy, Claude PreToolUse guards, Codex-ready skill adapters, and git-native hooks for direct CLI commits.",
+    "shortDescription": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
+    "longDescription": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
     "developerName": "local",
     "category": "Productivity",
     "capabilities": [

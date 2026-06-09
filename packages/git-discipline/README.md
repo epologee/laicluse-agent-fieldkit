@@ -1,18 +1,15 @@
 # git-discipline
 
-Bundle of git-write skills plus a commit-discipline hook stack. The skills
-land the day-to-day git operations agent sessions need (commit-all-the-things,
-snipe, rebase-latest-default, merge-to-default), and the hooks enforce a
-structured commit body schema across Claude-driven commits (PreToolUse:Bash),
-Codex-assisted workflows, and direct CLI commits (git-native hooks installed
-per repo).
+Git workflow skills plus commit and push hooks for agent sessions and direct
+CLI commits.
 
 ## What
 
-`git-discipline` does two things at once:
+`git-discipline` has two parts:
 
-1. **Day-to-day git skills.** Eight user-invocable skills that cover the
-   commit / rebase / merge flows the operator runs over and over.
+1. **Git workflow skills.** Commands for grouped commits, precise commits from
+   a dirty tree, rebasing on the latest default branch, merging to default,
+   resolving push policy, and installing hooks.
 2. **Commit-discipline enforcement.** Two-layer hook architecture
    (PreToolUse guards plus git-native hooks) that validates a structured
    body schema: subject + WHY paragraph + Slice / Tests / Red-then-green
@@ -79,7 +76,7 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
   a PASS/FAIL summary. No cache side-effects.
 - **disable-session** writes a sentinel file at `${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/git-discipline-disabled-<session_id>`
   that tells the dispatcher to skip all guards for the current session. Other
-  sessions are not affected. Only fire on explicit operator invocation.
+  sessions are not affected. Only fire on explicit user invocation.
 - **enable-session** removes the session sentinel (and the global fallback
   sentinel if present), restoring guards for the current session.
 - **session-status** reports the current session_id, which sentinels exist,
@@ -107,7 +104,7 @@ PreToolUse:Bash dispatcher chain (`hooks/dispatch.sh`):
 
 | Guard | Triggers on | Blocks |
 |-------|-------------|--------|
-| `git-dash-c.sh` | any `git -C <dir>` command | `git -C` (keeps Claude Code's prefix-based permissions clean) |
+| `git-dash-c.sh` | any `git -C <dir>` command | `git -C` |
 | `repo-deny.sh` | any `git <mutation>` while `.git/git-discipline-deny` exists | every git command outside the read-only allow-list |
 | `commit-format.sh` | `git commit` | editor-mode commits without `-m` |
 | `commit-subject.sh` | `git commit -m` | subjects past 50/72, lowercase first, trailing period |
@@ -147,18 +144,6 @@ into each repo:
 Use `--dry-run` to preview, `--force` to overwrite existing hooks. Re-run
 after each `claude plugins update git-discipline@laicluse-agent-tools` so the installed hooks
 point at the current plugin version.
-
-### Migration from the standalone plugins
-
-Legacy `commit-all-the-things@leclause` and
-`rebase-latest-default@leclause` used to ship as separate plugins. When the
-external migration becomes actionable, uninstall the leftover copies so the
-slash commands route to the bundled versions:
-
-```bash
-/plugin uninstall commit-all-the-things@leclause
-/plugin uninstall rebase-latest-default@leclause
-```
 
 ## Example commit message
 
@@ -219,21 +204,20 @@ bash packages/git-discipline/test/smoke/smoke-test.sh   # 22-case end-to-end smo
 
 The BATS suite is split per concern:
 
-- `validate-body/` covers the body schema rules from sections 5.5 and 6.6
-  of the plan.
+- `validate-body/` covers the body schema rules.
 - `block-mode/`, `shadow-mode/`, `wip-gate/`, `template-fill/` cover the
   guard glue per slice.
 - `install-hooks/` covers the per-repo install scenarios (empty repo,
   existing hooks, `core.hooksPath`, worktree).
-- `migrated-hooks/`, `migration/` cover the `dont-do-that` to `git-discipline`
-  migration parity.
+- `migrated-hooks/`, `migration/` cover compatibility with previous hook
+  behavior.
 
 The smoke suite spins up disposable git repos and exercises the full hook
 chain end-to-end.
 
 ## Audit
 
-After a mission run, verify that no body-less commits slipped through.
+Verify that no body-less commits slipped through.
 The script ships inside the plugin at `bin/audit-no-body-commits`; resolve
 its path from the active install so it survives plugin updates:
 
@@ -246,25 +230,4 @@ python3 "$GIT_DISCIPLINE/bin/audit-no-body-commits" --exclude-trivial
 ```
 
 Lists every commit on the branch with a single-line message (or below the
-trivial threshold), useful for verifying that slice 4 block-mode actually
-held during a mission.
-
-## Post-update broadcasts
-
-After a `claude plugins update git-discipline@laicluse-agent-tools`, the next
-git-discipline slash command shows the latest `CHANGELOG.md` section once. The
-broadcast block lives in `skills/commit-all-the-things/SKILL.md` and calls
-`bin/check-broadcast`, which compares the active plugin version against
-`${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/git-discipline/broadcasts/git-discipline-broadcast-seen`
-and writes the file only when a CHANGELOG section was actually shown.
-
-Authoring a release note is a single edit to `CHANGELOG.md`: add a new
-`## [vX.Y.Z]` section above the previous one. The helper always emits the
-top-most section in document order, so the section header version does
-not need to match the active plugin version exactly. This keeps patch
-bumps without notable changes silent without forcing a CHANGELOG entry.
-
-The pattern is documented in the marketplace README under "Post-update
-broadcasts" so other packages can adopt the same helper. Lift the script
-unchanged: it reads `name` and `version` from the host plugin's
-`.claude-plugin/plugin.json` and namespaces the sentinel by plugin name.
+trivial threshold), useful for checking that the push gate held.

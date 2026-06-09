@@ -1,26 +1,13 @@
 # l'Aicluse Agent Tools
 
-Public, shareable agent tooling for Claude Code, Codex, and future coding
-agents.
+Agent tooling for Claude Code and Codex.
 
-This repository is the public successor for selected tools from
-`epologee/leclause-skills`. Migration happens plugin by plugin: install the new
-marketplace first, replace only the plugins listed below, and keep `@leclause`
-installed as long as you still use legacy plugins from it.
+The marketplace currently ships:
 
-## First slice
-
-The first plugins in this new marketplace are `how-plugins-work` and
-`git-discipline`. `how-plugins-work` documents how plugin names, skill names,
-marketplace aliases, Claude manifests, Codex manifests, and runtime caches
-relate to each other. `git-discipline` is the first feature-complete migration
-from legacy tooling to the new multi-agent home.
-
-During the migration, `epologee/leclause-skills` remains the existing public
-marketplace. Existing users do not need to uninstall or reinstall anything yet.
-There is no automatic rename from `@leclause` to `@laicluse-agent-tools`; both
-aliases can exist side by side. Legacy plugins disappear only after each
-removed plugin has a working migration stub.
+- `how-plugins-work`: reference material for plugin names, skill names,
+  marketplace aliases, manifests, adapters, and runtime caches.
+- `git-discipline`: git workflow skills plus commit and push hooks for agent
+  sessions and direct CLI commits.
 
 ## Installation
 
@@ -40,6 +27,11 @@ codex plugin add how-plugins-work@laicluse-agent-tools
 codex plugin add git-discipline@laicluse-agent-tools
 ```
 
+If you still use older `@leclause` plugins, keep that marketplace installed
+until the replacement you need is listed here. See [docs/migration.md](docs/migration.md).
+
+## Development
+
 For local development, point the marketplace at this working copy:
 
 ```bash
@@ -47,10 +39,7 @@ claude plugins marketplace add ./
 codex plugin marketplace add ./
 ```
 
-## Plumbing
-
-Claude metadata is currently the hand-edited source. Codex metadata is
-generated:
+Claude metadata is the source. Codex metadata is generated:
 
 ```bash
 bin/plugin-adapters build .
@@ -58,7 +47,7 @@ bin/plugin-adapters check .
 bin/plugin-adapters diff .
 ```
 
-Plugin versions follow `1.0.<commit-count>` per package:
+Plugin versions follow `2.0.<commit-count>` per package:
 
 ```bash
 bin/plugin-versions --check
@@ -72,8 +61,7 @@ git config core.hooksPath hooks
 ```
 
 The pre-commit hook bumps versions, builds Codex adapters, and stages the
-generated targets. The commit-msg hook requires `PII-Doublecheck: yes` because
-this repository is public-facing.
+generated targets. The commit-msg hook requires `PII-Doublecheck: yes`.
 
 ## Local Storage
 

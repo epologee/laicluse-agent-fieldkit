@@ -1,22 +1,21 @@
 # Migration to l'Aicluse Agent Tools
 
-Status: public, first migration slice active.
+Status: active.
 
 ## Decision
 
-The legacy public marketplace `epologee/leclause-skills` will not be renamed in
-place. This repository becomes the new public canonical home under the
+The legacy marketplace `epologee/leclause-skills` will not be renamed in
+place. New multi-agent-compatible plugins ship under the
 `laicluse-agent-tools` marketplace alias.
 
 During the transition:
 
-- `leclause-skills` remains the existing public source for users.
-- `laicluse-agent-tools` is the new public home for multi-agent-compatible
-  successors.
+- `leclause-skills` remains the existing source for users.
+- `laicluse-agent-tools` is the home for multi-agent-compatible plugins.
 - `how-plugins-work` and git-discipline may temporarily exist in multiple
   places. That is migration duplication, not a DRY problem.
 - The new canonical plugin name for git-discipline is
-  `git-discipline@laicluse-agent-tools`; the legacy public name
+  `git-discipline@laicluse-agent-tools`; the legacy name
   `gitgit@leclause` stays in place until the old marketplace can carry a
   plugin-specific migration stub.
 - Migration status belongs here and in package-specific changelogs or stubs,
@@ -38,7 +37,7 @@ When a plugin moves, the old marketplace keeps at least one migration stub that
 explains which legacy install can be removed and which new install replaces it.
 Only then may the real legacy plugin disappear.
 
-## For Agents
+## For Maintainers
 
 Work plugin by plugin. Keep Claude metadata as the source and generate Codex
 adapters with `bin/plugin-adapters`. Keep runtime state under

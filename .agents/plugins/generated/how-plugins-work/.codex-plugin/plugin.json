@@ -1,7 +1,7 @@
 {
   "name": "how-plugins-work",
-  "version": "2.0.6",
-  "description": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, local test-before-push flow, and the plugin:skill invocation pattern in practice.",
+  "version": "2.0.7",
+  "description": "Reference for plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and plugin:skill invocation.",
   "author": {
     "name": "local"
   },
@@ -12,8 +12,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "How Plugins Work",
-    "shortDescription": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, local test-...",
-    "longDescription": "Explains plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, local test-before-push flow, and the plugin:skill invocation pattern in practice.",
+    "shortDescription": "Reference for plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and pl...",
+    "longDescription": "Reference for plugin naming, skill resolution, Claude/Codex adapter sync, marketplace aliases, runtime caches, and plugin:skill invocation.",
     "developerName": "local",
     "category": "Productivity",
     "capabilities": [
