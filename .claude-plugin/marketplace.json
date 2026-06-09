@@ -13,6 +13,11 @@
       "source": "./packages/how-plugins-work"
     },
     {
+      "name": "self-improvement",
+      "description": "Routes user feedback about agent behavior to the strongest durable target: hooks, skills, project code, or instruction files.",
+      "source": "./packages/self-improvement"
+    },
+    {
       "name": "git-discipline",
       "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
       "source": "./packages/git-discipline"

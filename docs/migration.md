@@ -12,12 +12,14 @@ During the transition:
 
 - `leclause-skills` remains the existing source for users.
 - `laicluse-agent-tools` is the home for multi-agent-compatible plugins.
-- `how-plugins-work` and git-discipline may temporarily exist in multiple
-  places. That is migration duplication, not a DRY problem.
+- `how-plugins-work`, `self-improvement`, and git-discipline may temporarily
+  exist in multiple places. That is migration duplication, not a DRY problem.
 - The new canonical plugin name for git-discipline is
   `git-discipline@laicluse-agent-tools`; the legacy name
   `gitgit@leclause` stays in place until the old marketplace can carry a
   plugin-specific migration stub.
+- The new canonical plugin name for self-improvement is
+  `self-improvement@laicluse-agent-tools`.
 - Migration status belongs here and in package-specific changelogs or stubs,
   not in `how-plugins-work`. That skill documents plugin mechanics only:
   naming, aliases, cache behavior, and adapter sync.

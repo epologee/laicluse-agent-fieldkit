@@ -6,6 +6,8 @@ The marketplace currently ships:
 
 - `how-plugins-work`: reference material for plugin names, skill names,
   marketplace aliases, manifests, adapters, and runtime caches.
+- `self-improvement`: routes feedback about agent behavior to hooks, skills,
+  project code, or instruction files.
 - `git-discipline`: git workflow skills plus commit and push hooks for agent
   sessions and direct CLI commits.
 
@@ -16,6 +18,7 @@ Claude Code:
 ```bash
 claude plugins marketplace add epologee/laicluse-agent-tools
 claude plugins install how-plugins-work@laicluse-agent-tools
+claude plugins install self-improvement@laicluse-agent-tools
 claude plugins install git-discipline@laicluse-agent-tools
 ```
 
@@ -24,6 +27,7 @@ Codex:
 ```bash
 codex plugin marketplace add epologee/laicluse-agent-tools
 codex plugin add how-plugins-work@laicluse-agent-tools
+codex plugin add self-improvement@laicluse-agent-tools
 codex plugin add git-discipline@laicluse-agent-tools
 ```
 
