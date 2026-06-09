@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+import { existsSync, readFileSync, writeFileSync, openSync, writeSync, closeSync, rmSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { execSync, spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { repairWatermark, openCaptures, angerDir } from './anger-lib.mjs';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const dir = angerDir();
+const pending = join(dir, 'investigation.pending');
+const delay = /^\d+$/.test(process.env.ANGER_ARM_DELAY || '') ? Number(process.env.ANGER_ARM_DELAY) : 1342;
+
+function alive(pid) {
+  if (!pid) return false;
+  try { process.kill(pid, 0); return true; } catch { return false; }
+}
+
+if (existsSync(pending)) {
+  let stale = false;
+  try {
+    const m = JSON.parse(readFileSync(pending, 'utf8'));
+    const ageMs = Date.now() - Date.parse(m.armed);
+    const tooOld = !(ageMs >= 0) || ageMs > delay * 1000 + 180000;
+    stale = tooOld || (m.pid && !alive(m.pid));
+  } catch { stale = true; }
+  if (!stale) { console.log('investigation already pending; capture added to the pile'); process.exit(0); }
+  rmSync(pending, { force: true }); // allow-comment: reclaim a marker whose worker died, else single-flight wedges forever
+}
+
+const open = openCaptures(join(dir, 'friction.jsonl'), repairWatermark(join(dir, 'repairs.jsonl')));
+if (open.length === 0) { console.log('no open captures; nothing to investigate'); process.exit(0); }
+
+function cliPath(name) {
+  let p = '';
+  try { p = execSync(`command -v ${name}`, { shell: '/bin/bash' }).toString().trim(); } catch {}
+  return p && !p.includes('\n') && p.startsWith('/') ? p : '';
+}
+
+let runner = process.env.ANGER_ARM_RUNNER || '';
+if (!runner) {
+  const claudePath = cliPath('claude');
+  const codexPath = claudePath ? '' : cliPath('codex');
+  if (claudePath) runner = `${claudePath} -p --model sonnet`;
+  else if (codexPath) runner = `${codexPath} exec`;
+  else {
+    console.log('no agent CLI (claude or codex) resolvable to a path; skipping background investigation (run /anger-management:repair manually)');
+    process.exit(0);
+  }
+}
+
+const promptFile = join(here, 'investigate.prompt.md');
+if (!existsSync(promptFile)) { console.log('investigation prompt missing; skipping'); process.exit(0); }
+
+let fd;
+try { fd = openSync(pending, 'wx'); } catch { console.log('investigation already pending; capture added to the pile'); process.exit(0); }
+const armed = new Date().toISOString();
+writeSync(fd, JSON.stringify({ armed }) + '\n');
+closeSync(fd);
+
+const env = {
+  ...process.env,
+  ANGER_DELAY: String(delay),
+  ANGER_RUNNER: runner,
+  ANGER_PROMPT: promptFile,
+  ANGER_TMP: join(dir, 'findings.tmp'),
+  ANGER_ERR: join(dir, 'investigate.err'),
+  ANGER_FINDINGS: join(dir, 'findings.md'),
+  ANGER_PENDING: pending,
+};
+const child = spawn('/bin/bash', [join(here, 'anger-run.sh')], { detached: true, stdio: 'ignore', env });
+child.unref();
+writeFileSync(pending, JSON.stringify({ armed, pid: child.pid }) + '\n');
+
+const human = delay === 1342 ? '22m22s' : `${delay}s`;
+console.log(`armed: investigating ${open.length} open capture(s) in ${human} (background)`);

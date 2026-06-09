@@ -1,6 +1,6 @@
 {
   "name": "anger-management",
-  "version": "1.0.2",
+  "version": "2.0.1",
   "description": "Curse at your coding agent to capture a one-line friction note, then fix the real problem later. The curse commands (/fuck, /shit, /crap, /wtf, /bullshit, /damn) append one cheap line to a global log and move on; /anger-management:repair cools down (~22 min, a background headless agent investigates), judges whether there is one concrete recurring thing worth fixing, and routes it to /self-improvement (often by loosening a rule that overcorrected, not adding one), or changes nothing if there is no clear pattern. Modelled on Stripe's bad-day button and the constructed-emotion view of anger. Vocabulary avoids slurs and identity-targeted abuse. State is stored locally; the optional background investigation uses the configured runner.",
   "author": {
     "name": "local"

@@ -23,6 +23,11 @@ During the transition:
 - The new canonical plugin name for intervision is
   `intervision@laicluse-agent-tools`. It replaces both `intervision@leclause`
   (Claude-only) and the staging copy in the private marketplace.
+- The new canonical plugin name for anger-management is
+  `anger-management@laicluse-agent-tools`. It replaces
+  `anger-management@leclause`; the friction pile moves to
+  `${LAICLUSE_HOME:-~/.laicluse}/anger-management/` with automatic migration
+  from the old `~/.claude/var/leclause/` location.
 - Migration status belongs here and in package-specific changelogs or stubs,
   not in `how-plugins-work`. That skill documents plugin mechanics only:
   naming, aliases, cache behavior, and adapter sync.

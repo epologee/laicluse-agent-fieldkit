@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+import { appendFileSync, readFileSync, fstatSync } from 'node:fs';
+import { join } from 'node:path';
+import { execSync } from 'node:child_process';
+import { angerDir } from './anger-lib.mjs';
+
+const [, , word] = process.argv;
+if (!word) {
+  console.error('usage: anger-log <word>   (note read from stdin; none means word-only)');
+  process.exit(2);
+}
+
+let raw = '';
+try {
+  const st = fstatSync(0);
+  if (st.isFIFO() || st.isFile()) raw = readFileSync(0, 'utf8');
+} catch {}
+const collapsed = raw.replace(/\s+/g, ' ').trim();
+const truncated = collapsed.length > 200;
+const note = truncated ? collapsed.slice(0, 200).trim() : collapsed;
+
+const cwd = process.cwd();
+
+let git = '';
+try {
+  const branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd, timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  const sha = execSync('git rev-parse --short HEAD', { cwd, timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  if (branch && sha) git = `${branch}@${sha}`;
+} catch {}
+
+const dir = angerDir();
+
+const entry = { ts: new Date().toISOString(), word, cwd, git, note };
+appendFileSync(join(dir, 'friction.jsonl'), JSON.stringify(entry) + '\n');
+
+console.log(`logged ${word}${note ? `: ${note}` : ''}${truncated ? ' (truncated)' : ''}`);

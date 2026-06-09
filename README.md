@@ -13,6 +13,9 @@ The marketplace currently ships:
 - `intervision`: bring another coding agent in as a peer to review work just
   done or just discussed. Claude hands work to Codex; Codex hands work to
   Claude.
+- `anger-management`: curse at your coding agent now, fix the real problem
+  later. Capture commands log friction to a global pile; a delayed background
+  investigation diagnoses the pattern and `repair` routes the fix.
 
 ## Installation
 
@@ -24,6 +27,7 @@ claude plugins install how-plugins-work@laicluse-agent-tools
 claude plugins install self-improvement@laicluse-agent-tools
 claude plugins install git-discipline@laicluse-agent-tools
 claude plugins install intervision@laicluse-agent-tools
+claude plugins install anger-management@laicluse-agent-tools
 ```
 
 Codex:
@@ -34,6 +38,7 @@ codex plugin add how-plugins-work@laicluse-agent-tools
 codex plugin add self-improvement@laicluse-agent-tools
 codex plugin add git-discipline@laicluse-agent-tools
 codex plugin add intervision@laicluse-agent-tools
+codex plugin add anger-management@laicluse-agent-tools
 ```
 
 If you still use older `@leclause` plugins, keep that marketplace installed
