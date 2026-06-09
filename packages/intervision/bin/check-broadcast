@@ -1,0 +1,107 @@
+#!/usr/bin/env node
+// Post-update broadcast check for a l'Aicluse Agent Tools plugin.
+//
+// Emits the CHANGELOG section for the active plugin version when the user
+// has not yet seen it on this machine. Sentinel lives at
+// ${LAICLUSE_AGENT_HOME:-~/.laicluse-agent}/intervision/broadcasts/<plugin>-broadcast-seen
+// and stores the last-shown version string. Idempotent: a second run for the
+// same version is a no-op.
+//
+// Usage:
+//   node check-broadcast            # emit broadcast or print nothing
+//   node check-broadcast --force    # emit current section regardless of sentinel
+//   node check-broadcast --peek     # emit without updating the sentinel
+//
+// Output contract:
+//   exit 0, stdout empty           => no broadcast (already seen, or no entry)
+//   exit 0, stdout non-empty       => broadcast text for Claude to show
+//   exit 1, stderr non-empty       => internal error (Claude should not retry)
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { homedir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+
+const agentHome = process.env.LAICLUSE_AGENT_HOME || join(homedir(), '.laicluse-agent');
+const SENTINEL_DIR = join(agentHome, 'intervision', 'broadcasts');
+const LEGACY_SENTINEL_DIR = join(homedir(), '.claude', 'var', 'leclause');
+
+function findPluginRoot() {
+  if (process.env.CLAUDE_PLUGIN_ROOT) return process.env.CLAUDE_PLUGIN_ROOT;
+  let dir = dirname(fileURLToPath(import.meta.url));
+  while (dir !== '/') {
+    if (existsSync(join(dir, '.claude-plugin', 'plugin.json'))) return dir;
+    dir = resolve(dir, '..');
+  }
+  throw new Error('plugin root not found');
+}
+
+function readManifest(pluginRoot) {
+  return JSON.parse(readFileSync(join(pluginRoot, '.claude-plugin', 'plugin.json'), 'utf8'));
+}
+
+function extractLatestSection(changelog) {
+  const lines = changelog.split('\n');
+  const headerRe = /^##\s+\[v?([^\]]+)\]/;
+  let start = -1;
+  let end = lines.length;
+  for (let i = 0; i < lines.length; i++) {
+    if (!headerRe.test(lines[i])) continue;
+    if (start === -1) {
+      start = i;
+      continue;
+    }
+    end = i;
+    break;
+  }
+  if (start === -1) return null;
+  return lines.slice(start, end).join('\n').trimEnd();
+}
+
+function sentinelPath(pluginName) {
+  return join(SENTINEL_DIR, `${pluginName}-broadcast-seen`);
+}
+
+function readSentinel(pluginName) {
+  const path = sentinelPath(pluginName);
+  if (existsSync(path)) return readFileSync(path, 'utf8').trim();
+  const legacyPath = join(LEGACY_SENTINEL_DIR, `${pluginName}-broadcast-seen`);
+  if (existsSync(legacyPath)) return readFileSync(legacyPath, 'utf8').trim();
+  return null;
+}
+
+function writeSentinel(pluginName, version) {
+  mkdirSync(SENTINEL_DIR, { recursive: true });
+  writeFileSync(sentinelPath(pluginName), version + '\n', 'utf8');
+}
+
+function main() {
+  const args = new Set(process.argv.slice(2));
+  const force = args.has('--force');
+  const peek = args.has('--peek');
+
+  const root = findPluginRoot();
+  const manifest = readManifest(root);
+  const pluginName = manifest.name;
+  const version = manifest.version;
+  if (!pluginName || !version) throw new Error('plugin.json missing name or version');
+
+  const seen = readSentinel(pluginName);
+  if (!force && seen === version) return;
+
+  const changelogPath = join(root, 'CHANGELOG.md');
+  if (!existsSync(changelogPath)) return;
+
+  const section = extractLatestSection(readFileSync(changelogPath, 'utf8'));
+  if (!section) return;
+
+  process.stdout.write(section + '\n');
+  if (!peek) writeSentinel(pluginName, version);
+}
+
+try {
+  main();
+} catch (err) {
+  process.stderr.write(`check-broadcast: ${err.message}\n`);
+  process.exit(1);
+}

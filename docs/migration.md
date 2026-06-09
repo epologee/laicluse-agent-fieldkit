@@ -20,6 +20,9 @@ During the transition:
   plugin-specific migration stub.
 - The new canonical plugin name for self-improvement is
   `self-improvement@laicluse-agent-tools`.
+- The new canonical plugin name for intervision is
+  `intervision@laicluse-agent-tools`. It replaces both `intervision@leclause`
+  (Claude-only) and the staging copy in the private marketplace.
 - Migration status belongs here and in package-specific changelogs or stubs,
   not in `how-plugins-work`. That skill documents plugin mechanics only:
   naming, aliases, cache behavior, and adapter sync.

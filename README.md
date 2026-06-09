@@ -10,6 +10,9 @@ The marketplace currently ships:
   project code, or instruction files.
 - `git-discipline`: git workflow skills plus commit and push hooks for agent
   sessions and direct CLI commits.
+- `intervision`: bring another coding agent in as a peer to review work just
+  done or just discussed. Claude hands work to Codex; Codex hands work to
+  Claude.
 
 ## Installation
 
@@ -20,6 +23,7 @@ claude plugins marketplace add epologee/laicluse-agent-tools
 claude plugins install how-plugins-work@laicluse-agent-tools
 claude plugins install self-improvement@laicluse-agent-tools
 claude plugins install git-discipline@laicluse-agent-tools
+claude plugins install intervision@laicluse-agent-tools
 ```
 
 Codex:
@@ -29,6 +33,7 @@ codex plugin marketplace add epologee/laicluse-agent-tools
 codex plugin add how-plugins-work@laicluse-agent-tools
 codex plugin add self-improvement@laicluse-agent-tools
 codex plugin add git-discipline@laicluse-agent-tools
+codex plugin add intervision@laicluse-agent-tools
 ```
 
 If you still use older `@leclause` plugins, keep that marketplace installed
