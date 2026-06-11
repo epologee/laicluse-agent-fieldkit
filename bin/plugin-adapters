@@ -170,7 +170,7 @@ generated_claude_skill_targets() {
   local root="$1" file
   while IFS= read -r file; do
     printf '%s/SKILL.md\n' "$(dirname "$file")"
-  done < <(find "$root" -path "*/skills/*/SKILL.claude.md" -type f 2>/dev/null | sort)
+  done < <(find "$root" -not -path "*/worktrees/*" -path "*/skills/*/SKILL.claude.md" -type f 2>/dev/null | sort)
 }
 
 generate_into() {
@@ -240,7 +240,7 @@ actual_files() {
   local repo="$1"
   {
     find "$repo/.agents" -type f 2>/dev/null
-    find "$repo" -path "*/.codex-plugin/plugin.json" -type f 2>/dev/null
+    find "$repo" -not -path "*/worktrees/*" -path "*/.codex-plugin/plugin.json" -type f 2>/dev/null
     generated_claude_skill_targets "$repo"
   } | sort -u
 }
