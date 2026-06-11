@@ -28,6 +28,23 @@ The script runs via its `#!/usr/bin/env swift` shebang; no compile step is neede
 
 Re-run after each `claude plugins update clipboard@laicluse-agent-tools` so the installed copy matches the updated plugin.
 
+## Consuming from another plugin
+
+A skill in a different plugin cannot use `${CLAUDE_PLUGIN_ROOT}` to find this
+plugin's helper (that variable points at its own root). The canonical
+resolution idiom for cross-plugin consumers is one lookup against the
+harness's install index, with a graceful skip when clipboard is absent:
+
+```bash
+IP=$(jq -r '.plugins["clipboard@laicluse-agent-tools"][0].installPath // empty' ~/.claude/plugins/installed_plugins.json 2>/dev/null)
+if [ -n "$IP" ] && [ -x "$IP/bin/clipboard-copy" ]; then
+  printf 'content' | "$IP/bin/clipboard-copy"
+fi
+```
+
+Copy this idiom rather than inventing a variant; it is the one place the
+install key lives outside this plugin.
+
 ## Installation
 
 ```bash

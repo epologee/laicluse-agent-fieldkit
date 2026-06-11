@@ -27,7 +27,9 @@ the rest of this skill.
 If the command produces no output, say nothing about updates and proceed.
 
 The helper writes the sentinel only when stdout was non-empty, so a silent
-run does not mark the version as seen.
+run does not mark the version as seen. In agents that do not set
+`CLAUDE_PLUGIN_ROOT` the broadcast is intentionally skipped; that is the
+guard's purpose, not an oversight.
 </post-update-broadcast>
 
 # Clipboard
