@@ -90,8 +90,14 @@ count_commits() {
     echo 0
     return
   fi
+  # During a merge commit HEAD is still the pre-merge tip; without MERGE_HEAD
+  # the branch commits drop out of the count and the version rewinds.
+  local heads="HEAD"
+  if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+    heads="HEAD MERGE_HEAD"
+  fi
   # shellcheck disable=SC2086
-  git rev-list --count HEAD -- $(paths_for "$name")
+  git rev-list --count $heads -- $(paths_for "$name")
 }
 
 current_version() {
