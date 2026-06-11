@@ -41,21 +41,29 @@ not invoke them directly.
   the cron, summarises where the traverse left off, and fires the next
   iteration. Reached via `rover:rover` with a loop-file path.
 
+Coming from `autonomous@leclause`? The decision skills you used to reach as
+`/autonomous:rover`, `/autonomous:pride`, and so on now live in the `rover`
+plugin: install `rover@laicluse-agent-tools` and use `/rover:rover`,
+`/rover:pride`, and the rest.
+
 ## The probe and its one assumption
 
 The probe is correct only when need and availability coincide: a host that runs
 a mission as a persistent process must withhold `CronCreate` (for example by
 adding the cron tools to its disallowed-tools list), and a host whose sessions
 go idle must expose it. When a persistent host still exposes the cron tools the
-probe over-detects interactive and arms a heartbeat, but that heartbeat is
-harmless: a one-shot process never goes idle, so the cron never fires and dies
-with the process. See `skills/keepalive/SKILL.md` for the full contract.
+probe over-detects interactive and arms a heartbeat. On the normal path that is
+dead weight: a process that runs to completion never goes idle, so the cron
+never fires and is torn down with the session. Only an abnormal exit can leave
+it as an orphan, which the `wake` restore path reaps on the next relight. See
+`skills/keepalive/SKILL.md` for the full contract.
 
 ## Companion plugin
 
 The decision framework lives in `rover` (invoked as `/rover:...`). Install both
-together:
+together; `rover` additionally depends on `gurus` for its INSPECT panel review:
 
 ```bash
 claude plugins install autonomous@laicluse-agent-tools rover@laicluse-agent-tools
+claude plugins install gurus@leclause
 ```

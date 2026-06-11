@@ -37,8 +37,9 @@ setup; do nothing this tick and let the next one retry. Otherwise
 check the Phase, follow the Instructions section for the current
 phase, and add a timestamped entry to the Log when you take action
 (run `date +%H:%M` first, never guess). In STANDBY, an idle tick
-with nothing new IS an action: bump `watch_checks`, invoke `cron` so
-the interval backs off per the table, and log the tick with the new
+with nothing new IS an action: bump `watch_checks`, invoke
+`autonomous:cron` so the interval backs off per the table, and log the
+tick with the new
 `watch_checks` value and the current interval. A silent pass hides
 whether the cron is still alive and keeps backoff stuck at one
 minute.
@@ -81,7 +82,7 @@ The `jq` lookup returns the version Claude Code is currently loading, which matc
 
 **Nothing for the cron to do this tick:**
 
-1. **Can the cron act?** The cron's only job is to drive the loop forward when nothing else does. If the next move requires a signal the cron cannot synthesize (an operator message, a bg task's completion, a scheduled trigger from another source) AND that signal has its own arrival channel that re-enters the loop on its own (the conversation re-entry on the operator's next message, a harness task-notification when a `run_in_background` command exits, `/rover:rover .autonomous/<file>`), the cron adds no safety the arrival channel does not already provide. Pause it: invoke `cron` to `CronDelete` the current id, set `cron_job_id: paused` in the loop file, log `[HH:MM] cron paused: <wait source>; <re-arm channel> resumes`. The arrival event re-arms the cron via the standard interjection path (CronCreate at `* * * * *`, `watch_checks: 0`).
+1. **Can the cron act?** The cron's only job is to drive the loop forward when nothing else does. If the next move requires a signal the cron cannot synthesize (an operator message, a bg task's completion, a scheduled trigger from another source) AND that signal has its own arrival channel that re-enters the loop on its own (the conversation re-entry on the operator's next message, a harness task-notification when a `run_in_background` command exits, `/rover:rover .autonomous/<file>`), the cron adds no safety the arrival channel does not already provide. Pause it: invoke `autonomous:cron` to `CronDelete` the current id, set `cron_job_id: paused` in the loop file, log `[HH:MM] cron paused: <wait source>; <re-arm channel> resumes`. The arrival event re-arms the cron via the standard interjection path (CronCreate at `* * * * *`, `watch_checks: 0`).
 2. **Cron can act but the loop is STANDBY-idle.** No arrival channel exists for the next move; the cron polling for new state IS the only detection mechanism. Bump `watch_checks` per the backoff table, log the tick with the new value and interval. Backoff exists for this case.
 3. **Cron can act and the loop is in an active phase.** Continue per the `rover:rover` phase instructions; do not pause or back off.
 

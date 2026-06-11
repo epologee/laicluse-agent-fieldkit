@@ -64,7 +64,7 @@ SURVEY ──► DRIVE ──► INSPECT ──► STOW ──► STANDBY
 
 - **SURVEY.** Read the codebase, form hypotheses, lock down a plan, write Done criteria via `verify --propose`.
 - **DRIVE.** Build. Commit per logical step. Verify as you go.
-- **INSPECT.** Four passes: `verify` against Done criteria, `pride` contrarian review as the phase gate on the current batch of work, end-user walkthrough, technical plan-vs-diff. Any failure sends the Rover back to DRIVE. `pride` also runs separately on every artefact the Rover hands off later (the `stop` communiqué is its own pride pass, not a second invocation of this INSPECT gate).
+- **INSPECT.** Six passes: `verify` against Done criteria, `pride` contrarian review as the phase gate on the current batch of work, an end-user walkthrough, a technical plan-vs-diff, a `gurus` opinionated panel review, and a `trim` subtraction pass. `pride`, `gurus`, and `trim` are hard gates: INSPECT cannot reach STOW without all three on record. Any failure sends the Rover back to DRIVE. `pride` also runs separately on every artefact the Rover hands off later (the `stop` communiqué is its own pride pass, not a second invocation of this INSPECT gate).
 - **STOW.** Mechanical cleanup only. Debug prints gone, unused imports gone, half-finished refactors finished. Separate commit.
 - **STANDBY.** Watch channels (PR comments, CI, uncommitted work). Back off the cron as idleness grows. Auto-stop after about five hours of quiet.
 
@@ -72,14 +72,15 @@ SURVEY ──► DRIVE ──► INSPECT ──► STOW ──► STANDBY
 
 - **Talk to it in the session.** Your turns take priority; the cron waits for idle.
 - **Write into `## Input` in the mission file.** The Rover reads that section each STANDBY tick and acts on it.
-- **Stop it.** Use the stop flow (currently reached via the Rover entry; writes a final log entry, cuts the cron, and transmits a home communiqué).
-- **Resume a stopped Rover.** Re-dispatch with the mission file path.
+- **Stop it.** Type `/rover:stop` (or `/rover:stop .autonomous/<NAME>.md` to target a specific mission). It writes a final log entry, cuts the cron if one is running, and transmits a home communiqué.
+- **Resume a stopped Rover.** Re-dispatch with the mission file path: `/rover:rover .autonomous/<NAME>.md`.
 
 ## Related commands you can call directly
 
 | Command | What it does |
 |---------|--------------|
 | `/rover:rover` | Dispatch a Rover. Accepts a free-form mission brief or a mission file to wake. |
+| `/rover:stop` | Stop a running mission. Cuts the cron if one is running, writes a final log entry, transmits the communiqué. |
 | `/rover:verify` | Standalone evidence check. Propose Done criteria, or tick them off with evidence. |
 | `/rover:pride` | Contrarian review of the current branch diff. Finds what the operator would hate. |
 | `/rover:decide` | Choice framework. Use when you are stuck between options, inside a Rover or not. |
@@ -96,7 +97,7 @@ SURVEY ──► DRIVE ──► INSPECT ──► STOW ──► STANDBY
 
 ## Cost awareness
 
-A cron at one-minute cadence drives many Claude turns during active phases. That is the point: the Rover is working for you. During STANDBY the backoff grows to 60-minute intervals and auto-stops after sustained quiet. For small tasks, a normal conversation is cheaper than a full Rover dispatch.
+In an interactive session, a cron at one-minute cadence drives many Claude turns during active phases. That is the point: the Rover is working for you. During STANDBY the backoff grows to 60-minute intervals and auto-stops after sustained quiet. (A persistent process has no cron; it runs the phases straight through.) For small tasks, a normal conversation is cheaper than a full Rover dispatch.
 
 The Rover keeps reasoning on your session model and offloads the mechanical work to Sonnet subagents: STANDBY polling (`git status`, PR comments, CI checks) and the INSPECT technical pass (diff-vs-plan review). Hand work to subagents, keep head work on the session model. Your model choice for the session sets the ceiling on quality; the subagent floor is Sonnet.
 

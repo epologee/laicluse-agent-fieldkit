@@ -27,6 +27,13 @@ SCRIPT="$BATS_TEST_DIRNAME/../bin/relative-cron"
   [[ "$output" != */* ]]
 }
 
+@test "60-minute terminal step uses an explicit minute, nudged off now" {
+  run node "$SCRIPT" 60
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ ^[0-9]+\ \*\ \*\ \*\ \*$ ]]
+  [[ "$output" != */* ]]
+}
+
 @test "non-integer input is rejected" {
   run node "$SCRIPT" abc
   [ "$status" -eq 1 ]

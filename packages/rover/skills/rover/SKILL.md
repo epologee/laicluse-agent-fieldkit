@@ -460,6 +460,8 @@ PR creation is not a rover default. The rover commits the work locally on the mi
 
 The mission is complete but the rover stays in orbit. STANDBY keeps the cron alive so the rover can absorb new input, catch crashed bash sessions during active work, and transition back to SURVEY when the operator sends a follow-up.
 
+**Persistent mode has no STANDBY cron.** When `cron_job_id` is `none (persistent process)`, keepalive armed nothing and there is no heartbeat to keep alive, back off, or cut. STANDBY has no idle-backoff role here: the process ran the phase machine to completion in one pass. Run the entry check once and end the mission through `stop` (which no-ops the CronDelete on the sentinel). Skip every cron-management step below; they apply only when a heartbeat was armed.
+
 The cron's safety-net role is scoped to transient failures during active phases: a failed bash command, a timed-out tool call, or an interrupted edit that leaves the session stuck mid-turn. The cron fires on REPL-idle and re-reads the loop file, which restarts the phase machine from its last logged state. That safety net is not meant as an eternal watch post: sustained idleness means the mission is truly done, and the cron has a hard cap to stop token burn.
 
 **Entry check: any listeners?** The first thing STANDBY does on entry is decide whether to stay. Listeners are concrete signals that can change what the rover cares about: an open PR with reviews or CI the rover is watching, CI jobs still running, or uncommitted work in the tree. Zero listeners means nothing to wait for: invoke `stop` via the Skill tool to cut the cron, log the final entry, and transmit the communiqué. Keep STANDBY-with-cron only when at least one listener is live; otherwise the backoff loop is watching nothing. New input later relights the loop via `/rover:rover` either way.
@@ -475,7 +477,7 @@ When a PR exists, minimum checks per iteration:
 
 New findings from STANDBY go back to SURVEY (not DRIVE, and not queued for the operator). New input is new information: understand it before acting on it. Iteratively downgrading to a fix-first approach has a track record of missing the real cause.
 
-When no new activity, increment `watch_checks` and invoke `autonomous:cron` for backoff. Each idle iteration bumps the interval until the hard cap at `watch_checks` 10. The full schedule (and total idle time, about 5 hours) lives in `cron`; do not duplicate the numbers here. When the cap fires: CronDelete, log `STANDBY: auto-stopped after 10 idle checks. /rover:rover <loop-file> to relight.`, and invoke `notify_on_done` if configured. The loop file stays; only the cron dies. Past this point the safety net is gone: a fresh interjection or `/rover:rover <loop-file>` relights the cron (Interjections section below covers the interjection path).
+When no new activity, increment `watch_checks` and invoke `autonomous:cron` for backoff (interactive mode only; in persistent mode there is no cron to back off, see "Persistent mode has no STANDBY cron" above). Each idle iteration bumps the interval until the hard cap at `watch_checks` 10. The full schedule (and total idle time, about 5 hours) lives in `cron`; do not duplicate the numbers here. When the cap fires: CronDelete, log `STANDBY: auto-stopped after 10 idle checks. /rover:rover <loop-file> to relight.`, and invoke `notify_on_done` if configured. The loop file stays; only the cron dies. Past this point the safety net is gone: a fresh interjection or `/rover:rover <loop-file>` relights the cron (Interjections section below covers the interjection path).
 
 ### Decisions
 
@@ -490,7 +492,7 @@ Any input that arrives mid-loop, regardless of channel, is a broadcast, not the 
 On any interjection:
 
 1. Log the input verbatim to `## Log` with a timestamp. Do not paraphrase; the operator may come back later and compare to what they sent.
-2. **If the cron is stopped (auto-stop or manual), relight it.** Invoke `autonomous:cron` to `CronCreate` at `* * * * *`, reset `watch_checks: 0`, update `cron_job_id` in the loop file. New input is proof the operator is present; idle-backoff resets.
+2. **If the cron is stopped (auto-stop or manual), relight it.** Invoke `autonomous:cron` to `CronCreate` at `* * * * *`, reset `watch_checks: 0`, update `cron_job_id` in the loop file. New input is proof the operator is present; idle-backoff resets. Skip this step in persistent mode (`cron_job_id: none (persistent process)`): there is no cron tooling to relight, so just integrate the input and keep driving.
 3. Evaluate whether it changes the plan. If yes, transition to SURVEY and re-plan. If no, note why not in the Log and stay on the current phase.
 4. If the input surfaces a choice, invoke `decide`. Never hold the choice open waiting for the operator's next message.
 5. Resume the loop. Do not emit "I will wait for your next message" or any equivalent stall.
