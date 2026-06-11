@@ -63,6 +63,30 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "autonomous",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/autonomous"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "rover",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/rover"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
