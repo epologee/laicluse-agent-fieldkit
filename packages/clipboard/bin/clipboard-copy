@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+
+const { spawnSync } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+if (process.platform !== 'darwin') {
+  process.stderr.write('clipboard-copy: macOS only (depends on pbcopy / pbcopy-html.swift).\n');
+  process.exit(1);
+}
+
+const args = process.argv.slice(2);
+const html = args.includes('--html');
+const unknown = args.filter(a => a !== '--html');
+if (unknown.length > 0) {
+  process.stderr.write(`clipboard-copy: unknown argument "${unknown[0]}". Usage: clipboard-copy [--html]\n`);
+  process.exit(2);
+}
+
+const stdin = fs.readFileSync(0);
+if (stdin.length === 0) {
+  process.stderr.write('clipboard-copy: empty stdin.\n');
+  process.exit(3);
+}
+
+const binDir = path.dirname(fs.realpathSync(__filename));
+const swiftScript = path.join(binDir, '..', 'skills', 'clipboard', 'pbcopy-html.swift');
+
+if (html && !fs.existsSync(swiftScript)) {
+  process.stderr.write(`clipboard-copy: pbcopy-html.swift not found at ${swiftScript}. The helper expects it in skills/clipboard/ of the same plugin install.\n`);
+  process.exit(6);
+}
+
+const cmd = html ? swiftScript : 'pbcopy';
+const result = spawnSync(cmd, [], { input: stdin, stdio: ['pipe', 'ignore', 'inherit'] });
+
+if (result.error) {
+  if (result.error.code === 'ENOENT' && html) {
+    process.stderr.write(`clipboard-copy: swift interpreter not found. Install the Xcode command line tools on macOS: xcode-select --install\n`);
+  } else {
+    process.stderr.write(`clipboard-copy: failed to invoke ${cmd}: ${result.error.message}\n`);
+  }
+  process.exit(4);
+}
+if (result.signal) {
+  process.stderr.write(`clipboard-copy: ${cmd} died from signal ${result.signal}\n`);
+  process.exit(5);
+}
+process.exit(result.status ?? 0);

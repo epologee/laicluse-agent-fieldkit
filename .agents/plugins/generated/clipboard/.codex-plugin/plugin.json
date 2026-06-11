@@ -1,0 +1,26 @@
+{
+  "name": "clipboard",
+  "version": "2.0.1",
+  "description": "Copy core content of the last answer to the macOS clipboard via the clipboard-copy helper (pbcopy for plain, pbcopy-html for Slack rich text).",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "clipboard"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Clipboard",
+    "shortDescription": "Copy core content of the last answer to the macOS clipboard via the clipboard-copy helper (pbcopy for plain, pbcopy-h...",
+    "longDescription": "Copy core content of the last answer to the macOS clipboard via the clipboard-copy helper (pbcopy for plain, pbcopy-html for Slack rich text).",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Clipboard plugin."
+    ]
+  }
+}

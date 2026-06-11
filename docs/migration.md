@@ -28,6 +28,9 @@ During the transition:
   `anger-management@leclause`; the friction pile moves to
   `${LAICLUSE_HOME:-~/.laicluse}/anger-management/` with automatic migration
   from the old `~/.claude/var/leclause/` location.
+- The new canonical plugin name for clipboard is
+  `clipboard@laicluse-agent-tools`. It replaces `clipboard@leclause`; the
+  commands (`/clipboard`, `/clipboard slack`) are unchanged.
 - Migration status belongs here and in package-specific changelogs or stubs,
   not in `how-plugins-work`. That skill documents plugin mechanics only:
   naming, aliases, cache behavior, and adapter sync.
