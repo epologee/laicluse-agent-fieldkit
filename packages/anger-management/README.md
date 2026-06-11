@@ -3,8 +3,8 @@
 Curse at your coding agent now, fix the actual problem later.
 
 When the agent does something that sets you off, you do not want a lecture and you do
-not want to drop everything to fix it. So you curse: `/fuck`, `/shit`, `/crap`, `/wtf`,
-`/bullshit`, `/damn`. Each one captures a single cheap line about what happened and
+not want to drop everything to fix it. So you curse: `/fuck`, `/fucking`, `/fucked`,
+`/shit`, `/crap`, `/wtf`, `/bullshit`. Each one captures a single cheap line about what happened and
 gets out of your way. Later, cooled off, `/anger-management:repair` looks at the pile,
 decides whether there is one concrete recurring thing worth fixing, and if so routes it
 to `/self-improvement`. If there is nothing clear, it changes nothing. That restraint
@@ -25,7 +25,7 @@ two-second capture you walk away from, never a rant you marinate in.
 
 | Command | What it does |
 |---------|--------------|
-| `/fuck` `/shit` `/crap` `/wtf` `/bullshit` `/damn` | Capture one cheap friction line and move on. No apology, no fix, no scope change. |
+| `/fuck` `/fucking` `/fucked` `/shit` `/crap` `/wtf` `/bullshit` | Capture one cheap friction line and move on. No apology, no fix, no scope change. |
 | `/anger-management` | Quick read-back of the pile and its recurring clusters. |
 | `/anger-management:repair` | The cooled-down fix pass: judge go/no-go, and route a real recurring problem to `/self-improvement`. |
 
@@ -83,5 +83,5 @@ that fools everyone. So the default is to change nothing unless the pattern is c
 
 - `bin/anger-log` captures a line. `bin/anger-arm` single-flight launches the background
   investigation. `bin/anger-resolve` records a routed fix so its captures close.
-- The six curse skills are generated from `capture-skill.template.md` by
-  `bin/sync-capture-skills` (repo root); edit the template, not the six files.
+- The curse skills are generated from `capture-skill.template.md` by
+  `bin/sync-capture-skills` (repo root); edit the template, not the generated files.

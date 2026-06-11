@@ -31,8 +31,8 @@ PN
 }
 
 @test "word-only via /dev/null stores an empty note without hanging" {
-  HOME="$HOME" "$NODE_BIN" "$LOG_BIN" damn </dev/null
-  [ "$(field word)" = "damn" ]
+  HOME="$HOME" "$NODE_BIN" "$LOG_BIN" wtf </dev/null
+  [ "$(field word)" = "wtf" ]
   [ "$(field note)" = "" ]
 }
 
@@ -66,7 +66,7 @@ PN
   mkdir -p "$LEGACY"
   printf '{"ts":"2026-06-01T10:00:00.000Z","word":"fuck","cwd":"/tmp","git":"","note":"legacy capture"}\n' > "$LEGACY/friction.jsonl"
   printf 'as-of: 2026-06-01T11:00:00.000Z\n' > "$LEGACY/findings.md"
-  HOME="$HOME" "$NODE_BIN" "$LOG_BIN" damn </dev/null
+  HOME="$HOME" "$NODE_BIN" "$LOG_BIN" wtf </dev/null
   [ -f "$HOME/.laicluse/anger-management/findings.md" ]
   run grep -c . "$LOG"
   [ "$output" = "2" ]

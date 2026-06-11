@@ -54,7 +54,7 @@ run_arm() { HOME="$HOME" ANGER_ARM_RUNNER="$ANGER_ARM_RUNNER" ANGER_ARM_DELAY="$
 @test "anger-resolve records a repair with a covered_through watermark at the newest capture" {
   printf '%s\n%s\n' \
     '{"ts":"2026-06-05T09:00:00.000Z","word":"crap","cwd":"/x","git":"main@a","note":"a"}' \
-    '{"ts":"2026-06-05T09:05:00.000Z","word":"damn","cwd":"/x","git":"main@a","note":"b"}' > "$LOG"
+    '{"ts":"2026-06-05T09:05:00.000Z","word":"wtf","cwd":"/x","git":"main@a","note":"b"}' > "$LOG"
   run env HOME="$HOME" "$NODE_BIN" "$RESOLVE" "loosened the reformat rule"
   [ "$status" -eq 0 ]
   [ -f "$DIR/repairs.jsonl" ]

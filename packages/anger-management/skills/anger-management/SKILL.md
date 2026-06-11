@@ -29,7 +29,7 @@ post-update broadcast path in this plugin; skip this block silently there.
 
 # Anger Management
 
-The curse commands (`/fuck`, `/shit`, `/crap`, `/wtf`, `/bullshit`, `/damn`) capture
+The curse commands (`/fuck`, `/fucking`, `/fucked`, `/shit`, `/crap`, `/wtf`, `/bullshit`) capture
 one cheap friction line and let the operator get back to work. This skill is the quick
 glance at that pile. For the real cooled-down fix pass (the go/no-go judgement, routing
 to self-improvement), use **`/anger-management:repair`**; this one just shows what is in

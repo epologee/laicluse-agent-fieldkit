@@ -17,6 +17,19 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.3]
+
+### Breaking
+
+- **`/damn` is removed.** It read as too harsh for what it captured; use any of
+  the remaining curse commands instead. Existing `/damn` captures in the pile
+  stay valid and are still weighed by repair.
+
+### Added
+
+- **`/fucking` and `/fucked`** join `/fuck` as capture commands, so the curse
+  lands in whatever grammatical shape it leaves your fingers.
+
 ## [v2.0.1]
 
 ### Changed
