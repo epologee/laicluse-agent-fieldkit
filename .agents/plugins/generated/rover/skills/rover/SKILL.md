@@ -130,7 +130,7 @@ The loop file is your window. `.autonomous/BUILD-SETTINGS-PAGE.md` gets a timest
 
 A markdown file in `.autonomous/` that holds context, phase, plan, decision audit, and log. In an interactive session, a Claude Code cron job that fires the loop prompt every minute while the REPL is idle. A phase machine (optional PRELAUNCH, then SURVEY, DRIVE, INSPECT, STOW, STANDBY) that each cron tick advances.
 
-**Interactive or persistent: the autonomy layer decides, not the caller.** At setup the rover invokes `autonomous:keepalive`, which probes whether `CronCreate` is available in this process. Available means an interactive session that goes idle between turns, so keepalive arms a cron heartbeat and the phase machine advances one tick at a time. Absent means a persistent/continuous process (a detached Agent SDK run, a conveyor line) that does not pause, so keepalive arms nothing and the rover drives SURVEY through STOW to completion in this single run. The caller never has to tell the rover which mode it is in, and never instructs it to "skip the cron"; the probe makes that call. Either way the loop-file discipline is identical, so an interactive session can `wake` a dropped mission later. See `autonomous:keepalive` for the probe and its one load-bearing assumption.
+**Interactive or persistent: the autonomy layer decides, not the caller.** At setup the rover invokes `autonomous:keepalive`, which probes the runtime and either arms a cron heartbeat (interactive session) or arms nothing and lets the rover drive to completion (persistent process). The caller never has to tell the rover which mode it is in or instruct it to "skip the cron"; the probe makes that call. Either way the loop-file discipline is identical, so an interactive session can `wake` a dropped mission later. See `autonomous:keepalive` for the probe and its one load-bearing assumption.
 
 Phases and transitions:
 
@@ -252,7 +252,7 @@ Do not use it for technical choices. If two implementation paths are open, that 
 
 The first tool calls after this skill loads are:
 
-1. Invoke `autonomous:keepalive` via the Skill tool. Pass `.autonomous/<NAME>.md` as the loop-file path (derive `<NAME>` from the Dispatch the same way step 5 does: ALL-CAPS, hyphens, no spaces, goal not mechanism; no tool call needed for this, it comes out of reading the Dispatch text). Keepalive probes whether this is an interactive session: if `CronCreate` is available it arms a heartbeat through `autonomous:cron` and returns the job id; if not (a persistent process) it arms nothing and returns the sentinel `none (persistent process)`. Hold the returned value in-session to write into the loop file's `cron_job_id` in step 5. The probe goes first because, in an interactive session, setup has several generation-horizon hazards (the big template write in step 5 is the worst) and the heartbeat has to be the safety net during those hazards, not a consequence of surviving them; in a persistent process there is no idle gap to guard, so keepalive returns immediately and setup proceeds under no heartbeat. The loop file does not have to exist yet; an armed cron's Read is a no-op when the file is missing, and the next tick picks up once the file lands. If the prelaunch question in step 2 ends the mission (operator refuses the no-git-repo proposal) and a heartbeat was armed, invoke `autonomous:cron` with `CronDelete` on the returned id before stopping so the cron does not outlive the abort.
+1. Invoke `autonomous:keepalive` via the Skill tool. Pass `.autonomous/<NAME>.md` as the loop-file path (derive `<NAME>` from the Dispatch the same way step 5 does: ALL-CAPS, hyphens, no spaces, goal not mechanism; no tool call needed for this, it comes out of reading the Dispatch text). Keepalive returns either a cron job id (an interactive session, heartbeat armed) or the sentinel `none (persistent process)`; hold that value in-session to write into the loop file's `cron_job_id` in step 5. How the probe decides is keepalive's business; see `autonomous:keepalive`. The probe goes first so that, in an interactive session, the heartbeat is the safety net during setup's generation-horizon hazards (the big template write in step 5 is the worst), not a consequence of surviving them. The loop file does not have to exist yet; an armed cron's Read is a no-op when the file is missing, and the next tick picks up once the file lands. If the prelaunch question in step 2 ends the mission (operator refuses the no-git-repo proposal) and a heartbeat was armed, invoke `autonomous:cron` with `CronDelete` on the returned id before stopping so the cron does not outlive the abort.
 2. Establish the mission branch IF the context calls for it. The branch ceremony is conditional on the existing state of the working directory: a git repo is already present (`git rev-parse --show-toplevel` succeeds) AND the work the Dispatch describes is going to live as commits in that repo. When both hold, the rover decides which branch the mission lands on. **Never rewind to the default branch and never ask the operator about it.** Two paths follow.
 
    **HEAD is on the default branch.** Pick a kebab-case name from the loop-file name (no slashes, no prefixes, no rover or space-mission words: `fix-stale-cache`, `build-auth-page`, `investigate-slow-queries`) and run `git checkout -b <name>` directly from HEAD. This is the common case.
@@ -308,7 +308,7 @@ Template:
 # <NAME>
 
 branch: <kebab-case mission branch, or "none (not a git repo)">
-cron_job_id: <filled after CronCreate>
+cron_job_id: <set by autonomous:keepalive at setup; one of: a live job id | none (persistent process) | paused | stopped | failed>
 watch_checks: 0     # consecutive STANDBY ticks with nothing to do, drives idle backoff
 
 ## Integrations
@@ -457,7 +457,7 @@ PR creation is not a rover default. The rover commits the work locally on the mi
 
 The mission is complete but the rover stays in orbit. STANDBY keeps the cron alive so the rover can absorb new input, catch crashed bash sessions during active work, and transition back to SURVEY when the operator sends a follow-up.
 
-**Persistent mode has no STANDBY cron.** When `cron_job_id` is `none (persistent process)`, keepalive armed nothing and there is no heartbeat to keep alive, back off, or cut. STANDBY has no idle-backoff role here: the process ran the phase machine to completion in one pass. Run the entry check once and end the mission through `stop` (which no-ops the CronDelete on the sentinel). Skip every cron-management step below; they apply only when a heartbeat was armed.
+**Persistent mode has no STANDBY cron.** When `cron_job_id` is `none (persistent process)`, the process drove the phase machine to completion in one pass and there is no heartbeat. STANDBY has no idle-backoff role here: run the entry check once and end the mission through `stop`. The cron-management steps below stay as written; `autonomous:cron` no-ops on the sentinel (see its "No cron, no-op" section), so they do nothing without any special-casing here.
 
 The cron's safety-net role is scoped to transient failures during active phases: a failed bash command, a timed-out tool call, or an interrupted edit that leaves the session stuck mid-turn. The cron fires on REPL-idle and re-reads the loop file, which restarts the phase machine from its last logged state. That safety net is not meant as an eternal watch post: sustained idleness means the mission is truly done, and the cron has a hard cap to stop token burn.
 
@@ -474,7 +474,7 @@ When a PR exists, minimum checks per iteration:
 
 New findings from STANDBY go back to SURVEY (not DRIVE, and not queued for the operator). New input is new information: understand it before acting on it. Iteratively downgrading to a fix-first approach has a track record of missing the real cause.
 
-When no new activity, increment `watch_checks` and invoke `autonomous:cron` for backoff (interactive mode only; in persistent mode there is no cron to back off, see "Persistent mode has no STANDBY cron" above). Each idle iteration bumps the interval until the hard cap at `watch_checks` 10. The full schedule (and total idle time, about 5 hours) lives in `cron`; do not duplicate the numbers here. When the cap fires: CronDelete, log `STANDBY: auto-stopped after 10 idle checks. /rover:rover <loop-file> to relight.`, and invoke `notify_on_done` if configured. The loop file stays; only the cron dies. Past this point the safety net is gone: a fresh interjection or `/rover:rover <loop-file>` relights the cron (Interjections section below covers the interjection path).
+When no new activity, increment `watch_checks` and invoke `autonomous:cron` for backoff (a no-op in persistent mode). The schedule and the hard cap live in `cron`; do not restate the numbers here. When the cap fires: CronDelete, log `STANDBY: auto-stopped after 10 idle checks. /rover:rover <loop-file> to relight.`, and invoke `notify_on_done` if configured. The loop file stays; only the cron dies. Past this point the safety net is gone: a fresh interjection or `/rover:rover <loop-file>` relights the cron (Interjections section below covers the interjection path).
 
 ### Decisions
 
@@ -489,7 +489,7 @@ Any input that arrives mid-loop, regardless of channel, is a broadcast, not the 
 On any interjection:
 
 1. Log the input verbatim to `## Log` with a timestamp. Do not paraphrase; the operator may come back later and compare to what they sent.
-2. **If the cron is stopped (auto-stop or manual), relight it.** Invoke `autonomous:cron` to `CronCreate` at `* * * * *`, reset `watch_checks: 0`, update `cron_job_id` in the loop file. New input is proof the operator is present; idle-backoff resets. Skip this step in persistent mode (`cron_job_id: none (persistent process)`): there is no cron tooling to relight, so just integrate the input and keep driving.
+2. **If the cron is stopped (auto-stop or manual), relight it.** Invoke `autonomous:cron` to `CronCreate` at `* * * * *`, reset `watch_checks: 0`, update `cron_job_id` in the loop file. New input is proof the operator is present; idle-backoff resets. In persistent mode `autonomous:cron` no-ops, so this re-arm safely does nothing; just integrate the input and keep driving.
 3. Evaluate whether it changes the plan. If yes, transition to SURVEY and re-plan. If no, note why not in the Log and stay on the current phase.
 4. If the input surfaces a choice, invoke `decide`. Never hold the choice open waiting for the operator's next message.
 5. Resume the loop. Do not emit "I will wait for your next message" or any equivalent stall.
@@ -511,11 +511,9 @@ Every log line needs a timestamp from `date +%H:%M`. Never guess based on "it wa
 `## Input` is a one-way channel: the operator can drop notes into it at any time, the rover reads them each STANDBY iteration and integrates them. The rover never writes to `## Input` itself. The rover never asks questions there. The rover never waits on it. If the section is empty, the rover keeps driving; if the section has content, the rover processes it and continues. There is no blocked state, no per-item wait, no pause-mission-on-question mode.
 ````
 
-## Starting the autonomy layer
+## Delegation
 
-Invoke `autonomous:keepalive` via the Skill tool as setup step 1, before anything else. Keepalive probes the runtime: in an interactive session it runs `autonomous:cron`'s setup flow (`CronCreate` at `* * * * *`) and returns the job id for the rover to embed when it writes the loop file in step 5; in a persistent process it arms nothing and returns `none (persistent process)`.
-
-"Delegate" throughout these skills means: call the Skill tool with the target skill name. Not inline instructions, not shelling out. The Skill tool invocation.
+"Delegate" throughout these skills means: call the Skill tool with the target skill name. Not inline instructions, not shelling out. The Skill tool invocation. The autonomy layer is reached this way.
 
 ## The first iteration
 

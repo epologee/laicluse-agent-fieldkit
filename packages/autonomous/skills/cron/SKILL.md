@@ -9,6 +9,15 @@ effort: low
 
 The cron machine behind an autonomous loop. Its job: keep the loop firing at an appropriate cadence, slow down when nothing is happening, and restart itself cleanly after a session restart.
 
+## No cron, no-op
+
+This skill acts only when there is a real cron to act on. It is a no-op, returning the existing marker without touching any Cron tool, whenever either holds:
+
+- `CronCreate` is not available in this process (the persistent-process case: a detached run or conveyor line that drives to completion in one pass and needs no heartbeat).
+- `cron_job_id` is a non-id marker rather than a live job id: `none (persistent process)`, `paused`, `stopped`, or `failed`.
+
+This is the single place that owns the no-op, so callers invoke this skill unconditionally and never branch on the mode themselves; a persistent-mode mission hits every cron call site and each one quietly does nothing.
+
 ## Why a separate skill
 
 Cron logic is mechanical and repetitive. Inlining it in the rover's code blurs the core flow. Separating it means:

@@ -27,6 +27,13 @@ claude plugins install rover@laicluse-agent-tools autonomous@laicluse-agent-tool
 claude plugins install gurus@leclause
 ```
 
+**Host contract for persistent runs.** The keep-alive probe treats `CronCreate`
+availability as the interactive-vs-persistent signal. A host that runs missions
+as a persistent process (an Agent SDK run, a conveyor line) must withhold the
+cron tools, by adding `CronCreate`, `CronDelete`, and `CronList` to its
+disallowed-tools list; otherwise the probe reads the run as interactive and arms
+an unused heartbeat. See `autonomous`'s `keepalive` skill for the full contract.
+
 No other hard dependencies. Optional integrations (notifier, reviewbot,
 commit-splitter) are user-named at invocation and only used when installed.
 

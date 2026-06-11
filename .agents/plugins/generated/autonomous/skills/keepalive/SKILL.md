@@ -13,11 +13,7 @@ Keepalive answers that question by itself, from the runtime, and acts on the ans
 
 ## Why this skill exists
 
-The cron heartbeat (`cron`) and the restore path (`wake`) are workarounds for one fact: an interactive TUI session is not a persistent process. It runs a turn, then goes idle waiting for the operator. Without a heartbeat re-entering the conversation, an autonomous loop in that session simply stops between turns. The cron exists to fire on idle and drive the next phase.
-
-A detached process (an Agent SDK run, a conveyor line, any continuous headless invocation) has the opposite shape: it keeps executing until the mission completes, then exits. A cron there is dead weight; there is no idle REPL for it to re-enter, and the process does not need anything to stay alive because it never pauses.
-
-Historically the *caller* had to know this difference and tell the mission "skip the cron." That leaks the autonomy layer's internals into whatever dispatches it. Keepalive moves the decision where it belongs: the autonomy layer probes its own runtime and decides.
+The caller used to have to know whether its session needed a heartbeat and tell the mission "skip the cron", leaking the autonomy layer's internals into whatever dispatches it. Keepalive moves that decision where it belongs: the autonomy layer probes its own runtime and decides. (The `autonomous` README carries the full interactive-vs-persistent rationale.)
 
 ## The probe
 
@@ -41,14 +37,12 @@ The caller (see `rover` setup) writes that value into the loop file's `cron_job_
 
 ## The load-bearing assumption
 
-The probe is only correct when **need and availability coincide**: a host that runs a mission as a persistent process must not expose `CronCreate`, and a host whose sessions go idle must expose it. That is the contract the autonomy layer relies on instead of a caller flag.
+This is a deliberate design choice, not a natural law: the autonomy layer **treats `CronCreate` availability as the interactive-vs-persistent signal**. The probe is only correct when **need and availability coincide**: a host that runs a mission as a persistent process must not expose `CronCreate`, and a host whose sessions go idle must expose it. Capability and need are two facts braided into one on purpose, because the probe needs no coordination between the caller and the host: an explicit flag would require both sides to agree on a name and a value, and that agreement is itself state this design eliminates. The trade is that a host changing its tool configuration is also changing session-mode semantics; that coupling is the price of the zero-coordination contract.
 
-A host that wants persistent/continuous mode withholds the cron tools (for example by adding `CronCreate`, `CronDelete`, and `CronList` to its disallowed-tools list). When it does, this probe reports persistent and arms nothing, which is exactly right.
+A host that wants persistent/continuous mode withholds the cron tools, for example by adding `CronCreate`, `CronDelete`, and `CronList` to its disallowed-tools list.
 
 **Degradation when the assumption is not yet met.** If a persistent host still exposes `CronCreate`, the probe reports interactive and arms a cron. On the normal path that cron is dead weight: a process that runs to completion never goes idle, so the heartbeat never fires and is torn down with the session. The mission still drives to completion through its phase machine; the cost is one wasted `CronCreate` call, not a broken run. On an abnormal exit (the process is killed or preempted mid-phase) the armed cron can outlive the session the way any orphan cron can (see `cron`'s note on crons surviving a `SessionStart:resume`); the `wake` restore path reaps such an orphan on the next manual relight. Either way the fix belongs on the host side (withhold the cron tools so the probe reports persistent), not here; this skill does not invent an env-var fallback to second-guess the tool probe.
 
 ## What it does not do
 
-- Does not write the loop file. The caller owns that; keepalive only returns the value for `cron_job_id`.
-- Does not run any phase. It is a setup probe, invoked once, before the first SURVEY iteration.
-- Does not read or change the loop-file format. `wake` reads the same template whether the heartbeat was armed or not.
+Keepalive does not write the loop file: the caller owns that and keepalive only returns the value for `cron_job_id`. It is a one-shot setup probe, not a phase, and it never touches the loop-file format.
