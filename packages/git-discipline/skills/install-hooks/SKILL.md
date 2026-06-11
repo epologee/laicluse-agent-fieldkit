@@ -80,9 +80,15 @@ needs no further arguments.
 - Existing hook with different content without `--force`: skill prints a
   unified diff (`diff -u`), refuses to overwrite, and exits 1.
 - Existing hook with identical content: silent no-op (idempotent).
-- `--no-verify` on `git commit` is the only audit-logged emergency bypass; the
-  installed `post-commit` logs that usage to
+- `--no-verify` on `git commit` is the audit-logged emergency bypass for the
+  git-native hooks this skill installs; the installed `post-commit` logs that
+  usage to
   `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` so it is reviewable after the fact.
+
+**Note:** inside a Claude session `--no-verify` does not bypass the
+PreToolUse guards; see the `--no-verify` section of
+`/git-discipline:commit-discipline` for the layer split and the
+operator-only off-switch.
 
 ## Example output
 

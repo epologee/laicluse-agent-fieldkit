@@ -26,6 +26,7 @@ exec bats \
   packages/git-discipline/test/cross-layer/*.bats \
   packages/git-discipline/test/session-toggle/*.bats \
   packages/git-discipline/test/repo-deny/*.bats \
+  packages/git-discipline/test/sentinel-protect/*.bats \
   packages/git-discipline/test/push-policy/*.bats \
   packages/git-discipline/test/cd-target/*.bats \
   "$@"

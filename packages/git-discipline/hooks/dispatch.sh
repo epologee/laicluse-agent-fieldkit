@@ -20,9 +20,11 @@ case "$EVENT" in
     source "$DIR/guards/git-dash-c.sh"
     source "$DIR/guards/git-config-override.sh"
     source "$DIR/guards/repo-deny.sh"
+    source "$DIR/guards/sentinel-protect.sh"
     guard_git_dash_c "$INPUT"
     guard_git_config_override "$INPUT"
     guard_repo_deny "$INPUT"
+    guard_sentinel_protect "$INPUT"
 
     SESSION_ID=$(dd_session_id "$INPUT")
     if [[ -n "$SESSION_ID" ]] && [[ -f "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$SESSION_ID" ]]; then

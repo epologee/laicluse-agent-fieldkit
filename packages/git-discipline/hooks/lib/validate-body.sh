@@ -194,7 +194,7 @@ validate_body() {
   # the comment so commits that relied on it surface clearly instead of
   # silently passing under the old lenient mode.
   if printf '%s' "$(cat "$msg_file")" | grep -qE '^#[[:space:]]*vsd-skip:'; then
-    printf 'vsd-skip-removed: the "# vsd-skip" magic comment is no longer accepted. Fill in the schema trailers (Tests / Slice / Red-then-green / Verified, and Visual when UI files are touched) or use `git commit --no-verify` as the audit-logged emergency bypass.\n' >&2
+    printf 'vsd-skip-removed: the "# vsd-skip" magic comment is no longer accepted. Fill in the schema trailers (Tests / Slice / Red-then-green / Verified, and Visual when UI files are touched).\n' >&2
     return 1
   fi
 

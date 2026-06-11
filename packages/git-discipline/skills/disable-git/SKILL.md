@@ -36,20 +36,27 @@ Perform the following steps:
 
    Bail with a clear error when not inside a git repo.
 
-2. Write the sentinel. The optional argument becomes the first line
-   of the file (used as the reason in the deny message):
+2. Do NOT write the sentinel yourself; the `sentinel-protect` guard denies
+   agent-driven writes to it, with no escape. Print the ready-to-paste
+   command for the operator instead (the `! ` prefix runs it directly in
+   the session). The optional argument becomes the first line of the file
+   (used as the reason in the deny message):
 
-   ```bash
-   sentinel="$common_dir/git-discipline-deny"
-   reason="${ARGUMENTS:-}"
-   if [[ -n "$reason" ]]; then
-     printf '%s\n' "$reason" > "$sentinel"
-   else
-     : > "$sentinel"
-   fi
+   ```
+   ! printf '%s\n' "<reason>" > <common_dir>/git-discipline-deny
    ```
 
-3. Confirm to the operator: print the absolute sentinel path, the
+   or without a reason:
+
+   ```
+   ! touch <common_dir>/git-discipline-deny
+   ```
+
+   Substitute `<common_dir>` and `<reason>` with the literal values so the
+   operator can paste the line as-is.
+
+3. After the operator has run it, confirm via a read-only check
+   (`[ -f ... ]`, not blocked): print the absolute sentinel path, the
    reason if any, and a one-line reminder that `/git-discipline:enable-git`
    lifts the lock.
 

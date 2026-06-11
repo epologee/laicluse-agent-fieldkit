@@ -175,8 +175,10 @@ requirement.
 
 Escape-hatches, each logged for later auditing:
 
-- `git commit --no-verify` (logged to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log`
-  via the `post-commit` hook)
+- `git commit --no-verify` (git-native layer only, logged to
+  `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` via the `post-commit` hook; see the
+  `--no-verify` section of `/git-discipline:commit-discipline` for the layer
+  split and the operator-only PreToolUse off-switch)
 - `GIT_DISCIPLINE_ALLOW_AI_COAUTHOR=1` to allow a single `@anthropic.com`
   `Co-Authored-By:` trailer
 - `GIT_DISCIPLINE_ALLOW_CONJUNCTION=1` or the magic-comment `# allow-conjunction:

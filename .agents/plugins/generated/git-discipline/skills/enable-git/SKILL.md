@@ -23,19 +23,28 @@ Perform the following steps:
 
    Bail with a clear error when not inside a git repo.
 
-2. Remove the sentinel if it exists:
+2. Check (read-only, not blocked) whether the sentinel exists:
 
    ```bash
-   sentinel="$common_dir/git-discipline-deny"
-   if [[ -f "$sentinel" ]]; then
-     rm "$sentinel"
-     echo "git lock removed: $sentinel"
-   else
-     echo "no git lock was active for this repo"
-   fi
+   [ -f "$common_dir/git-discipline-deny" ]
    ```
 
-3. Confirm to the operator which path was removed.
+   If it does not, report that no git lock was active and stop.
+
+3. Do NOT remove the sentinel yourself; the `sentinel-protect` guard
+   denies agent-driven removal, with no escape. Unlocking a repo the
+   operator locked is the operator's call. Print the ready-to-paste
+   command instead (the `! ` prefix runs it directly in the session):
+
+   ```
+   ! rm <common_dir>/git-discipline-deny
+   ```
+
+   Substitute `<common_dir>` with the literal path so the operator can
+   paste the line as-is.
+
+4. After the operator has run it, confirm via a read-only check and
+   report that the lock is lifted.
 
 Do not write further explanation or caveats afterwards. The operator
 typed this command deliberately.

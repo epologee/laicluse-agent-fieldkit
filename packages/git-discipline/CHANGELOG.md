@@ -1,8 +1,11 @@
 # git-discipline changelog
 
-Each entry corresponds to the `version` in `.claude-plugin/plugin.json`. The
-post-update broadcast (see `bin/check-broadcast`) shows the section for the
-currently-installed version exactly once per machine.
+The post-update broadcast (see `bin/check-broadcast`) shows the topmost
+section once per machine whenever the installed `version` in
+`.claude-plugin/plugin.json` changes. Entry headers record the version at
+which the entry was written; a pre-commit hook auto-bumps `plugin.json` on
+every commit, so the header may lag the shipped version. Header numbers are
+informational, the broadcast is positional.
 
 Categories:
 
@@ -15,6 +18,32 @@ Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
+
+## [v2.0.15]
+
+### Breaking
+
+- **Flipping the discipline or the per-repo git lock is now operator-actuated.**
+  A new `sentinel-protect` guard denies any agent-driven Bash call that
+  creates or removes a `git-discipline-disabled-*` or `.git/git-discipline-deny`
+  sentinel, in both directions (off AND back on) and with no magic-comment or
+  env-var escape. The guard runs before the disabled-sentinel early exit, so a
+  session whose discipline is off cannot quietly re-enable it either. The
+  toggle skills (`disable-discipline`, `enable-discipline`, `disable-git`,
+  `enable-git`) now hand you a ready-to-paste `! `-prefixed command instead of
+  running it; your keystroke is the switch. Read-only inspection
+  (`discipline-status`) is unaffected.
+
+### Fixed
+
+- **Corrected the advertised `--no-verify` escape.** The commit-body deny
+  message, the guard's header comment, the shared vsd-skip message, and the
+  commit-discipline / install-hooks docs claimed `git commit --no-verify`
+  bypasses the PreToolUse layer. It never did: the PreToolUse guards validate
+  every git commit command, flags included. All texts now scope `--no-verify`
+  to the git-native layer (where it is real and audit-logged) and name the
+  operator-only `/git-discipline:disable-discipline` as the only PreToolUse
+  off-switch. Behaviour is unchanged; only the claims moved to match it.
 
 ## [v2.0.2]
 

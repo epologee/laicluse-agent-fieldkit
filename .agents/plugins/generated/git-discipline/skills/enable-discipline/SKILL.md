@@ -11,11 +11,20 @@ Re-enable the git-discipline PreToolUse:Bash guards for the current session.
 Removes the sentinel that `/git-discipline:disable-discipline` created. Has no
 effect if the guards are already active.
 
+## Operator-actuated, by design
+
+The sentinel file is operator territory in BOTH directions. The
+`sentinel-protect` guard denies any agent-driven Bash call that creates or
+removes a `git-discipline-disabled-*` file, with no escape. Re-enabling
+discipline that the operator deliberately switched off is just as much a
+unilateral flip as disabling it. The agent prepares the exact command; the
+operator runs it via the `! ` prefix in the prompt (or their own terminal).
+
 ## When to use
 
-Only when the operator explicitly types this command. After running this
-command, the guards apply again in full to all subsequent git commands in
-the current session.
+Only when the operator explicitly types this command. After the operator
+runs the removal, the guards apply again in full to all subsequent git
+commands in the current session.
 
 ## Check status
 
@@ -26,35 +35,39 @@ what the current guard state is.
 
 Perform the following steps:
 
-1. Determine the current session_id via the same logic as `/git-discipline:disable-discipline`:
-   first `$CLAUDE_SESSION_ID`, then the most recent JSONL file under
-   `~/.claude/projects/`, then fall back to global.
+1. Determine the current session_id via the same logic as
+   `/git-discipline:disable-discipline`: first `$CLAUDE_SESSION_ID`, then the
+   most recent JSONL file under `~/.claude/projects/`, then fall back to
+   global.
 
-2. Remove the session-specific sentinel if it exists:
-
-   ```bash
-   SENTINEL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-$SESSION_ID"
-   if [[ -f "$SENTINEL" ]]; then
-     rm "$SENTINEL"
-     echo "git-discipline guards re-enabled for session $SESSION_ID"
-   else
-     echo "git-discipline guards were already active for session $SESSION_ID"
-   fi
-   ```
-
-3. Also check the global sentinel and remove it if the operator means
-   that (i.e. when there was no session-specific sentinel but there was
-   a global one):
+2. Check (read-only, not blocked) which sentinels exist:
 
    ```bash
-   GLOBAL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline-disabled-global"
-   if [[ -f "$GLOBAL" ]]; then
-     rm "$GLOBAL"
-     echo "global git-discipline sentinel removed"
-   fi
+   ls "${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/" 2>/dev/null | grep git-discipline-disabled
    ```
 
-4. Confirm to the operator which sentinel(s) were removed and at which path.
+   If none exist, report that the guards are already active and stop.
 
-Do not write further explanation or caveats afterwards. The operator
-typed this command deliberately.
+3. Do NOT remove the sentinel yourself; the `sentinel-protect` guard denies
+   it. Print the ready-to-paste command for the operator instead, naming
+   the sentinel(s) found in step 2:
+
+   ```
+   ! rm ~/.laicluse/git-discipline/git-discipline-disabled-<SESSION_ID>
+   ```
+
+   and/or, when the global sentinel exists and the operator means that one:
+
+   ```
+   ! rm ~/.laicluse/git-discipline/git-discipline-disabled-global
+   ```
+
+   When `LAICLUSE_HOME` is set to a non-default location, substitute that
+   root for `~/.laicluse`.
+
+4. Tell the operator, in one line, to paste the command (the `! ` prefix
+   runs it directly in the session). After they have run it, confirm via a
+   read-only check and report that the guards are active again.
+
+Do not write further explanation or caveats. The operator typed this
+command deliberately.

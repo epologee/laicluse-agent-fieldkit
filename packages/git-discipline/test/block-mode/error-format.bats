@@ -207,3 +207,42 @@ Verified: operator-confirmed')")
   first_occurrence=$(printf '%s' "$output" | grep -n 'missing-tests' | head -1 | cut -d: -f1)
   [[ "$first_occurrence" -le 3 ]]
 }
+
+# ---------------------------------------------------------------------------
+# The deny text matches actual gate behaviour: --no-verify is not an escape
+# at the PreToolUse layer, so a --no-verify commit is still denied and the
+# message must not advertise that flag as the way out.
+# ---------------------------------------------------------------------------
+
+@test "no-verify commit is still denied and the deny names the sentinel route" {
+  export GIT_SHIM_SHORTSTAT=" 2 files changed, 30 insertions(+)"
+  export GIT_SHIM_DIFF_NAMES="$(printf 'app/controllers/foo.rb\nspec/controllers/foo_spec.rb')"
+  export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""
+
+  run_dispatch 'git commit --no-verify -m "Controller boundary for incoming session events" # ack-rule4:essentie'
+
+  [ "$status" -eq 2 ]
+  # Denied by body validation specifically, not by some other guard.
+  [[ "$output" == *"missing-body"* ]]
+  [[ "$output" != *"Escape: git commit --no-verify"* ]]
+  [[ "$output" == *"operator-only"* ]]
+  [[ "$output" == *"/git-discipline:disable-discipline"* ]]
+}
+
+@test "no-verify commit with a valid body passes (flag has no effect either way)" {
+  export GIT_SHIM_SHORTSTAT=" 2 files changed, 30 insertions(+)"
+  export GIT_SHIM_DIFF_NAMES="$(printf 'app/controllers/foo.rb\nspec/controllers/foo_spec.rb')"
+  export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT="$VALID_TRAILERS"
+  export GIT_SHIM_LS_TREE_OUTPUT="spec/controllers/foo_spec.rb"
+
+  local cmd
+  cmd=$(commit_cmd_heredoc \
+    "Controller boundary for incoming session events" \
+    "$(printf 'When StartTransaction messages arrive with an invalid meter reading,\nthe previous implementation rejected the entire event and masked\nsession starts in the analytics pipeline.\n\nTests: spec/controllers/foo_spec.rb\nSlice: handler + spec\nRed-then-green: n/a (test fixture, no spec applies)
+Verified: operator-confirmed')")
+  cmd="${cmd/git commit/git commit --no-verify} # ack-rule4:essentie"
+
+  run_dispatch "$cmd"
+
+  [ "$status" -eq 0 ]
+}
