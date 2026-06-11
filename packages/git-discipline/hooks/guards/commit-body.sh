@@ -7,8 +7,12 @@
 # allow-comment: at PreToolUse means the operator fixes the body before the
 # allow-comment: commit object is ever created. amend commits validate against
 # allow-comment: HEAD (the to-be-rewritten state); normal commits validate
-# allow-comment: against the staged area. The --no-verify escape still
-# allow-comment: bypasses (audit-logged via post-commit native hook).
+# allow-comment: against the staged area. No --no-verify escape exists at
+# allow-comment: this layer: the guard validates every git commit command,
+# allow-comment: flags included. The only PreToolUse off-switch is the
+# allow-comment: operator-only /git-discipline:disable-discipline sentinel
+# allow-comment: read by dispatch.sh. --no-verify only skips the git-native
+# allow-comment: hooks, per git semantics.
 
 guard_commit_body() {
   local input="$1"
@@ -97,7 +101,7 @@ guard_commit_body() {
   fi
 
   local deny_msg
-  deny_msg=$(printf '%s%s\n\nRewrite the commit message and rerun the same git commit call; the commit object has not been created yet. Expected body format:\n\n%s\n\nOpt-out tokens for Slice: %s\n\nEscape: git commit --no-verify (audit-logged via post-commit native hook).' \
+  deny_msg=$(printf '%s%s\n\nRewrite the commit message and rerun the same git commit call; the commit object has not been created yet. Expected body format:\n\n%s\n\nOpt-out tokens for Slice: %s\n\nNo bypass flag exists at this layer; --no-verify only skips git-native hooks and this gate still applies. If the discipline itself is the problem, the operator can lift it via /git-discipline:disable-discipline.' \
     "$stage_hint" \
     "$violation_output" \
     "$example" \

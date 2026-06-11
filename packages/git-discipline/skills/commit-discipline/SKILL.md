@@ -107,7 +107,8 @@ regex in `commit-subject.sh`.
   this automatically when the staged diff has at most 1 file and at most 5
   insertions; the git-native commit-msg hook re-derives it from the staged
   diff every run and ignores any exported value. There is no manual override
-  short of `git commit --no-verify` (audit-logged emergency bypass).
+  at the PreToolUse layer; at the git-native layer `git commit --no-verify`
+  skips the hook (audit-logged emergency bypass).
 
 ### Rule-rotation expectations
 
@@ -619,16 +620,22 @@ Set GIT_DISCIPLINE_ALLOW_WIP_PUSH=1 or add '# allow-wip-push' to bypass.
 The discipline is strict by default for every commit. There is no
 magic-comment opt-out (`# vsd-skip` is rejected) and no env-var ramp
 (the former `GIT_DISCIPLINE_AUTONOMOUS=1` is gone; its strict rules apply to
-every commit). The general audit-logged emergency bypass is
-`git commit --no-verify`;
-the only purpose-scoped opt-out is the `Discipline: skip due to rebase`
-trailer for commits a rebase carried along (see below).
+every commit). Escape hatches are per layer: at the git-native layer the
+audit-logged emergency bypass is `git commit --no-verify`; at the PreToolUse
+layer no bypass flag exists and the off-switch is the operator-only
+`/git-discipline:disable-discipline` sentinel. The only purpose-scoped
+opt-out is the `Discipline: skip due to rebase` trailer for commits a rebase
+carried along (see below).
 
 ### `--no-verify`
 
-`git commit --no-verify` skips all git-native hooks. The PreToolUse:Bash
-guard does not intercept this pattern (the flag is in the command string, not a
-separate hook). The post-commit hook logs `--no-verify` usage to
+`git commit --no-verify` skips all git-native hooks, per git semantics. It
+does NOT bypass the PreToolUse:Bash guards: those validate every git commit
+command, flags included, so inside a Claude session a `--no-verify` commit
+with a schema violation is still denied. The only PreToolUse off-switch is
+the operator-only `/git-discipline:disable-discipline` sentinel. For commits
+outside Claude (CLI, IDE), the installed post-commit hook logs `--no-verify`
+usage to
 `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` for after-the-fact auditing.
 
 **Race window limitation:** the detector uses a trace window of 30

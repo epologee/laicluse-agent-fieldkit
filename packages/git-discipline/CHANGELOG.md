@@ -16,6 +16,19 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.6]
+
+### Fixed
+
+- **Corrected the advertised `--no-verify` escape.** The commit-body deny
+  message, the guard's header comment, the shared vsd-skip message, and the
+  commit-discipline / install-hooks docs claimed `git commit --no-verify`
+  bypasses the PreToolUse layer. It never did: the PreToolUse guards validate
+  every git commit command, flags included. All texts now scope `--no-verify`
+  to the git-native layer (where it is real and audit-logged) and name the
+  operator-only `/git-discipline:disable-discipline` as the only PreToolUse
+  off-switch. Behaviour is unchanged; only the claims moved to match it.
+
 ## [v2.0.2]
 
 ### Breaking
