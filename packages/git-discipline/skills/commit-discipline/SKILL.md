@@ -636,9 +636,8 @@ with a schema violation is still denied. The only PreToolUse off-switch is
 the operator-only `/git-discipline:disable-discipline` sentinel: it writes a
 session-scoped sentinel file that tells the dispatcher to skip all guards,
 and `/git-discipline:enable-discipline` removes it. This section is the
-canonical statement of the layer split; the README and install-hooks notes
-point here. For commits outside Claude (CLI, IDE), the installed post-commit
-hook logs `--no-verify` usage to
+canonical statement of the layer split. For commits outside Claude (CLI,
+IDE), the installed post-commit hook logs `--no-verify` usage to
 `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` for after-the-fact auditing.
 
 **Audit-log race window (outside Claude, detection only, not
