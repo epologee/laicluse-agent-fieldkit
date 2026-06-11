@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+"""Audit script: list commits on a branch with no body.
+
+Useful to verify that slice 4 block-mode held during a mission. A
+"body-less" commit is one whose commit message has only a subject line and
+no further non-empty content (after stripping comment lines that git
+sometimes leaves behind).
+
+Usage:
+    audit-no-body-commits
+    audit-no-body-commits --branch main
+    audit-no-body-commits --since 2026-04-01
+    audit-no-body-commits --exclude-trivial
+
+Output: SHA + subject + insertions + reason per body-less commit, plus a
+final summary. Exits 0 on success regardless of findings; the operator
+inspects the report.
+
+Trivial threshold mirrors the PreToolUse guard: <= 1 file changed AND
+<= 5 insertions. With --exclude-trivial, those commits are filtered out
+and counted separately.
+"""
+
+from __future__ import annotations
+
+import argparse
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass
+
+
+TRIVIAL_FILE_THRESHOLD = 1
+TRIVIAL_INSERTION_THRESHOLD = 5
+
+
+@dataclass
+class CommitInfo:
+    sha: str
+    subject: str
+    body: str
+    files_changed: int
+    insertions: int
+
+    @property
+    def is_body_less(self) -> bool:
+        # Strip comment lines and whitespace-only lines.
+        meaningful = [
+            line for line in self.body.splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        return len(meaningful) == 0
+
+    @property
+    def is_trivial(self) -> bool:
+        return (
+            self.files_changed <= TRIVIAL_FILE_THRESHOLD
+            and self.insertions <= TRIVIAL_INSERTION_THRESHOLD
+        )
+
+    def reason(self) -> str:
+        parts = []
+        if self.is_body_less:
+            parts.append("no body")
+        if self.is_trivial:
+            parts.append("trivial")
+        return ", ".join(parts) if parts else "ok"
+
+
+def run_git(args: list[str]) -> str:
+    """Invoke git with the given args and return stdout as text."""
+    result = subprocess.run(
+        ["git"] + args,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        sys.stderr.write(
+            f"git {' '.join(args)} failed (exit {result.returncode}):\n"
+            f"{result.stderr}"
+        )
+        sys.exit(result.returncode)
+    return result.stdout
+
+
+def collect_commits(branch: str, since: str | None) -> list[str]:
+    args = ["log", "--pretty=format:%H", branch]
+    if since:
+        args.append(f"--since={since}")
+    out = run_git(args)
+    return [sha for sha in out.splitlines() if sha.strip()]
+
+
+def commit_info(sha: str) -> CommitInfo:
+    subject = run_git(["log", "-1", "--pretty=format:%s", sha]).strip()
+    body = run_git(["log", "-1", "--pretty=format:%b", sha])
+
+    # --shortstat output: " 1 file changed, 5 insertions(+)" or similar.
+    shortstat = run_git(["show", "--shortstat", "--format=", sha]).strip()
+    files_changed = 0
+    insertions = 0
+    if shortstat:
+        for piece in shortstat.split(","):
+            piece = piece.strip()
+            if "file" in piece:
+                files_changed = _first_int(piece)
+            elif "insertion" in piece:
+                insertions = _first_int(piece)
+
+    return CommitInfo(
+        sha=sha,
+        subject=subject,
+        body=body,
+        files_changed=files_changed,
+        insertions=insertions,
+    )
+
+
+def _first_int(text: str) -> int:
+    digits = ""
+    for ch in text:
+        if ch.isdigit():
+            digits += ch
+        elif digits:
+            break
+    return int(digits) if digits else 0
+
+
+def current_branch() -> str:
+    return run_git(["rev-parse", "--abbrev-ref", "HEAD"]).strip()
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="List commits on a branch with no body.",
+    )
+    parser.add_argument(
+        "--branch",
+        default=None,
+        help="Branch to audit (default: current branch).",
+    )
+    parser.add_argument(
+        "--since",
+        default=None,
+        help='git log --since value (e.g. "2026-04-01" or "2 weeks ago").',
+    )
+    parser.add_argument(
+        "--exclude-trivial",
+        action="store_true",
+        help="Filter out commits that fit the trivial threshold.",
+    )
+    args = parser.parse_args()
+
+    if shutil.which("git") is None:
+        sys.stderr.write("git not found on PATH\n")
+        return 2
+
+    branch = args.branch or current_branch()
+    shas = collect_commits(branch, args.since)
+
+    if not shas:
+        print(f"No commits found on {branch}.")
+        return 0
+
+    findings: list[CommitInfo] = []
+    trivial_filtered = 0
+    for sha in shas:
+        info = commit_info(sha)
+        if not info.is_body_less:
+            continue
+        if args.exclude_trivial and info.is_trivial:
+            trivial_filtered += 1
+            continue
+        findings.append(info)
+
+    print(f"Audit: {branch}" + (f" since {args.since}" if args.since else ""))
+    print(f"Total commits scanned: {len(shas)}")
+    print(f"Body-less findings  : {len(findings)}")
+    if args.exclude_trivial:
+        print(f"Trivial filtered    : {trivial_filtered}")
+    print()
+
+    if not findings:
+        print("Clean: every scanned commit has a body.")
+        return 0
+
+    print(f"{'SHA':<10}  {'INS':>5}  {'REASON':<22}  SUBJECT")
+    print("-" * 78)
+    for info in findings:
+        short_sha = info.sha[:8]
+        subject_50 = info.subject[:50]
+        print(
+            f"{short_sha:<10}  {info.insertions:>5}  "
+            f"{info.reason():<22}  {subject_50}"
+        )
+
+    print()
+    print(f"Done. {len(findings)} body-less commits on {branch}.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

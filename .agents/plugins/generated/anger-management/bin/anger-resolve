@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+import { appendFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { newestCaptureTs, angerDir } from './anger-lib.mjs';
+
+const args = process.argv.slice(2);
+let through = '';
+const ti = args.indexOf('--through');
+if (ti !== -1) { through = args[ti + 1] || ''; args.splice(ti, 2); }
+const note = args.join(' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+if (!note) {
+  console.error('usage: anger-resolve [--through <iso-ts>] "<change description>"');
+  process.exit(2);
+}
+
+const dir = angerDir();
+
+const covered = through || newestCaptureTs(join(dir, 'friction.jsonl'));
+const record = { ts: new Date().toISOString(), verdict: 'fix', covered_through: covered, note };
+appendFileSync(join(dir, 'repairs.jsonl'), JSON.stringify(record) + '\n');
+console.log(`recorded repair (covers captures through ${covered || 'n/a'}): ${note}`);
