@@ -7,8 +7,9 @@ not want to drop everything to fix it. So you curse: `/fuck`, `/fucking`, `/fuck
 `/shit`, `/crap`, `/wtf`, `/bullshit`. Each one captures a single cheap line about what happened and
 gets out of your way. Later, cooled off, `/anger-management:repair` looks at the pile,
 decides whether there is one concrete recurring thing worth fixing, scores its own
-confidence, chooses the mitigation layer, and only routes a fix when confidence is high.
-If there is nothing clear, it leaves the trail open. That restraint is the point.
+confidence, chooses the mitigation layer and scope, and only applies or routes a fix
+when confidence is high. If there is nothing clear, it leaves the trail open. That
+restraint is the point.
 
 ## The idea, in one breath
 
@@ -27,7 +28,7 @@ two-second capture you walk away from, never a rant you marinate in.
 |---------|--------------|
 | `/fuck` `/fucking` `/fucked` `/shit` `/crap` `/wtf` `/bullshit` | Capture one cheap friction line and move on. No apology, no fix, no scope change. |
 | `/anger-management` | Quick read-back of the pile and its recurring clusters. |
-| `/anger-management:repair` | The cooled-down fix pass: judge go/no-go, and route a real recurring problem to `/self-improvement`. |
+| `/anger-management:repair` | The cooled-down fix pass: judge go/no-go, then apply or route a real recurring problem at its owner source. |
 
 The vocabulary avoids slurs and identity-targeted abuse.
 
@@ -46,11 +47,11 @@ The vocabulary avoids slurs and identity-targeted abuse.
 3. **Repair (on your terms).** `/anger-management:repair` opens with a blunt verdict:
    *nothing* (change nothing, and that is fine), *not-enough-signal* (leave it open to
    accumulate), or *fix* (one concrete recurring thing plus the specific change). Every
-   verdict carries a confidence score and mitigation level. The threshold for a fix is
-   `0.80`, so weak guesses stay as breadcrumbs for a future pass instead of becoming
-   config churn. For now, a high-confidence fix can still be handed to
-   `/self-improvement` as the execution backend, but anger-management owns the pattern
-   judgement and target-layer choice.
+   verdict carries a confidence score, mitigation level, and target scope. The threshold
+   for a fix is `0.80`, so weak guesses stay as breadcrumbs for a future pass instead
+   of becoming config churn. A high-confidence fix then follows the owner source:
+   hooks in hooks, skills in skill source, plugin metadata in plugin metadata, generated
+   adapters through the generator, and instruction files only as the last resort.
 
 Because the pile is global and every repair reads the whole open set, deferring makes
 the diagnosis better: curse in one session, again two hours later in another, and they

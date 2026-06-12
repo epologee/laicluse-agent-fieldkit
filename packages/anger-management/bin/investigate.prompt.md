@@ -31,25 +31,34 @@ diagnosis to self-improvement:
 4. Instruction file.
 5. None / not actionable yet.
 
+Also choose the broadest target scope where the mitigation still holds:
+
+1. Cross-agent / cross-project.
+2. Cross-project but stack-specific.
+3. One repo.
+4. One subproject.
+
 Confidence threshold: `0.80`. Use a numeric `CONFIDENCE:` from `0.00` to `1.00`.
 Only emit `VERDICT: fix` when confidence is at least `0.80`, the pattern is
 recurring rather than a lone bad moment, and the mitigation level is specific.
 Below that threshold, preserve the crumb trail for a future pass.
 
-START your output with exactly these three lines:
+START your output with exactly these four lines:
 
 ```
 VERDICT: fix|not-enough-signal|nothing
 CONFIDENCE: 0.xx
 MITIGATION-LEVEL: hook|skill-plugin|project-code|instruction-file|none
+TARGET-SCOPE: cross-agent-cross-project|cross-project-stack|repo|subproject|none
 ```
 
 Then keep the rest short:
 - `VERDICT: fix`: name the concrete recurring pattern, cite the evidence, and give
-  the specific mitigation at the named level. The change MAY be reverting or
-  loosening a prior rule from repairs.jsonl (if captures recur on something a
-  past repair already "fixed", the past fix probably overcorrected or missed),
-  not only adding a rule.
+  the specific mitigation at the named level and scope. Name the likely owner
+  source when you can. The change MAY be reverting or loosening a prior rule
+  from repairs.jsonl (if captures recur on something a past repair already
+  "fixed", the past fix probably overcorrected or missed), not only adding a
+  rule.
 - `VERDICT: not-enough-signal`: say what looks suspicious, why confidence is below
   threshold, and what future evidence would make it actionable. The captures stay
   open to accumulate more.
@@ -64,7 +73,7 @@ Hard rules:
 - A curse usually means a behaviour RECURRED despite earlier self-improvement. So
   weigh hard whether a prior fix added noise or swung too far the other way, and
   prefer pulling it back over piling on.
-- The mitigation decision belongs here. self-improvement is only the execution
-  backend for now; do not ask it to decide whether the pattern is real or what
-  layer should own the fix.
+- The mitigation and scope decision belong here. Do not hand the decision to
+  self-improvement, and do not ask it to decide whether the pattern is real,
+  what layer should own the fix, or how broad the source should be.
 - Keep it short and focused on what happened and what would fix it.
