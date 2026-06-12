@@ -91,6 +91,7 @@ metadata instead of Claude metadata. Local CLI help verified on 2026-06-09:
 | Plugin source path | `plugins[].source.path` | `./packages/how-plugins-work` |
 | Plugin manifest | `.codex-plugin/plugin.json` | generated from `.claude-plugin/plugin.json` |
 | Skill body | `skills/<skill>/SKILL.md` | shared with Claude |
+| Active install facts | `codex plugin list --json` | `pluginId`, `version`, `enabled`, `source.path` |
 
 Important differences from Claude:
 
@@ -104,6 +105,10 @@ Important differences from Claude:
   the shared `SKILL.md`, then run `bin/plugin-adapters build .`.
 - Claude-only frontmatter keys such as `user-invocable` stay in the shared
   source for Claude, but Codex receives a generated sanitized copy when needed.
+- `codex plugin list --json` is the authoritative local view for what Codex
+  has installed and enabled right now. The working tree may already contain a
+  newer generated manifest while the installed version still reports the old
+  value; refresh the install before treating the new skill text as live.
 
 ## Uniqueness and conflicts
 
@@ -212,6 +217,38 @@ If a file is a generated target, the repo should expose the usual three verbs:
 ```
 
 `build` rewrites adapter files from the source, `check` exits non-zero on drift, and `diff` shows the exact generated change. This is the minimum contract that makes metadata duplication acceptable: a reviewer can tell whether the duplicate is another truth or a projection.
+
+### Generated Codex target payloads
+
+When Codex needs sanitized skills or agent-specific skill sources, the
+marketplace should point at `.agents/plugins/generated/<plugin>`. That
+directory becomes Codex's plugin root. Any helper that a generated skill
+invokes must therefore exist under the generated root too; the source package
+under `packages/<plugin>/` is no longer in the runtime path.
+
+Minimum copy rules:
+
+- Copy `bin/` into the generated target when a skill calls plugin helper
+  commands.
+- Copy skill-local support files that live under `skills/<skill>/` alongside
+  the materialized `SKILL.md`.
+- Copy `hooks/lib/` when Codex-facing workflows install git-native hooks or
+  otherwise call shared hook libraries, but do not copy Claude's
+  `hooks/hooks.json` merely because the source package has it. A Claude hook
+  manifest in a Codex package is inert at best and misleading at worst.
+- Make `check` compare the full generated file set, not only `SKILL.md` and
+  manifest files. A stale generated helper that no longer exists in the source
+  is drift.
+
+If a global gitignore ignores dot-directories, the generated marketplace can
+look correct on disk while new files stay invisible to Git. Repositories that
+track Codex adapter targets should explicitly unignore them:
+
+```gitignore
+!.agents/
+!.agents/plugins/
+!.agents/plugins/**
+```
 
 ### What belongs in shared SKILL.md
 
@@ -479,6 +516,43 @@ That path is the **plugin root in the cache**, not the repo root. It contains `.
 
 The `packages/<plugin>/` prefix only exists in the source repo, not in the cache. The `ls -1dt ... | head -1` trick against `~/.claude/plugins/cache/<marketplace>/<plugin>/` points to the same path but relies on mtime ordering and is therefore not stable; the `jq` lookup works deterministically.
 
+For Codex, use the structured plugin list. It reports both installed version
+and active source path:
+
+```bash
+codex plugin list --json \
+  | jq -r '.installed[] | select(.pluginId == "<plugin>@<marketplace>") | .source.path'
+```
+
+That path is Codex's active plugin root. For a local marketplace in development
+it may be a generated directory in the working tree, for example
+`.agents/plugins/generated/<plugin>`; for other marketplace sources it may be a
+cache snapshot. Do not infer freshness from the working tree alone. Compare the
+reported `version` with the generated `.codex-plugin/plugin.json`; if Codex
+still reports an older version after a commit or rebuild, refresh the
+marketplace/install before testing the skill in a new Codex thread.
+
+Skills that need to call their own helper binaries should resolve the active
+root, not hard-code `${CLAUDE_PLUGIN_ROOT}` into a Codex path. A shared skill
+can use a small resolver with agent-specific branches:
+
+```bash
+resolve_plugin_root() {
+  if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+    printf '%s\n' "$CLAUDE_PLUGIN_ROOT"
+    return 0
+  fi
+  if command -v codex >/dev/null 2>&1; then
+    root="$(codex plugin list --json \
+      | jq -er '.installed[] | select(.pluginId == "<plugin>@<marketplace>") | .source.path')" \
+      || return 1
+    printf '%s\n' "$root"
+    return 0
+  fi
+  return 1
+}
+```
+
 ## `/reload-plugins` and `/reload-skills`: re-read the installed set, do not update it
 
 `/reload-plugins` is a TUI slash command that re-loads the currently-installed plugin set into the running session without a full restart. Its output looks like:
@@ -532,12 +606,16 @@ Observed symptom: a Codex session does not see a plugin or skill expected from a
 local marketplace.
 
 1. Run `codex plugin marketplace list` and confirm the marketplace name and root.
-2. Run `codex plugin list` and confirm the plugin appears under the expected
-   marketplace.
+2. Run `codex plugin list --json` and confirm the plugin appears under the
+   expected marketplace, with the expected `version`, `enabled`, and
+   `source.path`.
 3. Run `codex plugin add <plugin>@<marketplace>` if the plugin is not installed.
-4. If the plugin exists in Claude metadata but not Codex, run
+4. For Git-backed marketplace snapshots, run `codex plugin marketplace upgrade
+   <marketplace>` before reinstalling when the remote changed. For local
+   marketplace development, rebuild the generated adapters first.
+5. If the plugin exists in Claude metadata but not Codex, run
    `bin/plugin-adapters check .`; drift means the Codex adapter files are stale.
-5. If `codex plugin add` cannot find the plugin, inspect
+6. If `codex plugin add` cannot find the plugin, inspect
    `.agents/plugins/marketplace.json` first, then the package
    `.codex-plugin/plugin.json`.
 
