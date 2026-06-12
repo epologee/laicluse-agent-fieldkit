@@ -12,10 +12,15 @@ allowed-tools:
 # Writers Guru Panel
 
 Codex execution model: use native Codex subagents when the current session
-exposes them. If no subagent facility is available, run the same protocol as
-clearly separated single-session passes and state that fallback in the final
-review. Do not call Claude's `gurus:sonnet-max`; that is the Claude runtime
-adapter for this plugin.
+exposes them. Reviewer agents are the "hand" layer: prefer the least
+token-hungry Codex subagent model that can read the piece and return a
+structured critique. Keep grouping, conflict resolution, and final synthesis on
+the current session model. Escalate a reviewer to the current session model
+only when the cheaper model cannot handle the context or the operator
+explicitly asks for maximum-depth review. If no subagent facility is available,
+run the same protocol as clearly separated single-session passes and state that
+fallback in the final review. Do not call Claude's `gurus:sonnet-max`; that is
+the Claude runtime adapter for this plugin.
 
 Six opinionated writers read your prose and look for consensus on what should change. When 4+/6 agree, an action plan is produced. The value lies in the tension between their crafts: a sentence that survives Didion's restraint, Saunders's warmth, Rovelli's precision, Gladwell's hook instinct, Urban's accessibility, and Watts's depth has earned its place.
 
@@ -60,10 +65,11 @@ Capture:
 ### Step 2: Dispatch six reviewers
 
 When native Codex subagents are available, spawn six parallel reviewer agents
-with the current model and effort; do not override model or effort unless the
-operator explicitly asked for that. When subagents are unavailable, run six
-separate reviewer passes in the main session and keep the outputs isolated
-until Step 3. The reviewers review only; they change NOTHING.
+on the cheapest adequate reviewer model. Do not use the current session model
+for every reviewer by default; that recreates Claude's expensive max-effort
+shape without adding signal. When subagents are unavailable, run six separate
+reviewer passes in the main session and keep the outputs isolated until Step 3.
+The reviewers review only; they change NOTHING.
 
 **Prompt template per agent** (fill in per writer):
 

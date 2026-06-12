@@ -199,6 +199,13 @@ Plugin and marketplace manifests are adapter layers. Claude Code and Codex both 
 | Marketplace index | curated plugin list | `.claude-plugin/marketplace.json` | `.agents/plugins/marketplace.json` |
 | Runtime cache | none; cache is output | `~/.claude/plugins/cache/...` | `~/.codex/plugins/cache/...` |
 
+Plugin-level runtime payloads follow the same rule. A suffixless/shared source
+is valid only when both agents can consume it with the same semantics. When a
+payload is runtime-specific, keep the source explicit: `agents/` is the Claude
+subagent payload in this marketplace, while a future Codex-specific subagent
+payload should live in `agents.codex/` and be materialized into generated
+Codex runtime `agents/`.
+
 ### Source and target roles
 
 Every duplicated-looking file should have one explicit role:
@@ -230,10 +237,11 @@ Minimum copy rules:
 
 - Copy `bin/` into the generated target when a skill calls plugin helper
   commands.
-- Copy `agents/` into the generated target when the source plugin ships
-  plugin-level subagent definitions. Do not invent an unsupported Codex
-  manifest key for them; keep the directory as part of the plugin root payload
-  and let each runtime load what it understands.
+- Do not copy source-package `agents/` into generated Codex targets by default.
+  In this marketplace, `agents/` is a Claude runtime payload because Claude
+  consumes the source package directly. A generated Codex package should carry
+  `agents/` only from an explicit Codex-specific source such as
+  `agents.codex/`, materialized as runtime `agents/` by the adapter builder.
 - Copy skill-local support files that live under `skills/<skill>/` alongside
   the materialized `SKILL.md`.
 - Copy `hooks/lib/` when Codex-facing workflows install git-native hooks or

@@ -28,6 +28,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
   native subagents when available and fall back to a clearly marked
   single-session panel review when they are not.
 
+### Changed
+
+- **Codex guru panels prefer cheaper native reviewer subagents.** Claude's
+  `gurus:sonnet-max` agent remains Claude-only; the generated Codex package no
+  longer ships that subagent definition.
+
 ## Legacy leclause history
 
 ## [v1.0.35]

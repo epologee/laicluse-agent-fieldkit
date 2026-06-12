@@ -13,7 +13,7 @@ effort: high
 
 # Software Guru Panel
 
-> **Preflight.** This skill dispatches eight parallel `gurus:sonnet-max` agents. That agent exists from plugin version 1.0.8 onward. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
+> **Preflight.** This skill dispatches eight parallel `gurus:sonnet-max` agents. This plugin ships that agent. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
 
 Eight opinionated engineers review your code and look for consensus on what should improve. When 6+/8 agree, an action plan is produced. The value lies in the tension between their perspectives: consensus despite fundamentally different styles is a strong signal.
 

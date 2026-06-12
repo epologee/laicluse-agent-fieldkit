@@ -24,10 +24,10 @@ without a `## [vX.Y.Z]` section stays silent on every update.
 
 ### Changed
 
-- **Generated Codex payloads now call out plugin `agents/`.** When a source
-  package ships plugin-level subagent definitions and the Codex adapter points
-  at `.agents/plugins/generated/<plugin>`, the generated root must carry
-  `agents/` alongside `skills/` and `bin/`.
+- **Generated Codex payloads now split runtime-specific `agents/`.** Source
+  package `agents/` is treated as Claude runtime payload, not shared plugin
+  data. Codex generated roots carry `agents/` only from an explicit
+  Codex-specific source such as `agents.codex/`.
 - **The Claude subagent verification note no longer claims `claude agents`
   lists plugin-shipped agents.** Current Claude Code uses that command for
   background agent sessions; use `claude plugins validate` for schema and a

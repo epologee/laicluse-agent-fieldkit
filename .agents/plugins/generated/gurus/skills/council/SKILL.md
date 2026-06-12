@@ -6,14 +6,19 @@ description: Five advisors attack an idea, decision, or plan from five different
 # Council of Five Advisors
 
 Codex execution model: use native Codex subagents when the current session
-exposes them. If no subagent facility is available, run the same protocol as
-clearly separated single-session passes and state that fallback in the final
-review. Do not call Claude's `gurus:sonnet-max`; that is the Claude runtime
-adapter for this plugin.
+exposes them. Reviewer/advisor agents are the "hand" layer: prefer the least
+token-hungry Codex subagent model that can read the brief and return a
+structured critique. Keep routing, grouping, conflict resolution, and final
+synthesis on the current session model. Escalate a reviewer to the current
+session model only when the cheaper model cannot handle the context or the
+operator explicitly asks for maximum-depth review. If no subagent facility is
+available, run the same protocol as clearly separated single-session passes and
+state that fallback in the final review. Do not call Claude's
+`gurus:sonnet-max`; that is the Claude runtime adapter for this plugin.
 
 LLM assistants can be agreeable by default. This skill builds a counterweight. Five adversarial agents look at your question from five fundamentally different angles, read each other's work blind, and a chairman turns it into one verdict. No diplomacy, no "it depends". The lens is the answer.
 
-Pattern based on Ole Lehmann's "board of advisors" skill, itself inspired by parallel LLM-critique patterns advocated by Andrej Karpathy (among others). Codex variant: every advisor runs on the current Codex runtime, either as a native subagent or as a separate single-session pass.
+Pattern based on Ole Lehmann's "board of advisors" skill, itself inspired by parallel LLM-critique patterns advocated by Andrej Karpathy (among others). Codex variant: advisors run on the cheapest adequate native Codex subagent layer when available, or as separate single-session passes when not.
 
 ## When to use
 
@@ -49,10 +54,11 @@ When it is unclear what the exact question is: ask the user **one** clarifying q
 ### Step 2: Dispatch five advisors
 
 When native Codex subagents are available, spawn five parallel advisor agents
-with the current model and effort; do not override model or effort unless the
-operator explicitly asked for that. When subagents are unavailable, run five
-separate advisor passes in the main session and keep the outputs isolated until
-Step 3. Lens-specific prompts, no mutual awareness.
+on the cheapest adequate reviewer model. Do not use the current session model
+for every advisor by default; that recreates Claude's expensive max-effort
+shape without adding signal. When subagents are unavailable, run five separate
+advisor passes in the main session and keep the outputs isolated until Step 3.
+Lens-specific prompts, no mutual awareness.
 
 **Prompt template per advisor** (fill in the lens-specific instruction):
 
@@ -102,8 +108,8 @@ Collect the five responses. Assign each response a random letter A through E via
 
 ### Step 4: Blind peer review
 
-Again run five peer-review jobs, preferably as parallel native Codex subagents.
-For each advisor:
+Again run five peer-review jobs, preferably as parallel low-cost native Codex
+subagents. For each advisor:
 
 1. Look up in the mapping from Step 3 the letter assigned to this advisor. Call it `OWN`.
 2. Compose the four letters from `{A, B, C, D, E} \ {OWN}`, in order.
@@ -150,7 +156,9 @@ No half-hearted judgments. If a review is weak, say so. Your judgment is anonymo
 
 ### Step 5: Chairman synthesis
 
-Run one chairman job, preferably as a native Codex subagent. It receives:
+Run the chairman synthesis on the current session model unless the operator
+explicitly asks to delegate it. The chairman is the head layer, not another
+cheap reviewer pass. It receives:
 
 - The original brief
 - All five original (non-anonymous) reviews with lens name

@@ -12,10 +12,15 @@ allowed-tools:
 # Software Guru Panel
 
 Codex execution model: use native Codex subagents when the current session
-exposes them. If no subagent facility is available, run the same protocol as
-clearly separated single-session passes and state that fallback in the final
-review. Do not call Claude's `gurus:sonnet-max`; that is the Claude runtime
-adapter for this plugin.
+exposes them. Reviewer agents are the "hand" layer: prefer the least
+token-hungry Codex subagent model that can read the scoped files and return a
+structured critique. Keep grouping, conflict resolution, and final synthesis on
+the current session model. Escalate a reviewer to the current session model
+only when the cheaper model cannot handle the context or the operator
+explicitly asks for maximum-depth review. If no subagent facility is available,
+run the same protocol as clearly separated single-session passes and state that
+fallback in the final review. Do not call Claude's `gurus:sonnet-max`; that is
+the Claude runtime adapter for this plugin.
 
 Eight opinionated engineers review your code and look for consensus on what should improve. When 6+/8 agree, an action plan is produced. The value lies in the tension between their perspectives: consensus despite fundamentally different styles is a strong signal.
 
@@ -56,10 +61,11 @@ as scope unless the user explicitly asks for a diff review.
 ### Step 2: Dispatch eight reviewers
 
 When native Codex subagents are available, spawn eight parallel reviewer agents
-with the current model and effort; do not override model or effort unless the
-operator explicitly asked for that. When subagents are unavailable, run eight
-separate reviewer passes in the main session and keep the outputs isolated
-until Step 3. The reviewers review only; they change NOTHING.
+on the cheapest adequate reviewer model. Do not use the current session model
+for every reviewer by default; that recreates Claude's expensive max-effort
+shape without adding signal. When subagents are unavailable, run eight separate
+reviewer passes in the main session and keep the outputs isolated until Step 3.
+The reviewers review only; they change NOTHING.
 
 **Prompt template per agent** (fill in per guru):
 

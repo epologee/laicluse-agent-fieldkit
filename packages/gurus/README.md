@@ -52,9 +52,12 @@ Every guru and advisor dispatches through that subagent so every voice runs on
 the same engine ceiling. The definition lives in `agents/sonnet-max.md`.
 
 Codex receives Codex-specific skill bodies. They use native Codex subagents when
-the current session exposes them; otherwise they run the same panel protocol as
-a structured single-session review and mark that as a fallback rather than
-pretending independent agents were spawned.
+the current session exposes them and prefer the least token-hungry reviewer
+model that can handle the scoped work; the current session model keeps routing
+and final synthesis. Otherwise they run the same panel protocol as a structured
+single-session review and mark that as a fallback rather than pretending
+independent agents were spawned. The generated Codex package intentionally omits
+`agents/sonnet-max.md`; that file is Claude runtime only.
 
 ## Installation
 

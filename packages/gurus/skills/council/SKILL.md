@@ -7,7 +7,7 @@ effort: high
 
 # Council of Five Advisors
 
-> **Preflight.** This skill dispatches eleven `gurus:sonnet-max` agents in two parallel rounds plus a chairman. That agent exists from plugin version 1.0.8 onward. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
+> **Preflight.** This skill dispatches eleven `gurus:sonnet-max` agents in two parallel rounds plus a chairman. This plugin ships that agent. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
 
 Claude is a YES-MAN by default. This skill builds a counterweight. Five adversarial agents look at your question from five fundamentally different angles, read each other's work blind, and a chairman turns it into one verdict. No diplomacy, no "it depends". The lens is the answer.
 

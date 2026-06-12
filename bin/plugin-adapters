@@ -179,15 +179,16 @@ copy_codex_bin() {
 }
 
 copy_codex_agents() {
-  local plugin_dir="$1" target_dir="$2" file rel out
+  local plugin_dir="$1" target_dir="$2" file rel out codex_agents_dir
   rm -rf "$target_dir/agents"
-  [ -d "$plugin_dir/agents" ] || return 0
+  codex_agents_dir="$plugin_dir/agents.codex"
+  [ -d "$codex_agents_dir" ] || return 0
   while IFS= read -r file; do
-    rel="${file#$plugin_dir/}"
-    out="$target_dir/$rel"
+    rel="${file#$codex_agents_dir/}"
+    out="$target_dir/agents/$rel"
     mkdir -p "$(dirname "$out")"
     cp -p "$file" "$out"
-  done < <(find "$plugin_dir/agents" -type f | sort)
+  done < <(find "$codex_agents_dir" -type f | sort)
 }
 
 copy_codex_hook_lib() {
@@ -228,7 +229,7 @@ generate_into() {
     validate_skill_sources "$name" "$plugin_dir"
     copy_claude_skill_targets "$repo" "$out_root" "$plugin_dir"
 
-    if has_agent_specific_skills "$plugin_dir" || needs_sanitized_skills "$plugin_dir"; then
+    if has_agent_specific_skills "$plugin_dir" || needs_sanitized_skills "$plugin_dir" || [ -d "$plugin_dir/agents.codex" ]; then
       codex_source="./.agents/plugins/generated/$name"
       target_dir="$out_root/.agents/plugins/generated/$name"
       rm -rf "$target_dir"

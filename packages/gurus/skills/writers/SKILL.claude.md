@@ -13,7 +13,7 @@ effort: high
 
 # Writers Guru Panel
 
-> **Preflight.** This skill dispatches six parallel `gurus:sonnet-max` agents. That agent exists from plugin version 1.0.8 onward. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
+> **Preflight.** This skill dispatches six parallel `gurus:sonnet-max` agents. This plugin ships that agent. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
 
 Six opinionated writers read your prose and look for consensus on what should change. When 4+/6 agree, an action plan is produced. The value lies in the tension between their crafts: a sentence that survives Didion's restraint, Saunders's warmth, Rovelli's precision, Gladwell's hook instinct, Urban's accessibility, and Watts's depth has earned its place.
 
