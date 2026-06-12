@@ -14,7 +14,9 @@ the broadcast is positional.
   `/rover:verify`, `/rover:decide`, `/rover:prepare`, `/rover:rover-help`).
   Waking a mission is now `/rover:rover .autonomous/<NAME>.md`. Install
   `rover@laicluse-agent-tools` alongside `autonomous@laicluse-agent-tools`;
-  `autonomous@leclause` is a tombstone pointing here.
+  `autonomous@leclause` is a tombstone pointing here. Existing `.autonomous/`
+  loop files stay compatible: the format is unchanged and waking them with the
+  new command continues a mission exactly where it stopped.
 
 ### Added
 

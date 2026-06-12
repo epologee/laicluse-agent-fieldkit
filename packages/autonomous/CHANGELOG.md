@@ -1,5 +1,13 @@
 # autonomous changelog
 
+The post-update broadcast (see `bin/check-broadcast`) shows the topmost
+section once per machine whenever the installed `version` in
+`.claude-plugin/plugin.json` changes. Entry headers record the version at
+which the entry was written; a pre-commit hook auto-bumps `plugin.json` on
+every commit, so the header may lag the shipped version. Header numbers are
+informational, the broadcast is positional. Use the `--force` flag on the
+helper to re-read at any time.
+
 ## [v2.0.0]
 
 ### Breaking
@@ -9,6 +17,8 @@
   decision framework (rover, decide, pride, trim, verify, prepare, stop) moved
   to `rover@laicluse-agent-tools`. The old `autonomous:rover`,
   `autonomous:pride`, and the other decision skills are now `/rover:...`.
+  Existing `.autonomous/` loop files stay compatible: the format is unchanged
+  and the successor rover wakes them as-is.
 
 ### Added
 

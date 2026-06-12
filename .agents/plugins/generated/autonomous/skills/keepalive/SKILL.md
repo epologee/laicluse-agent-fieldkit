@@ -3,6 +3,30 @@ name: keepalive
 description: Startup probe for the autonomy layer. Answers one question for a dispatched mission, am I in a persistent process or an interactive session that needs a heartbeat to survive across turns, by probing CronCreate availability. Sets up the cron heartbeat when one is needed and reports back when it is not. Loaded by rover at dispatch.
 ---
 
+<post-update-broadcast>
+BEFORE doing the actual work below, run this one-time check only when
+`CLAUDE_PLUGIN_ROOT` is set:
+
+```bash
+if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  node "${CLAUDE_PLUGIN_ROOT}/bin/check-broadcast"
+fi
+```
+
+If the command produces output, the autonomous plugin was updated since
+the last time you saw the broadcast on this machine. Show the output
+verbatim in a markdown block, prefixed with one short sentence
+("autonomous was updated; here is what changed."). Then continue with
+the rest of this skill.
+
+If the command produces no output, say nothing about updates and proceed.
+
+The helper writes the sentinel only when stdout was non-empty, so a silent
+run does not mark the version as seen. In agents that do not set
+`CLAUDE_PLUGIN_ROOT` the broadcast is intentionally skipped; that is the
+guard's purpose, not an oversight.
+</post-update-broadcast>
+
 # Autonomy Keepalive
 
 The front door to the autonomy layer. A mission calls this skill once, at startup, and asks a single question:

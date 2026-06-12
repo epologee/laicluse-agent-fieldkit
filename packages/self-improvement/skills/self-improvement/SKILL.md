@@ -8,6 +8,30 @@ description: >-
   instruction files instead of reflexively appending to AGENTS.md/CLAUDE.md.
 ---
 
+<post-update-broadcast>
+BEFORE doing the actual work below, run this one-time check only when
+`CLAUDE_PLUGIN_ROOT` is set:
+
+```bash
+if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  node "${CLAUDE_PLUGIN_ROOT}/bin/check-broadcast"
+fi
+```
+
+If the command produces output, the self-improvement plugin was updated since
+the last time you saw the broadcast on this machine. Show the output
+verbatim in a markdown block, prefixed with one short sentence
+("self-improvement was updated; here is what changed."). Then continue with
+the rest of this skill.
+
+If the command produces no output, say nothing about updates and proceed.
+
+The helper writes the sentinel only when stdout was non-empty, so a silent
+run does not mark the version as seen. In agents that do not set
+`CLAUDE_PLUGIN_ROOT` the broadcast is intentionally skipped; that is the
+guard's purpose, not an oversight.
+</post-update-broadcast>
+
 # Self-Improvement
 
 Turn user feedback into a durable improvement. Do not default to adding a line
