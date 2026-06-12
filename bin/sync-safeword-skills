@@ -1,0 +1,68 @@
+#!/usr/bin/env node
+// Operator-only maintenance script. Single source of truth for the
+// anger-management safeword skills is packages/anger-management/safeword-skill.template.md
+// plus the WORDS list below. Each safeword skill is a mechanical reflection of
+// the template with __WORD__ substituted.
+//
+// Usage:
+//   bin/sync-safeword-skills            # report drift (exit 1 on drift)
+//   bin/sync-safeword-skills --write    # render the template into every alias
+//
+// Exit: 0 = in sync (or written), 1 = drift detected (report mode)
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const WORDS = [
+  'safeword',
+  'pineapple',
+  'pineapplejuice',
+  'pinapplejuice',
+  'flugelhorn',
+  'banana',
+];
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const template = join(repoRoot, 'packages', 'anger-management', 'safeword-skill.template.md');
+const skillsDir = join(repoRoot, 'packages', 'anger-management', 'skills');
+
+if (!existsSync(template)) {
+  console.error(`Template missing: ${template}`);
+  process.exit(2);
+}
+
+const body = readFileSync(template, 'utf8');
+const render = (word) => body.replaceAll('__WORD__', word);
+
+const write = process.argv.includes('--write');
+const drift = [];
+
+for (const word of WORDS) {
+  const target = join(skillsDir, word, 'SKILL.md');
+  const wanted = render(word);
+  const current = existsSync(target) ? readFileSync(target, 'utf8') : null;
+  if (current === wanted) continue;
+  drift.push({ word, target });
+  if (write) {
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, wanted);
+  }
+}
+
+if (drift.length === 0) {
+  console.log(`All ${WORDS.length} safeword skills match the template.`);
+  process.exit(0);
+}
+
+if (write) {
+  console.log(`Rendered template into ${drift.length} safeword skill(s):`);
+  for (const d of drift) console.log(`  - ${d.word}`);
+  process.exit(0);
+}
+
+console.error(`safeword-skill drift in ${drift.length} skill(s):`);
+for (const d of drift) console.error(`  - ${d.target}`);
+console.error('');
+console.error('Run: bin/sync-safeword-skills --write');
+process.exit(1);

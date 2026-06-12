@@ -29,11 +29,13 @@ post-update broadcast path in this plugin; skip this block silently there.
 
 # Anger Management
 
-The curse commands (`/fuck`, `/fucking`, `/fucked`, `/shit`, `/crap`, `/wtf`, `/bullshit`) capture
-one cheap friction line and let the operator get back to work. This skill is the quick
-glance at that pile. For the real cooled-down fix pass (the go/no-go judgement, routing
-to self-improvement), use **`/anger-management:repair`**; this one just shows what is in
-the log.
+The curse commands (`/fuck`, `/fucking`, `/fucked`, `/shit`, `/crap`, `/wtf`,
+`/bullshit`) capture one cheap friction line and let the operator get back to work.
+This skill is the quick glance at that pile. The safeword commands (`/safeword`,
+`/pineapple`, `/pineapplejuice`, `/pinapplejuice`, `/flugelhorn`, `/banana`) are
+different: they interrupt current work and fix one visible friction point now, so
+they do not fill this log. For the real cooled-down fix pass over the delayed pile,
+use **`/anger-management:repair`**; this one just shows what is in the log.
 
 ## The log
 
@@ -53,7 +55,8 @@ repair.
 A read-back, proportional to what is there. No fixing here, that is `repair`'s job.
 
 1. Read the log. No file or an empty one means nothing is captured yet: say so, point
-   at the curse commands as what fills it, stop.
+   at the curse commands as what fills it, and mention that safewords do not go into
+   this pile.
 2. Surface the signal: cluster what recurs (same project via cwd/git, or the same theme
    across projects). Count, do not transcribe. A lone capture is a bad moment, not a
    pattern.

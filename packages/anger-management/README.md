@@ -11,6 +11,13 @@ confidence, chooses the mitigation layer and scope, and only applies or routes a
 when confidence is high. If there is nothing clear, it leaves the trail open. That
 restraint is the point.
 
+If you still have enough mental capacity to steer in the moment, use the lighter
+safeword lane instead: `/safeword`, `/pineapple`, `/pineapplejuice`, `/pinapplejuice`,
+`/flugelhorn`, or `/banana`. Those do **not** go into the delayed pile. They mean:
+"pause the current work; I see a concrete thing going wrong, fix it now." The whole
+plugin is intentionally not solemn: sometimes the irritation is real, sometimes it is
+played up because swearing at a robot is funny. The command split is what matters.
+
 ## The idea, in one breath
 
 Two things at once, 80% serious and 20% dry: it makes working with the agent better,
@@ -27,6 +34,7 @@ two-second capture you walk away from, never a rant you marinate in.
 | Command | What it does |
 |---------|--------------|
 | `/fuck` `/fucking` `/fucked` `/shit` `/crap` `/wtf` `/bullshit` | Capture one cheap friction line and move on. No apology, no fix, no scope change. |
+| `/safeword` `/pineapple` `/pineapplejuice` `/pinapplejuice` `/flugelhorn` `/banana` | Interrupt the current work and fix one visible friction point now. No delayed capture. |
 | `/anger-management` | Quick read-back of the pile and its recurring clusters. |
 | `/anger-management:repair` | The cooled-down fix pass: judge go/no-go, then apply or route a real recurring problem at its owner source. |
 
@@ -38,13 +46,16 @@ The vocabulary avoids slurs and identity-targeted abuse.
    across every session and repo: `${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl`
    (`ts, word, cwd, git, note`). The note is fed on stdin via a quoted heredoc, so it is
    never interpreted by the shell even if it echoes something hostile.
-2. **Cool down (you do not have to remember).** A capture arms a single background
+2. **Safeword (instant, local to the current problem).** A safeword command is not a
+   log entry. It interrupts the current task, asks the agent to identify the concrete
+   failure with evidence, and fixes that now. It may be a one-off.
+3. **Cool down (you do not have to remember).** A capture arms a single background
    investigation: 22 minutes 22 seconds later (a wink, and long enough for the heat to
    pass) a separate headless agent (`claude -p`, or `codex exec` when only Codex is installed) reads the open captures, the repair history,
    and the recent transcripts, and writes a diagnosis. If you are still in that session, a
    check-in cron may surface it between turns; otherwise it shows up at your next
    `/anger-management:repair`. Either way, ignoring it just leaves the captures open.
-3. **Repair (on your terms).** `/anger-management:repair` opens with a blunt verdict:
+4. **Repair (on your terms).** `/anger-management:repair` opens with a blunt verdict:
    *nothing* (change nothing, and that is fine), *not-enough-signal* (leave it open to
    accumulate), or *fix* (one concrete recurring thing plus the specific change). Every
    verdict carries a confidence score, mitigation level, and target scope. The threshold
@@ -91,3 +102,6 @@ keep the captures open so the next pass has more evidence.
   investigation. `bin/anger-resolve` records a routed fix so its captures close.
 - The curse skills are generated from `capture-skill.template.md` by
   `bin/sync-capture-skills` (repo root); edit the template, not the generated files.
+- The safeword skills are generated from `safeword-skill.template.md` by
+  `bin/sync-safeword-skills` (repo root); they intentionally do not call
+  `anger-log`.

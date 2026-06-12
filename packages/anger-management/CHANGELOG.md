@@ -20,6 +20,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.8]
+
+### Added
+
+- **Safeword commands interrupt and fix now.** `/safeword`,
+  `/pineapple`, `/pineapplejuice`, `/pinapplejuice`, `/flugelhorn`, and
+  `/banana` pause the current task to correct one visible friction point
+  immediately instead of logging it for later repair.
+
 ## [v2.0.7]
 
 ### Changed
