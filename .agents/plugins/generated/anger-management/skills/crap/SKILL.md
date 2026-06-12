@@ -5,9 +5,9 @@ description: Invoked as /crap. Captures a one-line friction note for a later rep
 
 # /crap
 
-The operator just cursed "crap" at the session. This is a capture, not a request
-to fix anything now: log it cheap and get back to work. The constructive pass happens
-later via `/anger-management:repair`.
+The operator just cussed "crap" at the session. This is one of the cuss commands:
+a capture, not a request to fix anything now. Log it cheap and get back to work. The
+constructive pass happens later via `/anger-management:repair`.
 
 The commands below live in this plugin's `bin/` directory. Resolve the loaded
 plugin root first; Claude Code exposes `${CLAUDE_PLUGIN_ROOT}`, and Codex exposes

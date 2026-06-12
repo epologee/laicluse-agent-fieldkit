@@ -20,6 +20,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.9]
+
+### Changed
+
+- **The escalation vocabulary is now safeword, cuss, repair.** The public copy
+  uses the safeword lane for immediate course correction, the cuss lane for
+  delayed capture via swear/cuss words, and the repair lane for cooled-down
+  high-confidence fixes.
+
 ## [v2.0.8]
 
 ### Added

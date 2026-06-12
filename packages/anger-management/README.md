@@ -1,15 +1,15 @@
 # anger-management
 
-Curse at your coding agent now, fix the actual problem later.
+Cuss at your coding agent now, fix the actual problem later.
 
 When the agent does something that sets you off, you do not want a lecture and you do
-not want to drop everything to fix it. So you curse: `/fuck`, `/fucking`, `/fucked`,
-`/shit`, `/crap`, `/wtf`, `/bullshit`. Each one captures a single cheap line about what happened and
-gets out of your way. Later, cooled off, `/anger-management:repair` looks at the pile,
-decides whether there is one concrete recurring thing worth fixing, scores its own
-confidence, chooses the mitigation layer and scope, and only applies or routes a fix
-when confidence is high. If there is nothing clear, it leaves the trail open. That
-restraint is the point.
+not want to drop everything to fix it. So you cuss: `/fuck`, `/fucking`, `/fucked`,
+`/shit`, `/crap`, `/wtf`, `/bullshit`. These swear/cuss words each capture a single
+cheap line about what happened and get out of your way. Later, cooled off,
+`/anger-management:repair` looks at the pile, decides whether there is one concrete
+recurring thing worth fixing, scores its own confidence, chooses the mitigation layer
+and scope, and only applies or routes a fix when confidence is high. If there is
+nothing clear, it leaves the trail open. That restraint is the point.
 
 If you still have enough mental capacity to steer in the moment, use the lighter
 safeword lane instead: `/safeword`, `/pineapple`, `/pineapplejuice`, `/pinapplejuice`,
@@ -17,6 +17,10 @@ safeword lane instead: `/safeword`, `/pineapple`, `/pineapplejuice`, `/pinapplej
 "pause the current work; I see a concrete thing going wrong, fix it now." The whole
 plugin is intentionally not solemn: sometimes the irritation is real, sometimes it is
 played up because swearing at a robot is funny. The command split is what matters.
+
+The ladder is deliberately simple: the **safeword lane** interrupts work now, the
+**cuss lane** logs the escalated friction for delayed analysis, and the **repair lane**
+reviews high-confidence proposals on a cooled-down pass.
 
 ## The idea, in one breath
 
@@ -26,7 +30,7 @@ and it gives you somewhere to put the heat without pretending the heat fixes any
 The split between a cheap in-the-moment capture and a later, separate fix pass is how
 teams already do it (Stripe wired "bad day" buttons into their tooling, then a separate
 team mined the pile). It is also what the research says: letting it out
-does not discharge anger, it rehearses it (Bushman 2002), so the curse stays a
+does not discharge anger, it rehearses it (Bushman 2002), so the cuss stays a
 two-second capture you walk away from, never a rant you marinate in.
 
 ## Commands
@@ -42,7 +46,7 @@ The vocabulary avoids slurs and identity-targeted abuse.
 
 ## How it works
 
-1. **Capture (instant, global).** A curse appends one line to a single pile shared
+1. **Cuss (instant, global).** A cuss appends one line to a single pile shared
    across every session and repo: `${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl`
    (`ts, word, cwd, git, note`). The note is fed on stdin via a quoted heredoc, so it is
    never interpreted by the shell even if it echoes something hostile.
@@ -65,13 +69,13 @@ The vocabulary avoids slurs and identity-targeted abuse.
    adapters through the generator, and instruction files only as the last resort.
 
 Because the pile is global and every repair reads the whole open set, deferring makes
-the diagnosis better: curse in one session, again two hours later in another, and they
+the diagnosis better: cuss in one session, again two hours later in another, and they
 land in the same pile and get weighed together.
 
 ## Why "repair" never just edits CLAUDE.md on a hunch
 
-You mostly curse when a behaviour comes back *despite* earlier self-improvements. So a
-curse is also a signal that a previous fix added noise or swung too far. If the verdict
+You mostly cuss when a behaviour comes back *despite* earlier self-improvements. So a
+cuss is also a signal that a previous fix added noise or swung too far. If the verdict
 is not clearly actionable and we change config anyway, that is noise-reflex busywork
 that fools everyone. So the default is to change nothing unless the pattern is concrete,
 recurring, and above the confidence threshold. Below that line, the right action is to
@@ -100,7 +104,7 @@ keep the captures open so the next pass has more evidence.
 
 - `bin/anger-log` captures a line. `bin/anger-arm` single-flight launches the background
   investigation. `bin/anger-resolve` records a routed fix so its captures close.
-- The curse skills are generated from `capture-skill.template.md` by
+- The cuss skills are generated from `capture-skill.template.md` by
   `bin/sync-capture-skills` (repo root); edit the template, not the generated files.
 - The safeword skills are generated from `safeword-skill.template.md` by
   `bin/sync-safeword-skills` (repo root); they intentionally do not call

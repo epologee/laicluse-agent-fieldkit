@@ -1,12 +1,12 @@
 ---
 name: repair
-description: Invoked as /anger-management:repair. Reads the accumulated curse-capture log, judges whether there is one concrete recurring thing worth fixing, and if so applies or routes the owner-source fix. Runs only when the operator types it.
+description: Invoked as /anger-management:repair. Reads the accumulated cuss-capture log, judges whether there is one concrete recurring thing worth fixing, and if so applies or routes the owner-source fix. Runs only when the operator types it.
 ---
 
 # Repair
 
-The constructive other half of the curse commands. The operator captured some friction
-("curse now, repair later"); this is the later: a cooled-down look at the whole pile.
+The constructive other half of the cuss commands. The operator captured some friction
+("cuss now, repair later"); this is the later: a cooled-down look at the whole pile.
 The steps below are the job; how you phrase any of it is for the local context to decide.
 
 ## The log (global, it accumulates)
@@ -72,7 +72,7 @@ every extra capture across every session sharpens the picture.
    useful evidence for a future pass; closing it would erase the trail before the
    pattern is understood.
 
-4. **If fix: scrutinise prior self-improvements first.** The operator mostly curses
+4. **If fix: scrutinise prior self-improvements first.** The operator mostly cusses
    when something RECURS despite earlier fixes. So before proposing a new rule, check
    `repairs.jsonl`: did a past repair already target this? If captures kept coming, the
    past fix probably overcorrected or missed. Prefer **reverting or loosening** that

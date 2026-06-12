@@ -17,7 +17,7 @@ friction now.
 
 The issue may be a one-off. Do not force pattern analysis and do not write to the
 anger-management friction log. If the operator is already irritated, or is playing
-up irritation for effect, they can use the escalated curse commands instead. This
+up irritation for effect, they can use the escalated cuss commands instead. This
 one is the lighter signal: "I see something going wrong and can still help steer."
 
 ## What to do

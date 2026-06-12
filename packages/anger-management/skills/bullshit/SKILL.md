@@ -6,9 +6,9 @@ description: Invoked as /bullshit. Captures a one-line friction note for a later
 
 # /bullshit
 
-The operator just cursed "bullshit" at the session. This is a capture, not a request
-to fix anything now: log it cheap and get back to work. The constructive pass happens
-later via `/anger-management:repair`.
+The operator just cussed "bullshit" at the session. This is one of the cuss commands:
+a capture, not a request to fix anything now. Log it cheap and get back to work. The
+constructive pass happens later via `/anger-management:repair`.
 
 The commands below live in this plugin's `bin/` directory. Resolve the loaded
 plugin root first; Claude Code exposes `${CLAUDE_PLUGIN_ROOT}`, and Codex exposes
