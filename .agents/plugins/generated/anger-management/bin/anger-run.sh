@@ -1,4 +1,4 @@
-# allow-comment: no shebang on purpose (bin/ shebang policy); env-driven background worker, invoked as `bash anger-run.sh` by anger-arm
+# allow-comment: no shebang on purpose (bin/ shebang policy); env-driven background worker, invoked as `bash anger-run.sh` by anger-schedule
 sleep "${ANGER_DELAY:-1342}"
 asof=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 cat "$ANGER_PROMPT" | $ANGER_RUNNER > "$ANGER_TMP" 2> "$ANGER_ERR"

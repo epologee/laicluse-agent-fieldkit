@@ -53,7 +53,7 @@ The vocabulary avoids slurs and identity-targeted abuse.
 2. **Safeword (instant, local to the current problem).** A safeword command is not a
    log entry. It interrupts the current task, asks the agent to identify the concrete
    failure with evidence, and fixes that now. It may be a one-off.
-3. **Cool down (you do not have to remember).** A capture arms a single background
+3. **Cool down (you do not have to remember).** A capture schedules a single background
    investigation: 22 minutes 22 seconds later (a wink, and long enough for the heat to
    pass) a separate headless agent (`claude -p`, or `codex exec` when only Codex is installed) reads the open captures, the repair history,
    and the recent transcripts, and writes a diagnosis. If you are still in that session, a
@@ -102,7 +102,7 @@ keep the captures open so the next pass has more evidence.
 
 ## Files
 
-- `bin/anger-log` captures a line. `bin/anger-arm` single-flight launches the background
+- `bin/anger-log` captures a line. `bin/anger-schedule` single-flight launches the background
   investigation. `bin/anger-resolve` records a routed fix so its captures close.
 - The cuss skills are generated from `capture-skill.template.md` by
   `bin/sync-capture-skills` (repo root); edit the template, not the generated files.

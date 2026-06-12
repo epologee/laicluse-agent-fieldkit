@@ -35,6 +35,18 @@ pretool_json() {
   [ "$PWD" = "$TARGET" ]
 }
 
+@test "cd prefix with a newline separator repositions the gate" {
+  cd "$ORIGIN"
+  dd_cd_to_bash_target "$(pretool_json "$(printf 'cd %s\ngit commit -m x' "$TARGET")")"
+  [ "$PWD" = "$TARGET" ]
+}
+
+@test "cd prefix with a semicolon separator repositions the gate" {
+  cd "$ORIGIN"
+  dd_cd_to_bash_target "$(pretool_json "cd $TARGET; git commit -m x")"
+  [ "$PWD" = "$TARGET" ]
+}
+
 @test "cd prefix wins over a later git -C" {
   cd "$ORIGIN"
   local other="$BATS_TEST_TMPDIR/other-repo"

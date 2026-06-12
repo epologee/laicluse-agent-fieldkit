@@ -34,7 +34,7 @@ codex plugin add gurus@laicluse-agent-tools
 availability as the interactive-vs-persistent signal. A host that runs missions
 as a persistent process (an Agent SDK run, a conveyor line) must withhold the
 cron tools, by adding `CronCreate`, `CronDelete`, and `CronList` to its
-disallowed-tools list; otherwise the probe reads the run as interactive and arms
+disallowed-tools list; otherwise the probe reads the run as interactive and schedules
 an unused heartbeat. See `autonomous`'s `keepalive` skill for the full contract.
 
 No other hard dependencies. Optional integrations (notifier, reviewbot,
@@ -53,7 +53,7 @@ invocation if it is part of the mission.
 
 ### `/rover:stop [loop-file-path]`
 
-Cleanly stop a running mission. Cuts the cron (when one was armed), writes a
+Cleanly stop a running mission. Cuts the cron (when one was scheduled), writes a
 final log entry, and transmits a mission-report communiqué.
 
 ### `/rover:pride [git-range | uncommitted]`

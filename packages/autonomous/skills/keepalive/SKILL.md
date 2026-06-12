@@ -50,16 +50,16 @@ The signal is **tool availability**, not an environment flag and not a caller co
 
    **CronCreate available, so an interactive session.** The harness exposes the heartbeat machinery because this session needs it: it goes idle between turns. Set the heartbeat up. Invoke `autonomous:cron` via the Skill tool to `CronCreate` at `* * * * *` with the loop-file path the caller passed, exactly as the cron setup step describes. Return the job id to the caller so it writes `cron_job_id: <id>` into the loop file.
 
-   **CronCreate unavailable, so a persistent process.** Nothing exposes a heartbeat because nothing here pauses; the process drives the phase machine to completion in one run and exits. Do not create a cron. Return the sentinel `none (persistent process)` so the caller writes `cron_job_id: none (persistent process)` into the loop file and proceeds straight into the first phase. The loop-file discipline is still kept (an interactive session can `wake` the file later if this run dies), but no heartbeat is armed.
+   **CronCreate unavailable, so a persistent process.** Nothing exposes a heartbeat because nothing here pauses; the process drives the phase machine to completion in one run and exits. Do not create a cron. Return the sentinel `none (persistent process)` so the caller writes `cron_job_id: none (persistent process)` into the loop file and proceeds straight into the first phase. The loop-file discipline is still kept (an interactive session can `wake` the file later if this run dies), but no heartbeat is scheduled.
 
 ## The return contract
 
 Keepalive hands the caller exactly one value:
 
-- A cron job id (a heartbeat is armed; the caller is interactive), or
+- A cron job id (a heartbeat is scheduled; the caller is interactive), or
 - `none (persistent process)` (no heartbeat; the caller drives to completion).
 
-The caller (see `rover` setup) writes that value into the loop file's `cron_job_id` field and continues. In interactive mode the rest of the loop's cron-dependent behaviour (STANDBY backoff, interjection re-arm, `wake` restore) is live. In persistent mode those steps are moot: the phase machine runs once, end to end, and the mission ends through `stop`.
+The caller (see `rover` setup) writes that value into the loop file's `cron_job_id` field and continues. In interactive mode the rest of the loop's cron-dependent behaviour (STANDBY backoff, interjection reschedule, `wake` restore) is live. In persistent mode those steps are moot: the phase machine runs once, end to end, and the mission ends through `stop`.
 
 ## The load-bearing assumption
 
@@ -67,7 +67,7 @@ This is a deliberate design choice, not a natural law: the autonomy layer **trea
 
 A host that wants persistent/continuous mode withholds the cron tools, for example by adding `CronCreate`, `CronDelete`, and `CronList` to its disallowed-tools list.
 
-**Degradation when the assumption is not yet met.** If a persistent host still exposes `CronCreate`, the probe reports interactive and arms a cron. On the normal path that cron is dead weight: a process that runs to completion never goes idle, so the heartbeat never fires and is torn down with the session. The mission still drives to completion through its phase machine; the cost is one wasted `CronCreate` call, not a broken run. On an abnormal exit (the process is killed or preempted mid-phase) the armed cron can outlive the session the way any orphan cron can (see `cron`'s note on crons surviving a `SessionStart:resume`); the `wake` restore path reaps such an orphan on the next manual relight. Either way the fix belongs on the host side (withhold the cron tools so the probe reports persistent), not here; this skill does not invent an env-var fallback to second-guess the tool probe.
+**Degradation when the assumption is not yet met.** If a persistent host still exposes `CronCreate`, the probe reports interactive and schedules a cron. On the normal path that cron is dead weight: a process that runs to completion never goes idle, so the heartbeat never fires and is torn down with the session. The mission still drives to completion through its phase machine; the cost is one wasted `CronCreate` call, not a broken run. On an abnormal exit (the process is killed or preempted mid-phase) the scheduled cron can outlive the session the way any orphan cron can (see `cron`'s note on crons surviving a `SessionStart:resume`); the `wake` restore path reaps such an orphan on the next manual relight. Either way the fix belongs on the host side (withhold the cron tools so the probe reports persistent), not here; this skill does not invent an env-var fallback to second-guess the tool probe.
 
 ## What it does not do
 

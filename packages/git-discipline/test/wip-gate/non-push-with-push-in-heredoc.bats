@@ -28,6 +28,26 @@ COMMON="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)/hooks/lib/common.s
   [ "$status" -eq 1 ]
 }
 
+@test "dd_is_git_push_command: 'git stash push -- path' is not detected" {
+  run bash -c "source '$COMMON'; dd_is_git_push_command 'git stash push -- packages/foo'"
+  [ "$status" -eq 1 ]
+}
+
+@test "dd_is_git_push_command: 'git stash push -m msg' is not detected" {
+  run bash -c "source '$COMMON'; dd_is_git_push_command 'git stash push -m wip'"
+  [ "$status" -eq 1 ]
+}
+
+@test "dd_is_git_push_command: 'git -c user.name=x push' with a global option is detected" {
+  run bash -c "source '$COMMON'; dd_is_git_push_command 'git -c user.name=x push'"
+  [ "$status" -eq 0 ]
+}
+
+@test "dd_is_git_push_command: 'git -C /repo push origin main' is detected" {
+  run bash -c "source '$COMMON'; dd_is_git_push_command 'git -C /repo push origin main'"
+  [ "$status" -eq 0 ]
+}
+
 @test "dd_is_git_push_command: 'git commit -m \"...push range...\"' inside quotes is not detected" {
   run bash -c "source '$COMMON'; dd_is_git_push_command 'git commit -m \"validate_body ran git log -5 HEAD regardless of which commit was being validated push range becomes a fallback later\"'"
   [ "$status" -eq 1 ]

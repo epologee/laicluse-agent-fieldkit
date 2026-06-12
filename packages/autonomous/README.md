@@ -31,8 +31,8 @@ not invoke them directly.
 
 - **`keepalive`**: the startup probe and front door. Checks whether `CronCreate`
   is available in this process. Available means an interactive session, so it
-  arms a cron heartbeat through `cron` and returns the job id. Absent means a
-  persistent process, so it arms nothing and reports back that the mission
+  schedules a cron heartbeat through `cron` and returns the job id. Absent means a
+  persistent process, so it schedules nothing and reports back that the mission
   should just drive to completion.
 - **`cron`**: the cadence machine. CronCreate, CronDelete, exponential backoff
   when the field goes quiet, auto-stop after sustained idleness, and cron
@@ -52,7 +52,7 @@ The probe is correct only when need and availability coincide: a host that runs
 a mission as a persistent process must withhold `CronCreate` (for example by
 adding the cron tools to its disallowed-tools list), and a host whose sessions
 go idle must expose it. When a persistent host still exposes the cron tools the
-probe over-detects interactive and arms a heartbeat. On the normal path that is
+probe over-detects interactive and schedules a heartbeat. On the normal path that is
 dead weight: a process that runs to completion never goes idle, so the cron
 never fires and is torn down with the session. Only an abnormal exit can leave
 it as an orphan, which the `wake` restore path reaps on the next relight. See

@@ -8,7 +8,7 @@ import { repairWatermark, openCaptures, angerDir } from './anger-lib.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const dir = angerDir();
 const pending = join(dir, 'investigation.pending');
-const delay = /^\d+$/.test(process.env.ANGER_ARM_DELAY || '') ? Number(process.env.ANGER_ARM_DELAY) : 1342;
+const delay = /^\d+$/.test(process.env.ANGER_SCHEDULE_DELAY || '') ? Number(process.env.ANGER_SCHEDULE_DELAY) : 1342;
 
 function alive(pid) {
   if (!pid) return false;
@@ -19,7 +19,7 @@ if (existsSync(pending)) {
   let stale = false;
   try {
     const m = JSON.parse(readFileSync(pending, 'utf8'));
-    const ageMs = Date.now() - Date.parse(m.armed);
+    const ageMs = Date.now() - Date.parse(m.scheduled);
     const tooOld = !(ageMs >= 0) || ageMs > delay * 1000 + 180000;
     stale = tooOld || (m.pid && !alive(m.pid));
   } catch { stale = true; }
@@ -36,7 +36,7 @@ function cliPath(name) {
   return p && !p.includes('\n') && p.startsWith('/') ? p : '';
 }
 
-let runner = process.env.ANGER_ARM_RUNNER || '';
+let runner = process.env.ANGER_SCHEDULE_RUNNER || '';
 if (!runner) {
   const claudePath = cliPath('claude');
   const codexPath = claudePath ? '' : cliPath('codex');
@@ -53,8 +53,8 @@ if (!existsSync(promptFile)) { console.log('investigation prompt missing; skippi
 
 let fd;
 try { fd = openSync(pending, 'wx'); } catch { console.log('investigation already pending; capture added to the pile'); process.exit(0); }
-const armed = new Date().toISOString();
-writeSync(fd, JSON.stringify({ armed }) + '\n');
+const scheduled = new Date().toISOString();
+writeSync(fd, JSON.stringify({ scheduled }) + '\n');
 closeSync(fd);
 
 const env = {
@@ -69,7 +69,7 @@ const env = {
 };
 const child = spawn('/bin/bash', [join(here, 'anger-run.sh')], { detached: true, stdio: 'ignore', env });
 child.unref();
-writeFileSync(pending, JSON.stringify({ armed, pid: child.pid }) + '\n');
+writeFileSync(pending, JSON.stringify({ scheduled, pid: child.pid }) + '\n');
 
 const human = delay === 1342 ? '22m22s' : `${delay}s`;
-console.log(`armed: investigating ${open.length} open capture(s) in ${human} (background)`);
+console.log(`scheduled: investigating ${open.length} open capture(s) in ${human} (background)`);

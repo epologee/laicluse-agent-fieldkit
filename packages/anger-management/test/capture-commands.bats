@@ -43,7 +43,7 @@ setup() {
     [ "$status" -eq 0 ]
     run grep -F 'node "$PLUGIN_ROOT/bin/anger-log"' "$SOURCE_ROOT/skills/$word/SKILL.md"
     [ "$status" -ne 0 ]
-    run grep -F 'node "$PLUGIN_ROOT/bin/anger-arm"' "$SOURCE_ROOT/skills/$word/SKILL.md"
+    run grep -F 'node "$PLUGIN_ROOT/bin/anger-schedule"' "$SOURCE_ROOT/skills/$word/SKILL.md"
     [ "$status" -ne 0 ]
   done
 }
@@ -57,7 +57,7 @@ setup() {
     [ "$status" -eq 0 ]
     run grep -F 'node "$PLUGIN_ROOT/bin/anger-log"' "$CODEX_ROOT/skills/$word/SKILL.md"
     [ "$status" -ne 0 ]
-    run grep -F 'node "$PLUGIN_ROOT/bin/anger-arm"' "$CODEX_ROOT/skills/$word/SKILL.md"
+    run grep -F 'node "$PLUGIN_ROOT/bin/anger-schedule"' "$CODEX_ROOT/skills/$word/SKILL.md"
     [ "$status" -ne 0 ]
   done
 }

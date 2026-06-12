@@ -20,6 +20,18 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.10]
+
+### Breaking
+
+- **The background-repair helper is now `bin/anger-schedule`, not
+  `bin/anger-arm`.** The militaristic "arm" verb is gone: the binary, its
+  `ANGER_SCHEDULE_RUNNER` / `ANGER_SCHEDULE_DELAY` env knobs (was
+  `ANGER_ARM_*`), and the pending-marker key (`scheduled`, was `armed`) all
+  read as scheduling a delayed investigation. The cuss skills regenerate to
+  call the new path, so a plugin update is transparent; only direct callers
+  of the old binary or env vars need to adapt.
+
 ## [v2.0.9]
 
 ### Changed

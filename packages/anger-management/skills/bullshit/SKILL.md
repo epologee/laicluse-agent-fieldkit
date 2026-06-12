@@ -41,7 +41,7 @@ the install path through `codex plugin list`.
    No clear cause? Log the word alone, do not invent one:
    use the same command with `</dev/null` instead of the heredoc.
 
-2. Arm the cooled-down repair so the operator never has to remember it:
+2. Schedule the cooled-down repair so the operator never has to remember it:
 
    ```bash
    resolve_anger_plugin_root() {
@@ -57,7 +57,7 @@ the install path through `codex plugin list`.
    }
 
    PLUGIN_ROOT="$(resolve_anger_plugin_root)" || { echo "anger-management plugin root not found" >&2; exit 1; }
-   node "$PLUGIN_ROOT/bin/anger-arm"
+   node "$PLUGIN_ROOT/bin/anger-schedule"
    ```
 
    Single-flight: it starts a background investigation only if none is pending and

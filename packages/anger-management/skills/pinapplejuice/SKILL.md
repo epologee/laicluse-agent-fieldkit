@@ -45,7 +45,7 @@ one is the lighter signal: "I see something going wrong and can still help steer
 ## Hard Rules
 
 - Do not log this through `anger-log`.
-- Do not arm the delayed repair worker.
+- Do not schedule the delayed repair worker.
 - Do not start `/anger-management:repair`.
 - Do not apologize, praise, or narrate emotional support.
 - Do not convert a one-off course correction into a durable rule unless the evidence

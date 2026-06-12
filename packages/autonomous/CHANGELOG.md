@@ -24,5 +24,5 @@ helper to re-read at any time.
 
 - `keepalive` decides whether a mission needs a heartbeat by probing
   `CronCreate` availability instead of reading a caller flag. Available means an
-  interactive session (arm the cron); absent means a persistent process (drive
+  interactive session (schedule the cron); absent means a persistent process (drive
   to completion).

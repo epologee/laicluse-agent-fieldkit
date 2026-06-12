@@ -63,7 +63,8 @@ dd_cd_to_bash_target() {
   [ -z "$command" ] && return 0
 
   local target=""
-  if [[ "$command" =~ ^[[:space:]]*cd[[:space:]]+(\"[^\"]+\"|\'[^\']+\'|[^[:space:]\&]+)[[:space:]]*\&\& ]]; then
+  # allow-comment: a leading `cd <dir>` repositions the gate whatever separator follows (&&, ;, newline, end), so match the first token after cd, not a literal &&.
+  if [[ "$command" =~ ^[[:space:]]*cd[[:space:]]+(\"[^\"]+\"|\'[^\']+\'|[^[:space:]\&\;|]+) ]]; then
     target="${BASH_REMATCH[1]}"
     target="${target#\"}"; target="${target%\"}"
     target="${target#\'}"; target="${target%\'}"
@@ -288,7 +289,8 @@ dd_is_git_push_command() {
   local command="$1"
   local stripped
   stripped=$(dd_strip_commit_message "$command")
-  [[ "$stripped" =~ (^|[[:space:];\&|])git[[:space:]]+([A-Za-z0-9_=.-]+[[:space:]]+)*push([[:space:]]|$) ]]
+  # allow-comment: tokens between `git` and `push` must be options (a leading -), each with an optional non-option argument, so `git -C /p push` matches but a subcommand like `git stash push` does not.
+  [[ "$stripped" =~ (^|[[:space:];\&|])git[[:space:]]+((-[^[:space:]]+)([[:space:]]+[^-][^[:space:]]*)?[[:space:]]+)*push([[:space:]]|$) ]]
 }
 
 # allow-comment: dd_stages_before_commit is true when a git add/stage runs in the same compound command as the commit. The PreToolUse gate fires before the command, so that staging has not run yet and its files are absent from the index the validator reads; the caller uses this to explain a path-not-found deny instead of leaving it bare. The message body is stripped first so an "add" inside the commit text does not count.
