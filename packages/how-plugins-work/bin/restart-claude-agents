@@ -1,0 +1,169 @@
+#!/usr/bin/env node
+// Restart running Claude Code background agents so a fresh process loads
+// updated plugins, preserving each agent's conversation context AND its
+// original launch flags (permission mode, disallowed-tools, settings, goal).
+//
+// Mechanism (Claude Code only):
+//   list    -> claude agents --json
+//   stop    -> SIGTERM the agent's pid (Claude Code exposes no stop verb)
+//   respawn -> claude --bg <respawnFlags> --resume <resumeSessionId> <intent>
+//
+// respawnFlags, resumeSessionId, and intent come from the agent's own job
+// state at ~/.claude/jobs/<id>/state.json, which Claude Code writes for every
+// background agent. Re-applying them is what keeps a bypassPermissions agent
+// in bypassPermissions, keeps its deny list, and re-arms its goal. When no job
+// state is found, the agent falls back to a plain context-preserving resume.
+//
+// Usage:
+//   restart-claude-agents list
+//   restart-claude-agents restart [id ...] [--force] [--cwd <path>] [--dry-run]
+
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+
+const CLAUDE = process.env.CLAUDE_BINARY || 'claude';
+
+const FALLBACK_PROMPT =
+  'You were restarted to load updated plugins. Your previous process was ' +
+  'stopped at an arbitrary point and this fresh process has replayed your ' +
+  'conversation. Your working directory is intact on disk. Run git status, ' +
+  'reconcile any unfinished work, then continue your mission from where you ' +
+  'left off.';
+
+function stripAnsi(s) {
+  return s.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+function listAgents() {
+  const out = execFileSync(CLAUDE, ['agents', '--json'], { encoding: 'utf8' });
+  return JSON.parse(out);
+}
+
+function backgroundAgents(agents) {
+  return agents.filter((a) => a.kind === 'background' && a.state !== 'done' && a.state !== 'failed');
+}
+
+function readJobState(jobId) {
+  const path = join(process.env.HOME || homedir(), '.claude', 'jobs', jobId, 'state.json');
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function respawnArgs(agent) {
+  const state = readJobState(agent.id);
+  const flags = state && Array.isArray(state.respawnFlags) ? state.respawnFlags : null;
+  const resumeId = (state && state.resumeSessionId) || agent.sessionId;
+  const intent = state && typeof state.intent === 'string' && state.intent.trim() ? state.intent : null;
+  const args = ['--bg'];
+  if (flags) args.push(...flags);
+  else args.push('--name', agent.name, '--setting-sources', 'user,project');
+  args.push('--resume', resumeId);
+  args.push(intent || FALLBACK_PROMPT);
+  return { args, preserved: Boolean(flags) };
+}
+
+function parseJobId(stdout) {
+  const m = stripAnsi(stdout || '').match(/backgrounded\s*[·-]\s*([a-z0-9-]+)/i);
+  return m ? m[1] : null;
+}
+
+function fmtAgent(a) {
+  const state = a.state ? `${a.status}/${a.state}` : a.status;
+  return `${a.id}  ${state.padEnd(14)}  ${a.name}\n       ${a.cwd}`;
+}
+
+function doList() {
+  const bg = backgroundAgents(listAgents());
+  if (bg.length === 0) {
+    process.stdout.write('No running background agents.\n');
+    return;
+  }
+  process.stdout.write(`${bg.length} running background agent(s):\n\n`);
+  for (const a of bg) process.stdout.write(fmtAgent(a) + '\n\n');
+}
+
+function restartOne(a, dryRun) {
+  const { args, preserved } = respawnArgs(a);
+  if (dryRun) {
+    return { name: a.name, oldId: a.id, cwd: a.cwd, newId: '(dry-run)', preserved };
+  }
+  try {
+    process.kill(a.pid, 'SIGTERM');
+  } catch (err) {
+    if (err.code !== 'ESRCH') throw err;
+  }
+  const res = spawnSync(CLAUDE, args, { cwd: a.cwd, encoding: 'utf8' });
+  if (res.status !== 0) {
+    throw new Error(`resume of ${a.id} (${a.name}) failed: ${stripAnsi(res.stderr || res.stdout || '')}`.trim());
+  }
+  return { name: a.name, oldId: a.id, cwd: a.cwd, newId: parseJobId(res.stdout), preserved };
+}
+
+function doRestart(argv) {
+  const ids = [];
+  let force = false;
+  let dryRun = false;
+  let cwdFilter = null;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--force') force = true;
+    else if (arg === '--dry-run') dryRun = true;
+    else if (arg === '--cwd') cwdFilter = argv[++i];
+    else if (arg.startsWith('--')) throw new Error(`unknown option: ${arg}`);
+    else ids.push(arg);
+  }
+
+  let targets = backgroundAgents(listAgents());
+  if (cwdFilter) targets = targets.filter((a) => a.cwd === cwdFilter || a.cwd.startsWith(cwdFilter + '/'));
+
+  if (ids.length > 0) {
+    const byId = new Map(targets.map((a) => [a.id, a]));
+    const picked = [];
+    for (const id of ids) {
+      const a = byId.get(id);
+      if (!a) throw new Error(`no running background agent with id ${id}`);
+      picked.push(a);
+    }
+    targets = picked;
+  } else if (!force) {
+    const skipped = targets.filter((a) => a.status !== 'idle');
+    targets = targets.filter((a) => a.status === 'idle');
+    if (skipped.length > 0) {
+      process.stdout.write(`Skipping ${skipped.length} non-idle agent(s) (pass --force or their id to include):\n`);
+      for (const a of skipped) process.stdout.write(`  ${a.id}  ${a.status}  ${a.name}\n`);
+      process.stdout.write('\n');
+    }
+  }
+
+  if (targets.length === 0) {
+    process.stdout.write('Nothing to restart.\n');
+    return;
+  }
+
+  const results = targets.map((a) => restartOne(a, dryRun));
+  process.stdout.write(`Restarted ${results.length} agent(s):\n\n`);
+  for (const r of results) {
+    const note = r.preserved ? '' : '  (no job state; plain resume under default permissions)';
+    process.stdout.write(`  ${r.oldId} -> ${r.newId ?? '(no job id parsed)'}  ${r.name}${note}\n       ${r.cwd}\n`);
+  }
+}
+
+function main() {
+  const [cmd, ...rest] = process.argv.slice(2);
+  if (!cmd || cmd === 'list') return doList();
+  if (cmd === 'restart') return doRestart(rest);
+  throw new Error(`unknown command: ${cmd} (expected: list | restart)`);
+}
+
+try {
+  main();
+} catch (err) {
+  process.stderr.write(`restart-claude-agents: ${err.message}\n`);
+  process.exit(1);
+}

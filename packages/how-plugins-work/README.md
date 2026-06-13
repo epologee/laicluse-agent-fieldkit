@@ -11,6 +11,20 @@ Loads the reference: how slash-command names map to plugins, how sub-skills
 resolve, when the `plugin:skill` form is required, how shared skills can be
 packaged for multiple agents, and where plugin caches fit.
 
+### `/test-before-push`
+
+Canonical procedure for rolling multi-agent marketplace changes out to Claude
+Code and Codex locally before pushing to GitHub.
+
+### `/restart-claude-agents`
+
+Restarts running Claude Code background agents so a fresh process loads updated
+plugins, preserving each agent's conversation, permissions, and goal. The
+companion to `/test-before-push`: where that tests plugin changes before
+pushing, this rolls them into agents already running the old version. Lists the
+running background agents first, restarts the idle ones by default, takes agent
+ids to target specific ones, and never touches interactive sessions.
+
 ## Auto-trigger
 
 Activates when diagnosing:

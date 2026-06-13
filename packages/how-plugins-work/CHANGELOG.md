@@ -20,6 +20,23 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.16]
+
+### Added
+
+- **`/restart-claude-agents` restarts running background agents so a fresh
+  process loads updated plugins.** A running agent holds its plugins in memory
+  from launch; there is no in-process reload, so picking up a changed plugin
+  means a new process. The command stops each background agent and resumes its
+  session with `claude --bg --resume`, re-applying the agent's original launch
+  flags from its job state (permission mode, disallowed-tools deny list,
+  settings, goal). An unattended `bypassPermissions` agent comes back in the
+  same mode with its safety net and mission intact, keeping its conversation
+  context. Lists first, restarts idle agents by default, takes agent ids to
+  target specific ones, and never touches interactive sessions. Companion to
+  `/test-before-push`: where that tests plugin changes before pushing, this
+  rolls them into agents already running the old version.
+
 ## [v2.0.13]
 
 ### Changed
