@@ -20,6 +20,17 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.7]
+
+### Fixed
+
+- **Copying a fenced prompt or prose no longer drags hard line-wraps into the
+  paste.** A fenced block is a display choice in the chat, not a signal to keep
+  the source line width. Only literal source, commands, or JSON stay
+  byte-for-byte; prompts, emails, and prose get their mid-sentence line breaks
+  reflowed so the paste re-wraps cleanly in the target. ASCII diagrams, tables,
+  and list items keep their newlines.
+
 ## [v2.0.1]
 
 ### Breaking

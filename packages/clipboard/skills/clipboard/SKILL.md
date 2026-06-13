@@ -56,7 +56,7 @@ Copy the core content of your last answer to the macOS clipboard via `clipboard-
 | Type | Recognition | Formatting |
 |------|-------------|------------|
 | **JSON** | JSON object/array in answer | Pretty-printed JSON, leave intact |
-| **Code** | Code block(s) in answer | Exact code without markdown fences |
+| **Code** | Literal source, commands, or JSON in a code block (NOT prose/a prompt that merely happens to be fenced) | Exact code without markdown fences |
 | **Command** | Shell command(s) | Commands, one per line |
 | **Email/letter** | Salutation, sign-off, formal tone | Paragraphs separated by double newline |
 | **Slack/chat** | Informal tone, short message | Continuous text, single newlines between paragraphs |
@@ -66,7 +66,31 @@ Copy the core content of your last answer to the macOS clipboard via `clipboard-
 
 **Mixed content:** When an answer contains code blocks with surrounding explanation, "Code" always wins over "Explanation/prose". The user wants to copy the code, not read the explanation in another window. Copy only the code blocks, leave the prose out.
 
+"Code wins" decides *which* content to copy, not whether to preserve wrapping. A fenced block that is actually a prompt, an email, or instructions is prose, not Code: copy it (it is the core content) and reflow its hard wraps per the reflow rule above. Only literal source/commands/JSON stay byte-for-byte.
+
 ## Formatting Rules
+
+### Reflow hard-wrapped prose (the whole point of clipboard)
+
+The reason to call clipboard is to get pure, re-flowable content. Hard line breaks
+in the middle of a sentence (the ~70-80 char wrapping Claude Code adds to its
+output, or manual wrapping you put in a fenced block) paste as ugly mid-sentence
+breaks in any target that does its own wrapping (chat, GitHub, docs, a prompt
+field). Collapse them.
+
+- **Within a paragraph:** join the wrapped lines into one continuous line. Let the
+  target wrap. Do not preserve the source line width.
+- **Between paragraphs:** keep exactly one blank line.
+- **Never reflow where the newline is meaningful:** code, commands, JSON, ASCII
+  diagrams, ASCII tables, and list items keep their line breaks exactly. Reflow
+  only running-prose blocks; a single answer can mix both (reflow the prose,
+  preserve the diagram).
+
+A block being shown inside a ``` fence is NOT a reason to preserve its wrapping.
+The fence is a display choice in the chat, not a signal about the content. If the
+fenced text is a prompt, an email, instructions, or any prose (not literal
+source/commands/JSON), reflow it exactly like prose. This is the most common miss:
+copying a fenced prompt verbatim drags every hard wrap into the paste.
 
 ### Cleaning up terminal artefacts
 
