@@ -94,10 +94,11 @@ git_discipline_synthesize_example() {
       ;;
     *)
       if [[ "$rtg_value" =~ ^n/a ]]; then
-        printf 'Verified: <operator-confirmed | <path> | n/a (reason)>\n'
+        printf 'Verified: <operator-confirmed | agent-confirmed | <path> | n/a (reason)>\n'
       else
-        printf 'Verified: <operator-confirmed | <path> | red-then-green | n/a (reason)>\n'
+        printf 'Verified: <operator-confirmed | agent-confirmed | <path> | red-then-green | n/a (reason)>\n'
       fi
+      printf 'Verified-how: Due to <reason>, this was confirmed by <what you ran and saw>  (required only when Verified: agent-confirmed)\n'
       ;;
   esac
 }

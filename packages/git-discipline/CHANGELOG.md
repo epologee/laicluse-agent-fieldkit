@@ -19,6 +19,20 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.21]
+
+### Added
+
+- **`Verified: agent-confirmed` is now a recognised anchor, paired with a
+  required `Verified-how:` trailer.** When the agent (not the operator) ran the
+  change and saw it work, `operator-confirmed` was a lie and the only honest
+  fallback was a vague `n/a`. `agent-confirmed` names that case directly, and
+  the companion `Verified-how:` trailer forces a concrete sentence of the shape
+  "Due to \<reason\>, this was confirmed by \<what the agent ran and saw\>" (>=
+  20 chars). Because that sentence lands in git, it leaves a paper trail to
+  catch a dishonest self-attestation later. A bare `agent-confirmed` without
+  `Verified-how:` is rejected with `missing-verified-how`.
+
 ## [v2.0.15]
 
 ### Breaking

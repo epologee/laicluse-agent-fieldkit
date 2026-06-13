@@ -54,7 +54,8 @@ each line at 72 chars so the line-length guard passes.
 
 Slice: <opt-out token or layer description>
 Red-then-green: <spec-path>:<line> # <test-name>   (or `n/a (reason)`)
-Verified: <operator-confirmed | path | red-then-green | n/a (reason)>
+Verified: <operator-confirmed | agent-confirmed | path | red-then-green | n/a (reason)>
+Verified-how: Due to <reason>, this was confirmed by <what you ran and saw>   (only with agent-confirmed)
 EOF
 )" # ack-rule<N>:<password>
 ```
@@ -204,7 +205,8 @@ Soft nudges (subject 51-72 chars) are non-blocking and appear as context.
 | `Tests` | comma-separated list of spec paths | when `Slice` is not an opt-out token |
 | `Red-then-green` | `yes` or `n/a (reason >= 10 chars)` | when `Slice` is not `docs-only`, `config-only`, `migration-only`, `spec-only`, or `chore-deps` |
 | `Visual` | file path or `n/a (reason >= 10 chars)` | when the staged diff touches UI files (see heuristic below) |
-| `Verified` | `operator-confirmed`, `<path>`, `red-then-green`, or `n/a (reason)` | when `Slice` is not an opt-out token |
+| `Verified` | `operator-confirmed`, `agent-confirmed`, `<path>`, `red-then-green`, or `n/a (reason)` | when `Slice` is not an opt-out token |
+| `Verified-how` | one sentence, `Due to <reason>, this was confirmed by <what the agent ran and saw>` (>= 20 chars) | when `Verified` is `agent-confirmed` |
 
 **`Slice` rules:** the value is either one of the eight opt-out tokens (see
 the next section), or free-form text describing which layers the commit
@@ -258,24 +260,26 @@ the rationale contains at least one of these category tokens (case-insensitive):
 `sound-only`, `audio-only`, `log-only`, `telemetry-only`. Rationale that
 matches none of these tokens is rejected with `verified-rationale-vague`.
 
-**`Verified` rules:** the trailer is the self-assessment "how was the new behaviour verified". The closed answer set covers the three legitimate anchors plus two opt-outs.
+**`Verified` rules:** the trailer is the self-assessment "how was the new behaviour verified". The closed answer set covers the four legitimate anchors plus the `n/a` opt-out.
 
 | Form | Meaning |
 |------|---------|
 | `operator-confirmed` | The operator confirmed the change works in this session (saw the UI flow run, ran the Siri Shortcut, hit the endpoint, etc.). The validator cannot anchor this claim, but the trailer makes it explicit so a later `git log` reader sees what backed the commit. |
+| `agent-confirmed` | The agent itself exercised the change this session (ran the code, smoke-tested, observed the output) rather than the operator. Requires a companion `Verified-how:` trailer with a concrete sentence (>= 20 chars) of the shape "Due to \<reason\>, this was confirmed by \<what the agent ran and saw\>". Because that sentence lands in git, it leaves a paper trail to catch a dishonest self-attestation later. |
 | `<path>` | A screenshot, recording, log dump, or curl-output stored in the repo. Resolved against repo root; the file must exist. Recognised extensions: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.heic`, `.svg`, `.tiff`, `.bmp`, `.mov`, `.mp4`, `.webm`, `.pdf`, `.txt`, `.log`, `.md`, `.json`, `.html`. Any value containing `/` is also treated as a path. |
 | `red-then-green` | The verification anchor is the `Red-then-green` trailer. Rejected when `Red-then-green` is itself `n/a (...)` (the chain is broken: tests cannot be both the verification and the not-applicable). |
 | `n/a (reason)` | Closed-enum rationale, same set as `Visual: n/a` (see `visual-rationale-vague` below). Bare `n/a` without rationale is rejected. |
 
 The trailer drops when `Slice` is one of the eight opt-out tokens (same exemption as `Tests`). It does **not** consult the UI-touch heuristic; it is required on every behaviour-bearing commit, not just UI commits, because the question "was this verified" applies to backend logic, intents, queues, and migrations alike.
 
-Why this trailer exists alongside `Tests`, `Red-then-green`, and `Visual`: the existing three trailers anchor specific anchors but never force a top-level answer to "is the behaviour itself verified". A backend behaviour change can pass the schema with no anchor when the UI-touch heuristic does not fire (e.g. `.swift` AppIntents that only `import AppIntents`). The `Verified` trailer closes that gap by asking the question directly: did the operator see this work, is there an artefact, was it covered by Red-then-green, or is there genuinely no behaviour to verify.
+Why this trailer exists alongside `Tests`, `Red-then-green`, and `Visual`: the existing three trailers anchor specific anchors but never force a top-level answer to "is the behaviour itself verified". A backend behaviour change can pass the schema with no anchor when the UI-touch heuristic does not fire (e.g. `.swift` AppIntents that only `import AppIntents`). The `Verified` trailer closes that gap by asking the question directly: did the operator see this work, did the agent run it, is there an artefact, was it covered by Red-then-green, or is there genuinely no behaviour to verify.
 
 Error codes:
 
 | Code | When |
 |------|------|
 | `missing-verified` | Trailer is absent on a non-opt-out commit, or the value is bare `n/a` without rationale, or the value is none of the recognised forms (e.g. `Verified: probably`). |
+| `missing-verified-how` | `Verified: agent-confirmed` without a companion `Verified-how:` trailer, or with one under 20 chars. Add a sentence naming why the agent verified instead of the operator and what it ran. |
 | `verified-path-not-found` | Path-form value points at a file that does not exist relative to repo root. |
 | `verified-red-then-green-mismatch` | `Verified: red-then-green` while `Red-then-green` is `n/a (...)`; pick a different Verified form. |
 | `verified-build-only-removed` | `Verified: build-only` is no longer accepted; supply a concrete anchor (`operator-confirmed`, `<path>`, `red-then-green`) or `n/a (reason)`. |

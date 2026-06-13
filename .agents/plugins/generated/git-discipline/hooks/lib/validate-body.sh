@@ -641,9 +641,16 @@ validate_body() {
     verified_value=$(printf '%s' "$verified_value" | sed 's/[[:space:]]*$//')
 
     if [[ -z "$verified_value" ]]; then
-      _vb_err 'missing-verified: Verified trailer is absent. Self-assessment required: how was the new behaviour verified? Use one of: "operator-confirmed" (operator saw it work this session), "<path>" (screenshot/recording/log artefact in repo), "red-then-green" (covered by Red-then-green trailer), or "n/a (reason)" with a recognised category token (extract-only, no behaviour change, copy-only, ...).'
+      _vb_err 'missing-verified: Verified trailer is absent. Self-assessment required: how was the new behaviour verified? Use one of: "operator-confirmed" (operator saw it work this session), "agent-confirmed" (the agent ran the change this session and saw it work), "<path>" (screenshot/recording/log artefact in repo), "red-then-green" (covered by Red-then-green trailer), or "n/a (reason)" with a recognised category token (extract-only, no behaviour change, copy-only, ...).'
     elif [[ "$verified_value" = "operator-confirmed" ]]; then
       : # OK: operator attested in conversation; nothing else to anchor.
+    elif [[ "$verified_value" = "agent-confirmed" ]]; then
+      local agent_how
+      agent_how=$(_vb_trailer_value "$trailers" "Verified-how")
+      agent_how=$(printf '%s' "$agent_how" | sed 's/[[:space:]]*$//')
+      if [[ ${#agent_how} -lt 20 ]]; then
+        _vb_err 'missing-verified-how: Verified: agent-confirmed requires a companion "Verified-how:" trailer with a concrete sentence (>= 20 chars) stating why the agent verified instead of the operator and how, in the shape "Due to <reason>, this was confirmed by <what the agent ran and observed>" (e.g. "Due to no operator at the keyboard, this was confirmed by running the helper against live agents and seeing the dry-run mapping print"). This keeps the self-attestation honest and leaves a paper trail.'
+      fi
     elif [[ "$verified_value" = "red-then-green" ]]; then
       # The Verified trailer points at the Red-then-green trailer as the
       # verification anchor. That only makes sense when Red-then-green is
@@ -652,14 +659,14 @@ validate_body() {
       # tests were the verification while simultaneously claiming no tests
       # apply.
       if [[ "$rtg_value" =~ ^n/a ]]; then
-        _vb_err "$(printf 'verified-red-then-green-mismatch: Verified: red-then-green requires the Red-then-green trailer to be a positive attestation (<path> / <path>:<line> %s <test-name>), but Red-then-green is "n/a". Pick a different Verified form (operator-confirmed, <path>, or n/a (reason)).' "$_vb_hash")"
+        _vb_err "$(printf 'verified-red-then-green-mismatch: Verified: red-then-green requires the Red-then-green trailer to be a positive attestation (<path> / <path>:<line> %s <test-name>), but Red-then-green is "n/a". Pick a different Verified form (operator-confirmed, agent-confirmed, <path>, or n/a (reason)).' "$_vb_hash")"
       fi
     elif [[ "$verified_value" = "build-only" ]]; then
       # build-only was a deferral mechanism that rarely materialised into
       # actual verification. The trailer no longer accepts it; supply a
       # concrete anchor (operator-confirmed, <path>, red-then-green) or
       # n/a (reason) when no behaviour applies.
-      _vb_err 'verified-build-only-removed: Verified: build-only is no longer accepted. Either exercise the change and supply Verified: <path> (screenshot / log / recording), Verified: operator-confirmed, or Verified: red-then-green (with a real Red-then-green anchor), or fall back to Verified: n/a (reason).'
+      _vb_err 'verified-build-only-removed: Verified: build-only is no longer accepted. Either exercise the change and supply Verified: <path> (screenshot / log / recording), Verified: operator-confirmed, Verified: agent-confirmed, or Verified: red-then-green (with a real Red-then-green anchor), or fall back to Verified: n/a (reason).'
     elif [[ "$verified_value" =~ ^n/a[[:space:]]*\((.+)\)$ ]]; then
       local v_rationale="${BASH_REMATCH[1]}"
       if [[ ${#v_rationale} -lt 10 ]]; then
@@ -689,7 +696,7 @@ validate_body() {
         _vb_err "$(printf 'verified-path-not-found: Verified path "%s" was not found on disk (relative to repo root). Add the artefact or use a different Verified form.' "$verified_value")"
       fi
     else
-      _vb_err "$(printf 'missing-verified: value must be "operator-confirmed", "red-then-green", "build-only", "<path>", or "n/a (reason)"; got: "%s"' "$verified_value")"
+      _vb_err "$(printf 'missing-verified: value must be "operator-confirmed", "agent-confirmed", "red-then-green", "build-only", "<path>", or "n/a (reason)"; got: "%s"' "$verified_value")"
     fi
   fi
 

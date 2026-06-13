@@ -1,9 +1,10 @@
 #!/usr/bin/env bats
 # Verified trailer: self-assessment of how the behaviour change was verified.
-# Closed set of forms: operator-confirmed, <artefact path>, red-then-green,
-# n/a (reason). Forces an explicit answer to "did the operator see this
-# work, is there a screenshot, or was there a red-then-green test" so a
-# commit cannot slip through on bare attestation. build-only was removed.
+# Closed set of forms: operator-confirmed, agent-confirmed (+ Verified-how),
+# <artefact path>, red-then-green, n/a (reason). Forces an explicit answer to
+# "did the operator see this work, did the agent run it, is there a screenshot,
+# or was there a red-then-green test" so a commit cannot slip through on bare
+# attestation. build-only was removed.
 
 load helpers
 
@@ -32,6 +33,30 @@ _trailers_with_verified() {
   local verified_value="$1"
   local rtg_value="${2:-n/a (test fixture, no spec applies)}"
   printf 'Tests: spec/services/session_spec.rb\nSlice: handler + service + spec\nRed-then-green: %s\nVerified: %s' "$rtg_value" "$verified_value"
+}
+
+# Helpers for agent-confirmed, which needs a companion Verified-how trailer.
+
+_body_with_agent_confirmed() {
+  local how_value="$1"
+  cat <<MSG
+Expose session boundary on transaction events
+
+When StartTransaction or StopTransaction messages arrive with a
+meter reading that fails domain validation, we previously rejected
+the entire event, which masked session starts and stops.
+
+Tests: spec/services/session_spec.rb
+Slice: handler + service + spec
+Red-then-green: n/a (test fixture, no spec applies)
+Verified: agent-confirmed
+Verified-how: ${how_value}
+MSG
+}
+
+_trailers_with_agent_confirmed() {
+  local how_value="$1"
+  printf 'Tests: spec/services/session_spec.rb\nSlice: handler + service + spec\nRed-then-green: n/a (test fixture, no spec applies)\nVerified: agent-confirmed\nVerified-how: %s' "$how_value"
 }
 
 # ---------------------------------------------------------------------------
@@ -112,6 +137,42 @@ _trailers_with_verified() {
   run invoke_validator "$file"
   [ "$status" -eq 1 ]
   [[ "$output" == *"verified-build-only-removed"* ]]
+}
+
+@test "Verified: agent-confirmed with a Verified-how sentence is accepted" {
+  export GIT_SHIM_LS_TREE_OUTPUT="spec/services/session_spec.rb"
+  local how="Due to no operator at the keyboard, this was confirmed by running the helper against live agents"
+  use_trailers "$(_trailers_with_agent_confirmed "$how")"
+
+  local file
+  file=$(write_fixture "verified-agent-ok.txt" "$(_body_with_agent_confirmed "$how")")
+
+  run invoke_validator "$file"
+  [ "$status" -eq 0 ]
+}
+
+@test "Verified: agent-confirmed without Verified-how fails missing-verified-how" {
+  export GIT_SHIM_LS_TREE_OUTPUT="spec/services/session_spec.rb"
+  use_trailers "$(_trailers_with_verified "agent-confirmed")"
+
+  local file
+  file=$(write_fixture "verified-agent-nohow.txt" "$(_body_with_verified "agent-confirmed")")
+
+  run invoke_validator "$file"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"missing-verified-how"* ]]
+}
+
+@test "Verified: agent-confirmed with a too-short Verified-how fails missing-verified-how" {
+  export GIT_SHIM_LS_TREE_OUTPUT="spec/services/session_spec.rb"
+  use_trailers "$(_trailers_with_agent_confirmed "ran it")"
+
+  local file
+  file=$(write_fixture "verified-agent-short.txt" "$(_body_with_agent_confirmed "ran it")")
+
+  run invoke_validator "$file"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"missing-verified-how"* ]]
 }
 
 @test "Verified: n/a with recognised category is accepted" {

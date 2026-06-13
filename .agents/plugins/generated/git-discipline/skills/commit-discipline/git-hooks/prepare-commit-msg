@@ -103,7 +103,7 @@ $(cat <<EOF
 Tests: <comma-separated spec paths that ran green>
 Slice: ${slice_suggestion}
 Red-then-green: <<path> | <path>:<line> # <test-name> | n/a (reason)>${visual_line}
-Verified: <operator-confirmed | <path> | red-then-green | n/a (reason)>
+Verified: <operator-confirmed | agent-confirmed | <path> | red-then-green | n/a (reason)>
 
 # Replace the placeholder values above before committing.
 # Red-then-green forms: "<path>" (the spec must be in the staged diff),
@@ -111,10 +111,12 @@ Verified: <operator-confirmed | <path> | red-then-green | n/a (reason)>
 #   a test declaration in the staged blob), or "n/a (rationale >= 10 chars)".
 #   Bare "yes" is no longer accepted. See /git-discipline:commit-discipline.
 # Verified forms: "operator-confirmed" (operator saw the change work this
-#   session), "<path>" (artefact in repo: screenshot/recording/log),
-#   "red-then-green" (covered by the Red-then-green trailer; not allowed
-#   when Red-then-green is n/a), or "n/a (rationale)" with a recognised
-#   category token (see /git-discipline:commit-discipline).
+#   session), "agent-confirmed" (the agent ran it this session; add a
+#   "Verified-how:" trailer with one sentence: "Due to <reason>, this was
+#   confirmed by <what you ran and saw>"), "<path>" (artefact in repo:
+#   screenshot/recording/log), "red-then-green" (covered by the Red-then-green
+#   trailer; not allowed when Red-then-green is n/a), or "n/a (rationale)"
+#   with a recognised category token (see /git-discipline:commit-discipline).
 # Auto-detected from your staged diff:
 #   Layers: ${layer_summary}
 #   Suggested Slice: ${slice_suggestion}
