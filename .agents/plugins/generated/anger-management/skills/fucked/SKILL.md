@@ -64,7 +64,7 @@ the install path through `codex plugin list`.
 
 3. If your harness has a scheduler (Claude Code: CronList/CronCreate) and no
    anger-management check-in job exists yet, schedule a recurring poll so the
-   diagnosis can surface when it lands: a modest interval (e.g. `*/5 * * * *`) whose
+   diagnosis can surface when it arrives: a modest interval (e.g. `*/5 * * * *`) whose
    prompt is: "Read
    `${LAICLUSE_HOME:-~/.laicluse}/anger-management/findings.md`. If it
    exists, tell the operator a repair diagnosis is ready and offer

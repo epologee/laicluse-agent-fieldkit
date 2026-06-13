@@ -1,6 +1,6 @@
 ---
 name: anger-management
-description: Invoked as /anger-management. A quick read-back of the cuss-capture log and its recurring clusters; for the actual fix pass use /anger-management:repair. Runs only when the operator types it.
+description: Invoked as /anger-management. A read-only window onto the cuss-capture pile, a tally with no analysis; /anger-management:repair is the single place that analyses the pile and fixes recurring issues. Runs only when the operator types it.
 ---
 
 <post-update-broadcast>
@@ -29,12 +29,12 @@ post-update broadcast path in this plugin; skip this block silently there.
 # Anger Management
 
 The cuss commands (`/fuck`, `/fucking`, `/fucked`, `/shit`, `/crap`, `/wtf`,
-`/bullshit`) capture one cheap friction line and let the operator get back to work.
+`/bullshit`) capture one cheap note and let the operator get back to work.
 This skill is the quick glance at that pile. The safeword commands (`/safeword`,
 `/pineapple`, `/pineapplejuice`, `/pinapplejuice`, `/flugelhorn`, `/banana`) are
 different: they interrupt current work and fix one visible friction point now, so
-they do not fill this log. For the real cooled-down fix pass over the delayed pile,
-use **`/anger-management:repair`**; this one just shows what is in the log.
+they do not fill this log. For the deeper delayed repair pass, use
+**`/anger-management:repair`**; this one just shows what is in the log.
 
 ## The log
 
@@ -51,18 +51,18 @@ repair.
 
 ## What to do
 
-A read-back, proportional to what is there. No fixing here, that is `repair`'s job.
+Read back the captures; do not judge them. Analysis and fixing both live in
+`/anger-management:repair`; this is only the window onto the pile.
 
-1. Read the log. No file or an empty one means nothing is captured yet: say so, point
-   at the cuss commands as what fills it, and mention that safewords do not go into
-   this pile.
-2. Surface the signal: cluster what recurs (same project via cwd/git, or the same theme
-   across projects). Count, do not transcribe. A lone capture is a bad moment, not a
-   pattern.
-3. Show the top recurring frictions, worst first: what it is, how often, where it bites.
-4. Point at the next step: `/anger-management:repair` is what actually judges whether
-   there is something concrete to fix and routes it. Do not route anything yourself
-   here.
+1. Read the log. No file or an empty one means nothing is captured yet: say so,
+   point at the cuss commands as what fills it, and mention that safewords do not
+   go into this pile.
+2. Tally, do not judge: counts by word, by project (cwd/git), and recency. Show
+   the raw shape of the pile, not a verdict on it. Deciding what is a pattern, and
+   what to do about it, is repair's call, not this view's.
+3. Point at the next step: `/anger-management:repair` analyses the pile and fixes
+   the recurring issue; a safeword fixes one issue immediately. Do not analyse or
+   route anything here.
 
 ## Notes
 
@@ -71,5 +71,5 @@ at the path, do not truncate it unprompted.
 
 ## Arguments
 
-- No argument: full read-back of the recurring clusters.
-- `<text>`: filter to a word, project, or theme and report only that slice.
+- No argument: full tally of the pile.
+- `<text>`: filter to a word, project, or theme and tally only that slice.

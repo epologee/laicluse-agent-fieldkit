@@ -2,51 +2,44 @@
 name: pinapplejuice
 user-invocable: true
 description: >-
-  Invoked as /pinapplejuice. A fix-now safeword: the operator still has enough mental
-  capacity to pause the current work and steer one visible friction point before
-  it becomes a delayed anger-management capture. Runs only when explicitly typed.
+  Invoked as /pinapplejuice. A fix-now safeword: the operator caught one visible
+  problem while they can still steer, and wants it fixed durably at its source
+  right now. The now-mode entry to /anger-management:repair with a single
+  instance. Runs only when explicitly typed.
 disable-model-invocation: true
 ---
 
 # /pinapplejuice
 
-The operator just used "pinapplejuice" as a fix-now safeword. This is not praise, not a
-timeout, not a reward loop, and not a delayed anger-management capture. It means:
-stop the current work, park the previous task for a moment, and fix the visible
-friction now.
+The operator just used "pinapplejuice" as a fix-now safeword: stop the current work and
+fix the problem they just caught, at its source, in this turn. Not praise, not a
+timeout, not a reward loop, and not a delayed capture.
 
-The issue may be a one-off. Do not force pattern analysis and do not write to the
-anger-management friction log. If the operator is already irritated, or is playing
-up irritation for effect, they can use the escalated cuss commands instead. This
-one is the lighter signal: "I see something going wrong and can still help steer."
+This is the now mode of `/anger-management:repair`: a single problem instead of
+the cooled-down pile. Repair owns the fixing steps; this command only frames the
+moment (now, not later) and what it works from (this one problem, not the log).
 
 ## What to do
 
-1. **Interrupt the current task.** Treat the safeword issue as the active blocker.
-   Preserve the previous task state, but do not keep executing that plan until this
-   friction is handled.
-2. **Name the concrete failure.** Identify what is going wrong now. If it is unclear,
-   ask one short clarifying question. If it is clear, do not ask for permission to
+1. **Interrupt the current task.** Treat what triggered the safeword as the active
+   blocker; preserve the prior task state but stop executing that plan until it is
+   handled.
+2. **Name the concrete failure.** Identify what is going wrong now. One short
+   clarifying question only if it is unclear; otherwise do not ask permission to
    investigate.
-3. **Get evidence before editing.** Reproduce the failure, inspect the relevant
-   source, or cite the exact contradictory instruction/output. For code or config,
-   prefer a focused RED check before GREEN when feasible.
-4. **Fix at the owner source.** Use the strongest fitting target: hook or
-   deterministic check, skill/plugin source, project code, then instruction file as
-   last resort. Do not patch runtime caches or generated targets as source; rebuild
-   generated adapters when the repo provides a command.
-5. **Verify.** Run the focused check that proves the fix. If the safeword concern
-   only needed a course correction in the current response, show the corrected
-   behavior and continue from there.
-6. **Keep the response short.** Say what you changed or how you corrected course,
-   include the verification, and then resume the prior work only when it still makes
-   sense.
+3. **Run `/anger-management:repair` in now mode on this one problem.** Walk
+   repair's fixing steps: get evidence, choose the strongest source by its
+   enforcement and scope ladders, make the smallest durable change (pruning in the
+   same pass), rebuild generated adapters, and verify. Do not write to the friction
+   log, advance the watermark, call `anger-resolve`, or start the delayed repair
+   worker; now mode touches no log.
+4. **Report and resume.** Say what changed and where, then resume the prior work
+   only when it still makes sense.
 
-## Hard Rules
+## Hard rules
 
-- Do not log this through `anger-log`.
-- Do not schedule the delayed repair worker.
-- Do not start `/anger-management:repair`.
-- Do not apologize, praise, or narrate emotional support.
-- Do not convert a one-off course correction into a durable rule unless the evidence
-  shows a durable source problem.
+- A bare acknowledgement is never the outcome: end in a real source-level change,
+  or the corrected behavior shown now with evidence it was a true one-off.
+- Default to a structural fix; conclude "one-off" only on evidence.
+- Do not log this, advance the watermark, or run the pile-mode recording.
+- Do not apologize, praise, or perform emotional support.

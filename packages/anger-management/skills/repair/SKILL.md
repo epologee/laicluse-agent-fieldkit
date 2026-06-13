@@ -1,16 +1,39 @@
 ---
 name: repair
 user-invocable: true
-description: Invoked as /anger-management:repair. Reads the accumulated cuss-capture log, judges whether there is one concrete recurring thing worth fixing, and if so applies or routes the owner-source fix. Runs only when the operator types it.
+description: Invoked as /anger-management:repair. Reads the accumulated cuss-capture log, judges whether there is one concrete recurring thing worth fixing, and if so fixes it at the owning source, or routes it there when a gate blocks the edit. Runs only when the operator types it.
 ---
 
 # Repair
 
-The constructive other half of the cuss commands. The operator captured some friction
-("cuss now, repair later"); this is the later: a cooled-down look at the whole pile.
-The steps below are the job; how you phrase any of it is for the local context to decide.
+Repair is where a captured problem gets fixed at its source. It takes over the
+fixing steps self-improvement used to run, and it fires in two modes that differ
+only in WHEN it runs and WHAT it reads. The fixing steps below are identical in
+both.
 
-## The log (global, it accumulates)
+This is the single place anger-management diagnoses a problem and fixes it.
+Nothing else judges: the cuss commands only capture into the pile,
+`/anger-management` only tallies it, and `findings.md` is this engine's own
+pile-analysis cached ahead of time, never a second analyser. One analyser, fed
+two ways.
+
+## Two modes
+
+- **Pile (cooled-down, async).** Invoked as `/anger-management:repair` or by the
+  background diagnosis. It reads the whole accumulated friction log: cluster,
+  weigh recurrence, gate on confidence, close the watermark. The log, verdict,
+  and recording sections are pile-only.
+- **Now (single instance).** Invoked from a safeword (`/safeword`, `/flugelhorn`,
+  and the other safewords) with the problem the operator just caught. It works
+  from that single instance: no cluster, no confidence gate, no `friction.jsonl`,
+  no `anger-resolve`, no watermark. Skip straight to the fixing steps for that one
+  problem.
+
+Both modes run the same fixing steps. A bare acknowledgement is never the outcome
+in either mode: end in a real source-level change, or, in now mode, the corrected
+behavior shown with evidence it was a true one-off.
+
+## The log (pile mode; global, it accumulates)
 
 One pile for every session and every repo:
 `${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl` (each line: ts, word, cwd,
@@ -25,7 +48,7 @@ old entries are recurrence evidence, and later entries after a repair can show
 that the earlier mitigation missed or overcorrected. This is why deferring helps:
 every extra capture across every session sharpens the picture.
 
-## What to do
+## Pile mode: read the log and judge
 
 1. **Use the background diagnosis only if it is fresh and complete.** If `findings.md`
    exists, read its first line (`as-of: <ts>`). If no capture in the pile is newer
@@ -63,23 +86,28 @@ every extra capture across every session sharpens the picture.
    - `none`: no credible mitigation yet.
 
    Scope ladder:
-   - `cross-agent-cross-project`: applies across repos or agent clients.
-   - `cross-project-stack`: applies across one framework or stack.
-   - `repo`: applies across the current repository.
-   - `subproject`: applies only below one package, app, service, or plugin.
+   - `cross-agent-cross-project`: covers repos or agent clients.
+   - `cross-project-stack`: covers one framework or stack.
+   - `repo`: covers the current repository.
+   - `subproject`: covers only below one package, app, service, or plugin.
    - `none`: no credible target scope yet.
 
    If confidence is below `0.80`, leave the captures open. The breadcrumb is
    useful evidence for a future pass; closing it would erase the trail before the
    pattern is understood.
 
-4. **If fix: scrutinise prior self-improvements first.** The operator mostly cusses
+4. **If the verdict is fix: scrutinise prior self-improvements first.** The operator mostly cusses
    when something RECURS despite earlier fixes. So before proposing a new rule, check
    `repairs.jsonl`: did a past repair already target this? If captures kept coming, the
    past fix probably overcorrected or missed. Prefer **reverting or loosening** that
    rule over piling another on. The right change is often subtraction.
 
-5. **Choose the owner source before editing.** The diagnosis, confidence call,
+## Fixing steps (both modes)
+
+Now mode enters here with the single problem as the target; pile mode arrives
+here only after a `fix` verdict.
+
+1. **Choose the owner source before editing.** The diagnosis, confidence call,
    mitigation-level choice, and target-scope choice belong to anger-management:
    do not hand the decision to self-improvement and do not delegate the diagnosis
    or target-layer choice. Use the target scope to choose the broadest correct
@@ -102,7 +130,7 @@ every extra capture across every session sharpens the picture.
    - Do not patch runtime caches. Find the canonical source and rebuild
      generated adapters or instruction targets when the repo provides a command.
    - After changing adapter-backed sources, rebuild generated adapters before
-     calling the repair complete.
+     calling the repair done.
 
    Skill, hook, and plugin authoring:
    - For a skill, sharpen an existing skill with a clearer trigger,
@@ -113,14 +141,19 @@ every extra capture across every session sharpens the picture.
    - Prune in the same pass: delete, shorten, merge, or loosen rules that caused
      the repeat instead of only appending new instructions.
 
-6. **Apply the fix yourself when the owner source is clear.** Edit the smallest
-   durable source, rebuild generated outputs, and run focused tests or checks.
-   If the fix crosses an explicit approval gate, stop at the gate with the
-   concrete patch plan. If the source cannot be found, say exactly what you checked,
-   leave the captures open, and do not call `anger-resolve`.
+2. **Fix it yourself when the source is clear.** Make the smallest durable source
+   change, prune duplicates in the same pass, rebuild generated outputs, and run
+   focused tests or checks. If the fix crosses an explicit approval gate,
+   stop at the gate with the concrete patch plan. If the source cannot be found,
+   say exactly what you checked; in pile mode leave the captures open and do not
+   call `anger-resolve`.
 
-7. **Record only real fixes.** When the fix is actually applied or explicitly
-   routed to the owner source, record it so its captures close. Resolve the
+## Recording (pile mode only)
+
+Now mode touched no log, so it records nothing and skips this section.
+
+**Record only real fixes.** When you fixed it, or routed the fix to its source,
+record it so its captures close. Resolve the
    loaded plugin root first; Claude Code exposes `${CLAUDE_PLUGIN_ROOT}`, and
    Codex exposes the install path through `codex plugin list`:
 
@@ -149,10 +182,14 @@ every extra capture across every session sharpens the picture.
    fix one, the others are marked covered too and will reopen on their next
    recurrence.
 
-8. **Keep it short, in the operator's language.** The verdict (and, when fixing, the
-   routed change) is the whole output.
+## Output
+
+Keep it short, in the operator's language. The verdict (and, when fixing, the
+routed change) is the whole output. In now mode, the routed change or the
+evidenced one-off correction is the whole output.
 
 ## Arguments
 
-- No argument: work the whole open pile.
-- `<text>`: treat as a filter (a word, a project, a theme) and work only that slice.
+- No argument: pile mode over the whole open pile.
+- `<text>`: pile mode filtered to a word, project, or theme.
+- A single problem passed in by a safeword: now mode on that one instance.
