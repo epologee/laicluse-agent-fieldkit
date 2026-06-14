@@ -19,7 +19,7 @@ End a loop on purpose, with a recap.
 ## What it does
 
 1. Locate the loop file. If an argument is given, use it. If not, list `.autonomous/*.md` candidates in the conversation and ask which to stop. The ask is only correct when stop was operator-invoked (see step 4 on attribution); when stop was rover-invoked the args carry the loop-file path already.
-2. Read `cron_job_id` from the file. If it names a live cron job, invoke `autonomous:cron` via the Skill tool to `CronDelete` that id. When the value is `none (persistent process)`, `paused`, `stopped`, or `failed`, there is no live cron to cut; skip the CronDelete and proceed.
+2. Read `cron_job_id` from the file. If it names a live cron job, invoke `autonomous:cron` via the Skill tool to `CronDelete` that id. When the value is `none (persistent process)`, `none (self-check heartbeat)`, `paused`, `stopped`, or `failed`, there is no live cron to cut; skip the CronDelete and proceed. The `none (self-check heartbeat)` case has a wake-up heartbeat rather than a cron; it ends simply by `stop` not scheduling another wake-up (the already-fired one was the last), so there is nothing to cancel here either.
 3. Set `cron_job_id: stopped` in the loop file.
 4. Append a final log entry with a timestamp from `date +%H:%M`. Attribute the stop correctly based on caller:
    - When the operator typed `/rover:stop` (the slash command, with or without a file path argument): `[HH:MM] Stopped by operator. Phase at stop: <PHASE>.`

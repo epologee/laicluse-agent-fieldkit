@@ -30,12 +30,16 @@ codex plugin add autonomous@laicluse-agent-tools
 codex plugin add gurus@laicluse-agent-tools
 ```
 
-**Host contract for persistent runs.** The keep-alive probe treats `CronCreate`
-availability as the interactive-vs-persistent signal. A host that runs missions
-as a persistent process (an Agent SDK run, a conveyor line) must withhold the
-cron tools, by adding `CronCreate`, `CronDelete`, and `CronList` to its
-disallowed-tools list; otherwise the probe reads the run as interactive and schedules
-an unused heartbeat. See `autonomous`'s `keepalive` skill for the full contract.
+**Host contract for persistent runs.** The keep-alive probe reads the process's
+scheduling hooks to pick a heartbeat. A host that runs missions as a persistent
+process (a conveyor line, a detached run) must withhold the cron tools, by adding
+`CronCreate`, `CronDelete`, and `CronList` to its disallowed-tools list;
+otherwise the probe reads the run as interactive and schedules an unused
+heartbeat. Leaving a self-pacing wake-up hook reachable (the conveyor `claude
+--bg` case) gets such a run a self-check heartbeat that keeps it from dying
+silently on the host's stall timer; withholding every scheduling hook makes it a
+pure batch run with no heartbeat. See `autonomous`'s `keepalive` skill for the
+full contract.
 
 No other hard dependencies. Optional integrations (notifier, reviewbot,
 commit-splitter) are user-named at invocation and only used when installed.

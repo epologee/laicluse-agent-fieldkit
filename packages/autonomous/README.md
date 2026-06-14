@@ -8,17 +8,22 @@ machinery is needed.
 
 The decision is a capability probe, not a caller flag. The `rover` plugin's
 decision framework calls this layer once at dispatch and asks a single
-question: am I in a persistent process, or an interactive session that pauses
-between turns? The probe answers from the runtime.
+question: what keeps me alive across turns, a cron, a self-paced wake-up, or
+nothing? The probe answers from the runtime.
 
 ## Why this is its own plugin
 
 A cron heartbeat is a workaround for one fact: an interactive TUI session is
 not a persistent process. It runs a turn, then waits for the operator, and an
 autonomous loop in that session stops between turns unless something re-enters
-the conversation. A detached process (an Agent SDK run, a conveyor line) has the
-opposite shape: it keeps executing until the mission completes, so a heartbeat
-there is dead weight.
+the conversation. A persistent process (a conveyor line, a detached run) keeps
+executing rather than waiting on the operator, but that does not make it
+immortal: it can still end a turn quietly and go silent, and a host that watches
+for stalls will kill a silent run. When such a process can schedule its own
+wake-up (the conveyor `claude --bg` case exposes one even with the cron tools
+withheld), it gets a self-paced heartbeat instead of a cron. Only a true
+single-pass batch run, which exposes no scheduling hook at all, needs no
+heartbeat.
 
 Splitting the keep-alive machinery out of the decision framework means the
 caller no longer has to know any of this. It invokes `rover`, the rover invokes
@@ -29,14 +34,21 @@ caller no longer has to know any of this. It invokes `rover`, the rover invokes
 All skills here are internal: the `rover` plugin loads them, the operator does
 not invoke them directly.
 
-- **`keepalive`**: the startup probe and front door. Checks whether `CronCreate`
-  is available in this process. Available means an interactive session, so it
-  schedules a cron heartbeat through `cron` and returns the job id. Absent means a
-  persistent process, so it schedules nothing and reports back that the mission
-  should just drive to completion.
+- **`keepalive`**: the startup probe and front door. Checks which scheduling
+  hooks the process exposes. `CronCreate` available means an interactive session,
+  so it schedules a cron heartbeat through `cron` and returns the job id. No cron
+  but a self-pacing wake-up hook means a persistent process that can still fall
+  silent, so it schedules a self-check heartbeat through `selfcheck`. Neither
+  hook means a pure batch run, so it schedules nothing and reports back that the
+  mission should just drive to completion.
 - **`cron`**: the cadence machine. CronCreate, CronDelete, exponential backoff
   when the field goes quiet, auto-stop after sustained idleness, and cron
   restoration after a session restart.
+- **`selfcheck`**: the self-paced heartbeat for a persistent process with a
+  wake-up hook but no cron. Re-enters on an interval below the host's stall
+  window, re-engages a quietly-ended turn, writes a progress beat that resets the
+  stall timer, and reaches a terminal verdict when the work is truly done or
+  blocked. Ends by not rescheduling.
 - **`wake`**: bring a stalled mission back online. Reads the loop file, relights
   the cron, summarises where the traverse left off, and fires the next
   iteration. Reached via `rover:rover` with a loop-file path.
@@ -48,15 +60,17 @@ plugin: install `rover@laicluse-agent-tools` and use `/rover:rover`,
 
 ## The probe and its one assumption
 
-The probe is correct only when need and availability coincide: a host that runs
-a mission as a persistent process must withhold `CronCreate` (for example by
-adding the cron tools to its disallowed-tools list), and a host whose sessions
-go idle must expose it. When a persistent host still exposes the cron tools the
-probe over-detects interactive and schedules a heartbeat. On the normal path that is
-dead weight: a process that runs to completion never goes idle, so the cron
-never fires and is torn down with the session. Only an abnormal exit can leave
-it as an orphan, which the `wake` restore path reaps on the next relight. See
-`skills/keepalive/SKILL.md` for the full contract.
+The probe is correct only when need and availability coincide: a host whose
+sessions go idle between turns must expose `CronCreate`; a host that runs a
+persistent process which can still fall silent (the conveyor case) must withhold
+the cron tools but leave a self-pacing wake-up hook reachable; and only a true
+single-pass batch run should expose neither. When a persistent host still
+exposes the cron tools the probe over-detects interactive and schedules a cron
+heartbeat. On the normal path that is dead weight: a process that runs to
+completion never goes idle, so the cron never fires and is torn down with the
+session. Only an abnormal exit can leave it as an orphan, which the `wake`
+restore path reaps on the next relight. See `skills/keepalive/SKILL.md` for the
+full contract.
 
 ## Companion plugin
 
