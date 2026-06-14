@@ -11,7 +11,7 @@ The heartbeat for a persistent process that has no cron but can schedule its own
 
 ## The hook this runtime exposes
 
-The mechanism is whatever **self-pacing wake-up hook** the runtime exposes. In a Claude harness running `claude --bg` (the conveyor case) that hook is the `ScheduleWakeup` tool. `keepalive` confirmed in this runtime that `ScheduleWakeup` is reachable while `CronCreate` is withheld (the conveyor agent withholds the cron tools precisely so the probe does not misread it as interactive); the two are disjoint there, so the self-pacing hook is exactly the heartbeat a withheld-cron run is left with. The probe checks for the hook at runtime rather than assuming it: if it turns out unreachable, keepalive falls through to the no-heartbeat batch branch, so a wrong guess degrades to the old behaviour rather than to a broken run. Future agents and harnesses may expose a differently-named hook with the same shape (schedule a re-entry after N seconds, carrying a prompt that fires when the process next goes idle). This skill is written against that shape, with `ScheduleWakeup` as the concrete instance the Claude harness ships; this matches the rest of the autonomy layer, where `cron` and `keepalive` name their Claude tools (`CronCreate`, `CronList`) the same way.
+`keepalive` routes here only after its probe confirms the runtime exposes a **self-pacing wake-up hook** but no cron (see `keepalive` for the probe and why the two tool sets are disjoint by host design). The mechanism is whatever such hook the runtime exposes. In a Claude harness running `claude --bg` (the conveyor case) it is the `ScheduleWakeup` tool. Future agents and harnesses may expose a differently-named hook of the same shape — schedule a re-entry after N seconds, carrying a prompt that fires when the process next goes idle — and this skill is written against that shape, with `ScheduleWakeup` as the concrete instance the Claude harness ships; this matches the rest of the autonomy layer, where `cron` and `keepalive` name their Claude tools (`CronCreate`, `CronList`) the same way.
 
 The hook fires on idle, the same way cron does: a re-entry scheduled while the process is mid-turn waits until that turn yields. That is the point. The heartbeat is the safety net for the gap *between* turns, where a turn that closed without re-driving the next one would otherwise sit forever.
 
@@ -25,22 +25,22 @@ This skill acts only when there is a real self-pacing hook to act on. It is a no
 SELFCHECK_INTERVAL_SECONDS = 270   # 4.5 minutes
 ```
 
-The one constraint that fixes this number is the **stall window**: the interval must fire well below it, so the beat each check writes resets the host's stall timer with margin before it expires. The conveyor expediter's stall window is 10 minutes (see the cross-repo pointer below); 270 seconds leaves a 5.5-minute margin. The margin is not the whole interval, though: because the wake-up fires on idle, the real gap between beats is the interval plus however long the turn in flight when it fires runs before yielding. A turn that runs four minutes before yielding stretches the effective gap to roughly 8.5 minutes, still inside the 10-minute window but no longer comfortable. So the margin absorbs ordinary turn lengths; a turn that by itself approaches `window − interval` is the regime the boundary section calls out, not a margin this constant can widen.
+The constraint that fixes this number is one inequality: `interval < stall_window − longest_expected_turn`. Because the wake-up fires on idle, the real gap between two beats is the interval plus however long the turn in flight when it fires runs before yielding; that sum must stay under the host's stall window. With the conveyor's 10-minute window, 270s leaves the interval itself 5.5 minutes of headroom and still clears the window after a four-minute turn (≈8.5 minutes total). A turn that by itself approaches `window − interval` is the regime the boundary section calls out, not a margin this constant can widen.
 
-A secondary, conditional reason nudges the exact value down to 270 rather than, say, 300: when the runtime's context is prompt-cached with a short TTL, a re-entry inside the TTL reads cached context instead of paying a full cache miss. The Claude harness's own `ScheduleWakeup` guidance documents a 5-minute cache TTL and flags 300s as the worst case (you pay the miss without amortising it); 270s stays just inside the window. If a given runtime caches differently or not at all, this reason simply does not apply and the stall-window reason alone still picks a sub-window interval.
+The value lands on 270 rather than 300 for a secondary reason that only some runtimes have: a prompt cache with a short TTL. A re-entry inside the TTL reads cached context instead of paying a full miss; the Claude harness's `ScheduleWakeup` guidance documents a 5-minute TTL and flags 300s as the worst case, so 270s stays just inside it. Where a runtime caches differently or not at all, this drops away and the inequality alone still picks a sub-window interval.
 
-**Invariant, not a magic number.** This default is tied to the host stall window on purpose. If a host's stall window changes, this constant must be revisited so the two never drift silently into a state where the beat lands too late. The interval is deliberately a fixed default in this layer, not derived from the host's stall configuration across a repository boundary (that cross-repo coupling is the mission's named follow-up, not built here) and not tuned per-order (no mission needs that surface today; a per-order frontmatter override is a future hook, not built).
+**Invariant, not a magic number.** The default is tied to the host stall window on purpose; if that window changes, this constant must be revisited so the beat never lands too late. It is deliberately a fixed default in this layer, not derived from the host's config across a repo boundary (that cross-repo coupling is the mission's named follow-up) and not tuned per-order (a per-order override is a future hook, not built).
 
-**Where the stall window lives (cross-repo pointer).** For the conveyor, the window is `STALL_TIMEOUT_MS` in `laicluse-agent-workbench`, `packages/conveyor/skills/start/bin/conveyor-start.mjs`, consumed by `pollUntilComplete` in `conveyor-lib.mjs`. A maintainer who changes it there should grep `SELFCHECK_INTERVAL_SECONDS` here and confirm the margin still holds; nothing enforces this automatically across the repo boundary, so the pointer is the discovery path. (A separate `GOAL_STALL_TIMEOUT_MS` of 5 minutes exists but only applies once the job-state reaches `done`, a different terminal condition; the 10-minute window is the one a live, still-working run races.)
-
-The hook clamps the delay to a sane range; 270 is well inside it.
+*See also — where the stall window lives:* for the conveyor it is `STALL_TIMEOUT_MS` in `laicluse-agent-workbench`, `packages/conveyor/skills/start/bin/conveyor-start.mjs`, consumed by `pollUntilComplete` in `conveyor-lib.mjs`. A maintainer changing it there should grep `SELFCHECK_INTERVAL_SECONDS` here; nothing enforces the link automatically, so this pointer is the discovery path. (A separate `GOAL_STALL_TIMEOUT_MS` of 5 minutes applies only once the job-state reaches `done`; the 10-minute window is the one a live, still-working run races.) The hook clamps the delay to a sane range; 270 is well inside it.
 
 ## Setup (first wake-up)
 
 `keepalive` calls this skill when its startup probe finds a persistent process that exposes a wake-up hook. Your job:
 
+The loop-file path arrives as the skill argument from `keepalive`, the same way `cron` receives its caller's path. Your job:
+
 1. Schedule the first self-check wake-up via the runtime's hook (`ScheduleWakeup` in the Claude harness) at `SELFCHECK_INTERVAL_SECONDS`, carrying the standard self-check prompt below with `<FILENAME>` filled in.
-2. Return the sentinel `none (self-check heartbeat)` to the caller so it writes `cron_job_id: none (self-check heartbeat)` into the loop file. (The field name stays `cron_job_id` for one uniform marker across all runtime modes; there is no live cron, the marker just records that a wake-up heartbeat is active.)
+2. Return the sentinel `none (self-check heartbeat)` to the caller so it writes that value into the loop file's `cron_job_id`. The value is one of the canonical markers defined in `autonomous:keepalive` ("The return contract"); that section is the single owner of the marker vocabulary. The field name stays `cron_job_id` across all runtime modes for one uniform marker; here there is no live cron, the marker just records that a wake-up heartbeat is active.
 
 The loop file does not have to exist yet at the moment of the first schedule; a wake-up that fires before the file lands does nothing that tick and the next one retries, exactly as cron's setup does.
 
@@ -49,65 +49,79 @@ The loop file does not have to exist yet at the moment of the first schedule; a 
 ```
 Self-check heartbeat. Read the file `.autonomous/<FILENAME>.md` in this
 project. If it does not exist yet, the main run is still finishing setup;
-do nothing this tick. Otherwise run one self-check:
+do nothing this tick. Otherwise run one self-check. Acquire the loop-file
+lock first (the same lock `cron` and `wake` use, see autonomous:cron's
+concurrency section) so two fires cannot act at once; release it at the end.
 
 1. Run `date +%H:%M` first; never guess the time. Read the Phase, the
-   `cron_job_id`, and the tail of the Log. Note the timestamp of the
-   PREVIOUS `self-check:` beat in the Log (if any); that is your reference
-   point for what counts as new progress.
-2. If `cron_job_id` is `stopped`, `paused`, or `failed`, the run was already
-   cut (a wake-up that was in flight when `stop` ran). Write one beat noting
-   the terminal marker, do NOT re-engage the phase machine, and do NOT
-   reschedule. The heartbeat is over. Stop here.
-3. Otherwise classify the run. The discriminator is REAL progress, not your
-   own beats: a `self-check:` Log line is never progress. Real progress is a
-   Phase change, or any non-beat Log entry, dated after the previous
-   `self-check:` beat.
-   - PROGRESSING: there IS real progress since the previous beat (or this is
-     the first beat and the last non-beat entry is newer than one interval).
-     The run is driving itself. Write one beat
+   `cron_job_id`, and the tail of the Log.
+
+2. STAND DOWN unless this is still the active self-check heartbeat. If
+   `cron_job_id` is anything other than `none (self-check heartbeat)` — a
+   live cron id (a `wake` re-decided this run as interactive), or `stopped`,
+   `paused`, `failed` (the run was cut) — this wake-up is a leftover, not the
+   live heartbeat. Write one beat noting the marker, do NOT re-engage, do NOT
+   reschedule. Stop here.
+
+3. FIRST FIRE: if the Log holds no earlier `self-check:` beat, this is the
+   first fire. Write one beat (`[HH:MM] self-check: first beat, Phase <X>`)
+   and reschedule. Do not classify or re-engage on the first fire; you have
+   no prior beat to measure progress against yet.
+
+4. Otherwise classify, measuring against the PREVIOUS `self-check:` beat.
+   Your own beats are never progress: a `self-check:` Log line does not
+   count. Real progress is a Phase change or any non-beat Log entry dated
+   after the previous beat.
+   - PROGRESSING: there is real progress since the previous beat. The run is
+     driving itself. Write a beat
      (`[HH:MM] self-check: progressing, Phase <X>`) and reschedule.
-   - WAITING: no real progress, but the latest non-beat Log entry explicitly
-     says the run is parked on an external arrival channel that re-enters on
-     its own (a bg task that will notify, an operator message). Write a beat
-     naming what it waits on and reschedule. Do NOT re-engage; double-driving
-     a parked mission is wrong.
-   - STALLED: no real progress and no wait annotation — the phase machine
-     should have advanced but a turn ended without re-driving, and only beats
-     have kept the file warm. This is the case the heartbeat exists for.
-     Re-engage: follow the `## Instructions` section of THIS loop file for the
-     current Phase and do its next action, write a beat
+   - WAITING: no real progress, AND the latest non-beat Log entry names an
+     external arrival channel that will re-enter THIS run on its own — a bg
+     task that will notify, or an operator message. (A cron is not such a
+     channel: this run has no cron, so "waiting on a cron tick" is a STALL,
+     not a WAIT.) Write a beat naming what it waits on and reschedule. Do NOT
+     re-engage; double-driving a parked mission is wrong.
+   - STALLED: anything else — no real progress and no qualifying wait. When
+     in doubt between WAITING and STALLED, choose STALLED: a redundant
+     re-drive is cheap, a missed one is the silent death this exists to stop.
+     Re-engage: follow the `## Instructions` section of THIS loop file for
+     the current Phase and do its next action, write a beat
      (`[HH:MM] self-check: re-engaged <Phase>, <what you did>`), then
      reschedule.
-4. If the run is genuinely finished or genuinely blocked with no path
-   forward, do not reschedule: reach a terminal verdict by invoking `stop`
-   with this loop file's path as the argument (`.autonomous/<FILENAME>.md`),
-   done or failed with a concrete reason. Passing the path matters: `stop`
-   with no argument asks an operator which file to stop, and no operator is
-   present. Ending the heartbeat is simply not scheduling another wake-up.
 
-To reschedule in steps 3's PROGRESSING/WAITING/STALLED branches: schedule
-the next wake-up at the heartbeat interval, carrying THIS SAME prompt with
-`<FILENAME>` already substituted to the real filename, so the next fire is
-identical to this one.
+5. If the run is genuinely finished or genuinely blocked with no path
+   forward, do not reschedule: reach a terminal verdict by invoking
+   `rover:stop` with this loop file's path as the argument
+   (`.autonomous/<FILENAME>.md`) — passing the path matters, with no argument
+   `stop` asks an operator which file to stop and none is present. If `stop`
+   instead bounces the run back to DRIVE (it found unresolved work), the run
+   was not finished after all: treat that as a re-engage and reschedule
+   rather than calling `stop` again. Ending the heartbeat is simply not
+   scheduling another wake-up.
 
-Every fire writes a timestamped Log beat. Writing to the loop file bumps
-its modification time, which is the signal a host stall detector watches
-(the conveyor poll mixes the loop file's mtime into its progress stamp);
-a silent fire that resets nothing defeats the entire purpose.
+To reschedule (steps 3 and 4): schedule the next wake-up at the heartbeat
+interval, carrying THIS SAME prompt with `<FILENAME>` already substituted,
+so the next fire is identical to this one.
+
+Every fire writes one timestamped Log beat. That loop-file write is how the
+host detects the run is still alive (it resets the host's stall timer); a
+fire that resets nothing defeats the entire purpose.
 ```
 
-Replace `<FILENAME>` with the actual file (both in the body and in the
-step-4 `stop` argument) before scheduling the first wake-up; every later
-reschedule carries that already-substituted prompt forward unchanged.
+Replace `<FILENAME>` (the bare loop-file stem, e.g. `BUILD-AUTH-PAGE`, not
+the path or the `.md`) everywhere it appears — the read path, the step-5
+`stop` argument — before scheduling the first wake-up; every later
+reschedule carries that already-substituted prompt forward unchanged. The
+prompt is frozen at first schedule: a later edit to this skill does not
+reach an in-flight run, which carries the version that started it.
 
-## The re-entry contract
+## Why the prompt is shaped this way
 
-Each time the hook fires, the run does exactly one self-check (the prompt above), then either reschedules the next wake-up or stops rescheduling. Three properties hold every fire:
+The prompt above is the normative contract; this section is only the reasoning behind its three load-bearing moves. A *beat* throughout is one timestamped Log line written by a fire; the *heartbeat* is the recurring wake-up mechanism. The two are not the same word for the same thing.
 
-- **A beat is always written.** Progressing, waiting, or stalled, the check writes one timestamped Log line. The write bumps the loop file's modification time, which the host's stall detector mixes into the progress signal it watches (the conveyor poll reads the loop file's mtime); that is what resets the stall timer. A fire that does real work but logs nothing is a fire that did not happen, as far as the host can tell.
-- **Stalled means re-engage, not just observe.** The whole reason a quietly-ended turn is dangerous is that nothing re-drives it. The self-check is that re-drive: when it finds the phase machine should have advanced, it does the next phase action itself, the same way a cron tick would.
-- **Terminal verdict beats blind stall.** A run that is actually done or actually blocked reaches `stop` with a real conclusion, instead of going silent and letting the host's stall timer kill it with a generic "went silent". The operator gets a reason either way.
+- **A beat is always written, even on a quiet pass.** The whole value of a fire is the loop-file write it produces: that write is how the host tells a live run from a dead one (see "The interval" for the concrete conveyor signal). A fire that decides "nothing to do" and writes nothing is, to the host, indistinguishable from a process that died.
+- **Stalled means re-engage, not just observe.** A quietly-ended turn is dangerous precisely because nothing re-drives it. The self-check is that re-drive: it does the next phase action itself, the same way a cron tick would. A heartbeat that only noted the stall without acting would still let the run die, slower.
+- **A terminal verdict beats a blind stall.** A run that is actually finished or actually blocked reaches `stop` with a real conclusion, so the operator reads a reason instead of a generic "went silent" from the host's stall timer.
 
 ## Teardown
 
@@ -115,7 +129,7 @@ There is no cron to delete. The heartbeat ends by **not scheduling the next wake
 
 ## The boundary this does not cover
 
-The wake-up hook fires on idle, so this skill covers the gap *between* turns. It does not cover a single unbroken turn that runs longer than the host's stall window and writes nothing to the loop file the whole time: with no idle moment the wake-up cannot fire, and with no loop-file write the host sees no progress. In practice a rover rarely sits in one such turn, because the work is naturally chopped into turns (each INSPECT pass, each `decide`, each commit is its own turn that yields to idle and touches the loop file), and any of those touches resets the timer on its own. The residual risk is one tool call that genuinely blocks for longer than the window without writing anything, for example a single subagent spawn that runs the full window in one shot. Catching a run that is *alive but quiet* inside one such call is a different problem, solved on the host side (a stall detector that distinguishes a live-but-busy run from a dead one — the conveyor's `readHeartbeat` stamp is the seam where that would live), not here. Naming the boundary keeps it honest rather than hidden; it is the mission's named complementary host-side fix, not a gap this skill pretends to close.
+The wake-up fires on idle, so this skill covers the gap *between* turns, not a single unbroken turn that runs past the stall window while writing nothing: with no idle moment the wake-up cannot fire, and with no write the host sees no progress. In practice the work is chopped into turns — each INSPECT pass, each `decide`, each commit yields to idle and touches the loop file — so any of those resets the timer on its own; the residual risk is one tool call (a subagent spawn, say) that blocks the full window in one shot. Catching a run that is *alive but quiet* inside such a call is a host-side problem (a stall detector that tells live-but-busy from dead), not this skill's; the same idle-fire limit applies to `cron`, which an interactive operator is present to notice. Naming the boundary keeps it honest; it is the mission's named complementary host-side fix, not a gap this skill pretends to close.
 
 ## Why a separate skill
 

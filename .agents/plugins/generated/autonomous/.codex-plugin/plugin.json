@@ -1,6 +1,6 @@
 {
   "name": "autonomous",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "description": "Keep an autonomous mission running across turns. A startup capability probe decides whether keep-alive machinery is needed: a cron heartbeat with exponential backoff, auto-stop, and wake/restore for an interactive session; nothing for a persistent process. The rover plugin's decision framework calls this layer at dispatch.",
   "author": {
     "name": "local"

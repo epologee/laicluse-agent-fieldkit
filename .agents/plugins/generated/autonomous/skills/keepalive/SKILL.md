@@ -66,6 +66,17 @@ Keepalive hands the caller exactly one value for the loop file's `cron_job_id` f
 
 The caller (see `rover` setup) writes that value into the loop file and continues. With a cron, the loop's cron-dependent behaviour (STANDBY backoff, interjection reschedule, `wake` restore) is live. With a self-check heartbeat, the wake-up re-enters on its interval, beats the host stall timer, and ends by not rescheduling; the cron-specific machinery no-ops (no cron exists) while `selfcheck` carries the heartbeat. With neither, the phase machine runs once, end to end, and the mission ends through `stop`.
 
+**Canonical `cron_job_id` vocabulary.** This is the single owner of the marker strings every reader keys on. `cron`, `wake`, `stop`, and the `rover` loop-file template branch on these exact values; they reference this list rather than redefining it, so the spelling lives in one place:
+
+| Value | Meaning |
+|-------|---------|
+| a cron job id | a live cron heartbeat (interactive session) |
+| `none (self-check heartbeat)` | a self-paced wake-up heartbeat is active (persistent process) |
+| `none (persistent process)` | no heartbeat; pure batch run |
+| `paused` | a cron was paused (its arrival channel will relight it) |
+| `stopped` | terminal; `stop` cut the heartbeat |
+| `failed` | terminal; `CronCreate` failed and the loop has no cron |
+
 ## The load-bearing assumption
 
 This is a deliberate design choice, not a natural law: the autonomy layer **reads the runtime's scheduling hooks as the signal for which heartbeat (if any) it needs**. The probe is only correct when **need and availability coincide**: a host whose sessions go idle between turns must expose `CronCreate`; a host that runs a persistent process which can still fall silent must expose a self-pacing wake-up hook; and only a host running a true single-pass batch should expose neither. Capability and need are braided into one on purpose, because the probe then needs no coordination between the caller and the host: an explicit flag would require both sides to agree on a name and a value, and that agreement is itself state this design eliminates. The trade is that a host changing its tool configuration is also changing heartbeat semantics; that coupling is the price of the zero-coordination contract.
