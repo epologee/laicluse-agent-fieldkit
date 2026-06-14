@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, statSync } from 'node:fs';
+import { join, resolve, dirname, basename } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 export function git(repo, args) {
@@ -74,6 +74,74 @@ export function createWorktree({ repo, branch, base }) {
   }
   git(repo, ['worktree', 'add', '-b', branch, worktree, resolvedBase]);
   return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dir) };
+}
+
+const INSTALL_COMMANDS = {
+  yarn: ['yarn', ['install', '--frozen-lockfile']],
+  pnpm: ['pnpm', ['install', '--frozen-lockfile']],
+  bun: ['bun', ['install']],
+  npm: ['npm', ['install']],
+  bundler: ['bundle', ['install']],
+};
+
+function readBonsaiList(repo) {
+  const file = join(repo, '.bonsai');
+  if (!existsSync(file)) return [];
+  return readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'));
+}
+
+export function detectInstalls(worktree) {
+  const dirs = [worktree];
+  for (const name of readdirSync(worktree)) {
+    if (name === 'node_modules') continue;
+    const p = join(worktree, name);
+    try {
+      if (statSync(p).isDirectory()) dirs.push(p);
+    } catch {}
+  }
+  const installs = [];
+  for (const dir of dirs) {
+    if (existsSync(join(dir, 'package.json'))) {
+      const manager = existsSync(join(dir, 'yarn.lock')) ? 'yarn'
+        : existsSync(join(dir, 'pnpm-lock.yaml')) ? 'pnpm'
+        : (existsSync(join(dir, 'bun.lock')) || existsSync(join(dir, 'bun.lockb'))) ? 'bun'
+        : 'npm';
+      installs.push({ dir, manager });
+    }
+    if (existsSync(join(dir, 'Gemfile'))) installs.push({ dir, manager: 'bundler' });
+  }
+  return installs;
+}
+
+export function setupWorktree({ repo, worktree, install = true, exec = execFileSync }) {
+  if (!existsSync(worktree)) throw new Error(`worktree ${worktree} does not exist`);
+  const copied = [];
+  const warnings = [];
+  for (const rel of readBonsaiList(repo)) {
+    const from = join(repo, rel);
+    if (!existsSync(from)) continue;
+    const to = join(worktree, rel);
+    mkdirSync(dirname(to), { recursive: true });
+    copyFileSync(from, to);
+    copied.push(rel);
+  }
+  const installs = detectInstalls(worktree);
+  let ran = false;
+  if (install) {
+    for (const { dir, manager } of installs) {
+      const [cmd, args] = INSTALL_COMMANDS[manager];
+      try {
+        exec(cmd, args, { cwd: dir, stdio: ['ignore', 'pipe', 'pipe'] });
+        ran = true;
+      } catch (err) {
+        warnings.push(`install in ${dir} via ${manager} failed: ${err.message.split('\n')[0]}`);
+      }
+    }
+  }
+  return { worktree, copied, installs, ran, warnings };
 }
 
 export function defaultBranch(repo) {

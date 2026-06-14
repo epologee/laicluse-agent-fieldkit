@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { createWorktree, teardownWorktree } from './bonsai-lib.mjs';
+import { createWorktree, teardownWorktree, setupWorktree } from './bonsai-lib.mjs';
 
 const USAGE = `usage: bonsai <command> [options]
 
@@ -50,6 +50,31 @@ if (command === 'create') {
   try {
     const result = createWorktree({ repo, branch, base: values.base });
     out(values.json, result, `worktree ready at ${result.worktree} (branch ${result.branch}, dev port ${result.port})`);
+  } catch (err) {
+    die(err.message);
+  }
+} else if (command === 'setup') {
+  let values;
+  let positionals;
+  try {
+    ({ values, positionals } = parseArgs({
+      args: rest,
+      allowPositionals: true,
+      options: {
+        repo: { type: 'string' },
+        'no-install': { type: 'boolean', default: false },
+        json: { type: 'boolean', default: false },
+      },
+    }));
+  } catch (err) {
+    die(err.message);
+  }
+  const worktree = positionals[0];
+  if (!worktree) die('setup needs a worktree path');
+  if (!values.repo) die('setup needs --repo <canonical checkout root>');
+  try {
+    const result = setupWorktree({ repo: values.repo, worktree, install: !values['no-install'] });
+    out(values.json, result, `setup ${result.worktree}: copied ${result.copied.length} file(s), ${result.installs.length} install target(s)${result.warnings.length ? `, warnings: ${result.warnings.join('; ')}` : ''}`);
   } catch (err) {
     die(err.message);
   }
