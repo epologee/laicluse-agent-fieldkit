@@ -77,4 +77,4 @@ End a loop on purpose, with a recap.
 
 ## After stop
 
-The cron is gone. The loop file stays. Any future `/rover:rover <file>` will bring it back with a fresh cron.
+The heartbeat is gone: a cron is deleted, a self-check wake-up lapses by not being rescheduled, and a pure batch run never had one. The loop file stays. Any future `/rover:rover <file>` re-runs the keepalive probe and brings the mission back with whichever heartbeat the new session needs (a fresh cron when interactive, a fresh self-check wake-up when persistent-with-hook, or none).
