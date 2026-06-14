@@ -7,11 +7,12 @@ disable-model-invocation: true
 
 <post-update-broadcast>
 BEFORE doing the actual work below, run this one-time check only when
-`CLAUDE_PLUGIN_ROOT` is set:
+`PLUGIN_ROOT` or `CLAUDE_PLUGIN_ROOT` is set:
 
 ```bash
-if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
-  node "${CLAUDE_PLUGIN_ROOT}/bin/check-broadcast"
+ROOT="${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"
+if [ -n "$ROOT" ]; then
+  node "$ROOT/bin/check-broadcast"
 fi
 ```
 
@@ -24,9 +25,9 @@ the rest of this skill.
 If the command produces no output, say nothing about updates and proceed.
 
 The helper writes the sentinel only when stdout was non-empty, so a silent
-run does not mark the version as seen. In agents that do not set
-`CLAUDE_PLUGIN_ROOT` the broadcast is intentionally skipped; that is the
-guard's purpose, not an oversight.
+run does not mark the version as seen. In agents that set neither plugin-root
+variable, the broadcast is intentionally skipped; that is the guard's purpose,
+not an oversight.
 </post-update-broadcast>
 
 # duh
@@ -51,9 +52,9 @@ In every case the operator's `/duh` means: stop offering, start executing.
 ## What to do
 
 1. **Re-read the previous assistant turn and identify the action.** There must be exactly one super-clear, non-ambiguous concrete action (a single shell command, a single file edit, a single URL to open, a single multi-step procedure that obviously belongs together). If you cannot point at one specific thing the operator must mean, **stop and ask** (see "Disambiguate first" below). Do not guess. Do not pick the most likely one.
-2. **Execute it.** Use the right tool: Bash for shell commands, Edit/Write for file changes, browser tools for URLs, the appropriate MCP for everything else. A multi-step procedure that was proposed as a single coherent unit (for example, "I'll run the migration, then restart the daemon, then tail the log") counts as one action and runs in the proposed order.
+2. **Execute it.** Use the available tool for the job: a shell-command tool for shell commands, file-edit tooling for file changes, browser tooling for URLs, and the appropriate MCP for everything else. A multi-step procedure that was proposed as a single coherent unit (for example, "I'll run the migration, then restart the daemon, then tail the log") counts as one action and runs in the proposed order.
 3. **Report results inline as you go.** When a step produces output the operator needs to see (test failures, diagnostic output, screenshots), surface it. When a step is silent (a file edit that succeeded, a daemon that restarted), say so in one line.
-4. **Stop at the first real gate.** If the proposed action hits an inviolable gate from `~/.claude/CLAUDE.md` (or wherever the session's CLAUDE.md and harness flag irreversible gates) such as push, merge to default, deploy, destructive git, or an external irreversible operation, stop there and ask. Reversible local actions (running a script, editing a file, restarting a local daemon, querying a DB) are not gates and do not require a check-in.
+4. **Stop at the first real gate.** If the proposed action hits an inviolable gate from the session's durable instructions (for example `AGENTS.md`, `CLAUDE.md`, or the active harness policy) such as push, merge to default, deploy, destructive git, or an external irreversible operation, stop there and ask. Reversible local actions (running a script, editing a file, restarting a local daemon, querying a DB) are not gates and do not require a check-in.
 5. **End with a one-line outcome.** What ran, what it produced, what (if anything) is still pending. End with `🏁` when the proposed work is done, or `🚦` when you are waiting on an external go.
 
 ## Disambiguate first
@@ -89,4 +90,4 @@ After the operator picks, execute that one action and report the result, exactly
 - **Multiple unrelated proposals in the previous turn.** Disambiguate per the section above. Do not run them all and do not pick.
 - **The previous turn proposed something genuinely irreversible** (push, deploy, force-push, merge to default). `/duh` does not lift those gates; they live above this skill. Surface the gate, ask for the explicit go.
 - **The previous proposal was a teaching answer the operator asked for** (they typed "how do I X manually?", you wrote a recipe with `Instructie:` per the duh guard). `/duh` overrides that framing: the operator now wants execution, not teaching, on whichever single recipe was proposed. If the teaching answer offered multiple recipes for different scenarios, disambiguate first.
-- **The previous turn declared inability** ("I can't see this", "I can't verify that", "I don't have access", "I don't know how to do this here"). `/duh` is the operator's signal to **just go find the path**, with no discretion about whether to try. The full toolbox is on the table: a different local tool (Read on the right file, a diagnostic command, a screenshot, a DB query, an MCP, the Explore agent), a different scope, a different angle, and explicitly the **internet** via `/inspire:inspire` (or whichever research/web-search skill the session has, when `/inspire:inspire` is not installed) when the gap is "I have never done this on this stack/library/API before". An unfamiliar repo, a new library, an unfamiliar config format, a missing CLI flag: these are research prompts, not stop signs. Spend the tokens. After the action succeeds, add one short line naming the workflow lesson ("Learned: to verify X here, `Y` works") so the path persists and future-Claude does not re-declare the same inability.
+- **The previous turn declared inability** ("I can't see this", "I can't verify that", "I don't have access", "I don't know how to do this here"). `/duh` is the operator's signal to **just go find the path**, with no discretion about whether to try. The full toolbox is on the table: a different local tool (read the right file, run a diagnostic command, take a screenshot, query a DB, use an MCP, use an available explore/research agent), a different scope, a different angle, and explicitly the **internet** via whatever research or web-search tool the session has when the gap is "I have never done this on this stack/library/API before". An unfamiliar repo, a new library, an unfamiliar config format, a missing CLI flag: these are research prompts, not stop signs. Spend the tokens. After the action succeeds, add one short line naming the workflow lesson ("Learned: to verify X here, `Y` works") so the path persists and future sessions do not re-declare the same inability.

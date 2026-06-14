@@ -1,7 +1,7 @@
 #!/bin/bash
 # Smoke test suite for the dont-do-that dispatcher. Every case routes
 # through hooks/dispatch.sh with an explicit hook_event_name, so the test
-# covers the real path Claude Code takes at runtime.
+# covers the real runtime path.
 # Run from the plugin root: bash test/smoke-test.sh
 # Exit code 0 = all pass, 1 = failures.
 
@@ -28,6 +28,12 @@ posttool_edit() {
     '{hook_event_name:"PostToolUse", tool_name:"Edit", tool_input:{file_path:$f, new_string:$c}}'
 }
 
+posttool_apply_patch() {
+  local patch="$1"
+  jq -cn --arg p "$patch" \
+    '{hook_event_name:"PostToolUse", tool_name:"apply_patch", tool_input:{patch:$p}}'
+}
+
 pretool_edit() {
   local file="$1" old="$2" new="$3"
   jq -cn --arg f "$file" --arg o "$old" --arg n "$new" \
@@ -38,6 +44,12 @@ pretool_write() {
   local file="$1" content="$2"
   jq -cn --arg f "$file" --arg c "$content" \
     '{hook_event_name:"PreToolUse", tool_name:"Write", tool_input:{file_path:$f, content:$c}}'
+}
+
+pretool_apply_patch() {
+  local patch="$1"
+  jq -cn --arg p "$patch" \
+    '{hook_event_name:"PreToolUse", tool_name:"apply_patch", tool_input:{patch:$p}}'
 }
 
 expect_block() {
@@ -321,6 +333,28 @@ expect_pass "false-claims: WIP hatch" \
 expect_block "false-claims: ignores mutex (always runs)" \
   "$(stop_payload "Dit is een pre-existing failure." true)"
 
+# --- tool-error ---
+
+TOOL_ERROR_HOME=$(mktemp -d)
+TOOL_ERROR_TRANSCRIPT=$(mktemp)
+cat > "$TOOL_ERROR_TRANSCRIPT" <<'JSONL'
+{"type":"user","message":{"content":"Run the failing command."}}
+{"type":"function_call","name":"exec_command","arguments":"{\"cmd\":\"false\"}"}
+{"type":"function_call_output","output":"Chunk ID: abc\nProcess exited with code 1\nOutput:\n"}
+JSONL
+tool_error_payload=$(jq -cn --arg tr "$TOOL_ERROR_TRANSCRIPT" \
+  '{hook_event_name:"Stop", session_id:"codex-tool-error", transcript_path:$tr, stop_hook_active:false}')
+tool_error_out=$(printf '%s' "$tool_error_payload" | LAICLUSE_HOME="$TOOL_ERROR_HOME" bash "$DISPATCH" 2>/dev/null)
+if echo "$tool_error_out" | grep -q '\[dont-do-that/tool-error\]'; then
+  PASS=$((PASS + 1))
+else
+  echo "FAIL [tool-error: Codex function_call failure expected]"
+  echo "  output: ${tool_error_out:-<empty>}"
+  FAIL=$((FAIL + 1))
+fi
+rm -f "$TOOL_ERROR_TRANSCRIPT"
+rm -rf "$TOOL_ERROR_HOME"
+
 # --- verification-delegation ---
 # Every case includes a substantive sentence + 🏁 so the premature-interruption
 # guard in the chain hands off to verify instead of blocking first.
@@ -521,6 +555,11 @@ git -C "$WT_MAIN" worktree add -q -b feature "$WT_BRANCH"
 expect_deny "no-worktree-deploy: ansible-playbook from worktree blocked" \
   "$(pretool_bash_cwd 'ansible-playbook site.yml' "$WT_BRANCH")" \
   "no-worktree-deploy"
+cd "$WT_BRANCH"
+expect_deny "no-worktree-deploy: missing cwd falls back to hook working directory" \
+  "$(pretool_bash 'ansible-playbook site.yml')" \
+  "no-worktree-deploy"
+cd "$ORIG_PWD"
 expect_allow "no-worktree-deploy: ansible-playbook --check from worktree passes" \
   "$(pretool_bash_cwd 'ansible-playbook --check site.yml' "$WT_BRANCH")"
 expect_allow "no-worktree-deploy: ansible-playbook --syntax-check from worktree passes" \
@@ -549,6 +588,12 @@ expect_context "dash: em-dash in Edit new_string" \
 
 expect_allow "dash: clean Edit new_string passes silent" \
   "$(posttool_edit "/tmp/x.md" "No dash here.")"
+
+expect_context "dash: em-dash in apply_patch added line" \
+  "$(posttool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n const oldMessage = "No dash here.";\n+const newMessage = "Some prose with '"${EMDASH}"$' dash here.";\n*** End Patch\n')"
+
+expect_allow "dash: em-dash in apply_patch context line passes silent" \
+  "$(posttool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n const oldMessage = "Some prose with '"${EMDASH}"$' dash here.";\n+const newMessage = "No dash here.";\n*** End Patch\n')"
 
 # --- no-code-comments ---
 
@@ -669,6 +714,13 @@ expect_allow "no-code-comments: Edit on .css passes (style-only language)" \
 expect_deny "no-code-comments: MultiEdit first edit adds comment" \
   "$(jq -cn '{hook_event_name:"PreToolUse", tool_name:"MultiEdit", tool_input:{file_path:"/tmp/x.ts", edits:[{old_string:"a", new_string:"a;\n// added"}, {old_string:"b", new_string:"b;"}]}}')" \
   "no-code-comments"
+
+expect_deny "no-code-comments: apply_patch adds // comment in .ts" \
+  "$(pretool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n let x = 1;\n+// dumb explanation\n+let y = 2;\n*** End Patch\n')" \
+  "no-code-comments"
+
+expect_allow "no-code-comments: apply_patch adds code without comment" \
+  "$(pretool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n let x = 1;\n+let y = 2;\n*** End Patch\n')"
 
 expect_allow "no-code-comments: Edit adds JS regex literal with escaped slashes" \
   "$(pretool_edit "/tmp/x.ts" "let x = 1;" $'let x = 1;\nconst re = /https?:\\/\\//g;')"

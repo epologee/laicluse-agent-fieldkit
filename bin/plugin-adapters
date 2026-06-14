@@ -105,6 +105,11 @@ has_skill_source_for_agent() {
   return 1
 }
 
+has_codex_hooks() {
+  local plugin_dir="$1"
+  [ -f "$plugin_dir/hooks/hooks.codex.json" ]
+}
+
 skill_source_for_agent() {
   local skill_dir="$1" agent="$2"
   if [ -f "$skill_dir/SKILL.claude.md" ] || [ -f "$skill_dir/SKILL.codex.md" ]; then
@@ -184,6 +189,14 @@ copy_codex_bin() {
   done < <(find "$plugin_dir/bin" -type f | sort)
 }
 
+copy_codex_root_files() {
+  local plugin_dir="$1" target_dir="$2" rel
+  for rel in CHANGELOG.md; do
+    [ -f "$plugin_dir/$rel" ] || continue
+    cp -p "$plugin_dir/$rel" "$target_dir/$rel"
+  done
+}
+
 copy_codex_agents() {
   local plugin_dir="$1" target_dir="$2" file rel out codex_agents_dir
   rm -rf "$target_dir/agents"
@@ -197,9 +210,25 @@ copy_codex_agents() {
   done < <(find "$codex_agents_dir" -type f | sort)
 }
 
-copy_codex_hook_lib() {
+copy_codex_hooks() {
   local plugin_dir="$1" target_dir="$2" file rel out
   rm -rf "$target_dir/hooks"
+
+  if has_codex_hooks "$plugin_dir"; then
+    while IFS= read -r file; do
+      rel="${file#$plugin_dir/}"
+      case "$rel" in
+        hooks/hooks.json|hooks/hooks.codex.json) continue ;;
+      esac
+      out="$target_dir/$rel"
+      mkdir -p "$(dirname "$out")"
+      cp -p "$file" "$out"
+    done < <(find "$plugin_dir/hooks" -type f | sort)
+    mkdir -p "$target_dir/hooks"
+    cp -p "$plugin_dir/hooks/hooks.codex.json" "$target_dir/hooks/hooks.json"
+    return 0
+  fi
+
   [ -d "$plugin_dir/hooks/lib" ] || return 0
   while IFS= read -r file; do
     rel="${file#$plugin_dir/}"
@@ -235,13 +264,13 @@ generate_into() {
     validate_skill_sources "$name" "$plugin_dir"
     copy_claude_skill_targets "$repo" "$out_root" "$plugin_dir"
 
-    if ! has_skill_source_for_agent "$plugin_dir" codex && [ ! -d "$plugin_dir/agents.codex" ]; then
+    if ! has_skill_source_for_agent "$plugin_dir" codex && [ ! -d "$plugin_dir/agents.codex" ] && ! has_codex_hooks "$plugin_dir"; then
       rm -rf "$out_root/.agents/plugins/generated/$name"
       rm -rf "$out_root/${source#./}/.codex-plugin"
       continue
     fi
 
-    if has_agent_specific_skills "$plugin_dir" || needs_sanitized_skills "$plugin_dir" || [ -d "$plugin_dir/agents.codex" ]; then
+    if has_agent_specific_skills "$plugin_dir" || needs_sanitized_skills "$plugin_dir" || [ -d "$plugin_dir/agents.codex" ] || has_codex_hooks "$plugin_dir"; then
       codex_source="./.agents/plugins/generated/$name"
       target_dir="$out_root/.agents/plugins/generated/$name"
       rm -rf "$target_dir"
@@ -249,8 +278,9 @@ generate_into() {
       mkdir -p "$target_dir/.codex-plugin"
       copy_codex_skills "$plugin_dir" "$target_dir"
       copy_codex_bin "$plugin_dir" "$target_dir"
+      copy_codex_root_files "$plugin_dir" "$target_dir"
       copy_codex_agents "$plugin_dir" "$target_dir"
-      copy_codex_hook_lib "$plugin_dir" "$target_dir"
+      copy_codex_hooks "$plugin_dir" "$target_dir"
       codex_plugin_payload "$manifest" "$name" > "$target_dir/.codex-plugin/plugin.json"
     else
       codex_source="$source"

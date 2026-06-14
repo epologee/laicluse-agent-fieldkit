@@ -1,0 +1,23 @@
+# bonsai changelog
+
+The post-update broadcast shows the topmost section once per machine whenever
+the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
+short; categories are Breaking, Added, Changed, Fixed.
+
+## [v2.0.0]
+
+### Added
+
+- **Worktree CLI**: `bonsai create`, `bonsai setup`, and `bonsai teardown`
+  manage the full worktree lifecycle git-natively, with `--json` facts output.
+- **Safety gate on teardown**: a clean-but-non-integrated worktree is kept by
+  default; removal needs integration or an explicit `--force`. Warns on orphaned
+  unpushed commits and on a diverged default branch.
+- **Skills**: `bonsai` (create + setup), `setup`, and `prune`, agent-neutral and
+  resolving the CLI cross-agent.
+
+### Breaking
+
+- Moved from `bonsai@leclause` and dropped the clipboard / start-command
+  mechanism and the macOS-only requirement. Bonsai now emits facts and launches
+  nothing. Install `bonsai@laicluse-agent-tools`.

@@ -1,0 +1,52 @@
+---
+name: bonsai
+description: >-
+  Make a ready git worktree: create a branch off the freshest default and prime
+  it from the repo's .bonsai file list, then report the worktree path, branch,
+  and dev-server port as facts. Use when the operator wants a worktree to work
+  in by hand. No agent is launched and nothing is copied to a clipboard; the
+  caller decides what to do in the worktree.
+---
+
+# bonsai
+
+Worktree lifecycle as a small CLI. This skill makes a ready-to-use worktree:
+it creates the branch off the freshest default and primes the tree from the
+repo's `.bonsai` file list. It does not launch an agent and does not write a
+start command anywhere; it returns facts and stops.
+
+## Resolve the bin (cross-agent)
+
+The CLI lives in this plugin's `bin/`. Resolve the plugin root, then call it:
+
+```bash
+resolve_bonsai_root() {
+  if [ -n "${BONSAI_BIN:-}" ]; then dirname "$(dirname "$BONSAI_BIN")"; return 0; fi
+  if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then printf '%s\n' "$CLAUDE_PLUGIN_ROOT"; return 0; fi
+  if command -v codex >/dev/null 2>&1; then
+    codex plugin list | awk '$1 == "bonsai@laicluse-agent-tools" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
+    return $?
+  fi
+  return 1
+}
+ROOT="$(resolve_bonsai_root)" || { echo "bonsai plugin root not found" >&2; exit 1; }
+BONSAI="${BONSAI_BIN:-$ROOT/bin/bonsai}"
+```
+
+## Make the worktree
+
+```bash
+node "$BONSAI" create <branch> --repo "<canonical checkout root>" --json
+node "$BONSAI" setup  "<worktree path from create>" --repo "<canonical checkout root>" --json
+```
+
+`create` resolves the freshest default branch, makes `<root>/worktrees/<dir>`
+(slashes in the branch flatten to dashes in the dir), refuses a branch that
+already exists, and prints `{ worktree, branch, base, baseSha, port }`. `setup`
+copies the `.bonsai`-listed files from the canonical checkout and installs
+dependencies per directory using the package manager each lockfile names.
+
+Relay the worktree path and the dev-server port to the operator. The port is a
+deterministic hint in 3100-3999; use it for a dev server in the worktree so it
+does not collide with the main checkout. Tearing the worktree down later is
+`/prune` (the teardown subcommand).

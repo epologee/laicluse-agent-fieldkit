@@ -1,0 +1,26 @@
+{
+  "name": "bonsai",
+  "version": "2.0.8",
+  "description": "Worktree lifecycle as a cross-platform CLI: create a worktree + branch off the freshest default, set it up from a .bonsai file list, and tear it down behind a hard safety gate that keeps non-integrated work and warns on orphaned commits or interference. Skills: bonsai (create+setup), setup, prune.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "bonsai"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Bonsai",
+    "shortDescription": "Worktree lifecycle as a cross-platform CLI: create a worktree + branch off the freshest default, set it up from a .bo...",
+    "longDescription": "Worktree lifecycle as a cross-platform CLI: create a worktree + branch off the freshest default, set it up from a .bonsai file list, and tear it down behind a hard safety gate that keeps non-integrated work and warns on orphaned commits or interference. Skills: bonsai (create+setup), setup, prune.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Bonsai plugin."
+    ]
+  }
+}

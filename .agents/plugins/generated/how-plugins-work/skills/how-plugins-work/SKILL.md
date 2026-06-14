@@ -242,6 +242,9 @@ Minimum copy rules:
 
 - Copy `bin/` into the generated target when a skill calls plugin helper
   commands.
+- Copy top-level runtime data files that copied helpers read. Today that means
+  `CHANGELOG.md` for `bin/check-broadcast`; without it the helper is present
+  but silent in Codex.
 - Do not copy source-package `agents/` into generated Codex targets by default.
   In this marketplace, `agents/` is a Claude runtime payload because Claude
   consumes the source package directly. A generated Codex package should carry
@@ -250,9 +253,12 @@ Minimum copy rules:
 - Copy skill-local support files that live under `skills/<skill>/` alongside
   the materialized `SKILL.md`.
 - Copy `hooks/lib/` when Codex-facing workflows install git-native hooks or
-  otherwise call shared hook libraries, but do not copy Claude's
-  `hooks/hooks.json` merely because the source package has it. A Claude hook
-  manifest in a Codex package is inert at best and misleading at worst.
+  otherwise call shared hook libraries. Copy the full hook payload only through
+  an explicit Codex hook source: `hooks/hooks.codex.json` is materialized as the
+  generated package's runtime `hooks/hooks.json`, alongside the dispatcher,
+  guards, and libraries. Do not copy Claude's `hooks/hooks.json` merely because
+  the source package has it; a Claude hook manifest in a Codex package is inert
+  at best and misleading at worst.
 - Make `check` compare the full generated file set, not only `SKILL.md` and
   manifest files. A stale generated helper that no longer exists in the source
   is drift.

@@ -2,7 +2,7 @@
 name: just-a-question
 user-invocable: true
 description: >-
-  Operator's message is a question, not a request, even when phrased as "fix X". Read-only tools only: Read, Glob, Grep, read-only Bash. No Edit, Write, NotebookEdit, mutating Bash. Name obvious fixes without applying them.
+  Operator's message is a question, not a request, even when phrased as "fix X". Read-only tools only: file reads, search, and read-only shell commands. No file-edit tools or mutating shell commands. Name obvious fixes without applying them.
 disable-model-invocation: true
 ---
 

@@ -25,6 +25,7 @@ JSON
   cat > "$REPO/packages/demo/.claude-plugin/plugin.json" <<'JSON'
 { "name": "demo", "description": "demo plugin", "version": "1.0.0" }
 JSON
+  printf '# demo changelog\n' > "$REPO/packages/demo/CHANGELOG.md"
   # user-invocable forces the sanitized/generated-dir path for Codex.
   cat > "$REPO/packages/demo/skills/demo/SKILL.md" <<'MD'
 ---
@@ -53,6 +54,33 @@ MD
 
   [ -f "$REPO/.agents/plugins/generated/demo/hooks/lib/demo-lib.sh" ]
   [ ! -f "$REPO/.agents/plugins/generated/demo/hooks/hooks.json" ]
+}
+
+@test "build copies top-level changelog into the generated codex dir" {
+  bash "$SCRIPT" build "$REPO" > /dev/null
+
+  [ -f "$REPO/.agents/plugins/generated/demo/CHANGELOG.md" ]
+  grep -q 'demo changelog' "$REPO/.agents/plugins/generated/demo/CHANGELOG.md"
+}
+
+@test "build materializes explicit Codex hooks into the generated codex dir" {
+  mkdir -p "$REPO/packages/demo/hooks/guards"
+  printf '#!/bin/sh\necho dispatch\n' > "$REPO/packages/demo/hooks/dispatch.sh"
+  chmod +x "$REPO/packages/demo/hooks/dispatch.sh"
+  printf '#!/bin/sh\necho guard\n' > "$REPO/packages/demo/hooks/guards/demo.sh"
+  chmod +x "$REPO/packages/demo/hooks/guards/demo.sh"
+  cat > "$REPO/packages/demo/hooks/hooks.codex.json" <<'JSON'
+{"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command","command":"${PLUGIN_ROOT}/hooks/dispatch.sh"}]}]}}
+JSON
+
+  bash "$SCRIPT" build "$REPO" > /dev/null
+
+  [ -f "$REPO/.agents/plugins/generated/demo/hooks/hooks.json" ]
+  [ -f "$REPO/.agents/plugins/generated/demo/hooks/dispatch.sh" ]
+  [ -f "$REPO/.agents/plugins/generated/demo/hooks/guards/demo.sh" ]
+  [ -f "$REPO/.agents/plugins/generated/demo/hooks/lib/demo-lib.sh" ]
+  [ ! -f "$REPO/.agents/plugins/generated/demo/hooks/hooks.codex.json" ]
+  grep -q 'PLUGIN_ROOT' "$REPO/.agents/plugins/generated/demo/hooks/hooks.json"
 }
 
 @test "check passes after build with a bin directory present" {
