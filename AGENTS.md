@@ -24,8 +24,8 @@ skill's matching behavior.
 All first-party runtime state for l'Aicluse Agent Fieldkit projects uses
 `${LAICLUSE_HOME:-$HOME/.laicluse}` as its root. Create
 subdirectories by component name, for example `~/.laicluse/circus/`, not
-by marketplace or repository name (`toolbox`, `public`, `private`) and not
-under new `~/.laicluse-*` roots.
+by marketplace status (`public`, `private`) or repository name, and not under
+new `~/.laicluse-*` roots.
 
 Agent-harness caches managed by Claude or Codex themselves
 (`~/.claude/plugins/cache`, `~/.codex/plugins/cache`, install indexes) stay
