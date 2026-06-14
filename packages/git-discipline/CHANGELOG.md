@@ -19,6 +19,26 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.32]
+
+### Changed
+
+- **After updating git-discipline, re-run `/git-discipline:install-hooks
+  --force` to refresh the git-native hooks.** The installed `commit-msg`,
+  `prepare-commit-msg`, and `pre-push` hooks bake this plugin's absolute
+  install path so they source `validate-body.sh` from the same logic as the
+  PreToolUse guard. That path is version- and marketplace-specific (it looks
+  like `.../plugins/cache/<marketplace>/git-discipline/<version>/`), so a
+  plugin update, reinstall, or marketplace rename leaves the baked path
+  pointing at a directory that no longer exists. Every later commit then
+  aborts with `validator not found at .../validate-body.sh`. Re-running
+  `install-hooks --force` re-bakes the current install path (it backs up the
+  old hooks first), and is idempotent when the path already matches. If you
+  only commit through Claude Code's PreToolUse layer you are unaffected; this
+  matters when you commit from the shell, an IDE, or Codex, where these
+  git-native hooks are the enforcement layer. The emergency bypass for a
+  single commit is `git commit --no-verify`.
+
 ## [v2.0.22]
 
 ### Changed
