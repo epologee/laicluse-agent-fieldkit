@@ -76,7 +76,7 @@ done
 ```
 
 - **`$BEHIND` is empty:** the branch already contains the tip of the latest default. Skip the rebase and report `Branch is up to date with <DEFAULT>; no rebase needed.`, then continue to Step 4. No rebase noise for an already-current branch.
-- **`$BEHIND` is set:** the default is ahead. Invoke `git-discipline:rebase-latest-default` via the Skill tool. That sub-skill rebases `$CURRENT` on the freshest `$DEFAULT` (local or `origin/$DEFAULT`, whichever is ahead) and resolves trivial conflicts (whitespace, identical edits, lockfile regenerations) automatically. The skill is the single rebase tool; this step does not run its own `git rebase`. The worktree is still on `$CURRENT` here and Step 2 already committed pending work, so the tree is clean, which is what rebase-latest-default's pre-rebase guard requires.
+- **`$BEHIND` is set:** the default is ahead. Report `Branch is behind <DEFAULT>; rebasing onto the latest default before merging.` so the rebase output that follows is expected, then invoke `git-discipline:rebase-latest-default` via the Skill tool. That sub-skill rebases `$CURRENT` on the freshest `$DEFAULT` (local or `origin/$DEFAULT`, whichever is ahead) and resolves trivial conflicts (whitespace, identical edits, lockfile regenerations) automatically. The skill is the single rebase tool; this step does not run its own `git rebase`. The worktree is still on `$CURRENT` here and Step 2 already committed pending work, so the tree is clean, which is what rebase-latest-default's pre-rebase guard requires.
 
 After rebase-latest-default returns:
 
@@ -86,13 +86,13 @@ After rebase-latest-default returns:
 - **Rebase stopped on genuine ambiguity:** rebase-latest-default only auto-resolves trivial conflicts; for genuine ambiguity (both sides made intentional, incompatible changes to the same logic) it stops mid-rebase and points at the conflicting files. `merge-to-default` then also stops, **before any merge**: the worktree sits mid-rebase on `$CURRENT`, `$DEFAULT` is untouched, and no merge commit and no conflict markers ever reach the default-branch checkout. This is the whole point of doing the rebase first. The user has three cleanup options:
   - `git rebase --abort`: returns `$CURRENT` to the pre-rebase state. No merge happened. After that, the user can tackle the conflict differently.
   - Manually resolve the conflict, `git rebase --continue` per step, and then invoke `/git-discipline:merge-to-default` again to run the merge.
-  - `git rebase --abort` and then `git checkout $DEFAULT`: leaves `$CURRENT` at its pre-rebase tip and parks the user on an intact `$DEFAULT` to decide later. (A bare `git checkout` while the rebase is still in progress is refused; abort first.)
+  - `git rebase --abort` and then `git checkout $DEFAULT`: leaves `$CURRENT` at its pre-rebase tip and parks the user on an intact `$DEFAULT`. Nothing merged in this case; `$CURRENT` is still unmerged and the user re-invokes the skill once the conflict is settled. (A bare `git checkout` while the rebase is still in progress is refused; abort first.)
 
   `merge-to-default` itself does not make any of these choices for the user; mid-rebase with genuine ambiguity is exactly the place where manual resolution is the right way.
 
 ## Step 4: First-pass merge
 
-The branch arrives here up to date with the default (Step 3 rebased it or confirmed it was already current), so this merge is expected to be a clean commit. First save the tip of the source branch, then checkout and merge:
+The branch arrives here up to date with the default (Step 3 rebased it or confirmed it was already current, or Step 5 rebased it after a residual conflict), so this merge is expected to be a clean commit. First save the tip of the source branch, then checkout and merge:
 
 ```bash
 PRE_MERGE_TIP=$(git rev-parse "$CURRENT")
@@ -118,7 +118,7 @@ git merge --abort
 git checkout $CURRENT
 ```
 
-Invoke `git-discipline:rebase-latest-default` via the Skill tool (the same single rebase tool Step 3 uses). After a successful rebase, capture the new source tip before the retry checkout, then back to Step 4 for the retry merge:
+Invoke `git-discipline:rebase-latest-default` via the Skill tool (the same single rebase tool Step 3 uses). After a successful rebase, capture the new source tip before the retry checkout, then repeat the checkout and merge from Step 4:
 
 ```bash
 PRE_MERGE_TIP=$(git rev-parse "$CURRENT")
