@@ -51,6 +51,14 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   [ ! -d "$FIX/worktrees/force-wt" ]
 }
 
+@test "teardown matches a worktree by its full path" {
+  bonsai create path-wt --repo "$FIX" --json
+  run bonsai teardown "$FIX/worktrees/path-wt" --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"removed": true'
+  [ ! -d "$FIX/worktrees/path-wt" ]
+}
+
 @test "teardown --dry-run never removes, reports classification" {
   bonsai create dry-wt --repo "$FIX" --json
   git -C "$FIX/worktrees/dry-wt" commit -q --allow-empty -m work

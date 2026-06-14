@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, statSync, realpathSync } from 'node:fs';
 import { join, resolve, dirname, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -210,12 +210,21 @@ function branchPushed(repo, branch) {
   }
 }
 
+function canonPath(p) {
+  try {
+    return realpathSync(p);
+  } catch {
+    return resolve(p);
+  }
+}
+
 export function classifyTeardown({ repo, target }) {
   const worktrees = parseWorktrees(repo);
-  const abs = resolve(target);
-  let entry = worktrees.find((w) => resolve(w.path) === abs)
+  const abs = canonPath(target);
+  const guess = canonPath(join(repo, 'worktrees', target));
+  let entry = worktrees.find((w) => canonPath(w.path) === abs)
     || worktrees.find((w) => w.branch === target)
-    || worktrees.find((w) => resolve(w.path) === resolve(join(repo, 'worktrees', target)));
+    || worktrees.find((w) => canonPath(w.path) === guess);
   if (!entry) throw new Error(`no worktree or branch matching ${target} in ${repo}`);
   const { path: worktree, branch } = entry;
   const def = defaultBranch(repo);
