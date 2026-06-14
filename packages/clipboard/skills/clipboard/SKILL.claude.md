@@ -1,8 +1,11 @@
 ---
 name: clipboard
+user-invocable: true
 description: Copy the core content of the last answer to the macOS clipboard via the clipboard-copy helper. Formats output based on content type. /clipboard slack for rich text.
 allowed-tools:
   - Bash(*clipboard-copy*)
+effort: low
+disable-model-invocation: true
 ---
 
 <post-update-broadcast>
@@ -125,24 +128,18 @@ Claude Code output often contains:
 ## Copying
 
 The `clipboard-copy` helper lives in this plugin's `bin/` directory and is not
-on `$PATH`. Resolve the active Codex plugin root once before copying:
-
-```bash
-CLIPBOARD_PLUGIN_ROOT=$(codex plugin list --json | jq -er '.installed[] | select(.pluginId == "clipboard@laicluse-agent-tools") | .source.path')
-```
-
-If the lookup fails, report that `clipboard@laicluse-agent-tools` is not
-installed or enabled in Codex. Do not guess a cache path. The helper then
-points at the active install, so there is no stale-cache or
-uninstalled-plugin failure mode to defend against. Run the resolver and the
-helper call in the same shell invocation.
+on `$PATH`. In Claude Code the plugin root is `${CLAUDE_PLUGIN_ROOT}`; in
+another agent, resolve the plugin root from where this skill file was loaded
+(two directories up) and substitute it. The helper always points at the active
+install, so there is no stale-cache or uninstalled-plugin failure mode to
+defend against.
 
 ### Default (plain text)
 
 Use a heredoc to avoid formatting issues:
 
 ```bash
-"${CLIPBOARD_PLUGIN_ROOT}/bin/clipboard-copy" <<'CLIPBOARD'
+"${CLAUDE_PLUGIN_ROOT}/bin/clipboard-copy" <<'CLIPBOARD'
 [content here]
 CLIPBOARD
 ```
@@ -154,7 +151,7 @@ CLIPBOARD
 When the `slack` argument is provided, generate HTML instead of plain text and call `clipboard-copy --html`:
 
 ```bash
-"${CLIPBOARD_PLUGIN_ROOT}/bin/clipboard-copy" --html <<'CLIPBOARD'
+"${CLAUDE_PLUGIN_ROOT}/bin/clipboard-copy" --html <<'CLIPBOARD'
 [HTML content here]
 CLIPBOARD
 ```
@@ -217,7 +214,7 @@ De job is goed uitgevoerd. Alle platforms uit `PLATFORM_TIMEOUTS` zijn **volledi
 
 Becomes:
 ```bash
-"${CLIPBOARD_PLUGIN_ROOT}/bin/clipboard-copy" --html <<'CLIPBOARD'
+"${CLAUDE_PLUGIN_ROOT}/bin/clipboard-copy" --html <<'CLIPBOARD'
 De job is goed uitgevoerd. Alle platforms uit <code>PLATFORM_TIMEOUTS</code> zijn <b>volledig</b> backfilled.
 CLIPBOARD
 ```

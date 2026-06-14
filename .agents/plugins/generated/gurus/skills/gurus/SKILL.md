@@ -73,7 +73,10 @@ Ask this question **once**. The user's answer is binding; do not confirm again.
 
 ### Skill-invoked (autonomous callers)
 
-When this orchestrator is invoked by another skill rather than typed by the operator (the rover at INSPECT, or any future caller that passes mission context through `args`), the operator is not in the loop and cannot answer a routing question. Routing must complete from `args` alone.
+When this orchestrator is invoked by another skill rather than typed by the
+operator (an autonomous caller that passes mission context through `args`), the
+operator is not in the loop and cannot answer a routing question. Routing must
+complete from `args` alone.
 
 Detection: `args` carries explicit mission context (a Dispatch block, a branch name, a diff summary, a stated decision, a research brief). Treat any non-empty caller-supplied context as the autonomous path.
 

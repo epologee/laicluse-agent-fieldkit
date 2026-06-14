@@ -15,6 +15,14 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.1]
+
+### Fixed
+
+- **Codex guru panels no longer suggest `/rover:rover` as their default
+  autonomous handoff.** Codex now gets only an explicit, user-named
+  autonomous-execution path when such a skill is installed.
+
 ## [v2.0.0]
 
 ### Added

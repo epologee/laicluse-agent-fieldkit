@@ -8,6 +8,15 @@ new plugins joining, plugins leaving, marketplace-level
 conventions, shared infrastructure, and breaking changes that
 span multiple plugins.
 
+## [2026-06] Codex catalog omits Claude-only runtime skills
+
+The generated Codex marketplace now serves a supported subset instead of a
+1:1 mirror of Claude Code skills. `autonomous`, `rover`, `/whats-new`,
+`/restart-claude-agents`, and the Claude PreToolUse toggle/status skills from
+`git-discipline` are omitted from Codex because their current runtime
+dependencies are Claude-only. Shared and Codex-specific skills continue to
+ship normally.
+
 ## [2026-06] dont-do-that moved from leclause
 
 `dont-do-that` now ships as `dont-do-that@laicluse-agent-tools`. Claude Code

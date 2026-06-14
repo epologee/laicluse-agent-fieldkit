@@ -149,7 +149,9 @@ Use this format:
 
 ---
 
-Type **"doe het"** to apply the consensus points now, or **/rover:rover** for autonomous execution. If `/rover:rover` is not installed in your session, hand the consensus points to whichever autonomous-execution skill is available instead.
+Type **"doe het"** to apply the consensus points now. If the session has an
+autonomous-execution skill installed, the user may name it explicitly and hand
+the consensus points there instead.
 ```
 
 ### Step 5: Execution
@@ -159,9 +161,13 @@ On **"doe het"**:
 - One commit per logically independent edit (a single beat reworked, a cascade trimmed, an opening replaced).
 - Follow the project's commit conventions.
 
-On **/rover:rover** (or whichever autonomous-execution skill the session has, when `/rover:rover` is not installed):
+On an explicitly named autonomous-execution skill:
 - Hand the consensus points to the skill as tasks.
-- The background context must indicate that the loop stops itself when all writer points have been applied and committed, using whichever stop mechanism the chosen execution skill provides (for example `/rover:stop` for rover runners). Writers' work is finite per round: there is no external input to wait for after committing. Operators who want a second round dispatch the panel again.
+- The background context must indicate that the loop stops itself when all
+  writer points have been applied and committed, using whichever stop mechanism
+  the chosen execution skill provides. Writers' work is finite per round: there
+  is no external input to wait for after committing. Operators who want a second
+  round dispatch the panel again.
 
 Discussion points are only executed when the user explicitly approves them.
 

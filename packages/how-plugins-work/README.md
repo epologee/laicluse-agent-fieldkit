@@ -16,7 +16,7 @@ packaged for multiple agents, and where plugin caches fit.
 Canonical procedure for rolling multi-agent marketplace changes out to Claude
 Code and Codex locally before pushing to GitHub.
 
-### `/restart-claude-agents`
+### `/restart-claude-agents` (Claude Code)
 
 Restarts running Claude Code background agents so a fresh process loads updated
 plugins, preserving each agent's conversation, permissions, and goal. The
@@ -33,7 +33,9 @@ Activates when diagnosing:
 - Slash-command autocomplete misses
 - Confusion between plugin name, skill name, and command name
 - Sub-skills that work in isolation but not when invoked from another skill
-- Cross-agent marketplace or manifest drift between shared skills and agent-specific adapters
+- Cross-agent marketplace or manifest drift between shared skills and
+  agent-specific adapters
+- Accidental exposure of agent-specific skills to a client that cannot run them
 
 ## Installation
 

@@ -19,6 +19,23 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.22]
+
+### Changed
+
+- **Codex now receives only the git-discipline skills it can run.** Workflow
+  skills such as `commit-snipe`, `rebase-latest-default`, `push-policy`,
+  `install-hooks`, and `run-spec` remain available in the generated Codex
+  adapter. Claude PreToolUse control skills (`disable-discipline`,
+  `enable-discipline`, `discipline-status`, `disable-git`, `enable-git`) are
+  omitted from Codex because that hook layer does not exist there.
+
+### Fixed
+
+- **Shared push-policy lookups no longer hard-code `CLAUDE_PLUGIN_ROOT`.**
+  Shared skills resolve the active plugin root from Claude's environment or
+  Codex's installed plugin metadata before running `git-repo-policy`.
+
 ## [v2.0.21]
 
 ### Added

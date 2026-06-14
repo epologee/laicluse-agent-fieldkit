@@ -31,14 +31,17 @@ if [ -x "$adapter_script" ] && [ -f ".claude-plugin/marketplace.json" ]; then
     echo "ERROR: $adapter_script build failed." >&2
     exit 1
   fi
-  [ -f ".agents/plugins/marketplace.json" ] && git add -f ".agents/plugins/marketplace.json"
-  if [ -d ".agents/plugins/generated" ]; then
-    find ".agents/plugins/generated" -type f | while IFS= read -r generated_file; do
-      git add -f "$generated_file"
-    done
+  if [ -d ".agents/plugins" ]; then
+    git add -A -f ".agents/plugins"
   fi
+  git ls-files "packages/*/.codex-plugin/plugin.json" | while IFS= read -r codex_manifest; do
+    git add -A "$codex_manifest"
+  done
   find packages -path "*/.codex-plugin/plugin.json" -type f | while IFS= read -r codex_manifest; do
     git add "$codex_manifest"
+  done
+  git ls-files "packages/*/skills/*/SKILL.claude.md" | while IFS= read -r claude_skill; do
+    git add -A "$(dirname "$claude_skill")/SKILL.md"
   done
   find packages -path "*/skills/*/SKILL.claude.md" -type f | while IFS= read -r claude_skill; do
     git add "$(dirname "$claude_skill")/SKILL.md"

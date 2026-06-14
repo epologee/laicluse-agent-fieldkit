@@ -20,6 +20,21 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.17]
+
+### Changed
+
+- **Agent-specific skill sources may now be single-sided.** A lone
+  `SKILL.claude.md` or `SKILL.codex.md` means the skill is intentionally absent
+  from the other agent's runtime catalog; paired suffixed sources still cover
+  workflows that both agents support differently.
+
+### Fixed
+
+- **`/restart-claude-agents` is Claude-only.** The generated Codex package no
+  longer advertises a command that depends on Claude Code background-agent
+  state and `claude --bg --resume`.
+
 ## [v2.0.16]
 
 ### Added

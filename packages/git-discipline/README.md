@@ -26,21 +26,21 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
 
 ## Skills
 
-| Skill | Command | Auto |
-|-------|---------|:----:|
-| commit-all-the-things | `/git-discipline:commit-all-the-things` | yes |
-| commit-snipe | `/git-discipline:commit-snipe` | yes (on the word "snipe") |
-| rebase-latest-default | `/git-discipline:rebase-latest-default` | yes |
-| merge-to-default | `/git-discipline:merge-to-default` | yes |
-| push-policy | `/git-discipline:push-policy` | |
-| commit-discipline | `/git-discipline:commit-discipline` | |
-| install-hooks | `/git-discipline:install-hooks` | |
-| run-spec | `/git-discipline:run-spec` | |
-| disable-session | `/git-discipline:disable-discipline` | |
-| enable-session | `/git-discipline:enable-discipline` | |
-| session-status | `/git-discipline:discipline-status` | |
-| disable-git | `/git-discipline:disable-git [reason]` | |
-| enable-git | `/git-discipline:enable-git` | |
+| Skill | Command | Agents | Auto |
+|-------|---------|--------|:----:|
+| commit-all-the-things | `/git-discipline:commit-all-the-things` | Claude, Codex | yes |
+| commit-snipe | `/git-discipline:commit-snipe` | Claude, Codex | yes (on the word "snipe") |
+| rebase-latest-default | `/git-discipline:rebase-latest-default` | Claude, Codex | yes |
+| merge-to-default | `/git-discipline:merge-to-default` | Claude, Codex | yes |
+| push-policy | `/git-discipline:push-policy` | Claude, Codex | |
+| commit-discipline | `/git-discipline:commit-discipline` | Claude, Codex | |
+| install-hooks | `/git-discipline:install-hooks` | Claude, Codex | |
+| run-spec | `/git-discipline:run-spec` | Claude, Codex | |
+| disable-session | `/git-discipline:disable-discipline` | Claude | |
+| enable-session | `/git-discipline:enable-discipline` | Claude | |
+| session-status | `/git-discipline:discipline-status` | Claude | |
+| disable-git | `/git-discipline:disable-git [reason]` | Claude | |
+| enable-git | `/git-discipline:enable-git` | Claude | |
 
 - **commit-all-the-things** inspects `git status` plus `git diff`, groups
   changes by intent (feature, fix, refactor, docs, config), and creates
@@ -132,10 +132,10 @@ claude plugins install git-discipline@laicluse-agent-tools
 codex plugin add git-discipline@laicluse-agent-tools
 ```
 
-In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex,
-the skills are available but Claude-specific plugin hooks do not run. To catch
-commits made outside Claude Code, or from Codex, install the git-native hooks
-into each repo:
+In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex, the
+generated adapter ships the workflow skills and omits the Claude-only
+PreToolUse toggle/status skills. To catch commits made outside Claude Code, or
+from Codex, install the git-native hooks into each repo:
 
 ```bash
 /git-discipline:install-hooks

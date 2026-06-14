@@ -79,8 +79,9 @@ Codex combine them in different ways in different places.
 
 ## Where each appears in Codex
 
-Codex uses the same shared `skills/<skill>/SKILL.md` body, but it reads Codex
-metadata instead of Claude metadata. Local CLI help verified on 2026-06-09:
+Codex uses the generated `skills/<skill>/SKILL.md` runtime body for each
+Codex-compatible skill, but it reads Codex metadata instead of Claude metadata.
+Local CLI help verified on 2026-06-09:
 
 | Context | What appears | Example |
 |---------|--------------|---------|
@@ -89,7 +90,7 @@ metadata instead of Claude metadata. Local CLI help verified on 2026-06-09:
 | Marketplace index | `.agents/plugins/marketplace.json` | `name: example-tools` |
 | Plugin source path | `plugins[].source.path` | `./packages/how-plugins-work` |
 | Plugin manifest | `.codex-plugin/plugin.json` | generated from `.claude-plugin/plugin.json` |
-| Skill body | `skills/<skill>/SKILL.md` | shared with Claude |
+| Skill body | `skills/<skill>/SKILL.md` | generated Codex-compatible runtime body |
 | Active install facts | `codex plugin list --json` | `pluginId`, `version`, `enabled`, `source.path` |
 
 Important differences from Claude:
@@ -172,22 +173,27 @@ ruby -ryaml -e 'YAML.safe_load(File.read(ARGV[0]).split(/^---\s*$/)[1])' SKILL.m
 
 Agent Skills are the portable layer. Keep `skills/<skill>/SKILL.md` as the shared source whenever the workflow can mean the same thing across Claude Code, Codex, and other skills-aware clients. Do not copy the skill body into an agent-specific tree just because a second client needs different installation metadata.
 
-When the workflow itself differs per agent, use paired suffixed sources instead
-of runtime branching inside one skill body:
+When the workflow itself differs per agent, use suffixed sources instead of
+runtime branching inside one skill body:
 
 | Source file | Meaning |
 |-------------|---------|
 | `SKILL.md` | Agent-agnostic source. Use only when the same instructions are valid for every target agent. |
-| `SKILL.claude.md` | Claude-specific source. The builder materializes it as runtime `SKILL.md` for Claude. |
-| `SKILL.codex.md` | Codex-specific source. The builder materializes it as runtime `SKILL.md` for Codex. |
+| `SKILL.claude.md` | Claude-specific source. |
+| `SKILL.codex.md` | Codex-specific source. |
 
 Both Claude and Codex still require a runtime file named `SKILL.md`; the suffix
-is a source convention, not a harness feature. `build` writes the right
-`SKILL.md` target for each agent, and `check` fails when a suffixed source has
-not been materialized. If a skill has either `SKILL.claude.md` or
-`SKILL.codex.md`, it must have both. A suffixless `SKILL.md` is never a fallback
-inside an agent-specific skill; it means the skill is truly multi-agent
-compatible.
+is a source convention, not a harness feature. `build` writes each agent's
+available suffixed source as that agent's runtime `SKILL.md`, and `check` fails
+when a suffixed source has not been materialized or when a stale target remains.
+A suffixed source may exist as a pair when both agents support the workflow with
+different instructions, or singly when only one agent has the required runtime
+capability. A suffixless `SKILL.md` is never a fallback inside an
+agent-specific skill; it means the skill is truly multi-agent compatible.
+
+Plugins may also be single-agent at runtime. When a plugin has no Codex skill
+source and no explicit Codex runtime payload, the generated Codex marketplace
+omits the plugin instead of serving an empty or misleading command surface.
 
 Plugin and marketplace manifests are adapter layers. Claude Code and Codex both load `skills/`, but they do not use the same manifest and marketplace files:
 
@@ -269,7 +275,9 @@ When a shared skill has a Claude-only block and still wants to be packaged for o
 
 - A clearly labelled Claude-only section that other clients can ignore.
 - A generic instruction with runtime-specific examples underneath.
-- Paired suffixed sources (`SKILL.claude.md`, `SKILL.codex.md`) when the workflow semantics differ per agent.
+- Suffixed sources (`SKILL.claude.md`, `SKILL.codex.md`) when the workflow
+  semantics differ per agent or only one agent has the required runtime
+  capability.
 - A generated sanitized adapter view, if a client rejects the frontmatter or body syntax outright.
 
 Do not remove Claude frontmatter or hook guidance merely to satisfy another client. If another client needs stricter metadata, generate the stricter view or manifest beside the Claude source.
@@ -600,7 +608,16 @@ Reloaded skills: 148 skills available (no changes)
 
 It re-reads the full skill catalog (every plugin's `skills/` plus user-level skills) and reports the count, with a `(no changes)` suffix when the reloaded set is byte-identical to what was already loaded. It is complementary to `/reload-plugins`: the plugin reload re-binds plugins, agents, hooks, and MCP/LSP servers but reported `0 skills`, while the skill reload owns the `148 skills`. The same empirical run confirmed it does not pull working-tree edits either: after `/reload-skills`, how-plugins-work stayed at version 1.0.25 with the identical `installPath`, and the new section marker was still absent from the active cache SKILL.md while present in the working tree. So `(no changes)` here means "the installed cache snapshot is unchanged", not "your working-tree edits were checked and skipped". Reload never looks at the working tree. The update-then-reload loop above is the same for skills.
 
-Both reload commands act on the session you type them in. A running **background agent** (`claude agents` / `/agents`, dispatched with `claude --bg`) is a separate process that loaded its plugins at its own start, and `/reload-plugins` cannot reach it. After `claude plugins update`, those agents keep running the old version until their process restarts. The `/restart-claude-agents` command in this plugin does that restart: it stops each background agent and resumes its session with `claude --bg --resume`, re-applying the agent's original launch flags from its job state, so a fresh process loads the current plugins while the agent keeps its conversation, permissions, and goal.
+Both reload commands act on the session you type them in. A running **background
+agent** (`claude agents` / `/agents`, dispatched with `claude --bg`) is a
+separate process that loaded its plugins at its own start, and
+`/reload-plugins` cannot reach it. After `claude plugins update`, those agents
+keep running the old version until their process restarts. In Claude Code, the
+Claude-only `/restart-claude-agents` command in this plugin does that restart:
+it stops each background agent and resumes its session with
+`claude --bg --resume`, re-applying the agent's original launch flags from its
+job state, so a fresh process loads the current plugins while the agent keeps
+its conversation, permissions, and goal.
 
 ## Troubleshooting: "Unknown command: /xyz"
 
@@ -636,7 +653,8 @@ local marketplace.
    <marketplace>` before reinstalling when the remote changed. For local
    marketplace development, rebuild the generated adapters first.
 5. If the plugin exists in Claude metadata but not Codex, run
-   `bin/plugin-adapters check .`; drift means the Codex adapter files are stale.
+   `bin/plugin-adapters check .`. Drift means the Codex adapter files are stale;
+   a clean check means the omission is intentional single-agent coverage.
 6. If `codex plugin add` cannot find the plugin, inspect
    `.agents/plugins/marketplace.json` first, then the package
    `.codex-plugin/plugin.json`.

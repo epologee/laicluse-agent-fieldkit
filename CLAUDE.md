@@ -49,9 +49,9 @@ existing users. This repository becomes the public canonical home.
 
 - Skills live under `packages/<plugin>/skills/<skill>/`.
 - Use `SKILL.md` only when the skill is truly multi-agent-compatible.
-- Use both `SKILL.claude.md` and `SKILL.codex.md` when the workflow differs per
-  agent; `bin/plugin-adapters build .` materializes the runtime
-  `SKILL.md` targets.
+- Use `SKILL.claude.md` and/or `SKILL.codex.md` when the workflow differs per
+  agent or only one agent can support it; `bin/plugin-adapters build .`
+  materializes the runtime `SKILL.md` targets that exist for each agent.
 - Claude metadata remains the source; Codex manifests and `.agents/plugins/`
   are generated adapters.
 - No symlinks; the same layout must work on macOS, Linux, and Windows.

@@ -15,6 +15,14 @@ Categories:
 - **Changed**: non-breaking adjustments worth knowing about
 - **Fixed**: silent unless the bug was user-visible
 
+## [v2.0.2]
+
+### Fixed
+
+- **`/whats-new` is Claude-only for now.** The command reads Claude plugin
+  install metadata and marketplace changelog state, so the generated Codex
+  marketplace no longer advertises it until a Codex runtime path exists.
+
 ## [v2.0.1]
 
 ### Added

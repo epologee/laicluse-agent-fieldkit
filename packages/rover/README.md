@@ -21,13 +21,14 @@ that needs a heartbeat to stay alive? The caller no longer has to know or say.
   orchestrator routes to `gurus:software`, `gurus:council`, `gurus:writers`,
   or any future panel.
 
-Install together:
+`rover` is currently Claude Code-only. The generated Codex marketplace omits it
+until Codex has compatible keepalive and subagent dispatch paths for this
+workflow.
+
+Install together in Claude Code:
 
 ```bash
 claude plugins install rover@laicluse-agent-tools autonomous@laicluse-agent-tools gurus@laicluse-agent-tools
-codex plugin add rover@laicluse-agent-tools
-codex plugin add autonomous@laicluse-agent-tools
-codex plugin add gurus@laicluse-agent-tools
 ```
 
 **Host contract for persistent runs.** The keep-alive probe treats `CronCreate`

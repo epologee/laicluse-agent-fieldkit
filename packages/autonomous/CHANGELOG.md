@@ -8,6 +8,15 @@ every commit, so the header may lag the shipped version. Header numbers are
 informational, the broadcast is positional. Use the `--force` flag on the
 helper to re-read at any time.
 
+## [v2.0.1]
+
+### Breaking
+
+- **`autonomous` is no longer advertised to Codex.** The keepalive, cron, and
+  wake skills depend on Claude Code cron/session behavior. The generated Codex
+  marketplace now omits the plugin instead of serving commands without a
+  compatible runtime path.
+
 ## [v2.0.0]
 
 ### Breaking

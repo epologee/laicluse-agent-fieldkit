@@ -94,6 +94,17 @@ has_agent_specific_skills() {
   find "$plugin_dir/skills" -type f \( -name 'SKILL.claude.md' -o -name 'SKILL.codex.md' \) | grep -q .
 }
 
+has_skill_source_for_agent() {
+  local plugin_dir="$1" agent="$2" skill_dir
+  for skill_dir in "$plugin_dir"/skills/*; do
+    [ -d "$skill_dir" ] || continue
+    if skill_source_for_agent "$skill_dir" "$agent" >/dev/null; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 skill_source_for_agent() {
   local skill_dir="$1" agent="$2"
   if [ -f "$skill_dir/SKILL.claude.md" ] || [ -f "$skill_dir/SKILL.codex.md" ]; then
@@ -111,15 +122,8 @@ validate_skill_sources() {
   for skill_dir in "$plugin_dir"/skills/*; do
     [ -d "$skill_dir" ] || continue
     skill="$(basename "$skill_dir")"
-    if [ -f "$skill_dir/SKILL.claude.md" ] || [ -f "$skill_dir/SKILL.codex.md" ]; then
-      [ -f "$skill_dir/SKILL.claude.md" ] ||
-        die "plugin $plugin skill $skill has SKILL.codex.md but no SKILL.claude.md"
-      [ -f "$skill_dir/SKILL.codex.md" ] ||
-        die "plugin $plugin skill $skill has SKILL.claude.md but no SKILL.codex.md"
-    else
-      [ -f "$skill_dir/SKILL.md" ] ||
-        die "plugin $plugin skill $skill has no source (SKILL.md or both SKILL.claude.md and SKILL.codex.md)"
-    fi
+    [ -f "$skill_dir/SKILL.md" ] || [ -f "$skill_dir/SKILL.claude.md" ] || [ -f "$skill_dir/SKILL.codex.md" ] ||
+      die "plugin $plugin skill $skill has no source (SKILL.md, SKILL.claude.md, or SKILL.codex.md)"
   done
 }
 
@@ -160,7 +164,9 @@ copy_codex_skills() {
   done < <(find "$plugin_dir/skills" -type f | sort)
   for skill_dir in "$plugin_dir"/skills/*; do
     [ -d "$skill_dir" ] || continue
-    src="$(skill_source_for_agent "$skill_dir" codex)"
+    if ! src="$(skill_source_for_agent "$skill_dir" codex)"; then
+      continue
+    fi
     rel="${skill_dir#$plugin_dir/}/SKILL.md"
     copy_skill_file "$src" "$target_dir/$rel" 1
   done
@@ -228,6 +234,12 @@ generate_into() {
     [ -d "$plugin_dir/skills" ] || die "plugin $name is missing skills/"
     validate_skill_sources "$name" "$plugin_dir"
     copy_claude_skill_targets "$repo" "$out_root" "$plugin_dir"
+
+    if ! has_skill_source_for_agent "$plugin_dir" codex && [ ! -d "$plugin_dir/agents.codex" ]; then
+      rm -rf "$out_root/.agents/plugins/generated/$name"
+      rm -rf "$out_root/${source#./}/.codex-plugin"
+      continue
+    fi
 
     if has_agent_specific_skills "$plugin_dir" || needs_sanitized_skills "$plugin_dir" || [ -d "$plugin_dir/agents.codex" ]; then
       codex_source="./.agents/plugins/generated/$name"

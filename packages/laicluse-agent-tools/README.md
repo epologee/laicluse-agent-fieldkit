@@ -1,6 +1,8 @@
 # laicluse-agent-tools
 
-Marketplace-wide utilities for the laicluse-agent-tools marketplace.
+Marketplace-wide utilities for the laicluse-agent-tools marketplace. This
+plugin is currently Claude Code-only because `/whats-new` reads Claude plugin
+install metadata and broadcast sentinel state.
 
 ## Commands
 

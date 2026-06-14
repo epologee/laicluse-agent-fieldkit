@@ -28,8 +28,22 @@ is affected without the operator's go.
 
 ## The resolver
 
-```
-${CLAUDE_PLUGIN_ROOT}/skills/push-policy/git-repo-policy [repo-path]
+```bash
+resolve_git_discipline_root() {
+  if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+    printf '%s\n' "$CLAUDE_PLUGIN_ROOT"
+    return 0
+  fi
+  if command -v codex >/dev/null 2>&1; then
+    codex plugin list --json \
+      | jq -er '.installed[] | select(.pluginId == "git-discipline@laicluse-agent-tools") | .source.path'
+    return $?
+  fi
+  return 1
+}
+
+GD_ROOT="$(resolve_git_discipline_root)" || { echo "git-discipline plugin root not found" >&2; exit 1; }
+"$GD_ROOT/skills/push-policy/git-repo-policy" [repo-path]
 ```
 
 Run it on a push decision (defaults to the current repo). It prints, one per

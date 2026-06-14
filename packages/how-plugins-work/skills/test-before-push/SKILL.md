@@ -72,7 +72,9 @@ codex plugin add "$plugin@$alias"
 Codex reads `.agents/plugins/marketplace.json`, follows
 `plugins[].source.path`, then reads the package `.codex-plugin/plugin.json`.
 If the add cannot find the plugin, run `bin/plugin-adapters check .` before
-looking at any cache path.
+looking at any cache path. When the check passes and the plugin is absent from
+the Codex marketplace, treat that as intentional single-agent coverage rather
+than stale generated metadata.
 
 ## Fresh session check
 

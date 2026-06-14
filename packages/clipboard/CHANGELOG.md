@@ -20,6 +20,14 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.8]
+
+### Fixed
+
+- **Codex now gets its own `/clipboard` helper-resolution instructions.**
+  Claude still uses `${CLAUDE_PLUGIN_ROOT}`; Codex resolves the active plugin
+  root through `codex plugin list --json` before invoking `bin/clipboard-copy`.
+
 ## [v2.0.7]
 
 ### Fixed

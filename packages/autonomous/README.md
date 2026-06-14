@@ -26,8 +26,10 @@ caller no longer has to know any of this. It invokes `rover`, the rover invokes
 
 ## Skills
 
-All skills here are internal: the `rover` plugin loads them, the operator does
-not invoke them directly.
+All skills here are internal and Claude Code-only: the `rover` plugin loads
+them, the operator does not invoke them directly. Codex does not currently
+receive this plugin because it has no compatible cron heartbeat API or wake
+path for these skills.
 
 - **`keepalive`**: the startup probe and front door. Checks whether `CronCreate`
   is available in this process. Available means an interactive session, so it
@@ -65,7 +67,4 @@ together; `rover` additionally depends on `gurus` for its INSPECT panel review:
 
 ```bash
 claude plugins install autonomous@laicluse-agent-tools rover@laicluse-agent-tools gurus@laicluse-agent-tools
-codex plugin add autonomous@laicluse-agent-tools
-codex plugin add rover@laicluse-agent-tools
-codex plugin add gurus@laicluse-agent-tools
 ```

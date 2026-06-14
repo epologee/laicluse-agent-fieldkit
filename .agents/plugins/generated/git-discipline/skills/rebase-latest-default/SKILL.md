@@ -150,7 +150,21 @@ A rebase rewrites the branch's commits, so the published branch now points at pr
 Consult the resolver, reading `push_access` from its output:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/skills/push-policy/git-repo-policy
+resolve_git_discipline_root() {
+  if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+    printf '%s\n' "$CLAUDE_PLUGIN_ROOT"
+    return 0
+  fi
+  if command -v codex >/dev/null 2>&1; then
+    codex plugin list --json \
+      | jq -er '.installed[] | select(.pluginId == "git-discipline@laicluse-agent-tools") | .source.path'
+    return $?
+  fi
+  return 1
+}
+
+GD_ROOT="$(resolve_git_discipline_root)" || { echo "git-discipline plugin root not found" >&2; exit 1; }
+"$GD_ROOT/skills/push-policy/git-repo-policy"
 ```
 
 **The gate is whether the branch is PUBLISHED, not whether an upstream is configured.** A branch can have a live remote counterpart (and an open PR) while its local tracking is unset; `@{u}` then fails even though the branch is fully published. Detect publication by the remote branch, and read the current branch name first:

@@ -5,6 +5,15 @@ once per machine whenever the installed `version` in
 `.claude-plugin/plugin.json` changes. Header version numbers are informational;
 the broadcast is positional.
 
+## [v2.0.1]
+
+### Breaking
+
+- **`rover` is no longer advertised to Codex.** Its current phase machine
+  depends on the Claude-only `autonomous` keepalive layer and Claude-style
+  delegated review flows. The generated Codex marketplace now omits the plugin
+  until a Codex-compatible rover path exists.
+
 ## [v2.0.0]
 
 ### Breaking
