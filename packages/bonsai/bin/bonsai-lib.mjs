@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, statSync } from 'node:fs';
-import { join, resolve, dirname, basename } from 'node:path';
+import { join, resolve, dirname, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 export function git(repo, args) {
@@ -61,6 +61,9 @@ export function createWorktree({ repo, branch, base }) {
   if (!isGitRepo(repo)) {
     throw new Error(`${repo} is not a git repository`);
   }
+  if (!branch || !branch.trim() || branch.includes('..') || /\s/.test(branch)) {
+    throw new Error(`invalid branch name ${JSON.stringify(branch)}`);
+  }
   const resolvedBase = base || resolveBase(repo);
   const baseSha = git(repo, ['rev-parse', resolvedBase]).trim();
   const worktreesDir = join(repo, 'worktrees');
@@ -120,28 +123,35 @@ export function setupWorktree({ repo, worktree, install = true, exec = execFileS
   if (!existsSync(worktree)) throw new Error(`worktree ${worktree} does not exist`);
   const copied = [];
   const warnings = [];
+  const worktreeAbs = resolve(worktree);
   for (const rel of readBonsaiList(repo)) {
+    const to = resolve(worktree, rel);
+    if (to !== worktreeAbs && !to.startsWith(worktreeAbs + sep)) {
+      warnings.push(`skipped ${rel}: escapes the worktree`);
+      continue;
+    }
     const from = join(repo, rel);
     if (!existsSync(from)) continue;
-    const to = join(worktree, rel);
-    mkdirSync(dirname(to), { recursive: true });
-    copyFileSync(from, to);
-    copied.push(rel);
+    try {
+      mkdirSync(dirname(to), { recursive: true });
+      copyFileSync(from, to);
+      copied.push(rel);
+    } catch (err) {
+      warnings.push(`copy ${rel} failed: ${err.message.split('\n')[0]}`);
+    }
   }
   const installs = detectInstalls(worktree);
-  let ran = false;
   if (install) {
     for (const { dir, manager } of installs) {
       const [cmd, args] = INSTALL_COMMANDS[manager];
       try {
         exec(cmd, args, { cwd: dir, stdio: ['ignore', 'pipe', 'pipe'] });
-        ran = true;
       } catch (err) {
         warnings.push(`install in ${dir} via ${manager} failed: ${err.message.split('\n')[0]}`);
       }
     }
   }
-  return { worktree, copied, installs, ran, warnings };
+  return { worktree, copied, installs, warnings };
 }
 
 export function defaultBranch(repo) {
@@ -237,7 +247,9 @@ export function teardownWorktree({ repo, target, force = false, dryRun = false }
   if (c.branch) {
     try {
       git(repo, ['branch', force ? '-D' : '-d', c.branch]);
-    } catch {}
+    } catch (err) {
+      base.warnings.push(`worktree removed but branch ${c.branch} was not deleted: ${err.message.split('\n')[0]}`);
+    }
   }
   return { ...base, removed: true, keptReason: null };
 }

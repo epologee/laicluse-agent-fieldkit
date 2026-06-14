@@ -18,13 +18,16 @@ if (!command || command === '--help' || command === '-h') {
   process.exit(command ? 0 : 2);
 }
 
+let wantJson = false;
+
 function out(json, obj, human) {
   if (json) console.log(JSON.stringify(obj, null, 2));
   else console.log(human);
 }
 
 function die(message) {
-  console.error(`bonsai: ${message}`);
+  if (wantJson) console.error(JSON.stringify({ error: message }));
+  else console.error(`bonsai: ${message}`);
   process.exit(1);
 }
 
@@ -44,6 +47,7 @@ if (command === 'create') {
   } catch (err) {
     die(err.message);
   }
+  wantJson = values.json;
   const branch = positionals[0];
   if (!branch) die('create needs a branch name');
   const repo = values.repo || process.cwd();
@@ -69,6 +73,7 @@ if (command === 'create') {
   } catch (err) {
     die(err.message);
   }
+  wantJson = values.json;
   const worktree = positionals[0];
   if (!worktree) die('setup needs a worktree path');
   if (!values.repo) die('setup needs --repo <canonical checkout root>');
@@ -95,6 +100,7 @@ if (command === 'create') {
   } catch (err) {
     die(err.message);
   }
+  wantJson = values.json;
   const target = positionals[0];
   if (!target) die('teardown needs a worktree path or branch name');
   const repo = values.repo || process.cwd();

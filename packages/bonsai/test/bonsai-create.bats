@@ -47,3 +47,22 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   [ "$port_a" -ge 3100 ]
   [ "$port_a" -le 3999 ]
 }
+
+@test "create rejects a .. branch name as invalid" {
+  run run_bonsai create .. --repo "$FIX" --json
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi 'invalid branch'
+}
+
+@test "create rejects a branch name with whitespace" {
+  run run_bonsai create "my feature" --repo "$FIX" --json
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi 'invalid branch'
+}
+
+@test "create emits a JSON error object under --json on failure" {
+  run_bonsai create dup2 --repo "$FIX" --json
+  run run_bonsai create dup2 --repo "$FIX" --json
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q '"error"'
+}

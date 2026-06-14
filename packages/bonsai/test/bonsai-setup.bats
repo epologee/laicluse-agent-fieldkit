@@ -51,3 +51,12 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   [ "$status" -eq 0 ]
   [ ! -f "$FIX/worktrees/miss-wt/missing.txt" ]
 }
+
+@test "setup skips a .bonsai entry that escapes the worktree, with a warning" {
+  printf '../escape.txt\n' > "$FIX/.bonsai"
+  bonsai create esc-wt --repo "$FIX" --json
+  run bonsai setup "$FIX/worktrees/esc-wt" --repo "$FIX" --no-install --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -qi 'escapes the worktree'
+  [ ! -e "$FIX/worktrees/escape.txt" ]
+}
