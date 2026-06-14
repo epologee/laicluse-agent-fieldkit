@@ -43,8 +43,9 @@ without a `## [vX.Y.Z]` section stays silent on every update.
 
 ### Breaking
 
-- **clipboard now ships from the public laicluse-agent-tools marketplace.**
-  It replaces `clipboard@leclause`; uninstall that copy if you still have it.
+- **clipboard now ships from the public laicluse-agent-fieldkit marketplace.**
+  Install the Fieldkit copy for the current `/clipboard` and `/clipboard slack`
+  commands.
   The commands are unchanged: `/clipboard` and `/clipboard slack`.
 
 ### Changed

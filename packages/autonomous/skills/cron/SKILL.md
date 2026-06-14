@@ -75,12 +75,12 @@ Replace `<FILENAME>` with the actual file.
 **Locating the binary.** Resolve via `installed_plugins.json`, which is the authoritative source for the active install path (the same lookup `clipboard` and `rename-suggestion` use):
 
 ```bash
-IP=$(jq -r '.plugins["autonomous@laicluse-agent-tools"][0].installPath // empty' ~/.claude/plugins/installed_plugins.json 2>/dev/null)
+IP=$(jq -r '.plugins["autonomous@laicluse-agent-fieldkit"][0].installPath // empty' ~/.claude/plugins/installed_plugins.json 2>/dev/null)
 if [ -z "$IP" ]; then
-  echo "cron: autonomous@laicluse-agent-tools not installed or installed_plugins.json missing. Run: claude plugins install autonomous@laicluse-agent-tools" >&2
+  echo "cron: autonomous@laicluse-agent-fieldkit not installed or installed_plugins.json missing. Run: claude plugins install autonomous@laicluse-agent-fieldkit" >&2
   CRON="*/${minutes} * * * *"
 elif [ ! -x "$IP/bin/relative-cron" ]; then
-  echo "cron: $IP/bin/relative-cron not found. Run: claude plugins update autonomous@laicluse-agent-tools" >&2
+  echo "cron: $IP/bin/relative-cron not found. Run: claude plugins update autonomous@laicluse-agent-fieldkit" >&2
   CRON="*/${minutes} * * * *"
 else
   CRON=$("$IP/bin/relative-cron" "$minutes")

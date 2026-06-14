@@ -782,7 +782,7 @@ the per-cycle exposure to the rule's principle.
 The guard could not locate its own SKILL.md alongside the hooks
 directory. The plugin install is incomplete or the cache version
 got out of sync with the marketplace. Run
-`claude plugins update git-discipline@laicluse-agent-tools` to refresh.
+`claude plugins update git-discipline@laicluse-agent-fieldkit` to refresh.
 
 **"cannot read HEAD, is this a new repository?"**
 
@@ -866,7 +866,7 @@ The audit script lives in the plugin under `bin/audit-no-body-commits`. Use it
 as follows to always run it against the active plugin version:
 
 ```bash
-GIT_DISCIPLINE=$(jq -r '.plugins["git-discipline@laicluse-agent-tools"][0].installPath' \
+GIT_DISCIPLINE=$(jq -r '.plugins["git-discipline@laicluse-agent-fieldkit"][0].installPath' \
   ~/.claude/plugins/installed_plugins.json)
 python3 "$GIT_DISCIPLINE/bin/audit-no-body-commits"
 python3 "$GIT_DISCIPLINE/bin/audit-no-body-commits" --branch main --since 2026-04-01

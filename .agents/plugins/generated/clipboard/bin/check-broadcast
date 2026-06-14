@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Post-update broadcast check for a l'Aicluse Agent Tools plugin.
+// Post-update broadcast check for a l'Aicluse Agent Fieldkit plugin.
 //
 // Emits the CHANGELOG section for the active plugin version when the user
 // has not yet seen it on this machine. Sentinel lives at
@@ -24,7 +24,6 @@ import { fileURLToPath } from 'node:url';
 
 const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
 const SENTINEL_DIR = join(agentHome, 'clipboard', 'broadcasts');
-const LEGACY_SENTINEL_DIR = join(homedir(), '.claude', 'var', 'leclause');
 
 function findPluginRoot() {
   if (process.env.CLAUDE_PLUGIN_ROOT) return process.env.CLAUDE_PLUGIN_ROOT;
@@ -65,8 +64,6 @@ function sentinelPath(pluginName) {
 function readSentinel(pluginName) {
   const path = sentinelPath(pluginName);
   if (existsSync(path)) return readFileSync(path, 'utf8').trim();
-  const legacyPath = join(LEGACY_SENTINEL_DIR, `${pluginName}-broadcast-seen`);
-  if (existsSync(legacyPath)) return readFileSync(legacyPath, 'utf8').trim();
   return null;
 }
 

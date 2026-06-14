@@ -60,16 +60,3 @@ PN
   run env HOME="$HOME" "$NODE_BIN" "$LOG_BIN"
   [ "$status" -ne 0 ]
 }
-
-@test "legacy leclause captures migrate to the laicluse dir on first use" {
-  LEGACY="$HOME/.claude/var/leclause/anger-management"
-  mkdir -p "$LEGACY"
-  printf '{"ts":"2026-06-01T10:00:00.000Z","word":"fuck","cwd":"/tmp","git":"","note":"legacy capture"}\n' > "$LEGACY/friction.jsonl"
-  printf 'as-of: 2026-06-01T11:00:00.000Z\n' > "$LEGACY/findings.md"
-  HOME="$HOME" "$NODE_BIN" "$LOG_BIN" wtf </dev/null
-  [ -f "$HOME/.laicluse/anger-management/findings.md" ]
-  run grep -c . "$LOG"
-  [ "$output" = "2" ]
-  run grep legacy "$LOG"
-  [ "$status" -eq 0 ]
-}

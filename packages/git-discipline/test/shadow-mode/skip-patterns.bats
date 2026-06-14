@@ -39,7 +39,7 @@ SHIM
   export GIT_DISCIPLINE_COMMIT_RULE_STATE_FILE="$_state_file"
 
   # Non-trivial diff so the trivial shortcut cannot mask a skip-pattern failure.
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 10 files changed, 100 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb\nf.rb\ng.rb\nh.rb\ni.rb\nj.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""

@@ -32,7 +32,7 @@ resolve_git_discipline_root() {
   fi
   if command -v codex >/dev/null 2>&1; then
     codex plugin list --json \
-      | jq -er '.installed[] | select(.pluginId == "git-discipline@laicluse-agent-tools") | .source.path'
+      | jq -er '.installed[] | select(.pluginId == "git-discipline@laicluse-agent-fieldkit") | .source.path'
     return $?
   fi
   return 1

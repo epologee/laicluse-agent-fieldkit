@@ -1,7 +1,7 @@
 ---
 name: whats-new
 user-invocable: true
-description: With a plugin-name argument (e.g. `git-discipline`), reprints the latest CHANGELOG section for that installed laicluse-agent-tools plugin without touching its broadcast sentinel. Without argument, prints the latest section of the marketplace-wide MARKETPLACE-CHANGELOG and lists which plugins have a per-plugin CHANGELOG.
+description: With a plugin-name argument (e.g. `git-discipline`), reprints the latest CHANGELOG section for that installed laicluse-agent-fieldkit plugin without touching its broadcast sentinel. Without argument, prints the latest section of the marketplace-wide MARKETPLACE-CHANGELOG and lists which plugins have a per-plugin CHANGELOG.
 disable-model-invocation: true
 argument-hint: "[plugin-name]"
 ---
@@ -16,10 +16,10 @@ if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
 fi
 ```
 
-If the command produces output, the laicluse-agent-tools plugin was updated since
+If the command produces output, the laicluse-agent-fieldkit plugin was updated since
 the last time you saw the broadcast on this machine. Show the output
 verbatim in a markdown block, prefixed with one short sentence
-("laicluse-agent-tools was updated; here is what changed."). Then continue with
+("laicluse-agent-fieldkit was updated; here is what changed."). Then continue with
 the rest of this skill.
 
 If the command produces no output, say nothing about updates and proceed.
@@ -32,11 +32,11 @@ guard's purpose, not an oversight.
 
 # /whats-new
 
-Show the CHANGELOG section of an installed laicluse-agent-tools plugin
+Show the CHANGELOG section of an installed laicluse-agent-fieldkit plugin
 without touching the post-update broadcast sentinel.
 
 The normal user-facing command is `/whats-new`. The fully namespaced fallback
-is `/laicluse-agent-tools:whats-new` if another installed plugin ever makes the
+is `/laicluse-agent-fieldkit:whats-new` if another installed plugin ever makes the
 bare form ambiguous.
 
 ## What to do
@@ -47,15 +47,15 @@ operator provides a plugin name:
 
 ```bash
 PLUGIN="<arg>"
-INSTALL=$(jq -r --arg name "${PLUGIN}@laicluse-agent-tools" \
+INSTALL=$(jq -r --arg name "${PLUGIN}@laicluse-agent-fieldkit" \
   '.plugins[$name][0].installPath // empty' \
   ~/.claude/plugins/installed_plugins.json)
 if [ -z "$INSTALL" ]; then
-  echo "Plugin ${PLUGIN}@laicluse-agent-tools is not installed."
+  echo "Plugin ${PLUGIN}@laicluse-agent-fieldkit is not installed."
   exit 0
 fi
 if [ ! -x "$INSTALL/bin/check-broadcast" ]; then
-  echo "Plugin ${PLUGIN}@laicluse-agent-tools has no check-broadcast helper; CHANGELOG support not adopted yet."
+  echo "Plugin ${PLUGIN}@laicluse-agent-fieldkit has no check-broadcast helper; CHANGELOG support not adopted yet."
   exit 0
 fi
 node "$INSTALL/bin/check-broadcast" --force
@@ -70,10 +70,10 @@ marketplace CHANGELOG, then a one-line index of the plugins that
 ship their own per-plugin CHANGELOG so the operator can drill in.
 
 ```bash
-TOOLS=$(jq -r '.plugins["laicluse-agent-tools@laicluse-agent-tools"][0].installPath // empty' \
+TOOLS=$(jq -r '.plugins["laicluse-agent-fieldkit@laicluse-agent-fieldkit"][0].installPath // empty' \
   ~/.claude/plugins/installed_plugins.json)
 if [ -z "$TOOLS" ] || [ ! -f "$TOOLS/MARKETPLACE-CHANGELOG.md" ]; then
-  echo "laicluse-agent-tools@laicluse-agent-tools is not installed or missing MARKETPLACE-CHANGELOG.md."
+  echo "laicluse-agent-fieldkit@laicluse-agent-fieldkit is not installed or missing MARKETPLACE-CHANGELOG.md."
   exit 0
 fi
 
@@ -85,9 +85,9 @@ awk '
 echo
 echo "---"
 echo "Per-plugin CHANGELOGs available for:"
-jq -r '.plugins | to_entries[] | select(.key | endswith("@laicluse-agent-tools")) | .key' \
+jq -r '.plugins | to_entries[] | select(.key | endswith("@laicluse-agent-fieldkit")) | .key' \
   ~/.claude/plugins/installed_plugins.json | while read -r entry; do
-  plugin="${entry%@laicluse-agent-tools}"
+  plugin="${entry%@laicluse-agent-fieldkit}"
   install=$(jq -r --arg k "$entry" '.plugins[$k][0].installPath // empty' \
     ~/.claude/plugins/installed_plugins.json)
   if [ -x "$install/bin/check-broadcast" ]; then

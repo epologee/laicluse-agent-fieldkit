@@ -31,7 +31,7 @@ run does not mark the version as seen. `/whats-new gurus`
 re-shows the section on demand without touching the sentinel.
 </post-update-broadcast>
 
-> **Preflight.** The sub-skills dispatch via `gurus:sonnet-max`. This plugin ships that agent. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-tools` and try again.
+> **Preflight.** The sub-skills dispatch via `gurus:sonnet-max`. This plugin ships that agent. If the dispatch fails with "unknown subagent_type: gurus:sonnet-max", run `claude plugins update gurus@laicluse-agent-fieldkit` and try again.
 
 # Gurus Orchestrator
 

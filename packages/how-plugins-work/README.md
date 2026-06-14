@@ -42,6 +42,6 @@ Activates when diagnosing:
 Install:
 
 ```bash
-claude plugins install how-plugins-work@laicluse-agent-tools
-codex plugin add how-plugins-work@laicluse-agent-tools
+claude plugins install how-plugins-work@laicluse-agent-fieldkit
+codex plugin add how-plugins-work@laicluse-agent-fieldkit
 ```

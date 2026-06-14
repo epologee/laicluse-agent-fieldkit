@@ -70,7 +70,7 @@ load helpers
     printf 'expected install-broken deny in output, got: %s\n' "$output" >&2
     return 1
   }
-  [[ "$output" =~ "Reinstall git-discipline@laicluse-agent-tools" ]] || {
+  [[ "$output" =~ "Reinstall git-discipline@laicluse-agent-fieldkit" ]] || {
     printf 'expected reinstall instruction in output, got: %s\n' "$output" >&2
     return 1
   }

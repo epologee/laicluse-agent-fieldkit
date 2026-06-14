@@ -46,8 +46,9 @@ stays silent on every update.
 
 ### Breaking
 
-- **dont-do-that now ships from the public laicluse-agent-tools marketplace.**
-  It replaces `dont-do-that@leclause`; uninstall that copy if you still have it.
+- **dont-do-that now ships from the public laicluse-agent-fieldkit marketplace.**
+  Install the Fieldkit copy for the current guardrail hooks and correction
+  skills.
 
 ### Changed
 
@@ -55,8 +56,7 @@ stays silent on every update.
   guardrail hooks plus `/duh` and `/just-a-question`; Codex receives the two
   skills through the generated adapter package. Claude-specific hooks do not
   run in Codex.
-- **Broadcast state moved under `${LAICLUSE_HOME:-~/.laicluse}`.** The helper
-  reads the old `~/.claude/var/leclause` sentinel as a legacy fallback.
+- **Broadcast state moved under `${LAICLUSE_HOME:-~/.laicluse}`.**
 
 ## [v1.0.83]
 

@@ -27,10 +27,9 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 
 ### Added
 
-- **gurus now ships from the public laicluse-agent-tools marketplace.** It
-  replaces `gurus@leclause`; install `gurus@laicluse-agent-tools` alongside
-  `rover@laicluse-agent-tools` so the rover's INSPECT panel review no longer
-  depends on the legacy marketplace.
+- **gurus now ships from the public laicluse-agent-fieldkit marketplace.** It
+  installs alongside `rover@laicluse-agent-fieldkit` so the rover's INSPECT
+  panel review has its reviewer plugin in the same marketplace.
 - **The plugin is multi-agent.** Claude keeps the original `gurus:sonnet-max`
   plugin-shipped subagent flow. Codex gets Codex-specific skill bodies that use
   native subagents when available and fall back to a clearly marked
@@ -42,7 +41,7 @@ omitted; the broadcast budget is for things the user benefits from knowing.
   `gurus:sonnet-max` agent remains Claude-only; the generated Codex package no
   longer ships that subagent definition.
 
-## Legacy leclause history
+## Earlier History
 
 ## [v1.0.35]
 

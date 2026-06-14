@@ -84,20 +84,17 @@ Sister to `/duh`. The operator types `/just-a-question` to mark the message as t
 ## Installation
 
 ```bash
-claude plugins install dont-do-that@laicluse-agent-tools
-codex plugin add dont-do-that@laicluse-agent-tools
+claude plugins install dont-do-that@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit
 ```
-
-Migrating from `dont-do-that@leclause`: install this plugin, then run
-`claude plugins uninstall dont-do-that@leclause`.
 
 ## Disabling individual guards
 
 The dispatcher always runs, but individual guards fire based on the message content. To silence one guard without removing the plugin, edit `hooks/dispatch.sh` in your install and comment out the matching `source` / `guard_<name>` line. To silence the plugin entirely, uninstall:
 
 ```bash
-claude plugins uninstall dont-do-that@laicluse-agent-tools
-codex plugin remove dont-do-that@laicluse-agent-tools
+claude plugins uninstall dont-do-that@laicluse-agent-fieldkit
+codex plugin remove dont-do-that@laicluse-agent-fieldkit
 ```
 
 ## Known quirk

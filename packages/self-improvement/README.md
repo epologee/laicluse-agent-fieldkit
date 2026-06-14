@@ -23,6 +23,6 @@ Activates when the user:
 ## Install
 
 ```bash
-claude plugins install self-improvement@laicluse-agent-tools
-codex plugin add self-improvement@laicluse-agent-tools
+claude plugins install self-improvement@laicluse-agent-fieldkit
+codex plugin add self-improvement@laicluse-agent-fieldkit
 ```

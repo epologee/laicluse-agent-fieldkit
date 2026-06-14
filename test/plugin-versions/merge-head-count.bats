@@ -15,6 +15,7 @@ setup() {
   git config user.email test@example.invalid
   git config user.name "Bats Test"
   git config commit.gpgsign false
+  git config core.hooksPath /dev/null
 
   mkdir -p .claude-plugin packages/demo/.claude-plugin
   cat > .claude-plugin/marketplace.json <<'JSON'

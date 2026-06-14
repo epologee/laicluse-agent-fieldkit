@@ -1,64 +1,78 @@
-# Migration to l'Aicluse Agent Tools
+# Migration to l'Aicluse Agent Fieldkit
 
-Status: active.
+Status: active hard cutover.
 
-## Decision
+## What Changed
 
-The legacy marketplace `epologee/leclause-skills` will not be renamed in
-place. New multi-agent-compatible plugins ship under the
-`laicluse-agent-tools` marketplace alias.
+The public marketplace identity is now `laicluse-agent-fieldkit`. It carries
+the same field-ready agent plugins, skills, hooks, helpers, and reference docs
+under a stronger name that pairs with the private `laicluse-agent-workbench`.
 
-During the transition:
+The package names for the individual plugins stay stable:
 
-- `leclause-skills` remains the existing source for users.
-- `laicluse-agent-tools` is the home for multi-agent-compatible plugins.
-- `how-plugins-work`, `self-improvement`, and git-discipline may temporarily
-  exist in multiple places. That is migration duplication, not a DRY problem.
-- The new canonical plugin name for git-discipline is
-  `git-discipline@laicluse-agent-tools`; the legacy name
-  `gitgit@leclause` stays in place until the old marketplace can carry a
-  plugin-specific migration stub.
-- The new canonical plugin name for dont-do-that is
-  `dont-do-that@laicluse-agent-tools`. It replaces
-  `dont-do-that@leclause`; Claude Code keeps the hook stack, while Codex gets
-  the correction skills through the generated adapter package.
-- The new canonical plugin name for self-improvement is
-  `self-improvement@laicluse-agent-tools`.
-- The new canonical plugin name for intervision is
-  `intervision@laicluse-agent-tools`. It replaces both `intervision@leclause`
-  (Claude-only) and the staging copy in the private marketplace.
-- The new canonical plugin name for anger-management is
-  `anger-management@laicluse-agent-tools`. It replaces
-  `anger-management@leclause`; the friction pile moves to
-  `${LAICLUSE_HOME:-~/.laicluse}/anger-management/` with automatic migration
-  from the old `~/.claude/var/leclause/` location.
-- The new canonical plugin name for clipboard is
-  `clipboard@laicluse-agent-tools`. It replaces `clipboard@leclause`; the
-  commands (`/clipboard`, `/clipboard slack`) are unchanged.
-- The new canonical plugin name for gurus is `gurus@laicluse-agent-tools`. It
-  replaces `gurus@leclause` and removes `rover`'s dependency on the legacy
-  marketplace.
-- Migration status belongs here and in package-specific changelogs or stubs,
-  not in `how-plugins-work`. That skill documents plugin mechanics only:
-  naming, aliases, cache behavior, and adapter sync.
+- `how-plugins-work`
+- `self-improvement`
+- `git-discipline`
+- `dont-do-that`
+- `intervision`
+- `anger-management`
+- `autonomous`
+- `gurus`
+- `rover`
+- `clipboard`
+- `laicluse-agent-fieldkit`
 
-## For Existing Users
+## Existing Installs
 
-Install the new marketplace alongside the old one:
+Marketplace aliases are installation identities. Existing installs under the
+previous marketplace identity do not automatically become Fieldkit installs.
+Remove the old marketplace installs, then add this marketplace and install the
+plugins you use.
+
+Claude Code:
 
 ```bash
-claude plugins marketplace add epologee/laicluse-agent-tools
+claude plugins marketplace add epologee/laicluse-agent-fieldkit
+claude plugins install how-plugins-work@laicluse-agent-fieldkit
+claude plugins install self-improvement@laicluse-agent-fieldkit
+claude plugins install git-discipline@laicluse-agent-fieldkit
+claude plugins install dont-do-that@laicluse-agent-fieldkit
+claude plugins install intervision@laicluse-agent-fieldkit
+claude plugins install anger-management@laicluse-agent-fieldkit
+claude plugins install autonomous@laicluse-agent-fieldkit
+claude plugins install gurus@laicluse-agent-fieldkit
+claude plugins install rover@laicluse-agent-fieldkit
+claude plugins install clipboard@laicluse-agent-fieldkit
+claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
 ```
 
-Marketplace aliases are installation identities; `@leclause` does not become
-`@laicluse-agent-tools` automatically.
+Codex:
 
-When a plugin moves, the old marketplace keeps at least one migration stub that
-explains which legacy install can be removed and which new install replaces it.
-Only then may the real legacy plugin disappear.
+```bash
+codex plugin marketplace add epologee/laicluse-agent-fieldkit
+codex plugin add how-plugins-work@laicluse-agent-fieldkit
+codex plugin add self-improvement@laicluse-agent-fieldkit
+codex plugin add git-discipline@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit
+codex plugin add intervision@laicluse-agent-fieldkit
+codex plugin add anger-management@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit
+codex plugin add rover@laicluse-agent-fieldkit
+codex plugin add clipboard@laicluse-agent-fieldkit
+```
 
-## For Maintainers
+Claude Code needs `/reload-plugins` plus `/reload-skills`, or a session
+restart, after install changes. Codex picks up the new plugin set in a new
+session.
 
-Work plugin by plugin. Keep Claude metadata as the source and generate Codex
-adapters with `bin/plugin-adapters`. Keep runtime state under
-`${LAICLUSE_HOME:-$HOME/.laicluse}`.
+## Maintainers
+
+Keep Claude metadata as source, then regenerate Codex adapters:
+
+```bash
+bin/plugin-adapters build .
+bin/plugin-adapters check .
+```
+
+Runtime state stays under `${LAICLUSE_HOME:-$HOME/.laicluse}` by component
+name, not by marketplace name.

@@ -44,10 +44,8 @@ One global pile across every session, repo, and agent:
 ${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl
 ```
 
-Each line: `{ "ts", "word", "cwd", "git", "note" }`. Cheap on the capture side; the
-value is in the aggregate. Captures that older versions wrote under
-`~/.claude/var/leclause/` migrate to this path automatically on the next capture or
-repair.
+Each line: `{ "ts", "word", "cwd", "git", "note" }`. Cheap on the capture side;
+the value is in the aggregate.
 
 ## What to do
 

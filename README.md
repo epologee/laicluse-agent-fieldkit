@@ -1,4 +1,4 @@
-# l'Aicluse Agent Tools
+# l'Aicluse Agent Fieldkit
 
 Agent tooling for Claude Code and Codex.
 
@@ -28,52 +28,53 @@ The marketplace currently ships:
   evidence discipline, and a stop communique.
 - `clipboard`: copy the core content of the last answer to the macOS
   clipboard. Plain text by default, `/clipboard slack` for rich text.
-- `laicluse-agent-tools` (Claude Code): marketplace-wide utilities.
+- `laicluse-agent-fieldkit` (Claude Code): marketplace-wide utilities.
   `/whats-new [plugin]`
   re-reads the latest CHANGELOG section of any installed plugin, or the
   marketplace-wide news without arguments. Use
-  `/laicluse-agent-tools:whats-new` only when a namespaced form is needed.
+  `/laicluse-agent-fieldkit:whats-new` only when a namespaced form is needed.
 
 ## Installation
 
 Claude Code:
 
 ```bash
-claude plugins marketplace add epologee/laicluse-agent-tools
-claude plugins install how-plugins-work@laicluse-agent-tools
-claude plugins install self-improvement@laicluse-agent-tools
-claude plugins install git-discipline@laicluse-agent-tools
-claude plugins install dont-do-that@laicluse-agent-tools
-claude plugins install intervision@laicluse-agent-tools
-claude plugins install anger-management@laicluse-agent-tools
-claude plugins install autonomous@laicluse-agent-tools
-claude plugins install gurus@laicluse-agent-tools
-claude plugins install rover@laicluse-agent-tools
-claude plugins install clipboard@laicluse-agent-tools
-claude plugins install laicluse-agent-tools@laicluse-agent-tools
+claude plugins marketplace add epologee/laicluse-agent-fieldkit
+claude plugins install how-plugins-work@laicluse-agent-fieldkit
+claude plugins install self-improvement@laicluse-agent-fieldkit
+claude plugins install git-discipline@laicluse-agent-fieldkit
+claude plugins install dont-do-that@laicluse-agent-fieldkit
+claude plugins install intervision@laicluse-agent-fieldkit
+claude plugins install anger-management@laicluse-agent-fieldkit
+claude plugins install autonomous@laicluse-agent-fieldkit
+claude plugins install gurus@laicluse-agent-fieldkit
+claude plugins install rover@laicluse-agent-fieldkit
+claude plugins install clipboard@laicluse-agent-fieldkit
+claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
 ```
 
 Codex:
 
 ```bash
-codex plugin marketplace add epologee/laicluse-agent-tools
-codex plugin add how-plugins-work@laicluse-agent-tools
-codex plugin add self-improvement@laicluse-agent-tools
-codex plugin add git-discipline@laicluse-agent-tools
-codex plugin add dont-do-that@laicluse-agent-tools
-codex plugin add intervision@laicluse-agent-tools
-codex plugin add anger-management@laicluse-agent-tools
-codex plugin add gurus@laicluse-agent-tools
-codex plugin add rover@laicluse-agent-tools
-codex plugin add clipboard@laicluse-agent-tools
+codex plugin marketplace add epologee/laicluse-agent-fieldkit
+codex plugin add how-plugins-work@laicluse-agent-fieldkit
+codex plugin add self-improvement@laicluse-agent-fieldkit
+codex plugin add git-discipline@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit
+codex plugin add intervision@laicluse-agent-fieldkit
+codex plugin add anger-management@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit
+codex plugin add rover@laicluse-agent-fieldkit
+codex plugin add clipboard@laicluse-agent-fieldkit
 ```
 
 Codex receives the generated subset that has Codex-compatible runtime
 behavior. Claude-only plugins and skills are intentionally omitted from the
 Codex marketplace instead of being served as inert commands.
 
-If you still use older `@leclause` plugins, keep that marketplace installed
-until the replacement you need is listed here. See [docs/migration.md](docs/migration.md).
+Existing installs under the previous marketplace identity do not rename
+themselves. See [docs/migration.md](docs/migration.md) for the hard-cutover
+commands.
 
 ## Development
 
@@ -110,7 +111,7 @@ generated targets. The commit-msg hook requires `PII-Doublecheck: yes`.
 
 ## Local Storage
 
-All first-party runtime state for l'Aicluse Agent Tools uses:
+All first-party runtime state for l'Aicluse Agent Fieldkit uses:
 
 ```bash
 ${LAICLUSE_HOME:-$HOME/.laicluse}

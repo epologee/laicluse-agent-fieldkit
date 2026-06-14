@@ -64,15 +64,11 @@ independent agents were spawned. The generated Codex package intentionally omits
 Claude Code:
 
 ```bash
-claude plugins install gurus@laicluse-agent-tools
+claude plugins install gurus@laicluse-agent-fieldkit
 ```
 
 Codex:
 
 ```bash
-codex plugin add gurus@laicluse-agent-tools
+codex plugin add gurus@laicluse-agent-fieldkit
 ```
-
-Migrating from `gurus@leclause`: install this plugin and remove the legacy copy
-once `rover` and any direct `/gurus:...` workflows in your sessions use the
-`@laicluse-agent-tools` marketplace.

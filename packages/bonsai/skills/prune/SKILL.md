@@ -20,7 +20,7 @@ resolve_bonsai_root() {
   if [ -n "${BONSAI_BIN:-}" ]; then dirname "$(dirname "$BONSAI_BIN")"; return 0; fi
   if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then printf '%s\n' "$CLAUDE_PLUGIN_ROOT"; return 0; fi
   if command -v codex >/dev/null 2>&1; then
-    codex plugin list | awk '$1 == "bonsai@laicluse-agent-tools" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
+    codex plugin list | awk '$1 == "bonsai@laicluse-agent-fieldkit" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
     return $?
   fi
   return 1

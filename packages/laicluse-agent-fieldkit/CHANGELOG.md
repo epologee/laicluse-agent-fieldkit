@@ -1,4 +1,4 @@
-# laicluse-agent-tools changelog
+# laicluse-agent-fieldkit changelog
 
 The post-update broadcast (see `bin/check-broadcast`) shows the topmost
 section once per machine whenever the installed `version` in
@@ -31,12 +31,10 @@ Categories:
   plugin name it reprints that plugin's latest CHANGELOG section without
   touching the broadcast sentinel; without arguments it shows the
   marketplace-wide news plus an index of plugins that ship a CHANGELOG.
-  The namespaced form is `/laicluse-agent-tools:whats-new`; this was ported
-  from `/leclause:whats-new`, which keeps working for plugins that remain on
-  the legacy marketplace.
+  The namespaced form is `/laicluse-agent-fieldkit:whats-new`.
 
 ### Fixed
 
-- **The marketplace utility plugin is named `laicluse-agent-tools`.** The
+- **The marketplace utility plugin is named `laicluse-agent-fieldkit`.** The
   earlier package name `laicluse` was a naming mistake and is not kept as a
   separate alias. Use the bare `/whats-new` command for daily use.

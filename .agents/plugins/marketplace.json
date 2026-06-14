@@ -1,7 +1,7 @@
 {
-  "name": "laicluse-agent-tools",
+  "name": "laicluse-agent-fieldkit",
   "interface": {
-    "displayName": "l'Aicluse Agent Tools"
+    "displayName": "l'Aicluse Agent Fieldkit"
   },
   "plugins": [
     {

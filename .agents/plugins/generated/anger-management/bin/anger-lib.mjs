@@ -1,22 +1,11 @@
-import { existsSync, readFileSync, mkdirSync, renameSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
-// allow-comment: legacy leclause storage migrates here once; new writes never land there
 export function angerDir() {
   const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
   const dir = join(agentHome, 'anger-management');
   mkdirSync(dir, { recursive: true });
-  const legacy = join(homedir(), '.claude', 'var', 'leclause', 'anger-management');
-  if (existsSync(legacy)) {
-    for (const name of readdirSync(legacy)) {
-      const from = join(legacy, name);
-      const to = join(dir, name);
-      if (!existsSync(to)) {
-        try { renameSync(from, to); } catch {}
-      }
-    }
-  }
   return dir;
 }
 

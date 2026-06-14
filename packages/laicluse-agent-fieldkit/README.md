@@ -1,6 +1,6 @@
-# laicluse-agent-tools
+# laicluse-agent-fieldkit
 
-Marketplace-wide utilities for the laicluse-agent-tools marketplace. This
+Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. This
 plugin is currently Claude Code-only because `/whats-new` reads Claude plugin
 install metadata and broadcast sentinel state.
 
@@ -16,14 +16,14 @@ Without arguments: prints the latest marketplace-wide news from
 `MARKETPLACE-CHANGELOG.md` plus an index of installed plugins that ship a
 per-plugin CHANGELOG.
 
-Use `/laicluse-agent-tools:whats-new` only when a namespaced form is needed.
+Use `/laicluse-agent-fieldkit:whats-new` only when a namespaced form is needed.
 
 ## Installation
 
 ```bash
-claude plugins install laicluse-agent-tools@laicluse-agent-tools
+claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
 ```
 
-Coming from `leclause-skills`: `/leclause:whats-new` keeps working for
-plugins that remain on the legacy marketplace; this plugin covers the
-`@laicluse-agent-tools` installs.
+This command covers plugins installed from `@laicluse-agent-fieldkit`.
+Existing installs under the previous marketplace identity need to be removed
+and reinstalled from Fieldkit.

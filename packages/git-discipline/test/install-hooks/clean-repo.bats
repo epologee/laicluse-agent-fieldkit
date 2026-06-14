@@ -38,7 +38,7 @@ load helpers
   cat > "$HOME/.claude/plugins/installed_plugins.json" <<JSON
 {
   "plugins": {
-    "git-discipline@laicluse-agent-tools": [
+    "git-discipline@laicluse-agent-fieldkit": [
       { "installPath": "$stale" }
     ]
   }

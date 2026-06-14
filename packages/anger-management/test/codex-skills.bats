@@ -13,7 +13,7 @@ setup() {
 
   run grep -F 'codex plugin list' "$BULLSHIT"
   [ "$status" -eq 0 ]
-  run grep -F 'anger-management@laicluse-agent-tools' "$BULLSHIT"
+  run grep -F 'anger-management@laicluse-agent-fieldkit' "$BULLSHIT"
   [ "$status" -eq 0 ]
   run grep -F 'node "$PLUGIN_ROOT/bin/anger-log" bullshit' "$BULLSHIT"
   [ "$status" -eq 0 ]
@@ -26,7 +26,7 @@ setup() {
 
   run grep -F 'codex plugin list' "$REPAIR"
   [ "$status" -eq 0 ]
-  run grep -F 'anger-management@laicluse-agent-tools' "$REPAIR"
+  run grep -F 'anger-management@laicluse-agent-fieldkit' "$REPAIR"
   [ "$status" -eq 0 ]
   run grep -F 'node "$PLUGIN_ROOT/bin/anger-resolve"' "$REPAIR"
   [ "$status" -eq 0 ]

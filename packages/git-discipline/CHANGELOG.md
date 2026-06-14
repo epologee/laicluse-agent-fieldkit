@@ -81,24 +81,20 @@ the version without producing an entry here).
 ### Breaking
 
 - **First public l'Aicluse release.** Install this plugin as
-  `git-discipline@laicluse-agent-tools`; it replaces legacy `gitgit@leclause`
-  for migrated workflows.
+  `git-discipline@laicluse-agent-fieldkit` for migrated workflows.
 
 ## [v1.0.1]
 
 ### Breaking
 
 - **New l'Aicluse identity.** The plugin is now installed as
-  `git-discipline@laicluse-agent-tools` and slash commands use the
-  `/git-discipline:*` namespace. The old `gitgit@leclause` plugin remains the
-  legacy public install until external migration instructions are actionable.
+  `git-discipline@laicluse-agent-fieldkit` and slash commands use the
+  `/git-discipline:*` namespace.
 
 ### Changed
 
 - **Runtime state moved under l'Aicluse storage.** New first-party state is
   written under `${LAICLUSE_HOME:-~/.laicluse}/git-discipline`.
-  The broadcast helper still reads the old `~/.claude/var/leclause` sentinel as
-  a legacy fallback.
 
 ## [v1.0.164]
 
@@ -279,7 +275,7 @@ the version without producing an entry here).
 
 - **Broken-install deny replaces the slash-command fallback.** When
   `commit-subject.sh` cannot resolve `SKILL.md`, it now emits a loud
-  `install appears broken: ... Reinstall git-discipline@laicluse-agent-tools.` deny
+  `install appears broken: ... Reinstall git-discipline@laicluse-agent-fieldkit.` deny
   instead of degrading to `/git-discipline:commit-discipline`. Reinstall if
   you see this.
 
@@ -383,5 +379,4 @@ the version without producing an entry here).
   `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/broadcasts/git-discipline-broadcast-seen`.
 - **Shared marketplace whats-new reader.** Re-prints this file's section for
   the current version on demand, regardless of whether the broadcast already
-  fired. This was part of the legacy `@leclause` marketplace utilities; a
-  l'Aicluse replacement has not been published yet.
+  fired. Fieldkit now provides this through `/whats-new`.

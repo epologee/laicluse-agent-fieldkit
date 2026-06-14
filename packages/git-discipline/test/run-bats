@@ -2,7 +2,7 @@
 # Run the git-discipline BATS test suites (validate-body + shadow-mode + block-mode +
 # migrated-hooks + install-hooks + wip-gate + template-fill + cross-layer +
 # session-toggle + repo-deny + push-policy + merge-conflict-markers).
-# Must be executed from the repo root (laicluse-agent-tools/).
+# Must be executed from the repo root (laicluse-agent-fieldkit/).
 
 set -euo pipefail
 

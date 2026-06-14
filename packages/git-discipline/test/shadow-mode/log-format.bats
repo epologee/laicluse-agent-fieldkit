@@ -8,7 +8,7 @@
 load helpers
 
 @test "log line format matches <ISO-timestamp>|<sha>|<branch>|<code>|<subject>" {
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 20 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""
@@ -62,7 +62,7 @@ load helpers
   local deep_log="$BATS_TEST_TMPDIR/deep/nested/dir/shadow.log"
   export GIT_DISCIPLINE_SHADOW_LOG="$deep_log"
 
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 20 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""
@@ -76,7 +76,7 @@ load helpers
 }
 
 @test "staging sha is used when HEAD does not exist yet" {
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 20 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""

@@ -6,8 +6,8 @@
 
 load helpers
 
-@test "laicluse-agent-tools repo URL: violation still writes to shadow log" {
-  export GIT_SHIM_ORIGIN_URL="git@github.com:epologee/laicluse-agent-tools.git"
+@test "laicluse-agent-fieldkit repo URL: violation still writes to shadow log" {
+  export GIT_SHIM_ORIGIN_URL="git@github.com:epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 20 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""
@@ -27,8 +27,8 @@ load helpers
   [ "$after" -eq $((before + 1)) ]
 }
 
-@test "laicluse-agent-tools HTTPS URL: violation writes to shadow log" {
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+@test "laicluse-agent-fieldkit HTTPS URL: violation writes to shadow log" {
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 3 files changed, 15 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'x.rb\ny.rb\nz.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""
@@ -59,7 +59,7 @@ load helpers
   # Block-mode denies all repos.
   [ "$status" -eq 2 ]
 
-  # Shadow log grows even for non-laicluse-agent-tools repos.
+  # Shadow log grows even for non-laicluse-agent-fieldkit repos.
   local after
   after=$(shadow_log_line_count)
   [ "$after" -eq $((before + 1)) ]

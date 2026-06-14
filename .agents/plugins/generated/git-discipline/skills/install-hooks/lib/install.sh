@@ -95,7 +95,7 @@ else
   plugins_json="$HOME/.claude/plugins/installed_plugins.json"
   if [[ -f "$plugins_json" ]] && command -v jq >/dev/null 2>&1; then
     plugin_install_path=$(jq -r \
-      '.plugins["git-discipline@laicluse-agent-tools"][0].installPath // empty' \
+      '.plugins["git-discipline@laicluse-agent-fieldkit"][0].installPath // empty' \
       "$plugins_json" 2>/dev/null || true)
   fi
 fi

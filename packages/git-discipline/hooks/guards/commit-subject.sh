@@ -271,7 +271,7 @@ guard_commit_subject() {
   skill_dir=$(cd "$_DD_HERE/../../skills/commit-discipline" 2>/dev/null && pwd)
   skill_path="${skill_dir}/SKILL.md"
   if [[ -z "$skill_dir" || ! -f "$skill_path" ]]; then
-    dd_emit_deny commit-subject "install appears broken: cannot resolve SKILL.md path. Reinstall git-discipline@laicluse-agent-tools."
+    dd_emit_deny commit-subject "install appears broken: cannot resolve SKILL.md path. Reinstall git-discipline@laicluse-agent-fieldkit."
   fi
   [[ -n "$HOME" && "$skill_path" == "$HOME"/* ]] && skill_path="~${skill_path#$HOME}"
   skill_pointer="${skill_path}, section 'Rotation reminders'"

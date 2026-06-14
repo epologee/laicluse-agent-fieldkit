@@ -37,6 +37,6 @@ message when no peer is available.
 ## Installation
 
 ```bash
-claude plugins install intervision@laicluse-agent-tools
-codex plugin add intervision@laicluse-agent-tools
+claude plugins install intervision@laicluse-agent-fieldkit
+codex plugin add intervision@laicluse-agent-fieldkit
 ```

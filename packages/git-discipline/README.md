@@ -132,8 +132,8 @@ diverges between Claude-driven and CLI-driven commits.
 ## Install
 
 ```bash
-claude plugins install git-discipline@laicluse-agent-tools
-codex plugin add git-discipline@laicluse-agent-tools
+claude plugins install git-discipline@laicluse-agent-fieldkit
+codex plugin add git-discipline@laicluse-agent-fieldkit
 ```
 
 In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex, the
@@ -228,7 +228,7 @@ The script ships inside the plugin at `bin/audit-no-body-commits`; resolve
 its path from the active install so it survives plugin updates:
 
 ```bash
-GIT_DISCIPLINE=$(jq -r '.plugins["git-discipline@laicluse-agent-tools"][0].installPath' \
+GIT_DISCIPLINE=$(jq -r '.plugins["git-discipline@laicluse-agent-fieldkit"][0].installPath' \
   ~/.claude/plugins/installed_plugins.json)
 python3 "$GIT_DISCIPLINE/bin/audit-no-body-commits"
 python3 "$GIT_DISCIPLINE/bin/audit-no-body-commits" --branch main --since 2026-04-01

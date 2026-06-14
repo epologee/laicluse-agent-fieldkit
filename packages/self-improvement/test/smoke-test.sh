@@ -21,7 +21,7 @@ jq -e '.name == "self-improvement" and .interface.displayName == "Self Improveme
 
 bin/plugin-adapters check . >/dev/null
 
-if rg -n 'CLAUDE_PLUGIN_ROOT|/leclause|gitgit|Claude behavior|Claude Code ecosystem|~/.claude' \
+if rg -n '/legacy marketplace|gitgit|Claude behavior|Claude Code ecosystem|~/.claude' \
   --glob '!packages/self-improvement/test/smoke-test.sh' \
   packages/self-improvement .agents/plugins/generated/self-improvement; then
   printf 'self-improvement smoke: legacy terms found\n' >&2

@@ -128,10 +128,10 @@ The `clipboard-copy` helper lives in this plugin's `bin/` directory and is not
 on `$PATH`. Resolve the active Codex plugin root once before copying:
 
 ```bash
-CLIPBOARD_PLUGIN_ROOT=$(codex plugin list --json | jq -er '.installed[] | select(.pluginId == "clipboard@laicluse-agent-tools") | .source.path')
+CLIPBOARD_PLUGIN_ROOT=$(codex plugin list --json | jq -er '.installed[] | select(.pluginId == "clipboard@laicluse-agent-fieldkit") | .source.path')
 ```
 
-If the lookup fails, report that `clipboard@laicluse-agent-tools` is not
+If the lookup fails, report that `clipboard@laicluse-agent-fieldkit` is not
 installed or enabled in Codex. Do not guess a cache path. The helper then
 points at the active install, so there is no stale-cache or
 uninstalled-plugin failure mode to defend against. Run the resolver and the

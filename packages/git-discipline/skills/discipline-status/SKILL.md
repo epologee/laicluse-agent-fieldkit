@@ -44,11 +44,11 @@ GLOBAL_SENTINEL="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline/git-discipline
 [[ -f "$GLOBAL_SENTINEL" ]] && GLOBAL_DISABLED=yes || GLOBAL_DISABLED=no
 
 # 4. Plugin version
-PLUGIN_VERSION=$(jq -r '.plugins["git-discipline@laicluse-agent-tools"][0].version // "unknown"' \
+PLUGIN_VERSION=$(jq -r '.plugins["git-discipline@laicluse-agent-fieldkit"][0].version // "unknown"' \
   "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null || echo "unknown")
 
 # 5. Install path for guard list
-INSTALL_PATH=$(jq -r '.plugins["git-discipline@laicluse-agent-tools"][0].installPath // ""' \
+INSTALL_PATH=$(jq -r '.plugins["git-discipline@laicluse-agent-fieldkit"][0].installPath // ""' \
   "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null || true)
 
 # 6. Guard scripts

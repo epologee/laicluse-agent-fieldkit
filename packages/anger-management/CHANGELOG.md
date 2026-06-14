@@ -85,12 +85,12 @@ without a `## [vX.Y.Z]` section stays silent on every update.
 
 ### Changed
 
-- **anger-management now ships from the public laicluse-agent-tools
-  marketplace.** It replaces `anger-management@leclause`; uninstall that copy
-  if you still have it.
+- **anger-management now ships from the public laicluse-agent-fieldkit
+  marketplace.** Install the Fieldkit copy for the current capture and repair
+  commands.
 - **The friction pile moved to `${LAICLUSE_HOME:-~/.laicluse}/anger-management/`.**
-  Captures written under the old `~/.claude/var/leclause/` path migrate
-  automatically on the next capture or repair.
+  New captures and repair findings read and write that component-owned state
+  root.
 - **The plugin is multi-agent.** Codex sessions capture to the same pile, and
   the background investigation falls back to `codex exec` when no `claude` CLI
   is available.

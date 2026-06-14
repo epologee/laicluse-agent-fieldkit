@@ -1,6 +1,6 @@
-# laicluse-agent-tools marketplace
+# laicluse-agent-fieldkit marketplace
 
-Public l'Aicluse Agent Tools marketplace. This repository contains the public,
+Public l'Aicluse Agent Fieldkit marketplace. This repository contains the public,
 shareable plugins, skills, hooks, and agent adapters.
 
 ## Multi-agent marketplace
@@ -21,11 +21,11 @@ skill's matching behavior.
 
 ## Local Storage
 
-All first-party runtime state for l'Aicluse Agent Tools projects uses
+All first-party runtime state for l'Aicluse Agent Fieldkit projects uses
 `${LAICLUSE_HOME:-$HOME/.laicluse}` as its root. Create
 subdirectories by component name, for example `~/.laicluse/circus/`, not
 by marketplace or repository name (`toolbox`, `public`, `private`) and not
-under new `~/.laicluse-*` or `~/.leclause-*` roots.
+under new `~/.laicluse-*` roots.
 
 Agent-harness caches managed by Claude or Codex themselves
 (`~/.claude/plugins/cache`, `~/.codex/plugins/cache`, install indexes) stay
@@ -35,15 +35,14 @@ write only to `~/.laicluse`.
 
 ## Migration Status
 
-This repository is the public successor for selected tools from
-`epologee/leclause-skills`. Publish only changes that external users can follow
-with a working install or migration route.
+This repository is the public canonical home for l'Aicluse Agent Fieldkit.
+Publish only changes that external users can follow with a working install or
+migration route.
 
-During the transition, `how-plugins-work` and git-discipline may temporarily
-exist in multiple places: legacy public (`leclause-skills`) and new public
-(`laicluse-agent-tools`). That is intentional migration duplication, not a DRY
-findings list. Do not remove an old copy without a working migration stub for
-existing users. This repository becomes the public canonical home.
+The previous public marketplace identity has been retired through a hard
+cutover. Do not reintroduce old marketplace aliases, old storage roots, or
+parallel migration stubs in this repository; current docs and install commands
+point at `laicluse-agent-fieldkit`.
 
 ## Plugin Conventions
 

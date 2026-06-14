@@ -18,6 +18,6 @@ short; categories are Breaking, Added, Changed, Fixed.
 
 ### Breaking
 
-- Moved from `bonsai@leclause` and dropped the clipboard / start-command
-  mechanism and the macOS-only requirement. Bonsai now emits facts and launches
-  nothing. Install `bonsai@laicluse-agent-tools`.
+- Dropped the clipboard / start-command mechanism and the macOS-only
+  requirement. Bonsai now emits facts and launches nothing. Install
+  `bonsai@laicluse-agent-fieldkit`.

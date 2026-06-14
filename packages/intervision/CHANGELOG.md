@@ -24,8 +24,9 @@ without a `## [vX.Y.Z]` section stays silent on every update.
 
 ### Changed
 
-- **intervision now ships from the public laicluse-agent-tools marketplace.**
-  It replaces `intervision@leclause`; uninstall that copy if you still have it.
+- **intervision now ships from the public laicluse-agent-fieldkit marketplace.**
+  Install the Fieldkit copy for the current Claude-to-Codex and Codex-to-Claude
+  peer review workflow.
 - **`second-opinion` is multi-agent.** Claude asks Codex via `codex exec`,
   while Codex asks Claude via `claude -p`. Runtime state lives under
   `${LAICLUSE_HOME:-~/.laicluse}/intervision`.

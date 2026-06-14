@@ -17,6 +17,23 @@ pretool_bash() {
     '{hook_event_name:"PreToolUse", tool_name:"Bash", tool_input:{command:$c}}'
 }
 
+pretool_bash_commit_with_body() {
+  local subject="$1" ack="$2" cmd
+  cmd=$(cat <<INNER_CMD
+git commit -m "\$(cat <<'EOF'
+${subject}
+
+The body explains the why in two short sentences.
+It keeps the smoke case focused on subject guard behaviour.
+
+Slice: docs-only
+EOF
+)" # ${ack}
+INNER_CMD
+)
+  pretool_bash "$cmd"
+}
+
 expect_deny() {
   local description="$1" payload="$2" expected_substring="${3:-}"
   local stderr_file exit_code stderr_content
@@ -237,12 +254,12 @@ expect_deny "subject: Apply PR comments denies with rule 2" \
 reset_state
 run "$(pretool_bash 'git commit -m "Fix typo"')"
 expect_allow "subject: ack-rule1 on clean rewrite clears violation" \
-  "$(pretool_bash 'git commit -m "Use policy on the read path" # ack-rule1:gedrag')"
+  "$(pretool_bash_commit_with_body "Use policy on the read path" "ack-rule1:gedrag")"
 
 reset_state
 run "$(pretool_bash 'git commit -m "Address pride findings"')"
 expect_allow "subject: ack-rule2 on clean rewrite clears trigger violation" \
-  "$(pretool_bash 'git commit -m "Use policy on the read path" # ack-rule2:effect')"
+  "$(pretool_bash_commit_with_body "Use policy on the read path" "ack-rule2:effect")"
 
 reset_state
 expect_deny "subject: ack-rule on still-violating subject denies with still violates" \
@@ -259,7 +276,7 @@ expect_deny "subject: clean subject in fresh state surfaces rule 4" \
 reset_state
 run "$(pretool_bash 'git commit -m "Use policy on the read path"')"
 expect_allow "subject: clean subject with correct ack passes rotation" \
-  "$(pretool_bash 'git commit -m "Use policy on the read path" # ack-rule4:essentie')"
+  "$(pretool_bash_commit_with_body "Use policy on the read path" "ack-rule4:essentie")"
 
 reset_state
 run "$(pretool_bash 'git commit -m "Use policy on the read path"')"

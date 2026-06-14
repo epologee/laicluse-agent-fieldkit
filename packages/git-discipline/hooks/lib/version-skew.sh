@@ -25,7 +25,7 @@ dd_git_discipline_version_skew() {
   [[ -f "$installed_json" ]] || return 0
 
   local installed_version
-  installed_version=$(jq -r '.plugins["git-discipline@laicluse-agent-tools"][0].version // empty' "$installed_json" 2>/dev/null)
+  installed_version=$(jq -r '.plugins["git-discipline@laicluse-agent-fieldkit"][0].version // empty' "$installed_json" 2>/dev/null)
   [[ -z "$installed_version" ]] && return 0
 
   [[ "$loaded_version" = "$installed_version" ]] && return 0

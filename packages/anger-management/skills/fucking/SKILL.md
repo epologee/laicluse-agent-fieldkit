@@ -26,7 +26,7 @@ the install path through `codex plugin list`.
        return 0
      fi
      if command -v codex >/dev/null 2>&1; then
-       codex plugin list | awk '$1 == "anger-management@laicluse-agent-tools" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
+       codex plugin list | awk '$1 == "anger-management@laicluse-agent-fieldkit" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
        return $?
      fi
      return 1
@@ -50,7 +50,7 @@ the install path through `codex plugin list`.
        return 0
      fi
      if command -v codex >/dev/null 2>&1; then
-       codex plugin list | awk '$1 == "anger-management@laicluse-agent-tools" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
+       codex plugin list | awk '$1 == "anger-management@laicluse-agent-fieldkit" { print $NF; found=1; exit } END { exit found ? 0 : 1 }'
        return $?
      fi
      return 1

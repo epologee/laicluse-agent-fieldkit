@@ -14,7 +14,7 @@ runtime supports; it does not hard-code one implementation.
 
 ## Dependencies
 
-- **`gurus@laicluse-agent-tools`** (same marketplace): the rover invokes
+- **`gurus@laicluse-agent-fieldkit`** (same marketplace): the rover invokes
   `gurus:gurus` once per mission at INSPECT for opinionated panel review; the
   orchestrator routes to `gurus:software`, `gurus:council`, `gurus:writers`,
   or any future panel.
@@ -22,13 +22,13 @@ runtime supports; it does not hard-code one implementation.
 Install together:
 
 ```bash
-claude plugins install rover@laicluse-agent-tools gurus@laicluse-agent-tools
-codex plugin add rover@laicluse-agent-tools
-codex plugin add gurus@laicluse-agent-tools
+claude plugins install rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit
+codex plugin add rover@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit
 ```
 
 Claude Code sessions that need a cron heartbeat can additionally install
-`autonomous@laicluse-agent-tools`; that plugin is one implementation of the
+`autonomous@laicluse-agent-fieldkit`; that plugin is one implementation of the
 continuation contract, not a rover dependency.
 
 No other hard dependencies. Optional integrations (notifier, reviewbot,

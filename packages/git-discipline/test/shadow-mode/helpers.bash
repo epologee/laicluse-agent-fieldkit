@@ -23,7 +23,7 @@ VALIDATOR="$SCRIPT_DIR/../../hooks/lib/validate-body.sh"
 export GIT_DISCIPLINE_SHADOW_LOG="$BATS_TEST_TMPDIR/shadow.log"
 
 # Shim defaults (can be overridden per test).
-export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
 export GIT_SHIM_SHORTSTAT=" 5 files changed, 20 insertions(+), 3 deletions(-)"
 export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
 export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""

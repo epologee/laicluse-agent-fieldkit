@@ -5,8 +5,8 @@
 
 load helpers
 
-@test "git commit without -m skips silently in laicluse-agent-tools repo" {
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+@test "git commit without -m skips silently in laicluse-agent-fieldkit repo" {
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 20 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
 
@@ -31,7 +31,7 @@ load helpers
 }
 
 @test "git commit --amend without -m also skips body guard silently" {
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-tools.git"
+  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
 
   local before
   before=$(shadow_log_line_count)
