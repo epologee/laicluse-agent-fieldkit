@@ -66,6 +66,11 @@
       "name": "rover",
       "description": "Dispatch a rover at a task and stay back while it decides in the field: a SURVEY/DRIVE/INSPECT/STOW phase machine with a decide framework, pride and trim quality gates, verify evidence discipline, prepare for queuing missions across repos, and a stop communique. Asks the autonomous layer at startup whether it needs to keep itself alive. Depends on gurus for the INSPECT panel review.",
       "source": "./packages/rover"
+    },
+    {
+      "name": "naming-is-hard",
+      "description": "Canonical l'Aicluse naming and wording doctrine for code symbols, domain language, branches, worktrees, projects, features, commits, pull requests, docs, UI copy, human communication, mixed Dutch-English wording, jargon translation, and other naming decisions.",
+      "source": "./packages/naming-is-hard"
     }
   ]
 }

@@ -1,0 +1,26 @@
+{
+  "name": "naming-is-hard",
+  "version": "2.0.1",
+  "description": "Canonical l'Aicluse naming and wording doctrine for code symbols, domain language, branches, worktrees, projects, features, commits, pull requests, docs, UI copy, human communication, mixed Dutch-English wording, jargon translation, and other naming decisions.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "naming-is-hard"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Naming Is Hard",
+    "shortDescription": "Canonical l'Aicluse naming and wording doctrine for code symbols, domain language, branches, worktrees, projects, fea...",
+    "longDescription": "Canonical l'Aicluse naming and wording doctrine for code symbols, domain language, branches, worktrees, projects, features, commits, pull requests, docs, UI copy, human communication, mixed Dutch-English wording, jargon translation, and other naming decisions.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Naming Is Hard plugin."
+    ]
+  }
+}
