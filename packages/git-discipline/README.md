@@ -53,10 +53,14 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
   default branch (local or `origin/<default>`), resolves trivial conflicts
   where safe, and stops on non-trivial conflicts.
 - **merge-to-default** lands the current branch on the project's default
-  with a github-style `--no-ff` merge commit, rebases on conflict, deletes
-  the local source branch after the merge is confirmed, and no-ops with a
-  TUI warning when invoked on the default branch itself. Push remains an
-  explicit user action.
+  with a github-style `--no-ff` merge commit. It rebases the source branch
+  onto the latest default *before* merging whenever the default is ahead, so
+  the merge is a clean commit and a branch falling behind no longer opens a
+  conflict-marker window in the default checkout; a reactive rebase fallback
+  remains for the narrow race where the default advances mid-merge. It deletes
+  the local source branch
+  after the merge is confirmed and no-ops with a TUI warning when invoked on
+  the default branch itself. Push remains an explicit user action.
 - **push-policy** decides whether and when a push fits the current repo. It
   ships a resolver (`skills/push-policy/git-repo-policy`) that reads per-repo
   facts (collaboration, visibility, default-branch protection, push access)
