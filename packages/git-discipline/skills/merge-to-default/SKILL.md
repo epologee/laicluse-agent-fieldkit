@@ -6,7 +6,7 @@ allowed-tools: Bash(git symbolic-ref:*), Bash(git rev-parse:*), Bash(git status:
 
 # /git-discipline:merge-to-default
 
-Land the current branch on the project's default branch with a real `--no-ff` merge commit, the same shape GitHub's merge button produces. Pending working-tree changes ride along via `git-discipline:commit-all-the-things`. Before the merge, the source branch is rebased onto the latest default whenever the default is ahead, so the merge is always a clean commit on top of an up-to-date default and a stale branch can never open a conflict-marker window in the default-branch checkout. The rebase is a precondition, not a recovery: a reactive rebase fallback remains only for the rare residual conflict the precondition cannot foresee.
+Land the current branch on the project's default branch with a real `--no-ff` merge commit, the same shape GitHub's merge button produces. Pending working-tree changes ride along via `git-discipline:commit-all-the-things`. Before the merge, the source branch is rebased onto the latest default whenever the default is ahead, so the merge is a clean commit on top of an up-to-date default and a branch falling behind no longer opens a conflict-marker window in the default-branch checkout. The rebase is a precondition, not a recovery: a reactive rebase fallback remains only for the narrow race where the default advances between the rebase and the merge.
 
 ## When
 
@@ -63,15 +63,15 @@ After the invocation: `git status --porcelain` is empty, otherwise stop with the
 
 ## Step 3: Rebase precondition
 
-A `--no-ff` merge of a branch that is behind the default can conflict, and that conflict materialises in the working tree of the default-branch checkout (Step 4 checks out `$DEFAULT` before merging) before any recovery runs. To guarantee the merge is always a clean commit on an up-to-date default, the source branch is rebased onto the latest default **first**, unconditionally whenever the default is ahead. The rebase is a precondition here, not a recovery: with the branch already up to date, Step 4 cannot produce a stale-branch conflict, so no conflict-marker window can open in the default checkout.
+A `--no-ff` merge of a branch that is behind the default can conflict, and that conflict materialises in the working tree of the default-branch checkout (Step 4 checks out `$DEFAULT` before merging) before any recovery runs. To guarantee the merge is always a clean commit on an up-to-date default, the source branch is rebased onto the latest default **first**, unconditionally whenever the default is ahead. The rebase is a precondition here, not a recovery: with the branch already up to date, Step 4 cannot produce a conflict from the branch being behind, so the stale-branch conflict-marker window this skill used to risk is closed. The only conflict that can still reach Step 4 is the narrow race where the default advances again between this rebase and the merge; Step 5 catches that one and aborts it immediately.
 
-Detect whether `$CURRENT` is behind the latest default. The latest default is whichever of local `$DEFAULT` or `origin/$DEFAULT` is ahead; the branch is behind when it lacks any commit that exists on either ref:
+Detect whether `$CURRENT` is behind the latest default. The branch is behind when it lacks any commit that exists on either the local `$DEFAULT` or `origin/$DEFAULT` ref (the loop checks both rather than reimplementing rebase-latest-default's freshest-target pick; a conservative match here only ever triggers a sub-skill call that then exits cleanly):
 
 ```bash
 BEHIND=
 for ref in refs/heads/$DEFAULT refs/remotes/origin/$DEFAULT; do
   git rev-parse --verify "$ref" >/dev/null 2>&1 || continue
-  [ -n "$(git rev-list HEAD.."$ref")" ] && BEHIND=1
+  [ -n "$(git rev-list "$CURRENT..$ref")" ] && BEHIND=1
 done
 ```
 
@@ -81,10 +81,12 @@ done
 After rebase-latest-default returns:
 
 - **Rebase completed:** continue to Step 4. `$CURRENT` now sits on top of the latest default, so the `--no-ff` merge is a clean commit.
+- **rebase-latest-default reports already up to date:** the conservative detection flagged the branch as behind a ref it already contains (e.g. `$CURRENT` is based on `origin/$DEFAULT` while a lagging local `$DEFAULT` looked ahead). The sub-skill did nothing; continue to Step 4 and report the rebase as skipped, not performed.
+- **rebase-latest-default stops needing a fetch:** when the target is `origin/$DEFAULT` and the tracking ref is stale, rebase-latest-default stops without rebasing and asks for a fetch. `merge-to-default` stops too, before any merge, with `$DEFAULT` untouched. Run `git fetch origin`, then invoke `/git-discipline:merge-to-default` again.
 - **Rebase stopped on genuine ambiguity:** rebase-latest-default only auto-resolves trivial conflicts; for genuine ambiguity (both sides made intentional, incompatible changes to the same logic) it stops mid-rebase and points at the conflicting files. `merge-to-default` then also stops, **before any merge**: the worktree sits mid-rebase on `$CURRENT`, `$DEFAULT` is untouched, and no merge commit and no conflict markers ever reach the default-branch checkout. This is the whole point of doing the rebase first. The user has three cleanup options:
   - `git rebase --abort`: returns `$CURRENT` to the pre-rebase state. No merge happened. After that, the user can tackle the conflict differently.
   - Manually resolve the conflict, `git rebase --continue` per step, and then invoke `/git-discipline:merge-to-default` again to run the merge.
-  - Leave the mid-rebase state on `$CURRENT` as-is: `$DEFAULT` is intact, the user decides later what to do.
+  - `git rebase --abort` and then `git checkout $DEFAULT`: leaves `$CURRENT` at its pre-rebase tip and parks the user on an intact `$DEFAULT` to decide later. (A bare `git checkout` while the rebase is still in progress is refused; abort first.)
 
   `merge-to-default` itself does not make any of these choices for the user; mid-rebase with genuine ambiguity is exactly the place where manual resolution is the right way.
 
@@ -105,11 +107,11 @@ git merge --no-ff --no-edit $CURRENT
 `--no-edit` keeps the auto-generated merge subject (`Merge branch '<CURRENT>'`), the same shape GitHub uses for a local merge. That is deliberately not the PR-merge subject (`Merge pull request #N from ...`), because this skill does not create a PR and does not know a PR number.
 
 - **Succeeds cleanly:** continue to Step 6.
-- **Conflicts (rare, residual):** continue to Step 5. With Step 3 in place a stale-branch conflict cannot reach here; a conflict at this point means the default moved again between the precondition rebase and this merge, or the same lines were touched on both sides.
+- **Conflicts (rare, residual):** continue to Step 5. With Step 3 in place a stale-branch conflict cannot reach here; a conflict at this point means the default advanced again in the narrow window between the precondition rebase and this merge (a same-line clash between the branch and that newer default commit is one shape this race takes).
 
 ## Step 5: Conflict fallback via rebase (rare)
 
-Step 3 makes a stale-branch conflict at the merge impossible, so this fallback is reached only in the rare residual case noted in Step 4: the default advanced again between the precondition rebase and the merge, or the same lines were changed on both sides. The handling is the same `rebase first, retry merge` the precondition uses, never manual conflict resolution inside a merge commit, so the result is still a clean merge commit on top of an up-to-date default.
+Step 3 removes the stale-branch conflict that used to land here, so this fallback is reached only in the race noted in Step 4: the default advanced again between the precondition rebase and the merge. The handling is the same `rebase first, then clean merge` the precondition uses, never manual conflict resolution inside a merge commit, so the result is still a clean merge commit on top of an up-to-date default.
 
 ```bash
 git merge --abort
