@@ -1,0 +1,58 @@
+#!/usr/bin/env node
+import { parseArgs } from 'node:util';
+import { createWorktree } from './bonsai-lib.mjs';
+
+const USAGE = `usage: bonsai <command> [options]
+
+commands:
+  create <branch>   create a worktree + branch off the freshest default
+  setup <worktree>  copy .bonsai-listed files and install deps (--repo required)
+  teardown <ref>    remove a worktree + branch behind a hard safety gate
+
+run 'bonsai <command> --help' for command options`;
+
+const [, , command, ...rest] = process.argv;
+
+if (!command || command === '--help' || command === '-h') {
+  console.log(USAGE);
+  process.exit(command ? 0 : 2);
+}
+
+function out(json, obj, human) {
+  if (json) console.log(JSON.stringify(obj, null, 2));
+  else console.log(human);
+}
+
+function die(message) {
+  console.error(`bonsai: ${message}`);
+  process.exit(1);
+}
+
+if (command === 'create') {
+  let values;
+  let positionals;
+  try {
+    ({ values, positionals } = parseArgs({
+      args: rest,
+      allowPositionals: true,
+      options: {
+        repo: { type: 'string' },
+        base: { type: 'string' },
+        json: { type: 'boolean', default: false },
+      },
+    }));
+  } catch (err) {
+    die(err.message);
+  }
+  const branch = positionals[0];
+  if (!branch) die('create needs a branch name');
+  const repo = values.repo || process.cwd();
+  try {
+    const result = createWorktree({ repo, branch, base: values.base });
+    out(values.json, result, `worktree ready at ${result.worktree} (branch ${result.branch}, dev port ${result.port})`);
+  } catch (err) {
+    die(err.message);
+  }
+} else {
+  die(`unknown command: ${command}`);
+}
