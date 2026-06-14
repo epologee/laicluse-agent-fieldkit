@@ -31,9 +31,13 @@ guard_tool_error() {
   local scan=$((new > 30 ? new : 30))
   local tail_status
   tail_status=$(tail -"$scan" "$tr" | awk '
-    /"is_error"[[:space:]]*:[[:space:]]*true/    { last = "ERROR" }
-    /Exit code [1-9]/                             { last = "ERROR" }
-    /"type"[[:space:]]*:[[:space:]]*"tool_use"/   { last = "TOOL_USE" }
+    /"is_error"[[:space:]]*:[[:space:]]*true/              { last = "ERROR" }
+    /Exit code [1-9]/                                       { last = "ERROR" }
+    /Process exited with code [1-9]/                        { last = "ERROR" }
+    /"exit_code"[[:space:]]*:[[:space:]]*[1-9]/             { last = "ERROR" }
+    /"type"[[:space:]]*:[[:space:]]*"tool_use"/             { last = "TOOL_USE" }
+    /"type"[[:space:]]*:[[:space:]]*"function_call"/        { last = "TOOL_USE" }
+    /"type"[[:space:]]*:[[:space:]]*"custom_tool_call"/     { last = "TOOL_USE" }
     END { print last }
   ')
 

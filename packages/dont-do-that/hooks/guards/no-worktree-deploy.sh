@@ -7,7 +7,7 @@ guard_no_worktree_deploy() {
   cmd=$(jq -r '.tool_input.command // empty' <<< "$input" 2>/dev/null)
   cwd=$(jq -r '.cwd // empty' <<< "$input" 2>/dev/null)
   [ -z "$cmd" ] && return 0
-  [ -z "$cwd" ] && return 0
+  [ -z "$cwd" ] && cwd="$PWD"
 
   grep -Eq '^[[:space:]]*git([[:space:]]|$)' <<< "$cmd" && return 0
 

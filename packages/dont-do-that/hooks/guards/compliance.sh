@@ -1,6 +1,6 @@
 #!/bin/bash
 # Stop guard, back-stop only. Catches two failure modes that end on '?':
-# (a) reflex-terugkaatsing where Claude asks the user something it could
+# (a) reflex-terugkaatsing where the active agent asks the user something it could
 # just decide and continue, and (b) truncated generation that happened to
 # stop mid-sentence on a question mark. Not a whip. Steady pacing is the
 # point: when the question is reflex, answer it yourself and carry on at

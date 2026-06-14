@@ -333,6 +333,28 @@ expect_pass "false-claims: WIP hatch" \
 expect_block "false-claims: ignores mutex (always runs)" \
   "$(stop_payload "Dit is een pre-existing failure." true)"
 
+# --- tool-error ---
+
+TOOL_ERROR_HOME=$(mktemp -d)
+TOOL_ERROR_TRANSCRIPT=$(mktemp)
+cat > "$TOOL_ERROR_TRANSCRIPT" <<'JSONL'
+{"type":"user","message":{"content":"Run the failing command."}}
+{"type":"function_call","name":"exec_command","arguments":"{\"cmd\":\"false\"}"}
+{"type":"function_call_output","output":"Chunk ID: abc\nProcess exited with code 1\nOutput:\n"}
+JSONL
+tool_error_payload=$(jq -cn --arg tr "$TOOL_ERROR_TRANSCRIPT" \
+  '{hook_event_name:"Stop", session_id:"codex-tool-error", transcript_path:$tr, stop_hook_active:false}')
+tool_error_out=$(printf '%s' "$tool_error_payload" | LAICLUSE_HOME="$TOOL_ERROR_HOME" bash "$DISPATCH" 2>/dev/null)
+if echo "$tool_error_out" | grep -q '\[dont-do-that/tool-error\]'; then
+  PASS=$((PASS + 1))
+else
+  echo "FAIL [tool-error: Codex function_call failure expected]"
+  echo "  output: ${tool_error_out:-<empty>}"
+  FAIL=$((FAIL + 1))
+fi
+rm -f "$TOOL_ERROR_TRANSCRIPT"
+rm -rf "$TOOL_ERROR_HOME"
+
 # --- verification-delegation ---
 # Every case includes a substantive sentence + 🏁 so the premature-interruption
 # guard in the chain hands off to verify instead of blocking first.
@@ -533,6 +555,11 @@ git -C "$WT_MAIN" worktree add -q -b feature "$WT_BRANCH"
 expect_deny "no-worktree-deploy: ansible-playbook from worktree blocked" \
   "$(pretool_bash_cwd 'ansible-playbook site.yml' "$WT_BRANCH")" \
   "no-worktree-deploy"
+cd "$WT_BRANCH"
+expect_deny "no-worktree-deploy: missing cwd falls back to hook working directory" \
+  "$(pretool_bash 'ansible-playbook site.yml')" \
+  "no-worktree-deploy"
+cd "$ORIG_PWD"
 expect_allow "no-worktree-deploy: ansible-playbook --check from worktree passes" \
   "$(pretool_bash_cwd 'ansible-playbook --check site.yml' "$WT_BRANCH")"
 expect_allow "no-worktree-deploy: ansible-playbook --syntax-check from worktree passes" \

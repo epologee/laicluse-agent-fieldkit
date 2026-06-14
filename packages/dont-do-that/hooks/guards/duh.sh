@@ -1,6 +1,6 @@
 #!/bin/bash
 # Stop guard. Blocks "you can do this by XYZ"-style instructions when XYZ is
-# something Claude itself could have executed via Bash, Edit, browser tools,
+# something the active agent could have executed via shell, file-edit, browser tools,
 # or any other available capability. The reflex this catches: handing the
 # operator a recipe instead of running it. Sister to verify.sh; verify covers
 # delegated verification, duh covers delegated execution.
