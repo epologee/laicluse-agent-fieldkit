@@ -13,10 +13,12 @@ The cron machine behind an autonomous loop. Its job: keep the loop firing at an 
 
 This skill acts only when there is a real cron to act on. It is a no-op, returning the existing marker without touching any Cron tool, whenever either holds:
 
-- `CronCreate` is not available in this process (the persistent-process case: a detached run or conveyor line that drives to completion in one pass and needs no heartbeat).
-- `cron_job_id` is a non-id marker rather than a live job id: `none (persistent process)`, `paused`, `stopped`, or `failed`.
+- `CronCreate` is not available in this process (the persistent-process case: a detached run or conveyor line that has no cron).
+- `cron_job_id` is a non-id marker rather than a live job id: `none (persistent process)`, `none (self-check heartbeat)`, `paused`, `stopped`, or `failed`.
 
 This is the single place that owns the no-op, so callers invoke this skill unconditionally and never branch on the mode themselves; a persistent-mode mission hits every cron call site and each one quietly does nothing.
+
+A persistent process is not always heartbeat-free. When the runtime exposes a self-pacing wake-up hook (the conveyor `claude --bg` case, marker `none (self-check heartbeat)`), the heartbeat is owned by `autonomous:selfcheck`, not by cron; cron still no-ops here because there is no cron, and selfcheck carries the liveness in parallel. The `none (persistent process)` marker is the genuinely heartbeat-free batch case.
 
 ## Why a separate skill
 
