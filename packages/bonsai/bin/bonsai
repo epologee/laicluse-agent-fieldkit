@@ -41,6 +41,7 @@ if (command === 'create') {
       options: {
         repo: { type: 'string' },
         base: { type: 'string' },
+        dir: { type: 'string' },
         json: { type: 'boolean', default: false },
       },
     }));
@@ -52,7 +53,7 @@ if (command === 'create') {
   if (!branch) die('create needs a branch name');
   const repo = values.repo || process.cwd();
   try {
-    const result = createWorktree({ repo, branch, base: values.base });
+    const result = createWorktree({ repo, branch, base: values.base, dir: values.dir });
     out(values.json, result, `worktree ready at ${result.worktree} (branch ${result.branch}, dev port ${result.port})`);
   } catch (err) {
     die(err.message);

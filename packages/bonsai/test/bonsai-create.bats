@@ -48,6 +48,16 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   [ "$port_a" -le 3999 ]
 }
 
+@test "create --dir decouples the worktree dir from the branch name" {
+  run run_bonsai create my-handle --dir my-handle-r2 --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  [ -d "$FIX/worktrees/my-handle-r2" ]
+  [ ! -d "$FIX/worktrees/my-handle" ]
+  echo "$output" | grep -q '"branch": "my-handle"'
+  echo "$output" | grep -q 'my-handle-r2'
+  git -C "$FIX" show-ref --verify --quiet refs/heads/my-handle
+}
+
 @test "create rejects a .. branch name as invalid" {
   run run_bonsai create .. --repo "$FIX" --json
   [ "$status" -ne 0 ]

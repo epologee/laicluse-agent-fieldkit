@@ -57,12 +57,16 @@ export function resolveBase(repo) {
   }
 }
 
-export function createWorktree({ repo, branch, base }) {
+export function createWorktree({ repo, branch, base, dir }) {
   if (!isGitRepo(repo)) {
     throw new Error(`${repo} is not a git repository`);
   }
   if (!branch || !branch.trim() || branch.includes('..') || /\s/.test(branch)) {
     throw new Error(`invalid branch name ${JSON.stringify(branch)}`);
+  }
+  const dirName = dir ? branchToDir(dir) : branchToDir(branch);
+  if (!dirName || dirName.includes('..') || /\s/.test(dirName)) {
+    throw new Error(`invalid worktree dir name ${JSON.stringify(dir)}`);
   }
   const resolvedBase = base || resolveBase(repo);
   const baseSha = git(repo, ['rev-parse', resolvedBase]).trim();
@@ -70,13 +74,12 @@ export function createWorktree({ repo, branch, base }) {
   mkdirSync(worktreesDir, { recursive: true });
   const gitignore = join(worktreesDir, '.gitignore');
   if (!existsSync(gitignore)) writeFileSync(gitignore, '*\n');
-  const dir = branchToDir(branch);
-  const worktree = join(worktreesDir, dir);
+  const worktree = join(worktreesDir, dirName);
   if (refExists(repo, `refs/heads/${branch}`)) {
     throw new Error(`branch ${branch} already exists in ${repo}; wrap and tear down that work first, never a numbered branch`);
   }
   git(repo, ['worktree', 'add', '-b', branch, worktree, resolvedBase]);
-  return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dir) };
+  return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dirName) };
 }
 
 const INSTALL_COMMANDS = {

@@ -5,9 +5,11 @@
 # Public helpers:
 #   dd_event          - hook event from input JSON
 #   dd_tool_name      - tool name from input JSON
+#   dd_tool_patch     - patch/diff payload from input JSON
 #   dd_stop_active    - 0/1 based on stop_hook_active
 #   dd_session_id     - session id from input JSON
 #   dd_transcript     - transcript path, resolving session fallback
+#   dd_state_file     - per-session guard state under LAICLUSE_HOME
 #   dd_assistant_text - last-turn assistant text, optional line-tracking
 #   dd_is_wip         - 0 if the assistant text contains 🚧
 #   dd_emit_block     - Stop-style block JSON with mnemonic prefix
@@ -15,7 +17,7 @@
 #   dd_emit_context   - PostToolUse additionalContext JSON, mnemonic prefix
 #
 # Every emit helper prefixes the message with "[dont-do-that/<mnemonic>] ".
-# That prefix is the stable code the operator and Claude can recognise at a
+# That prefix is the stable code the operator and agent can recognise at a
 # glance without reading the whole reason.
 
 dd_event() {
@@ -24,6 +26,22 @@ dd_event() {
 
 dd_tool_name() {
   jq -r '.tool_name // empty' <<< "$1" 2>/dev/null
+}
+
+dd_tool_patch() {
+  jq -r '
+    if (.tool_input | type) == "string" then
+      .tool_input
+    else
+      .tool_input.patch
+      // .tool_input.diff
+      // .tool_input.input
+      // .tool_input.command
+      // .tool_input.content
+      // .tool_input.cmd
+      // empty
+    end
+  ' <<< "$1" 2>/dev/null
 }
 
 dd_stop_active() {
@@ -47,7 +65,28 @@ dd_transcript() {
   local sid
   sid=$(dd_session_id "$input")
   [ -z "$sid" ] && return 1
-  find ~/.claude/projects/ -name "${sid}.jsonl" -type f 2>/dev/null | head -1
+  local base found
+  for base in "$HOME/.claude/projects" "$HOME/.codex/sessions"; do
+    [ -d "$base" ] || continue
+    found=$(find "$base" -name "${sid}.jsonl" -type f 2>/dev/null | head -1)
+    if [ -n "$found" ]; then
+      echo "$found"
+      return 0
+    fi
+  done
+  return 1
+}
+
+dd_state_file() {
+  local name="$1" sid="$2"
+  [ -n "$name" ] || return 1
+  [ -n "$sid" ] || return 1
+
+  local root safe
+  root="${LAICLUSE_HOME:-$HOME/.laicluse}/dont-do-that/state"
+  mkdir -p "$root" 2>/dev/null || return 1
+  safe=$(printf '%s' "$sid" | tr -c 'A-Za-z0-9._-' '_')
+  printf '%s/%s-%s\n' "$root" "$name" "$safe"
 }
 
 dd_is_wip() {
@@ -56,8 +95,8 @@ dd_is_wip() {
 
 # dd_assistant_text <input-json> <char-budget> [guard-name]
 # Returns the tail of the current turn's assistant text.
-# When guard-name is set, tracks last-seen transcript line count in
-# /tmp/.claude-<guard>-<session>, scanning only new lines. This matches
+# When guard-name is set, tracks last-seen transcript line count under
+# ${LAICLUSE_HOME:-~/.laicluse}/dont-do-that/state/, scanning only new lines. This matches
 # the pre-refactor behavior of the individual scripts.
 dd_assistant_text() {
   local input="$1"
@@ -81,7 +120,8 @@ dd_assistant_text() {
 
   local tail_lines=50
   if [ -n "$guard" ]; then
-    local line_file="/tmp/.claude-${guard}-${sid}"
+    local line_file
+    line_file=$(dd_state_file "$guard" "$sid") || return 1
     local total last
     total=$(wc -l < "$tr" | tr -d ' ')
     if [ -f "$line_file" ]; then
@@ -135,7 +175,7 @@ dd_emit_context() {
 
 # dd_emit_pre_context <mnemonic> <message>
 # PreToolUse hook: print additionalContext JSON (does not block, surfaces text
-# to Claude in the next turn so it can adjust subsequent calls).
+# to the agent in the next turn so it can adjust subsequent calls).
 dd_emit_pre_context() {
   local mnemonic="$1"
   local msg="$2"
