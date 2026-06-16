@@ -22,6 +22,17 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.6]
+
+### Added
+
+- **New `land` guard nudges on the vague "land" metaphor.** A soft PostToolUse
+  reminder (never blocks) surfaces when `land`/`landing`/`landed`/`geland`/`landt`
+  appears in persisted file content or a Bash command, asking for a concrete word
+  that names what actually happens. Like `dash` it only surfaces
+  context; false positives on ordinary words are accepted as the price of a gentle
+  reminder rather than a hard gate.
+
 ## [v2.0.2]
 
 ### Added
