@@ -15,9 +15,13 @@ the directory it hands out; the lock logic lives in exactly one place.
 
 ```
 dibs claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--max-age-hours <n>] [--json]
-dibs release <dir> [--pid <n>] [--json]
+dibs release <dir> [--pid <n>] [--nonce <hex>] [--json]
 dibs check   <dir> [--max-age-hours <n>] [--json]
 ```
+
+All three verbs require the directory to exist; the lock is keyed by its
+realpath, so a missing path is a clear error rather than a silently divergent
+key.
 
 - **claim** takes exclusive occupancy of a directory keyed by its realpath.
   Exits 0 on a fresh claim, on an idempotent re-claim by the same holder
@@ -62,8 +66,9 @@ dependencies, and self-heals through pid-liveness.
   deliberately overrides liveness: a lock older than the cap is broken even if
   its pid still reads alive, which is the recycling mitigation. Left unset (the
   default), pid-liveness is authoritative and a live holder is never broken. The
-  recorded `nonce` identifies a specific claim for logs and observability; it is
-  not consulted for liveness.
+  recorded `nonce` identifies a specific claim for logs and observability and is
+  not consulted for liveness; `release --nonce <hex>` optionally binds a release
+  to one specific claim so a recycled pid cannot release a lock it did not take.
 - **Same-user liveness.** `process.kill(pid, 0)` reports a process owned by
   another user or living in another namespace as alive (`EPERM`), so dibs never
   breaks a lock it cannot positively prove dead; such a lock clears only through

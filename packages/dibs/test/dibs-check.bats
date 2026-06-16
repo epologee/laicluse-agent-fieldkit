@@ -36,6 +36,18 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -qi "alive"
 }
 
+@test "check on a non-existent directory errors clearly" {
+  run dibs check "$BATS_TEST_TMPDIR/nope"
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi "does not exist"
+}
+
+@test "the held report names the holder host for cross-host diagnosis" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  run dibs check "$DIR"
+  echo "$output" | grep -qiE "on [^ ]+ since"
+}
+
 @test "check reports a dead holder as not alive and stale" {
   sleep 120 & local holder=$!
   dibs claim "$DIR" --pid "$holder" --agent claude --json >/dev/null

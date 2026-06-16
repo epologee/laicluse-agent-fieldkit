@@ -28,7 +28,7 @@ export async function claimWorktreeLock(dir) {
   try {
     const result = dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION });
     if (!result.ok && result.holder) {
-      return { ...result, warning: `directory already held by ${result.holder.agent} (pid ${result.holder.pid}) since ${result.holder.acquiredAt}` };
+      return { ...result, warning: `worktree directory already ${dibs.formatHolder(result.holder)}` };
     }
     return result;
   } catch (err) {

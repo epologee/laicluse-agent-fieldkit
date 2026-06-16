@@ -36,6 +36,23 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
 }
 
+@test "release with a matching nonce succeeds" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  local nonce
+  nonce="$(cat "$LAICLUSE_HOME"/locks/*.lock | "$NODE_BIN" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).nonce))')"
+  run dibs release "$DIR" --pid $$ --nonce "$nonce"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -qi released
+}
+
+@test "release with a wrong nonce is refused and leaves the lock" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  run dibs release "$DIR" --pid $$ --nonce deadbeefdeadbeef
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi "held by"
+  [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
+}
+
 @test "release by non-holder under --json reports held-by-other" {
   dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
   sleep 120 & local other=$!

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { claim, release, check } from './dibs-lib.mjs';
+import { claim, release, check, formatHolder } from './dibs-lib.mjs';
 
 const USAGE = `usage: dibs <command> <dir> [options]
 
@@ -15,6 +15,7 @@ options:
                        parent pid, correct only when that parent is the holder)
   --agent <name>       label the holder (e.g. claude, codex)
   --session <id>       holder session id
+  --nonce <hex>        on release, require this claim nonce to match the holder
   --max-age-hours <n>  treat a lock older than this as breakable (last-resort cap)
   --json               machine-readable output
 
@@ -43,6 +44,7 @@ function parse(args) {
       pid: { type: 'string' },
       agent: { type: 'string' },
       session: { type: 'string' },
+      nonce: { type: 'string' },
       'max-age-hours': { type: 'string' },
       json: { type: 'boolean', default: false },
     },
@@ -50,7 +52,7 @@ function parse(args) {
 }
 
 function holderLine(h) {
-  return `held by ${h.agent} (pid ${h.pid}) since ${h.acquiredAt}`;
+  return formatHolder(h);
 }
 
 if (!['claim', 'release', 'check'].includes(command)) {
@@ -91,7 +93,7 @@ try {
     else if (result.state === 'took-over-stale') emit(result, `took over stale lock on ${result.holder.realpath} (previous ${result.brokeStale.reason}); now held (pid ${pid})`);
     else emit(result, `refused: ${holderLine(result.holder)}`, 1);
   } else if (command === 'release') {
-    const result = release({ dir, pid });
+    const result = release({ dir, pid, nonce: values.nonce });
     if (result.state === 'released') emit(result, `released ${result.holder.realpath}`);
     else if (result.state === 'not-held') emit(result, 'not held; nothing to release');
     else emit(result, `refused: ${holderLine(result.holder)}`, 1);

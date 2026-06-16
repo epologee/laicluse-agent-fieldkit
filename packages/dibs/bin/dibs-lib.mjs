@@ -1,7 +1,11 @@
 import { mkdirSync, writeFileSync, readFileSync, realpathSync, rmSync, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { homedir, hostname } from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
+
+const MAX_CLAIM_ATTEMPTS = 3;
+const STABLE_READ_TRIES = 10;
+const STABLE_READ_SLEEP_MS = 15;
 
 export function locksDir() {
   const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
@@ -14,11 +18,8 @@ function ensureLocksDir() {
 
 export function canonicalDir(dir) {
   if (!dir || !String(dir).trim()) throw new Error('a directory path is required');
-  try {
-    return realpathSync(dir);
-  } catch {
-    return resolve(dir);
-  }
+  if (!existsSync(dir)) throw new Error(`directory does not exist: ${dir}`);
+  return realpathSync(dir);
 }
 
 export function lockPathFor(dir) {
@@ -38,6 +39,10 @@ export function isAlive(pid) {
   } catch (err) {
     return err.code === 'EPERM';
   }
+}
+
+export function formatHolder(record) {
+  return `held by ${record.agent} (pid ${record.pid}) on ${record.hostname} since ${record.acquiredAt}`;
 }
 
 function buildRecord({ realpath, pid, agent, session }) {
@@ -68,82 +73,92 @@ function sleepMs(ms) {
   Atomics.wait(SLEEP_SLOT, 0, 0, ms);
 }
 
-// allow-comment: distinguishes a lock caught mid-write (retry) from a truly corrupt one (give up)
+// allow-comment: a partial write makes the record briefly unreadable; retry that, but treat a record still unreadable past the window as genuinely corrupt
 function readRecordStable(path) {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < STABLE_READ_TRIES; i++) {
     const rec = readRecord(path);
     if (rec) return rec;
     if (!existsSync(path)) return null;
-    sleepMs(15);
+    sleepMs(STABLE_READ_SLEEP_MS);
   }
   return null;
 }
 
-function ageExceeded(record, maxAgeHours) {
+export function ageExceeded(record, maxAgeHours) {
   if (!maxAgeHours || maxAgeHours <= 0) return false;
   const acquired = Date.parse(record.acquiredAt);
   if (Number.isNaN(acquired)) return false;
   return Date.now() - acquired > maxAgeHours * 3600 * 1000;
 }
 
-function classifyHolder(record, maxAgeHours) {
+export function classifyHolder(record, maxAgeHours) {
   const sameHost = record.hostname === hostname();
+  const alive = sameHost ? isAlive(record.pid) : null;
   if (sameHost) {
-    if (!isAlive(record.pid)) return { breakable: true, reason: 'holder-dead' };
-    if (ageExceeded(record, maxAgeHours)) return { breakable: true, reason: 'age-cap' };
-    return { breakable: false, reason: 'holder-alive' };
+    if (!alive) return { breakable: true, reason: 'holder-dead', alive };
+    if (ageExceeded(record, maxAgeHours)) return { breakable: true, reason: 'age-cap', alive };
+    return { breakable: false, reason: 'holder-alive', alive };
   }
-  if (ageExceeded(record, maxAgeHours)) return { breakable: true, reason: 'age-cap-foreign-host' };
-  return { breakable: false, reason: 'foreign-host' };
+  if (ageExceeded(record, maxAgeHours)) return { breakable: true, reason: 'age-cap-foreign-host', alive };
+  return { breakable: false, reason: 'foreign-host', alive };
+}
+
+function inspectExisting(path, ownPid, maxAgeHours) {
+  const existing = readRecordStable(path);
+  if (!existing) {
+    return existsSync(path) ? { action: 'break', reason: 'corrupt' } : { action: 'retry' };
+  }
+  if (existing.hostname === hostname() && existing.pid === ownPid) {
+    return { action: 'held-by-self', holder: existing };
+  }
+  const decision = classifyHolder(existing, maxAgeHours);
+  return decision.breakable
+    ? { action: 'break', reason: decision.reason, previous: existing }
+    : { action: 'refuse', reason: decision.reason, holder: existing };
 }
 
 export function claim({ dir, pid, agent, session, maxAgeHours }) {
-  if (!existsSync(dir)) throw new Error(`directory does not exist: ${dir}`);
   const realpath = canonicalDir(dir);
   const path = lockPathForRealpath(realpath);
   ensureLocksDir();
   const record = buildRecord({ realpath, pid, agent, session });
   const json = JSON.stringify(record, null, 2);
-  let broke = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  let displaced = null;
+  for (let attempt = 0; attempt < MAX_CLAIM_ATTEMPTS; attempt++) {
     try {
       // allow-comment: the exclusive wx create is the sole arbiter; do not relax it to an overwrite
       writeFileSync(path, json, { flag: 'wx' });
-      return broke
-        ? { ok: true, state: 'took-over-stale', path, holder: record, brokeStale: broke }
+      return displaced
+        ? { ok: true, state: 'took-over-stale', path, holder: record, brokeStale: displaced }
         : { ok: true, state: 'claimed', path, holder: record };
     } catch (err) {
       if (err.code !== 'EEXIST') throw err;
     }
-    const existing = readRecordStable(path);
-    if (!existing) {
-      if (existsSync(path)) {
-        rmSync(path, { force: true });
-        broke = { reason: 'corrupt' };
-      }
-      continue;
+    const verdict = inspectExisting(path, pid, maxAgeHours);
+    if (verdict.action === 'held-by-self') {
+      return { ok: true, state: 'held-by-self', path, holder: verdict.holder };
     }
-    if (existing.hostname === hostname() && existing.pid === pid) {
-      return { ok: true, state: 'held-by-self', path, holder: existing };
+    if (verdict.action === 'refuse') {
+      return { ok: false, state: 'refused', path, holder: verdict.holder, reason: verdict.reason };
     }
-    const decision = classifyHolder(existing, maxAgeHours);
-    if (!decision.breakable) {
-      return { ok: false, state: 'refused', path, holder: existing, reason: decision.reason };
+    if (verdict.action === 'break') {
+      rmSync(path, { force: true });
+      displaced = { reason: verdict.reason, previous: verdict.previous };
     }
-    rmSync(path, { force: true });
-    broke = { reason: decision.reason, previous: existing };
   }
   const finalHolder = readRecordStable(path);
-  return finalHolder
-    ? { ok: false, state: 'refused', path, holder: finalHolder, reason: 'holder-alive' }
-    : { ok: false, state: 'refused', path, holder: null, reason: 'contended' };
+  if (!finalHolder) return { ok: false, state: 'refused', path, holder: null, reason: 'contended' };
+  return { ok: false, state: 'refused', path, holder: finalHolder, reason: classifyHolder(finalHolder, maxAgeHours).reason };
 }
 
-export function release({ dir, pid }) {
+export function release({ dir, pid, nonce }) {
   const path = lockPathForRealpath(canonicalDir(dir));
   const existing = readRecordStable(path);
   if (!existing) return { ok: true, state: 'not-held', path };
-  if (existing.hostname === hostname() && existing.pid === pid) {
+  const mine = existing.hostname === hostname()
+    && existing.pid === pid
+    && (nonce === undefined || existing.nonce === nonce);
+  if (mine) {
     rmSync(path, { force: true });
     return { ok: true, state: 'released', path, holder: existing };
   }
@@ -159,14 +174,14 @@ export function check({ dir, maxAgeHours }) {
       ? { state: 'corrupt', path, realpath }
       : { state: 'free', path, realpath };
   }
-  const sameHost = existing.hostname === hostname();
+  const decision = classifyHolder(existing, maxAgeHours);
   return {
     state: 'held',
     path,
     realpath,
     holder: existing,
-    sameHost,
-    alive: sameHost ? isAlive(existing.pid) : null,
-    stale: classifyHolder(existing, maxAgeHours).breakable,
+    sameHost: existing.hostname === hostname(),
+    alive: decision.alive,
+    stale: decision.breakable,
   };
 }
