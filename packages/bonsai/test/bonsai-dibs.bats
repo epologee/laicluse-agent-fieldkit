@@ -1,0 +1,45 @@
+#!/usr/bin/env bats
+# Contract tests for bonsai consuming the dibs lock when it hands out a worktree.
+
+setup() {
+  REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
+  BONSAI="$REPO_ROOT/packages/bonsai/bin/bonsai"
+  DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
+  NODE_BIN="$(command -v node)"
+  export LAICLUSE_HOME="$BATS_TEST_TMPDIR/laicluse"
+  FIX="$BATS_TEST_TMPDIR/proj"
+  mkdir -p "$FIX"
+  git -C "$FIX" init -q -b main
+  git -C "$FIX" config user.email t@t.t
+  git -C "$FIX" config user.name t
+  git -C "$FIX" commit -q --allow-empty -m init
+}
+
+run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
+
+@test "create claims a dibs lock for the worktree it hands out" {
+  DIBS_HOLDER_PID=$$ run run_bonsai create my-feature --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"state": "claimed"'
+  [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
+  "$NODE_BIN" "$DIBS" check "$FIX/worktrees/my-feature" --json | grep -q '"state": "held"'
+}
+
+@test "the claimed lock records the caller pid, not the short-lived bonsai pid" {
+  DIBS_HOLDER_PID=$$ run run_bonsai create pid-feature --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  "$NODE_BIN" "$DIBS" check "$FIX/worktrees/pid-feature" --json | grep -q "\"pid\": $$"
+}
+
+@test "create still succeeds when dibs is unavailable (graceful degradation)" {
+  DIBS_LIB=/nonexistent/dibs-lib.mjs run run_bonsai create no-dibs --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  [ -d "$FIX/worktrees/no-dibs" ]
+  git -C "$FIX" show-ref --verify --quiet refs/heads/no-dibs
+  echo "$output" | grep -q '"state": "unavailable"'
+}
+
+@test "bonsai reimplements no lock primitive of its own" {
+  run grep -rEi "'wx'|O_EXCL|O_EXLOCK|flock" "$REPO_ROOT/packages/bonsai/bin"
+  [ "$status" -ne 0 ]
+}

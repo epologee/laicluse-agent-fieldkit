@@ -1,6 +1,32 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, statSync, realpathSync } from 'node:fs';
 import { join, resolve, dirname, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+
+async function loadDibs() {
+  const override = process.env.DIBS_LIB;
+  const target = override
+    ? pathToFileURL(override).href
+    : new URL('../../dibs/bin/dibs-lib.mjs', import.meta.url).href;
+  try {
+    return await import(target);
+  } catch {
+    return null;
+  }
+}
+
+export async function claimWorktreeLock(dir) {
+  const dibs = await loadDibs();
+  if (!dibs) {
+    return { ok: false, state: 'unavailable', warning: 'dibs not available; worktree handed out without an occupancy lock' };
+  }
+  const pid = process.env.DIBS_HOLDER_PID ? Number(process.env.DIBS_HOLDER_PID) : process.ppid;
+  try {
+    return dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION });
+  } catch (err) {
+    return { ok: false, state: 'error', warning: `dibs claim failed: ${err.message.split('\n')[0]}` };
+  }
+}
 
 export function git(repo, args) {
   return execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -57,7 +83,7 @@ export function resolveBase(repo) {
   }
 }
 
-export function createWorktree({ repo, branch, base, dir }) {
+export async function createWorktree({ repo, branch, base, dir }) {
   if (!isGitRepo(repo)) {
     throw new Error(`${repo} is not a git repository`);
   }
@@ -79,7 +105,8 @@ export function createWorktree({ repo, branch, base, dir }) {
     throw new Error(`branch ${branch} already exists in ${repo}; wrap and tear down that work first, never a numbered branch`);
   }
   git(repo, ['worktree', 'add', '-b', branch, worktree, resolvedBase]);
-  return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dirName) };
+  const lock = await claimWorktreeLock(worktree);
+  return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dirName), lock };
 }
 
 const INSTALL_COMMANDS = {
