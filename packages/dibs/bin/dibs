@@ -10,7 +10,9 @@ commands:
   check <dir>     report whether a directory is free or who holds it
 
 options:
-  --pid <n>            holder pid to record/match (default: the calling process's parent pid)
+  --pid <n>            pid whose liveness defines the lock; pass your long-lived
+                       agent or session pid (default: the calling process's
+                       parent pid, correct only when that parent is the holder)
   --agent <name>       label the holder (e.g. claude, codex)
   --session <id>       holder session id
   --max-age-hours <n>  treat a lock older than this as breakable (last-resort cap)
@@ -60,6 +62,7 @@ let positionals;
 try {
   ({ values, positionals } = parse(rest));
 } catch (err) {
+  if (err.code === 'ERR_PARSE_ARGS_UNKNOWN_OPTION') die(`${err.message.split('.')[0]} (run 'dibs --help')`);
   die(err.message);
 }
 wantJson = values.json;

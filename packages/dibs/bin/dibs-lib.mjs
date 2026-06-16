@@ -62,8 +62,10 @@ function readRecord(path) {
   }
 }
 
+const SLEEP_SLOT = new Int32Array(new SharedArrayBuffer(4));
+
 function sleepMs(ms) {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  Atomics.wait(SLEEP_SLOT, 0, 0, ms);
 }
 
 // allow-comment: distinguishes a lock caught mid-write (retry) from a truly corrupt one (give up)
@@ -96,6 +98,7 @@ function classifyHolder(record, maxAgeHours) {
 }
 
 export function claim({ dir, pid, agent, session, maxAgeHours }) {
+  if (!existsSync(dir)) throw new Error(`directory does not exist: ${dir}`);
   const realpath = canonicalDir(dir);
   const path = lockPathForRealpath(realpath);
   ensureLocksDir();
@@ -104,6 +107,7 @@ export function claim({ dir, pid, agent, session, maxAgeHours }) {
   let broke = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
+      // allow-comment: the exclusive wx create is the sole arbiter; do not relax it to an overwrite
       writeFileSync(path, json, { flag: 'wx' });
       return broke
         ? { ok: true, state: 'took-over-stale', path, holder: record, brokeStale: broke }
@@ -137,7 +141,7 @@ export function claim({ dir, pid, agent, session, maxAgeHours }) {
 
 export function release({ dir, pid }) {
   const path = lockPathForRealpath(canonicalDir(dir));
-  const existing = readRecord(path);
+  const existing = readRecordStable(path);
   if (!existing) return { ok: true, state: 'not-held', path };
   if (existing.hostname === hostname() && existing.pid === pid) {
     rmSync(path, { force: true });

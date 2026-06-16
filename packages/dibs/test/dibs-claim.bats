@@ -80,6 +80,18 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"reason": "foreign-host"'
 }
 
+@test "claim refuses a directory that does not exist" {
+  run dibs claim "$BATS_TEST_TMPDIR/nope" --pid $$ --json
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi "does not exist"
+}
+
+@test "an unknown option gives a clear error, not parser advice" {
+  run dibs claim "$DIR" --bogus --pid $$
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi "unknown option"
+}
+
 @test "concurrent claimers on a free dir yield exactly one holder" {
   local n=20
   declare -a holders=()

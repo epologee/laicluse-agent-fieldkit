@@ -26,7 +26,11 @@ export async function claimWorktreeLock(dir) {
   }
   const pid = process.env.DIBS_HOLDER_PID ? Number(process.env.DIBS_HOLDER_PID) : process.ppid;
   try {
-    return dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION });
+    const result = dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION });
+    if (!result.ok && result.holder) {
+      return { ...result, warning: `directory already held by ${result.holder.agent} (pid ${result.holder.pid}) since ${result.holder.acquiredAt}` };
+    }
+    return result;
   } catch (err) {
     return { ok: false, state: 'error', warning: `dibs claim failed: ${err.message.split('\n')[0]}` };
   }

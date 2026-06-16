@@ -58,9 +58,12 @@ dependencies, and self-heals through pid-liveness.
   for v1; cross-machine arbitration is a lease-broker problem, not this lock's.
 - **pid recycling.** A recycled pid can read as a live holder. The acquired-at
   timestamp and `--max-age-hours` cap bound the residual risk; v1 accepts it
-  rather than probing process start-time natively. The recorded `nonce`
-  identifies a specific claim for logs and observability; it is not consulted
-  for liveness.
+  rather than probing process start-time natively. When set, `--max-age-hours`
+  deliberately overrides liveness: a lock older than the cap is broken even if
+  its pid still reads alive, which is the recycling mitigation. Left unset (the
+  default), pid-liveness is authoritative and a live holder is never broken. The
+  recorded `nonce` identifies a specific claim for logs and observability; it is
+  not consulted for liveness.
 - **Same-user liveness.** `process.kill(pid, 0)` reports a process owned by
   another user or living in another namespace as alive (`EPERM`), so dibs never
   breaks a lock it cannot positively prove dead; such a lock clears only through

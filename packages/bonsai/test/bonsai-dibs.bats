@@ -39,6 +39,17 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -q '"state": "unavailable"'
 }
 
+@test "claimWorktreeLock surfaces a warning when the dir is already held" {
+  local dir="$BATS_TEST_TMPDIR/held"
+  mkdir -p "$dir"
+  sleep 60 & local holder=$!
+  "$NODE_BIN" "$DIBS" claim "$dir" --pid "$holder" --agent other --json >/dev/null
+  run "$NODE_BIN" -e 'import(process.argv[1]).then(m=>m.claimWorktreeLock(process.argv[2])).then(r=>console.log(JSON.stringify(r,null,2)))' "$REPO_ROOT/packages/bonsai/bin/bonsai-lib.mjs" "$dir"
+  kill "$holder" 2>/dev/null || true
+  echo "$output" | grep -q '"state": "refused"'
+  echo "$output" | grep -qi "already held by other"
+}
+
 @test "create surfaces a load error when dibs is present but broken" {
   local broken="$BATS_TEST_TMPDIR/broken-dibs.mjs"
   printf 'export function claim( {{{ broken\n' > "$broken"
