@@ -7,7 +7,7 @@ const MAX_CLAIM_ATTEMPTS = 3;
 const STABLE_READ_TRIES = 10;
 const STABLE_READ_SLEEP_MS = 15;
 
-export function locksDir() {
+function locksDir() {
   const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
   return join(agentHome, 'locks');
 }
@@ -16,13 +16,13 @@ function ensureLocksDir() {
   mkdirSync(locksDir(), { recursive: true });
 }
 
-export function canonicalDir(dir) {
+function canonicalDir(dir) {
   if (!dir || !String(dir).trim()) throw new Error('a directory path is required');
   if (!existsSync(dir)) throw new Error(`directory does not exist: ${dir}`);
   return realpathSync(dir);
 }
 
-export function lockPathFor(dir) {
+function lockPathFor(dir) {
   return lockPathForRealpath(canonicalDir(dir));
 }
 
@@ -31,7 +31,7 @@ function lockPathForRealpath(realpath) {
   return join(locksDir(), `${sha}.lock`);
 }
 
-export function isAlive(pid) {
+function isAlive(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
   try {
     process.kill(pid, 0);
@@ -84,14 +84,14 @@ function readRecordStable(path) {
   return null;
 }
 
-export function ageExceeded(record, maxAgeHours) {
+function ageExceeded(record, maxAgeHours) {
   if (!maxAgeHours || maxAgeHours <= 0) return false;
   const acquired = Date.parse(record.acquiredAt);
   if (Number.isNaN(acquired)) return false;
   return Date.now() - acquired > maxAgeHours * 3600 * 1000;
 }
 
-export function classifyHolder(record, maxAgeHours) {
+function classifyHolder(record, maxAgeHours) {
   const sameHost = record.hostname === hostname();
   const alive = sameHost ? isAlive(record.pid) : null;
   if (sameHost) {

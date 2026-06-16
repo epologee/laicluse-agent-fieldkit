@@ -79,10 +79,10 @@ dependencies, and self-heals through pid-liveness.
 
 ## Library
 
-`bin/dibs-lib.mjs` exports `claim`, `release`, `check`, `isAlive`, `locksDir`,
-`lockPathFor`, and `canonicalDir` as pure node ES modules with no third-party
-imports. Consumers in the same marketplace import it directly so there is a
-single lock implementation and no parallel path:
+`bin/dibs-lib.mjs` exports `claim`, `release`, `check`, and `formatHolder` as
+pure node ES modules with no third-party imports. Consumers in the same
+marketplace import it directly so there is a single lock implementation and no
+parallel path:
 
 ```js
 import { claim } from '../../dibs/bin/dibs-lib.mjs';

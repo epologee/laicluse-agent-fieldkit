@@ -51,10 +51,6 @@ function parse(args) {
   });
 }
 
-function holderLine(h) {
-  return formatHolder(h);
-}
-
 if (!['claim', 'release', 'check'].includes(command)) {
   die(`unknown command: ${command}`);
 }
@@ -91,19 +87,19 @@ try {
     if (result.state === 'claimed') emit(result, `claimed ${result.holder.realpath} (pid ${pid}${values.agent ? `, agent ${values.agent}` : ''})`);
     else if (result.state === 'held-by-self') emit(result, `already held by you (pid ${pid})`);
     else if (result.state === 'took-over-stale') emit(result, `took over stale lock on ${result.holder.realpath} (previous ${result.brokeStale.reason}); now held (pid ${pid})`);
-    else emit(result, `refused: ${holderLine(result.holder)}`, 1);
+    else emit(result, `refused: ${formatHolder(result.holder)}`, 1);
   } else if (command === 'release') {
     const result = release({ dir, pid, nonce: values.nonce });
     if (result.state === 'released') emit(result, `released ${result.holder.realpath}`);
     else if (result.state === 'not-held') emit(result, 'not held; nothing to release');
-    else emit(result, `refused: ${holderLine(result.holder)}`, 1);
+    else emit(result, `refused: ${formatHolder(result.holder)}`, 1);
   } else {
     const result = check({ dir, maxAgeHours });
     if (result.state === 'free') emit(result, `free: ${result.realpath}`);
     else if (result.state === 'corrupt') emit(result, `corrupt lock for ${result.realpath}; the next claimer will break it`);
     else {
       const liveness = result.sameHost ? (result.alive ? 'alive' : 'dead') : 'foreign-host';
-      emit(result, `${holderLine(result.holder)} [${liveness}${result.stale ? ', stale' : ''}]`);
+      emit(result, `${formatHolder(result.holder)} [${liveness}${result.stale ? ', stale' : ''}]`);
     }
   }
 } catch (err) {
