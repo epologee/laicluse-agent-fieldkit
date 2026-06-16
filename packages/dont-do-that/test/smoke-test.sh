@@ -145,14 +145,14 @@ expect_allow() {
 }
 
 expect_context() {
-  local description="$1" payload="$2"
+  local description="$1" payload="$2" mnemonic="${3:-dash}"
   local out
   out=$(printf '%s' "$payload" | bash "$DISPATCH" 2>/dev/null)
   if echo "$out" | grep -q '"additionalContext"'; then
-    if echo "$out" | grep -q '\[dont-do-that/dash\]'; then
+    if echo "$out" | grep -q "\[dont-do-that/${mnemonic}\]"; then
       PASS=$((PASS + 1))
     else
-      echo "FAIL [missing dash mnemonic]: ${description}"
+      echo "FAIL [missing ${mnemonic} mnemonic]: ${description}"
       echo "  output: ${out}"
       FAIL=$((FAIL + 1))
     fi
@@ -594,6 +594,17 @@ expect_context "dash: em-dash in apply_patch added line" \
 
 expect_allow "dash: em-dash in apply_patch context line passes silent" \
   "$(posttool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n const oldMessage = "Some prose with '"${EMDASH}"$' dash here.";\n+const newMessage = "No dash here.";\n*** End Patch\n')"
+
+expect_context "land: metaphor in Edit new_string" \
+  "$(posttool_edit "/tmp/x.ts" "We land the change on main.")" \
+  "land"
+
+expect_allow "land: clean Edit new_string passes silent" \
+  "$(posttool_edit "/tmp/x.ts" "We merge the change to main.")"
+
+expect_context "land: metaphor in apply_patch added line" \
+  "$(posttool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n const a = 1;\n+const note = "this lands on the summary record";\n*** End Patch\n')" \
+  "land"
 
 # --- no-code-comments ---
 

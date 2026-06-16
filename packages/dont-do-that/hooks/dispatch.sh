@@ -38,7 +38,17 @@ case "$EVENT" in
     case "$TOOL" in
       Edit|Write|MultiEdit|Bash|apply_patch)
         source "$DIR/guards/dash.sh"
-        guard_dash "$INPUT"
+        source "$DIR/guards/land.sh"
+        DASH_OUTPUT=$( guard_dash "$INPUT" )
+        LAND_OUTPUT=$( guard_land "$INPUT" )
+        if [ -n "$DASH_OUTPUT" ]; then
+          echo "$DASH_OUTPUT"
+          exit 0
+        fi
+        if [ -n "$LAND_OUTPUT" ]; then
+          echo "$LAND_OUTPUT"
+          exit 0
+        fi
         ;;
     esac
     ;;

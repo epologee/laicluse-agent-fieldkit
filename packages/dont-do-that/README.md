@@ -44,6 +44,9 @@ body schema, push gates) lives in the `git-discipline` plugin and the
 **`dash`** in `hooks/guards/dash.sh`
 Surfaces additional context when em-dash (U+2014) or en-dash (U+2013) appears in `.md`, `.txt`, or `.mdx` files outside of fenced code blocks, in any persisted file content, added `apply_patch` lines, or in a shell command (clipboard, pipes). Chat is not checked. Does not block, only surfaces a rewrite instruction.
 
+**`land`** in `hooks/guards/land.sh`
+Surfaces additional context when the vague "land" metaphor (`land`, `landing`, `landed`, `geland`, `landt`) appears in persisted file content, added `apply_patch` lines, or a shell command, outside of fenced code blocks. The match is a plain case-insensitive substring, so ordinary words (`Nederland`, `landscape`, `landing page`) trip it too; that is deliberate. The word is off the naming doctrine and reads as filler that names nothing concrete, but it is also an ordinary word, so this stays a gentle reminder to pick a concrete verb, never a hard gate. Does not block, only surfaces a rewrite instruction.
+
 ### Stop
 
 **`pre-existing`** (false-claims) in `hooks/guards/false-claims.sh`
