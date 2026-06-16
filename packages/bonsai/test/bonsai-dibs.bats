@@ -39,6 +39,15 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -q '"state": "unavailable"'
 }
 
+@test "create surfaces a load error when dibs is present but broken" {
+  local broken="$BATS_TEST_TMPDIR/broken-dibs.mjs"
+  printf 'export function claim( {{{ broken\n' > "$broken"
+  DIBS_LIB="$broken" run run_bonsai create broken-dibs --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  [ -d "$FIX/worktrees/broken-dibs" ]
+  echo "$output" | grep -q '"state": "error"'
+}
+
 @test "bonsai reimplements no lock primitive of its own" {
   run grep -rEi "'wx'|O_EXCL|O_EXLOCK|flock" "$REPO_ROOT/packages/bonsai/bin"
   [ "$status" -ne 0 ]

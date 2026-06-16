@@ -58,7 +58,14 @@ dependencies, and self-heals through pid-liveness.
   for v1; cross-machine arbitration is a lease-broker problem, not this lock's.
 - **pid recycling.** A recycled pid can read as a live holder. The acquired-at
   timestamp and `--max-age-hours` cap bound the residual risk; v1 accepts it
-  rather than probing process start-time natively.
+  rather than probing process start-time natively. The recorded `nonce`
+  identifies a specific claim for logs and observability; it is not consulted
+  for liveness.
+- **Same-user liveness.** `process.kill(pid, 0)` reports a process owned by
+  another user or living in another namespace as alive (`EPERM`), so dibs never
+  breaks a lock it cannot positively prove dead; such a lock clears only through
+  the `--max-age-hours` cap. Within one user on one machine, the agent case,
+  liveness is exact.
 - **Occupancy, not git.** dibs prevents concurrent occupancy. It is not a git
   lock and does not replace git's own `index.lock`.
 
@@ -67,4 +74,17 @@ dependencies, and self-heals through pid-liveness.
 `bin/dibs-lib.mjs` exports `claim`, `release`, `check`, `isAlive`, `locksDir`,
 `lockPathFor`, and `canonicalDir` as pure node ES modules with no third-party
 imports. Consumers in the same marketplace import it directly so there is a
-single lock implementation and no parallel path.
+single lock implementation and no parallel path:
+
+```js
+import { claim } from '../../dibs/bin/dibs-lib.mjs';
+
+const result = claim({ dir, pid: process.ppid, agent: 'my-tool' });
+if (!result.ok) console.warn(`held by ${result.holder.agent}`);
+```
+
+An embedder that hands out a directory on behalf of a long-lived caller (as
+`bonsai` does) records that caller's pid, not its own short-lived process.
+`bonsai` reads `DIBS_HOLDER_PID`, `DIBS_AGENT`, and `DIBS_SESSION` to label the
+holder, and `DIBS_LIB` to point at an alternate lib path. The CLI honours
+`DIBS_BIN` for a fixed binary path.

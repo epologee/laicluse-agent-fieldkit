@@ -95,6 +95,7 @@ try {
   } else {
     const result = check({ dir, maxAgeHours });
     if (result.state === 'free') emit(result, `free: ${result.realpath}`);
+    else if (result.state === 'corrupt') emit(result, `corrupt lock for ${result.realpath}; the next claimer will break it`);
     else {
       const liveness = result.sameHost ? (result.alive ? 'alive' : 'dead') : 'foreign-host';
       emit(result, `${holderLine(result.holder)} [${liveness}${result.stale ? ', stale' : ''}]`);

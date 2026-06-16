@@ -9,16 +9,20 @@ async function loadDibs() {
     ? pathToFileURL(override).href
     : new URL('../../dibs/bin/dibs-lib.mjs', import.meta.url).href;
   try {
-    return await import(target);
-  } catch {
-    return null;
+    return { mod: await import(target) };
+  } catch (err) {
+    if (err.code === 'ERR_MODULE_NOT_FOUND') return { mod: null };
+    return { mod: null, error: err };
   }
 }
 
 export async function claimWorktreeLock(dir) {
-  const dibs = await loadDibs();
+  const { mod: dibs, error } = await loadDibs();
   if (!dibs) {
-    return { ok: false, state: 'unavailable', warning: 'dibs not available; worktree handed out without an occupancy lock' };
+    const warning = error
+      ? `dibs present but failed to load (${error.message.split('\n')[0]}); worktree handed out without an occupancy lock`
+      : 'dibs not available; worktree handed out without an occupancy lock';
+    return { ok: false, state: error ? 'error' : 'unavailable', warning };
   }
   const pid = process.env.DIBS_HOLDER_PID ? Number(process.env.DIBS_HOLDER_PID) : process.ppid;
   try {

@@ -88,5 +88,9 @@ acquisition points are:
 - **pid recycling.** A dead holder's pid reused by an unrelated live process can
   read as alive. The acquired-at timestamp and `--max-age-hours` cap bound the
   residual risk; v1 accepts it rather than adding a native process-start probe.
+- **Same-user liveness.** A holder owned by another user or namespace reads as
+  alive (`EPERM`), so dibs never breaks a lock it cannot prove dead; that lock
+  clears only via `--max-age-hours`. Within one user on one machine, the agent
+  case, liveness is exact.
 - **Occupancy, not git.** This prevents two agents occupying a directory; it is
   not a git lock and does not replace git's own `index.lock`.

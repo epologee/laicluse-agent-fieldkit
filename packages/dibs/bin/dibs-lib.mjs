@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, realpathSync, rmSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir, hostname } from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
@@ -62,6 +62,21 @@ function readRecord(path) {
   }
 }
 
+function sleepMs(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+// allow-comment: distinguishes a lock caught mid-write (retry) from a truly corrupt one (give up)
+function readRecordStable(path) {
+  for (let i = 0; i < 10; i++) {
+    const rec = readRecord(path);
+    if (rec) return rec;
+    if (!existsSync(path)) return null;
+    sleepMs(15);
+  }
+  return null;
+}
+
 function ageExceeded(record, maxAgeHours) {
   if (!maxAgeHours || maxAgeHours <= 0) return false;
   const acquired = Date.parse(record.acquiredAt);
@@ -87,7 +102,7 @@ export function claim({ dir, pid, agent, session, maxAgeHours }) {
   const record = buildRecord({ realpath, pid, agent, session });
   const json = JSON.stringify(record, null, 2);
   let broke = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       writeFileSync(path, json, { flag: 'wx' });
       return broke
@@ -96,10 +111,12 @@ export function claim({ dir, pid, agent, session, maxAgeHours }) {
     } catch (err) {
       if (err.code !== 'EEXIST') throw err;
     }
-    const existing = readRecord(path);
+    const existing = readRecordStable(path);
     if (!existing) {
-      rmSync(path, { force: true });
-      broke = { reason: 'unreadable' };
+      if (existsSync(path)) {
+        rmSync(path, { force: true });
+        broke = { reason: 'corrupt' };
+      }
       continue;
     }
     if (existing.hostname === hostname() && existing.pid === pid) {
@@ -112,7 +129,10 @@ export function claim({ dir, pid, agent, session, maxAgeHours }) {
     rmSync(path, { force: true });
     broke = { reason: decision.reason, previous: existing };
   }
-  return { ok: false, state: 'refused', path, holder: readRecord(path), reason: 'race-lost' };
+  const finalHolder = readRecordStable(path);
+  return finalHolder
+    ? { ok: false, state: 'refused', path, holder: finalHolder, reason: 'holder-alive' }
+    : { ok: false, state: 'refused', path, holder: null, reason: 'contended' };
 }
 
 export function release({ dir, pid }) {
@@ -129,8 +149,12 @@ export function release({ dir, pid }) {
 export function check({ dir, maxAgeHours }) {
   const realpath = canonicalDir(dir);
   const path = lockPathForRealpath(realpath);
-  const existing = readRecord(path);
-  if (!existing) return { state: 'free', path, realpath };
+  const existing = readRecordStable(path);
+  if (!existing) {
+    return existsSync(path)
+      ? { state: 'corrupt', path, realpath }
+      : { state: 'free', path, realpath };
+  }
   const sameHost = existing.hostname === hostname();
   return {
     state: 'held',

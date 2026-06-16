@@ -80,6 +80,38 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"reason": "foreign-host"'
 }
 
+@test "concurrent claimers on a free dir yield exactly one holder" {
+  local n=20
+  declare -a holders=()
+  for i in $(seq 1 $n); do
+    sleep 30 & holders+=($!)
+  done
+  local outdir="$BATS_TEST_TMPDIR/out"
+  mkdir -p "$outdir"
+  for i in $(seq 1 $n); do
+    ( dibs claim "$DIR" --pid "${holders[$((i - 1))]}" --agent "a$i" --json >/dev/null 2>&1; echo $? >"$outdir/$i.rc" ) &
+  done
+  wait
+  for h in "${holders[@]}"; do kill "$h" 2>/dev/null || true; done
+  local ok=0
+  for i in $(seq 1 $n); do
+    [ "$(cat "$outdir/$i.rc")" -eq 0 ] && ok=$((ok + 1))
+  done
+  [ "$ok" -eq 1 ]
+  [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
+}
+
+@test "a corrupt lock file is reported and taken over by the next claimer" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  printf 'not json{' > "$LAICLUSE_HOME"/locks/*.lock
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "corrupt"'
+  run dibs claim "$DIR" --pid $$ --agent codex --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"state": "took-over-stale"'
+  echo "$output" | grep -q '"reason": "corrupt"'
+}
+
 @test "an age-capped stale foreign lock can be taken over" {
   dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
   local lockpath
