@@ -1,0 +1,46 @@
+#!/usr/bin/env bats
+# Contract tests for bin/dibs release: only the holder may release.
+
+setup() {
+  REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
+  DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
+  NODE_BIN="$(command -v node)"
+  export LAICLUSE_HOME="$BATS_TEST_TMPDIR/laicluse"
+  DIR="$BATS_TEST_TMPDIR/work"
+  mkdir -p "$DIR"
+}
+
+dibs() { "$NODE_BIN" "$DIBS" "$@"; }
+
+@test "the holder can release and the lock file is removed" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  run dibs release "$DIR" --pid $$
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -qi "released"
+  [ "$(ls "$LAICLUSE_HOME/locks" 2>/dev/null | wc -l)" -eq 0 ]
+}
+
+@test "release on an unheld dir is a no-op with success" {
+  run dibs release "$DIR" --pid $$
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -qi "not held"
+}
+
+@test "release by a non-holder is refused and leaves the lock in place" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  sleep 120 & local other=$!
+  run dibs release "$DIR" --pid "$other"
+  kill "$other" 2>/dev/null || true
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi "held by claude"
+  [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
+}
+
+@test "release by non-holder under --json reports held-by-other" {
+  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  sleep 120 & local other=$!
+  run dibs release "$DIR" --pid "$other" --json
+  kill "$other" 2>/dev/null || true
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q '"state": "held-by-other"'
+}
