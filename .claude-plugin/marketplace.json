@@ -18,6 +18,11 @@
       "source": "./packages/bonsai"
     },
     {
+      "name": "dibs",
+      "description": "Single-occupancy lock for a working directory: a vendor-neutral, cross-platform CLI so only one coding agent occupies a directory at a time. claim/release/check on an atomic exclusive-create lockfile keyed by realpath, with pid-based liveness that self-heals a dead holder and respects a live one. No flock, no native dependency. bonsai and the discipline hooks consume it.",
+      "source": "./packages/dibs"
+    },
+    {
       "name": "self-improvement",
       "description": "Routes user feedback about agent behavior to the strongest durable target: hooks, skills, project code, or instruction files.",
       "source": "./packages/self-improvement"

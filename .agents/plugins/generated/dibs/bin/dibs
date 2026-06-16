@@ -1,0 +1,105 @@
+#!/usr/bin/env node
+import { parseArgs } from 'node:util';
+import { claim, release, check } from './dibs-lib.mjs';
+
+const USAGE = `usage: dibs <command> <dir> [options]
+
+commands:
+  claim <dir>     take exclusive occupancy of a directory (refused if a live holder exists)
+  release <dir>   release a directory you hold
+  check <dir>     report whether a directory is free or who holds it
+
+options:
+  --pid <n>            holder pid to record/match (default: the calling process's parent pid)
+  --agent <name>       label the holder (e.g. claude, codex)
+  --session <id>       holder session id
+  --max-age-hours <n>  treat a lock older than this as breakable (last-resort cap)
+  --json               machine-readable output
+
+run 'dibs --help' for this message`;
+
+const [, , command, ...rest] = process.argv;
+
+if (!command || command === '--help' || command === '-h') {
+  console.log(USAGE);
+  process.exit(command ? 0 : 2);
+}
+
+let wantJson = false;
+
+function die(message) {
+  if (wantJson) console.error(JSON.stringify({ error: message }));
+  else console.error(`dibs: ${message}`);
+  process.exit(1);
+}
+
+function parse(args) {
+  return parseArgs({
+    args,
+    allowPositionals: true,
+    options: {
+      pid: { type: 'string' },
+      agent: { type: 'string' },
+      session: { type: 'string' },
+      'max-age-hours': { type: 'string' },
+      json: { type: 'boolean', default: false },
+    },
+  });
+}
+
+function holderLine(h) {
+  return `held by ${h.agent} (pid ${h.pid}) since ${h.acquiredAt}`;
+}
+
+if (!['claim', 'release', 'check'].includes(command)) {
+  die(`unknown command: ${command}`);
+}
+
+let values;
+let positionals;
+try {
+  ({ values, positionals } = parse(rest));
+} catch (err) {
+  die(err.message);
+}
+wantJson = values.json;
+
+const dir = positionals[0];
+if (!dir) die(`${command} needs a directory path`);
+
+const pid = values.pid !== undefined ? Number(values.pid) : process.ppid;
+if (!Number.isInteger(pid) || pid <= 0) die(`invalid --pid ${JSON.stringify(values.pid)}`);
+const maxAgeHours = values['max-age-hours'] !== undefined ? Number(values['max-age-hours']) : undefined;
+if (maxAgeHours !== undefined && (Number.isNaN(maxAgeHours) || maxAgeHours < 0)) {
+  die(`invalid --max-age-hours ${JSON.stringify(values['max-age-hours'])}`);
+}
+
+function emit(result, human, exitCode = 0) {
+  if (wantJson) console.log(JSON.stringify(result, null, 2));
+  else console.log(human);
+  process.exit(exitCode);
+}
+
+try {
+  if (command === 'claim') {
+    const result = claim({ dir, pid, agent: values.agent, session: values.session, maxAgeHours });
+    if (result.state === 'claimed') emit(result, `claimed ${result.holder.realpath} (pid ${pid}${values.agent ? `, agent ${values.agent}` : ''})`);
+    else if (result.state === 'held-by-self') emit(result, `already held by you (pid ${pid})`);
+    else if (result.state === 'took-over-stale') emit(result, `took over stale lock on ${result.holder.realpath} (previous ${result.brokeStale.reason}); now held (pid ${pid})`);
+    else emit(result, `refused: ${holderLine(result.holder)}`, 1);
+  } else if (command === 'release') {
+    const result = release({ dir, pid });
+    if (result.state === 'released') emit(result, `released ${result.holder.realpath}`);
+    else if (result.state === 'not-held') emit(result, 'not held; nothing to release');
+    else emit(result, `refused: ${holderLine(result.holder)}`, 1);
+  } else {
+    const result = check({ dir, maxAgeHours });
+    if (result.state === 'free') emit(result, `free: ${result.realpath}`);
+    else {
+      const liveness = result.sameHost ? (result.alive ? 'alive' : 'dead') : 'foreign-host';
+      emit(result, `${holderLine(result.holder)} [${liveness}${result.stale ? ', stale' : ''}]`);
+    }
+  }
+} catch (err) {
+  die(err.message);
+}
