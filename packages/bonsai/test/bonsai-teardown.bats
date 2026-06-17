@@ -98,10 +98,13 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
 
   run bonsai teardown merged-wt --repo "$FIX" --dry-run --json
   [ "$status" -eq 0 ]
+  # Against origin/main the branch is a clean ancestor, so it is removable; against the
+  # stale+stray local main (the old behaviour) it would be refused. removable:true is the
+  # discriminator that integration was judged against the remote ref.
   echo "$output" | grep -q '"removable": true'
   ! echo "$output" | grep -qiE 'orphan|unpushed'
-  # The behind-warning names origin/main, proving integration was judged against the remote ref.
-  echo "$output" | grep -q 'origin/main advanced'
+  # An already-integrated, removable worktree gets no "rebase before wrap" advice.
+  ! echo "$output" | grep -qiE 'advanced|rebase'
 }
 
 @test "teardown removes a branch merged into local default when origin trails" {

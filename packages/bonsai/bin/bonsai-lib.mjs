@@ -281,7 +281,7 @@ export function classifyTeardown({ repo, target }) {
   const removable = integrated || (!dirty && ahead === 0);
   const warnings = [];
   if (!integrated && ahead > 0 && !pushed) warnings.push(`${ahead} unpushed commit(s) ahead of ${base} would be orphaned by removal`);
-  if (behind > 0) warnings.push(`${base} advanced by ${behind} commit(s) since this branch; rebase before wrap`);
+  if (!integrated && behind > 0) warnings.push(`${base} advanced by ${behind} commit(s) since this branch; rebase before wrap`);
   if (dirty) warnings.push('worktree has uncommitted changes');
   if (branch && worktrees.filter((w) => w.branch === branch).length > 1) {
     warnings.push(`branch ${branch} is checked out in more than one worktree`);
