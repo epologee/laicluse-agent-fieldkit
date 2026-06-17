@@ -31,7 +31,7 @@ The file has four parts:
 - `contracts`: the payload each guard can inspect. `tool-call` is the pending tool invocation before it runs (PreToolUse), `persisted-edit` is file content or a shell command after it is applied (PostToolUse), `final-answer` is the assistant's final-turn text (Stop).
 - `events`: each hook event and the contracts it `provides`. This is what makes placement checkable: a guard can only move to an event that carries the data it reads.
 - `lanes`: the execution groups the dispatcher runs. Each lane names its `event`, the `tools` it matches, an output `mode` (`deny`, `context`, or `block`), and a `dispatch` style (`direct` lets a guard exit the process to block; `capture` runs each guard in a subshell and emits the first non-empty output). The Stop lanes split into `stop-tracked` (false-claims, tool-error, always run, keep their own line trackers) and `stop-mutex` (skipped once a prior Stop fire already blocked).
-- `guards`: every guard, keyed by the id that appears in its `[dont-do-that/<id>]` mnemonic, with its `lane`, `order` within the lane, `function` name, the `contract` it inspects, and an `agents` policy map. An agent absent from the map defaults to `enabled`, so a guard with no explicit policy and any future agent run the full stack; only an explicit `disabled` removes a guard for one agent.
+- `guards`: every guard, keyed by the guard id (its `hooks/guards/<id>.sh` filename, usually but not always matching its `[dont-do-that/...]` mnemonic prefix; `false-claims` emits `[dont-do-that/pre-existing]`, for example), with its `lane`, `order` within the lane, `function` name, the `contract` it inspects, and an `agents` policy map. An agent absent from the map defaults to `enabled`, so a guard with no explicit policy and any future agent run the full stack; only an explicit `disabled` removes a guard for one agent.
 
 Example: `premature` runs on Stop for Claude but not Codex.
 
@@ -53,7 +53,18 @@ bash packages/dont-do-that/bin/validate-registry
 
 If `guards.json` is missing or not valid JSON, the dispatcher fails closed on PreToolUse: it denies the tool call with a `[dont-do-that/registry]` message instead of silently running no guards, so a corrupt registry cannot disarm the safety gates unnoticed. The PostToolUse and Stop lanes (context and nudge output, not irreversible-action gates) stay quiet in that state; the PreToolUse denial surfaces the problem on the next tool call regardless.
 
-After editing the registry, run `bin/plugin-adapters build .` so the generated Codex adapter picks up the new `guards.json` and any manifest change.
+After editing the registry, run `bin/plugin-adapters build .` so the generated Codex adapter picks up the new `guards.json` and any manifest change. To verify an edit took effect without writing anything, `bin/plugin-adapters check .` reports drift read-only (it is what CI and a pre-commit check would run); `build` is only needed when `check` reports the adapter is behind.
+
+### Adding a new guard
+
+A registry entry is only half of a guard; it also needs a backing script. To add a guard with id `<id>`:
+
+1. Write `hooks/guards/<id>.sh` defining a shell function `guard_<id>()` that reads the hook JSON on `$1` and, when it fires, calls one of the `dd_emit_*` helpers from `hooks/lib/common.sh` (`dd_emit_deny` to block a PreToolUse tool, `dd_emit_context` to surface PostToolUse context, `dd_emit_block` to block a Stop) with the `<id>` mnemonic.
+2. Register it in `guards.json`: pick a `lane` whose `event` provides the `contract` your guard inspects, give it a unique `order` within that lane, name its `function`, and set an `agents` policy (omit an agent to default it to `enabled`).
+3. Run `bash bin/validate-registry` to confirm the placement and the script-and-function binding.
+4. Run `bin/plugin-adapters build .` to sync the Codex adapter.
+
+The validator refuses a registry entry with no backing `hooks/guards/<id>.sh` or whose script does not define the named `function`, so a typo surfaces before the dispatcher ever sources it.
 
 Every user-visible hook message begins with the mnemonic prefix `[dont-do-that/<code>] `. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or `hooks/guards/<code>.sh`.
 
