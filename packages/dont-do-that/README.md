@@ -64,8 +64,6 @@ A registry entry is only half of a guard; it also needs a backing script. To add
 3. Run `bash bin/validate-registry` to confirm the placement and the script-and-function binding.
 4. Run `bin/plugin-adapters build .` to sync the Codex adapter.
 
-The validator refuses a registry entry with no backing `hooks/guards/<id>.sh` or whose script does not define the named `function`, so a typo surfaces before the dispatcher ever sources it.
-
 Every user-visible hook message begins with the mnemonic prefix `[dont-do-that/<code>] `. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or `hooks/guards/<code>.sh`.
 
 ## Codes and guards

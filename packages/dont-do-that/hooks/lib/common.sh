@@ -215,13 +215,9 @@ dd_guard_enabled() {
   dd_guard_list_has "$only" "$guard"
 }
 
-# hooks/guards.json is the source of truth for which guard runs on which lane for which agent. allow-comment: documents the registry contract these helpers implement.
-dd_common_dir() {
-  cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
-}
-
+# hooks/guards.json is the source of truth for which guard runs on which lane for which agent; DD_REGISTRY overrides it for tests. allow-comment: BASH_SOURCE[0] resolves to common.sh so the registry path stays anchored to the plugin regardless of caller cwd.
 dd_registry_file() {
-  printf '%s\n' "${DD_REGISTRY:-$(dd_common_dir)/../guards.json}"
+  printf '%s\n' "${DD_REGISTRY:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../guards.json}"
 }
 
 # dd_registry_readable: 0 when the registry exists and parses as JSON, else 1. allow-comment: lets the dispatcher fail closed on the PreToolUse safety gates instead of silently running no guards when guards.json is missing or corrupt.
