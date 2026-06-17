@@ -8,14 +8,50 @@ barreling past the issue.
 Claude Code receives the full hook stack. Codex receives the same event layers
 through the explicit `hooks/hooks.codex.json` source, materialized by
 `bin/plugin-adapters build` as `hooks/hooks.json` in the generated Codex adapter
-package. Codex skips only the `premature` Stop guard because that guard creates
-a nudge turn after otherwise-complete answers, which can replace the completed
-assistant message in the Mac app. The operator correction skills (`/duh` and
-`/just-a-question`) ship to both agents.
+package. Which guard runs on which event for which agent is decided by the guard
+registry (`hooks/guards.json`), not by the dispatcher or bespoke per-manifest
+shell variables. Codex skips only the `premature` Stop guard, because that guard
+creates a nudge turn after otherwise-complete answers, which can replace the
+completed assistant message in the Mac app; the registry records that as
+`premature.agents.codex: disabled` while every other Stop guard still runs for
+Codex. The manifests tell the dispatcher who they are with `DD_AGENT=claude` and
+`DD_AGENT=codex`; the registry resolves the rest. The operator correction skills
+(`/duh` and `/just-a-question`) ship to both agents.
 
 ## Architecture
 
-One dispatcher, `hooks/dispatch.sh`, is registered against PreToolUse (shell and file-edit matchers), PostToolUse (shell and file-edit matchers), and Stop. Claude file edits arrive as `Edit` / `Write` / `MultiEdit`; Codex patches arrive as `apply_patch`. The dispatcher reads stdin once, extracts `hook_event_name`, and routes to the matching guard set. Guards live under `hooks/guards/` as sourced functions, shared helpers under `hooks/lib/common.sh`. No external script runs per guard. Hook manifests can set `DD_SKIP_GUARDS`, `DD_ONLY_GUARDS`, or event-specific variants such as `DD_SKIP_STOP_GUARDS` to make an individual guard agent-specific without copying the dispatcher.
+One dispatcher, `hooks/dispatch.sh`, is registered against PreToolUse (shell and file-edit matchers), PostToolUse (shell and file-edit matchers), and Stop. Claude file edits arrive as `Edit` / `Write` / `MultiEdit`; Codex patches arrive as `apply_patch`. The dispatcher reads stdin once, extracts `hook_event_name` and `tool_name`, picks the matching lane, and then reads the ordered, agent-filtered guard list for that lane from the registry (`hooks/guards.json`) rather than enumerating guards itself. Guards live under `hooks/guards/` as sourced functions, shared helpers under `hooks/lib/common.sh`. No external script runs per guard. For a one-off manual silence the dispatcher still honours `DD_SKIP_GUARDS`, `DD_ONLY_GUARDS`, and event-specific variants such as `DD_SKIP_STOP_GUARDS` as a secondary gate, but durable agent/event policy belongs in the registry, not in a shell variable.
+
+## Guard registry
+
+`hooks/guards.json` is the source of truth for which guard runs on which hook event for which agent. The dispatcher generates its per-lane guard list from it at runtime (a single `jq` read; `jq` is already a hard dependency of every guard), so adding, reordering, or re-scoping a guard is a registry edit, not a dispatcher edit.
+
+The file has four parts:
+
+- `contracts`: the payload each guard can inspect. `tool-call` is the pending tool invocation before it runs (PreToolUse), `persisted-edit` is file content or a shell command after it is applied (PostToolUse), `final-answer` is the assistant's final-turn text (Stop).
+- `events`: each hook event and the contracts it `provides`. This is what makes placement checkable: a guard can only move to an event that carries the data it reads.
+- `lanes`: the execution groups the dispatcher runs. Each lane names its `event`, the `tools` it matches, an output `mode` (`deny`, `context`, or `block`), and a `dispatch` style (`direct` lets a guard exit the process to block; `capture` runs each guard in a subshell and emits the first non-empty output). The Stop lanes split into `stop-tracked` (false-claims, tool-error, always run, keep their own line trackers) and `stop-mutex` (skipped once a prior Stop fire already blocked).
+- `guards`: every guard, keyed by the id that appears in its `[dont-do-that/<id>]` mnemonic, with its `lane`, `order` within the lane, `function` name, the `contract` it inspects, and an `agents` policy map. An agent absent from the map defaults to `enabled`, so a guard with no explicit policy and any future agent run the full stack; only an explicit `disabled` removes a guard for one agent.
+
+Example: `premature` runs on Stop for Claude but not Codex.
+
+```json
+"premature": {
+  "lane": "stop-mutex",
+  "order": 40,
+  "function": "guard_premature",
+  "contract": "final-answer",
+  "agents": { "claude": "enabled", "codex": "disabled" }
+}
+```
+
+A guard cannot move to an event whose contract it does not read: `premature` inspects `final-answer`, which only `Stop` provides, so placing it on a PostToolUse lane is rejected. `bin/validate-registry` enforces this and the rest of the schema (known lane, known contract, the lane event provides the guard's contract, agent values limited to `enabled`/`disabled`, unique order within a lane). Run it after any registry edit:
+
+```bash
+bash packages/dont-do-that/bin/validate-registry
+```
+
+After editing the registry, run `bin/plugin-adapters build .` so the generated Codex adapter picks up the new `guards.json` and any manifest change.
 
 Every user-visible hook message begins with the mnemonic prefix `[dont-do-that/<code>] `. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or `hooks/guards/<code>.sh`.
 
@@ -95,7 +131,7 @@ codex plugin add dont-do-that@laicluse-agent-fieldkit
 
 ## Disabling individual guards
 
-The dispatcher always runs, but individual guards fire based on the message content. To silence one guard without removing the plugin, edit `hooks/dispatch.sh` in your install and comment out the matching `source` / `guard_<name>` line. To silence the plugin entirely, uninstall:
+The dispatcher always runs, but individual guards fire based on the message content. To silence one guard for an agent durably, set that guard's `agents.<agent>` to `disabled` in `hooks/guards.json` and run `bin/plugin-adapters build .`. For a one-off silence in your own install, set `DD_SKIP_GUARDS=<id>` (or the event-specific `DD_SKIP_STOP_GUARDS=<id>`) on the dispatcher command in your hook manifest. To silence the plugin entirely, uninstall:
 
 ```bash
 claude plugins uninstall dont-do-that@laicluse-agent-fieldkit
