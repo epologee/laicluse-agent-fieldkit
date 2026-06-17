@@ -88,7 +88,10 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   git -C "$FIX" commit -q --allow-empty -m "later main work"
   git -C "$FIX" push -q origin main
 
-  # Local main goes stale: reset behind the merge, add a stray local-only commit.
+  # Local main is rewound behind the merge (the merge commit now lives only on
+  # origin/main) and carries a stray local-only commit. Integration is therefore
+  # provable only against origin/main, and resolveBase (local is 1-ahead) would
+  # still pick the stale local ref.
   git -C "$FIX" reset -q --hard "$base_sha"
   git -C "$FIX" commit -q --allow-empty -m "Safety baseline"
   git -C "$FIX" fetch -q origin
@@ -128,4 +131,6 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"removable": true'
   ! echo "$output" | grep -qiE 'orphan|unpushed'
+  # Integrated via local default, so no orphan and no rebase advice.
+  ! echo "$output" | grep -qiE 'advanced|rebase'
 }

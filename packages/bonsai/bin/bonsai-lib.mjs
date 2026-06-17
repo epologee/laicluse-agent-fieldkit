@@ -271,10 +271,9 @@ export function classifyTeardown({ repo, target }) {
   const def = defaultBranch(repo);
   const base = integrationBase(repo, def);
   const dirty = git(worktree, ['status', '--porcelain']).trim().length > 0;
-  // allow-comment: integrated when merged into EITHER the shared (origin) or the local default; removing then orphans nothing. Judging against origin alone would refuse a branch merged only locally while origin trails (the local-first merge-then-prune flow).
-  const integrated = base && branch
-    ? isAncestor(repo, branch, base) || (base !== def && isAncestor(repo, branch, def))
-    : false;
+  const mergedIntoBase = base && branch ? isAncestor(repo, branch, base) : false;
+  const mergedIntoLocalDefault = base !== def && branch ? isAncestor(repo, branch, def) : false;
+  const integrated = mergedIntoBase || mergedIntoLocalDefault;
   const ahead = base && branch ? countRange(repo, `${base}..${branch}`) : 0;
   const behind = base && branch ? countRange(repo, `${branch}..${base}`) : 0;
   const pushed = branch ? branchPushed(repo, branch) : false;
