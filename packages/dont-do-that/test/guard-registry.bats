@@ -72,6 +72,25 @@ posttool_edit() {
   [ "$status" -eq 0 ]
 }
 
+@test "registry order wins within a lane: dash (order 10) beats land (order 20)" {
+  emdash="$(printf '\xe2\x80\x94')"
+  payload="$(posttool_edit "/tmp/x.md" "We land the change ${emdash} here")"
+  run bash -c 'printf "%s" "$1" | bash "$2"' _ "$payload" "$DISPATCH"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"[dont-do-that/dash]"* ]]
+  [[ "$output" != *"[dont-do-that/land]"* ]]
+}
+
+@test "Stop lanes fail open on a corrupt registry (deliberate asymmetry vs PreToolUse)" {
+  tmp="$(mktemp)"
+  printf '%s' '{ "guards": {' > "$tmp"
+  payload="$(stop_payload "Klaar 🏁")"
+  run bash -c 'printf "%s" "$1" | DD_REGISTRY="$3" bash "$2"' _ "$payload" "$DISPATCH" "$tmp"
+  rm -f "$tmp"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
 @test "registry guard count matches guards/*.sh files" {
   reg=$(jq -r '.guards | length' "$REGISTRY")
   files=$(find "$DDROOT/hooks/guards" -name '*.sh' | wc -l | tr -d ' ')

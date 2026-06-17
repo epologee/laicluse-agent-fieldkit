@@ -7,8 +7,18 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DISPATCH="${SCRIPT_DIR}/../hooks/dispatch.sh"
+VALIDATE="${SCRIPT_DIR}/../bin/validate-registry"
 PASS=0
 FAIL=0
+
+# allow-comment: the registry drives the dispatcher, so a broken guards.json invalidates every case below; validate it first as a hard precondition of the suite.
+if bash "$VALIDATE" >/dev/null 2>&1; then
+  PASS=$((PASS + 1))
+else
+  echo "FAIL [registry invalid]: bin/validate-registry exited non-zero"
+  bash "$VALIDATE" 2>&1 | sed 's/^/  /'
+  FAIL=$((FAIL + 1))
+fi
 
 stop_payload() {
   local text="$1" active="${2:-false}"
