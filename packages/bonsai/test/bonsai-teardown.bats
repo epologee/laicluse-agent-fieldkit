@@ -103,3 +103,26 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   # The behind-warning names origin/main, proving integration was judged against the remote ref.
   echo "$output" | grep -q 'origin/main advanced'
 }
+
+@test "teardown removes a branch merged into local default when origin trails" {
+  # Inverse skew: the branch is merged into LOCAL main (fast-forward) but origin/main
+  # has not advanced, so origin lacks the work. Judging against origin alone would
+  # refuse this removable, locally-merged worktree; judging against either default removes it.
+  ORIGIN="$BATS_TEST_TMPDIR/origin.git"
+  git init -q --bare -b main "$ORIGIN"
+  git -C "$FIX" remote add origin "$ORIGIN"
+  git -C "$FIX" push -q origin main
+
+  bonsai create local-wt --repo "$FIX" --json
+  git -C "$FIX/worktrees/local-wt" commit -q --allow-empty -m "feature work"
+  git -C "$FIX" merge -q --ff-only local-wt
+  git -C "$FIX" fetch -q origin
+
+  # Local main contains the branch and is ahead of the trailing origin/main.
+  [ "$(git -C "$FIX" rev-list --count origin/main..main)" -gt 0 ]
+
+  run bonsai teardown local-wt --repo "$FIX" --dry-run --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"removable": true'
+  ! echo "$output" | grep -qiE 'orphan|unpushed'
+}

@@ -268,15 +268,19 @@ export function classifyTeardown({ repo, target }) {
     || worktrees.find((w) => canonPath(w.path) === guess);
   if (!entry) throw new Error(`no worktree or branch matching ${target} in ${repo}`);
   const { path: worktree, branch } = entry;
-  const base = integrationBase(repo, defaultBranch(repo));
+  const def = defaultBranch(repo);
+  const base = integrationBase(repo, def);
   const dirty = git(worktree, ['status', '--porcelain']).trim().length > 0;
-  const integrated = base && branch ? isAncestor(repo, branch, base) : false;
+  // allow-comment: integrated when merged into EITHER the shared (origin) or the local default; removing then orphans nothing. Judging against origin alone would refuse a branch merged only locally while origin trails (the local-first merge-then-prune flow).
+  const integrated = base && branch
+    ? isAncestor(repo, branch, base) || (base !== def && isAncestor(repo, branch, def))
+    : false;
   const ahead = base && branch ? countRange(repo, `${base}..${branch}`) : 0;
   const behind = base && branch ? countRange(repo, `${branch}..${base}`) : 0;
   const pushed = branch ? branchPushed(repo, branch) : false;
   const removable = integrated || (!dirty && ahead === 0);
   const warnings = [];
-  if (ahead > 0 && !pushed) warnings.push(`${ahead} unpushed commit(s) ahead of ${base} would be orphaned by removal`);
+  if (!integrated && ahead > 0 && !pushed) warnings.push(`${ahead} unpushed commit(s) ahead of ${base} would be orphaned by removal`);
   if (behind > 0) warnings.push(`${base} advanced by ${behind} commit(s) since this branch; rebase before wrap`);
   if (dirty) warnings.push('worktree has uncommitted changes');
   if (branch && worktrees.filter((w) => w.branch === branch).length > 1) {
