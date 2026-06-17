@@ -1,5 +1,5 @@
 {
-  "$comment": "Source of truth for which dont-do-that guard runs on which hook event for which agent. dispatch.sh reads guard membership and order from here; bin/validate-registry checks it. Edit this file, then run bin/plugin-adapters build . to sync the Codex adapter.",
+  "$comment": "Source of truth for which dont-do-that guard runs on which hook event for which agent. dispatch.sh reads guard membership and order from here. After editing, run bin/validate-registry to check the schema and placements, then bin/plugin-adapters build . to sync the Codex adapter.",
   "contracts": {
     "tool-call": "The pending tool invocation (shell command, apply_patch, or file-edit arguments) inspected before it is applied.",
     "persisted-edit": "File content or shell command inspected after a write/edit has been applied.",

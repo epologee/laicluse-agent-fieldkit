@@ -82,5 +82,22 @@ if [ -n "$dupes" ]; then
   exit 1
 fi
 
+guards_dir="$SCRIPT_DIR/../hooks/guards"
+missing=""
+while IFS=$'\t' read -r id fn; do
+  script="$guards_dir/$id.sh"
+  if [ ! -f "$script" ]; then
+    missing="${missing}  - guard ${id}: no backing script at hooks/guards/${id}.sh\n"
+  elif ! grep -qE "^${fn} *\(\)" "$script"; then
+    missing="${missing}  - guard ${id}: hooks/guards/${id}.sh does not define ${fn}()\n"
+  fi
+done < <(jq -r '.guards | to_entries[] | "\(.key)\t\(.value.function)"' "$REGISTRY")
+
+if [ -n "$missing" ]; then
+  printf 'validate-registry: %s references guards without a backing script:\n' "$REGISTRY" >&2
+  printf "$missing" >&2
+  exit 1
+fi
+
 guard_count=$(jq -r '.guards | length' "$REGISTRY")
 printf 'validate-registry: %s ok (%s guards)\n' "$REGISTRY" "$guard_count"

@@ -40,6 +40,38 @@ posttool_edit() {
   [[ "$output" == *"enabled or disabled"* ]]
 }
 
+@test "validator rejects a guard with no backing script" {
+  tmp="$(mktemp)"
+  jq '.guards.ghost = {lane:"stop-mutex", order:99, function:"guard_ghost", contract:"final-answer", agents:{}}' "$REGISTRY" > "$tmp"
+  run bash "$VALIDATE" "$tmp"
+  rm -f "$tmp"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"ghost"* ]]
+}
+
+@test "PreToolUse fails closed when the registry is missing" {
+  payload="$(jq -cn '{hook_event_name:"PreToolUse", tool_name:"Bash", tool_input:{command:"echo hi"}}')"
+  run bash -c 'printf "%s" "$1" | DD_REGISTRY=/nonexistent/guards.json bash "$2"' _ "$payload" "$DISPATCH"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"[dont-do-that/registry]"* ]]
+}
+
+@test "PreToolUse fails closed when the registry is malformed" {
+  tmp="$(mktemp)"
+  printf '%s' '{ "guards": {' > "$tmp"
+  payload="$(jq -cn '{hook_event_name:"PreToolUse", tool_name:"Bash", tool_input:{command:"echo hi"}}')"
+  run bash -c 'printf "%s" "$1" | DD_REGISTRY="$3" bash "$2"' _ "$payload" "$DISPATCH" "$tmp"
+  rm -f "$tmp"
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"[dont-do-that/registry]"* ]]
+}
+
+@test "PreToolUse passes through when the registry is valid" {
+  payload="$(jq -cn '{hook_event_name:"PreToolUse", tool_name:"Bash", tool_input:{command:"echo hi"}}')"
+  run bash -c 'printf "%s" "$1" | bash "$2"' _ "$payload" "$DISPATCH"
+  [ "$status" -eq 0 ]
+}
+
 @test "registry guard count matches guards/*.sh files" {
   reg=$(jq -r '.guards | length' "$REGISTRY")
   files=$(find "$DDROOT/hooks/guards" -name '*.sh' | wc -l | tr -d ' ')

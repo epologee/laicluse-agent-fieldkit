@@ -45,11 +45,13 @@ Example: `premature` runs on Stop for Claude but not Codex.
 }
 ```
 
-A guard cannot move to an event whose contract it does not read: `premature` inspects `final-answer`, which only `Stop` provides, so placing it on a PostToolUse lane is rejected. `bin/validate-registry` enforces this and the rest of the schema (known lane, known contract, the lane event provides the guard's contract, agent values limited to `enabled`/`disabled`, unique order within a lane). Run it after any registry edit:
+A guard cannot move to an event whose contract it does not read: `premature` inspects `final-answer`, which only `Stop` provides, so placing it on a PostToolUse lane is rejected. `bin/validate-registry` enforces this and the rest of the schema (known lane, known contract, the lane event provides the guard's contract, agent values limited to `enabled`/`disabled`, unique order within a lane, and every guard backed by a `hooks/guards/<id>.sh` that defines its `function`). Run it after any registry edit:
 
 ```bash
 bash packages/dont-do-that/bin/validate-registry
 ```
+
+If `guards.json` is missing or not valid JSON, the dispatcher fails closed on PreToolUse: it denies the tool call with a `[dont-do-that/registry]` message instead of silently running no guards, so a corrupt registry cannot disarm the safety gates unnoticed. The PostToolUse and Stop lanes (context and nudge output, not irreversible-action gates) stay quiet in that state; the PreToolUse denial surfaces the problem on the next tool call regardless.
 
 After editing the registry, run `bin/plugin-adapters build .` so the generated Codex adapter picks up the new `guards.json` and any manifest change.
 

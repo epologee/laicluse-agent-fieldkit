@@ -221,7 +221,15 @@ dd_common_dir() {
 }
 
 dd_registry_file() {
-  printf '%s/../guards.json\n' "$(dd_common_dir)"
+  printf '%s\n' "${DD_REGISTRY:-$(dd_common_dir)/../guards.json}"
+}
+
+# dd_registry_readable: 0 when the registry exists and parses as JSON, else 1. allow-comment: lets the dispatcher fail closed on the PreToolUse safety gates instead of silently running no guards when guards.json is missing or corrupt.
+dd_registry_readable() {
+  local registry
+  registry="$(dd_registry_file)"
+  [ -f "$registry" ] || return 1
+  jq -e . "$registry" >/dev/null 2>&1
 }
 
 # dd_agent defaults to claude so a direct dispatch run and any manifest without DD_AGENT run the full stack. allow-comment: the default is load-bearing, not decorative.

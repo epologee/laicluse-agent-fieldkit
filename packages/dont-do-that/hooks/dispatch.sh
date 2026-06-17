@@ -20,13 +20,13 @@ run_direct_lane() {
 
 # run_capture_lane <lane> <event>: each guard runs in a subshell, first non-empty stdout wins and is emitted with exit 0, but every guard still runs so per-session line trackers update on each fire. allow-comment: preserves the independent lifecycles of dash/land and false-claims/tool-error.
 run_capture_lane() {
-  local lane="$1" event="$2" id fn out="" o
+  local lane="$1" event="$2" id fn out="" emitted
   while IFS=$'\t' read -r id fn; do
     [ -n "$id" ] || continue
     dd_guard_enabled "$id" "$event" || continue
     source "$DIR/guards/$id.sh"
-    o=$( "$fn" "$INPUT" )
-    [ -z "$out" ] && out="$o"
+    emitted=$( "$fn" "$INPUT" )
+    [ -z "$out" ] && out="$emitted"
   done < <(dd_registry_lane_guards "$lane")
   if [ -n "$out" ]; then
     echo "$out"
@@ -37,6 +37,8 @@ run_capture_lane() {
 case "$EVENT" in
   PreToolUse)
     TOOL=$(dd_tool_name "$INPUT")
+    # allow-comment: fail closed so a missing or corrupt guards.json cannot silently disarm the PreToolUse safety gates; the manifest only routes edit/shell tools to this hook.
+    dd_registry_readable || dd_emit_deny registry "guards.json missing or not valid JSON; refusing the tool call until the registry is restored (run bin/validate-registry)"
     case "$TOOL" in
       Bash)
         run_direct_lane pre-bash PreToolUse
