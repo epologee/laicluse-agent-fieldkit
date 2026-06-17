@@ -29,6 +29,18 @@
       "category": "Productivity"
     },
     {
+      "name": "dibs",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/dibs"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
       "name": "self-improvement",
       "source": {
         "source": "local",

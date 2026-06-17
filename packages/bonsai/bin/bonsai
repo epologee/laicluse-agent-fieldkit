@@ -53,8 +53,9 @@ if (command === 'create') {
   if (!branch) die('create needs a branch name');
   const repo = values.repo || process.cwd();
   try {
-    const result = createWorktree({ repo, branch, base: values.base, dir: values.dir });
-    out(values.json, result, `worktree ready at ${result.worktree} (branch ${result.branch}, dev port ${result.port})`);
+    const result = await createWorktree({ repo, branch, base: values.base, dir: values.dir });
+    const lockNote = result.lock && result.lock.warning ? ` [lock: ${result.lock.warning}]` : '';
+    out(values.json, result, `worktree ready at ${result.worktree} (branch ${result.branch}, dev port ${result.port})${lockNote}`);
   } catch (err) {
     die(err.message);
   }

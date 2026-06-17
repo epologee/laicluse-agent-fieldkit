@@ -1,0 +1,26 @@
+{
+  "name": "dibs",
+  "version": "2.0.8",
+  "description": "Single-occupancy lock for a working directory: a vendor-neutral, cross-platform CLI so only one coding agent occupies a directory at a time. claim/release/check on an atomic exclusive-create lockfile keyed by realpath, with pid-based liveness that self-heals a dead holder and respects a live one. No flock, no native dependency. bonsai and the discipline hooks consume it.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "dibs"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Dibs",
+    "shortDescription": "Single-occupancy lock for a working directory: a vendor-neutral, cross-platform CLI so only one coding agent occupies...",
+    "longDescription": "Single-occupancy lock for a working directory: a vendor-neutral, cross-platform CLI so only one coding agent occupies a directory at a time. claim/release/check on an atomic exclusive-create lockfile keyed by realpath, with pid-based liveness that self-heals a dead holder and respects a live one. No flock, no native dependency. bonsai and the discipline hooks consume it.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Dibs plugin."
+    ]
+  }
+}
