@@ -199,6 +199,12 @@ export function defaultBranch(repo) {
   return null;
 }
 
+// allow-comment: deliberately NOT resolveBase; resolveBase keeps the local ref unless origin is strictly ahead, which a stray local-ahead commit defeats, letting an already-merged branch read as unmerged at teardown.
+function integrationBase(repo, def) {
+  if (!def) return null;
+  return refExists(repo, `refs/remotes/origin/${def}`) ? `origin/${def}` : def;
+}
+
 function parseWorktrees(repo) {
   const out = git(repo, ['worktree', 'list', '--porcelain']);
   const entries = [];
@@ -262,16 +268,16 @@ export function classifyTeardown({ repo, target }) {
     || worktrees.find((w) => canonPath(w.path) === guess);
   if (!entry) throw new Error(`no worktree or branch matching ${target} in ${repo}`);
   const { path: worktree, branch } = entry;
-  const def = defaultBranch(repo);
+  const base = integrationBase(repo, defaultBranch(repo));
   const dirty = git(worktree, ['status', '--porcelain']).trim().length > 0;
-  const integrated = def && branch ? isAncestor(repo, branch, def) : false;
-  const ahead = def && branch ? countRange(repo, `${def}..${branch}`) : 0;
-  const behind = def && branch ? countRange(repo, `${branch}..${def}`) : 0;
+  const integrated = base && branch ? isAncestor(repo, branch, base) : false;
+  const ahead = base && branch ? countRange(repo, `${base}..${branch}`) : 0;
+  const behind = base && branch ? countRange(repo, `${branch}..${base}`) : 0;
   const pushed = branch ? branchPushed(repo, branch) : false;
   const removable = integrated || (!dirty && ahead === 0);
   const warnings = [];
-  if (ahead > 0 && !pushed) warnings.push(`${ahead} unpushed commit(s) ahead of ${def} would be orphaned by removal`);
-  if (behind > 0) warnings.push(`${def} advanced by ${behind} commit(s) since this branch; rebase before wrap`);
+  if (ahead > 0 && !pushed) warnings.push(`${ahead} unpushed commit(s) ahead of ${base} would be orphaned by removal`);
+  if (behind > 0) warnings.push(`${base} advanced by ${behind} commit(s) since this branch; rebase before wrap`);
   if (dirty) warnings.push('worktree has uncommitted changes');
   if (branch && worktrees.filter((w) => w.branch === branch).length > 1) {
     warnings.push(`branch ${branch} is checked out in more than one worktree`);

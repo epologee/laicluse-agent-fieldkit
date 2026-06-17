@@ -67,3 +67,39 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -q '"removed": false'
   [ -d "$FIX/worktrees/dry-wt" ]
 }
+
+@test "teardown judges integration against origin default when local default is stale" {
+  # Incident reproduction: the branch is already merged into origin/main, but the
+  # local main ref trails origin AND carries a stray local-only commit, so it is
+  # 1-ahead of origin/main. resolveBase would still return the stale local ref;
+  # only judging against origin/main sees the branch as the removable ancestor it is.
+  ORIGIN="$BATS_TEST_TMPDIR/origin.git"
+  git init -q --bare -b main "$ORIGIN"
+  git -C "$FIX" remote add origin "$ORIGIN"
+  git -C "$FIX" push -q origin main
+  base_sha="$(git -C "$FIX" rev-parse main)"
+
+  # Feature worktree + branch off main, one commit, fast-forwarded into main.
+  bonsai create merged-wt --repo "$FIX" --json
+  git -C "$FIX/worktrees/merged-wt" commit -q --allow-empty -m "feature work"
+  git -C "$FIX" merge -q --ff-only merged-wt
+
+  # Origin advances past the merge point and we publish it.
+  git -C "$FIX" commit -q --allow-empty -m "later main work"
+  git -C "$FIX" push -q origin main
+
+  # Local main goes stale: reset behind the merge, add a stray local-only commit.
+  git -C "$FIX" reset -q --hard "$base_sha"
+  git -C "$FIX" commit -q --allow-empty -m "Safety baseline"
+  git -C "$FIX" fetch -q origin
+
+  # Local main is 1-ahead (stray) and 2-behind origin/main: defeats resolveBase.
+  [ "$(git -C "$FIX" rev-list --left-right --count main...origin/main)" = "$(printf '1\t2')" ]
+
+  run bonsai teardown merged-wt --repo "$FIX" --dry-run --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"removable": true'
+  ! echo "$output" | grep -qiE 'orphan|unpushed'
+  # The behind-warning names origin/main, proving integration was judged against the remote ref.
+  echo "$output" | grep -q 'origin/main advanced'
+}
