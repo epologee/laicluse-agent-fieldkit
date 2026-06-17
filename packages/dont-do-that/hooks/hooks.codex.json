@@ -4,7 +4,7 @@
       {
         "matcher": "Bash|Edit|Write|MultiEdit|apply_patch",
         "hooks": [
-          { "type": "command", "command": "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
+          { "type": "command", "command": "DD_AGENT=codex ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
         ]
       }
     ],
@@ -12,15 +12,15 @@
       {
         "matcher": "Edit|Write|MultiEdit|Bash|apply_patch",
         "hooks": [
-          { "type": "command", "command": "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
+          { "type": "command", "command": "DD_AGENT=codex ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
         ]
       }
     ],
     "Stop": [
       {
-	"hooks": [
-	  { "type": "command", "command": "DD_SKIP_STOP_GUARDS=premature ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
-	]
+        "hooks": [
+          { "type": "command", "command": "DD_AGENT=codex ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
+        ]
       }
     ]
   }

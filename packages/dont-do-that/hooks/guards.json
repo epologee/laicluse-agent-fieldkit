@@ -1,0 +1,176 @@
+{
+  "$comment": "Source of truth for which dont-do-that guard runs on which hook event for which agent. dispatch.sh reads guard membership and order from here; bin/validate-registry checks it. Edit this file, then run bin/plugin-adapters build . to sync the Codex adapter.",
+  "contracts": {
+    "tool-call": "The pending tool invocation (shell command, apply_patch, or file-edit arguments) inspected before it is applied.",
+    "persisted-edit": "File content or shell command inspected after a write/edit has been applied.",
+    "final-answer": "The assistant's final-turn text, available at Stop."
+  },
+  "events": {
+    "PreToolUse": { "provides": ["tool-call"] },
+    "PostToolUse": { "provides": ["persisted-edit"] },
+    "Stop": { "provides": ["final-answer"] }
+  },
+  "lanes": {
+    "pre-bash": {
+      "event": "PreToolUse",
+      "tools": ["Bash"],
+      "mode": "deny",
+      "dispatch": "direct"
+    },
+    "pre-edit": {
+      "event": "PreToolUse",
+      "tools": ["Edit", "Write", "MultiEdit", "apply_patch"],
+      "mode": "deny",
+      "dispatch": "direct"
+    },
+    "post": {
+      "event": "PostToolUse",
+      "tools": ["Edit", "Write", "MultiEdit", "Bash", "apply_patch"],
+      "mode": "context",
+      "dispatch": "capture"
+    },
+    "stop-tracked": {
+      "event": "Stop",
+      "mode": "block",
+      "dispatch": "capture",
+      "mutex": false
+    },
+    "stop-mutex": {
+      "event": "Stop",
+      "mode": "block",
+      "dispatch": "direct",
+      "mutex": true
+    }
+  },
+  "guards": {
+    "no-remote": {
+      "lane": "pre-bash",
+      "order": 10,
+      "function": "guard_no_remote",
+      "contract": "tool-call",
+      "agents": {}
+    },
+    "no-remote-create": {
+      "lane": "pre-bash",
+      "order": 20,
+      "function": "guard_no_remote_create",
+      "contract": "tool-call",
+      "agents": {}
+    },
+    "no-worktree-deploy": {
+      "lane": "pre-bash",
+      "order": 30,
+      "function": "guard_no_worktree_deploy",
+      "contract": "tool-call",
+      "agents": {}
+    },
+    "pr-discipline": {
+      "lane": "pre-bash",
+      "order": 40,
+      "function": "guard_pr_discipline",
+      "contract": "tool-call",
+      "agents": {}
+    },
+    "followup": {
+      "lane": "pre-bash",
+      "order": 50,
+      "function": "guard_followup",
+      "contract": "tool-call",
+      "agents": {}
+    },
+    "no-code-comments": {
+      "lane": "pre-edit",
+      "order": 10,
+      "function": "guard_no_code_comments",
+      "contract": "tool-call",
+      "agents": {}
+    },
+    "dash": {
+      "lane": "post",
+      "order": 10,
+      "function": "guard_dash",
+      "contract": "persisted-edit",
+      "agents": {}
+    },
+    "land": {
+      "lane": "post",
+      "order": 20,
+      "function": "guard_land",
+      "contract": "persisted-edit",
+      "agents": {}
+    },
+    "false-claims": {
+      "lane": "stop-tracked",
+      "order": 10,
+      "function": "guard_false_claims",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "tool-error": {
+      "lane": "stop-tracked",
+      "order": 20,
+      "function": "guard_tool_error",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "cache": {
+      "lane": "stop-mutex",
+      "order": 10,
+      "function": "guard_cache",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "estimate": {
+      "lane": "stop-mutex",
+      "order": 20,
+      "function": "guard_estimate",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "prefer": {
+      "lane": "stop-mutex",
+      "order": 30,
+      "function": "guard_prefer",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "premature": {
+      "lane": "stop-mutex",
+      "order": 40,
+      "function": "guard_premature",
+      "contract": "final-answer",
+      "agents": {
+        "claude": "enabled",
+        "codex": "disabled"
+      }
+    },
+    "verify": {
+      "lane": "stop-mutex",
+      "order": 50,
+      "function": "guard_verify",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "duh": {
+      "lane": "stop-mutex",
+      "order": 60,
+      "function": "guard_duh",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "compliance": {
+      "lane": "stop-mutex",
+      "order": 70,
+      "function": "guard_compliance",
+      "contract": "final-answer",
+      "agents": {}
+    },
+    "jargon": {
+      "lane": "stop-mutex",
+      "order": 80,
+      "function": "guard_jargon",
+      "contract": "final-answer",
+      "agents": {}
+    }
+  }
+}
