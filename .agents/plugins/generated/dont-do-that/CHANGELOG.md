@@ -22,6 +22,15 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.7]
+
+### Changed
+
+- **Codex skips only the `premature` Stop guard.** The other Stop guards still
+  run in Codex; the dispatcher now supports per-event guard filters such as
+  `DD_SKIP_STOP_GUARDS` so hook manifests can make one guard agent-specific
+  without dropping the whole event.
+
 ## [v2.0.6]
 
 ### Added

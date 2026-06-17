@@ -10,25 +10,121 @@ source "$DIR/lib/common.sh"
 INPUT=$(cat)
 EVENT=$(dd_event "$INPUT")
 
+run_pre_bash() {
+  if dd_guard_enabled no-remote PreToolUse; then
+    source "$DIR/guards/no-remote.sh"
+    guard_no_remote "$INPUT"
+  fi
+  if dd_guard_enabled no-remote-create PreToolUse; then
+    source "$DIR/guards/no-remote-create.sh"
+    guard_no_remote_create "$INPUT"
+  fi
+  if dd_guard_enabled no-worktree-deploy PreToolUse; then
+    source "$DIR/guards/no-worktree-deploy.sh"
+    guard_no_worktree_deploy "$INPUT"
+  fi
+  if dd_guard_enabled pr-discipline PreToolUse; then
+    source "$DIR/guards/pr-discipline.sh"
+    guard_pr_discipline "$INPUT"
+  fi
+  if dd_guard_enabled followup PreToolUse; then
+    source "$DIR/guards/followup.sh"
+    guard_followup "$INPUT"
+  fi
+}
+
+run_pre_edit() {
+  if dd_guard_enabled no-code-comments PreToolUse; then
+    source "$DIR/guards/no-code-comments.sh"
+    guard_no_code_comments "$INPUT"
+  fi
+}
+
+run_post_tool() {
+  local dash_output="" land_output=""
+  if dd_guard_enabled dash PostToolUse; then
+    source "$DIR/guards/dash.sh"
+    dash_output=$( guard_dash "$INPUT" )
+  fi
+  if dd_guard_enabled land PostToolUse; then
+    source "$DIR/guards/land.sh"
+    land_output=$( guard_land "$INPUT" )
+  fi
+  if [ -n "$dash_output" ]; then
+    echo "$dash_output"
+    exit 0
+  fi
+  if [ -n "$land_output" ]; then
+    echo "$land_output"
+    exit 0
+  fi
+}
+
+run_stop_tracked_guards() {
+  local false_claims_output="" tool_error_output=""
+  if dd_guard_enabled false-claims Stop; then
+    source "$DIR/guards/false-claims.sh"
+    false_claims_output=$( guard_false_claims "$INPUT" )
+  fi
+  if dd_guard_enabled tool-error Stop; then
+    source "$DIR/guards/tool-error.sh"
+    tool_error_output=$( guard_tool_error "$INPUT" )
+  fi
+
+  if [ -n "$false_claims_output" ]; then
+    echo "$false_claims_output"
+    exit 0
+  fi
+  if [ -n "$tool_error_output" ]; then
+    echo "$tool_error_output"
+    exit 0
+  fi
+}
+
+run_stop_mutex_guards() {
+  if dd_guard_enabled cache Stop; then
+    source "$DIR/guards/cache.sh"
+    guard_cache "$INPUT"
+  fi
+  if dd_guard_enabled estimate Stop; then
+    source "$DIR/guards/estimate.sh"
+    guard_estimate "$INPUT"
+  fi
+  if dd_guard_enabled prefer Stop; then
+    source "$DIR/guards/prefer.sh"
+    guard_prefer "$INPUT"
+  fi
+  if dd_guard_enabled premature Stop; then
+    source "$DIR/guards/premature.sh"
+    guard_premature "$INPUT"
+  fi
+  if dd_guard_enabled verify Stop; then
+    source "$DIR/guards/verify.sh"
+    guard_verify "$INPUT"
+  fi
+  if dd_guard_enabled duh Stop; then
+    source "$DIR/guards/duh.sh"
+    guard_duh "$INPUT"
+  fi
+  if dd_guard_enabled compliance Stop; then
+    source "$DIR/guards/compliance.sh"
+    guard_compliance "$INPUT"
+  fi
+  if dd_guard_enabled jargon Stop; then
+    source "$DIR/guards/jargon.sh"
+    guard_jargon "$INPUT"
+  fi
+}
+
 case "$EVENT" in
   PreToolUse)
     TOOL=$(dd_tool_name "$INPUT")
     case "$TOOL" in
       Bash)
-        source "$DIR/guards/no-remote.sh"
-        guard_no_remote "$INPUT"
-        source "$DIR/guards/no-remote-create.sh"
-        guard_no_remote_create "$INPUT"
-        source "$DIR/guards/no-worktree-deploy.sh"
-        guard_no_worktree_deploy "$INPUT"
-        source "$DIR/guards/pr-discipline.sh"
-        guard_pr_discipline "$INPUT"
-        source "$DIR/guards/followup.sh"
-        guard_followup "$INPUT"
+	run_pre_bash
         ;;
       Edit|Write|MultiEdit|apply_patch)
-        source "$DIR/guards/no-code-comments.sh"
-        guard_no_code_comments "$INPUT"
+	run_pre_edit
         ;;
     esac
     ;;
@@ -37,18 +133,7 @@ case "$EVENT" in
     TOOL=$(dd_tool_name "$INPUT")
     case "$TOOL" in
       Edit|Write|MultiEdit|Bash|apply_patch)
-        source "$DIR/guards/dash.sh"
-        source "$DIR/guards/land.sh"
-        DASH_OUTPUT=$( guard_dash "$INPUT" )
-        LAND_OUTPUT=$( guard_land "$INPUT" )
-        if [ -n "$DASH_OUTPUT" ]; then
-          echo "$DASH_OUTPUT"
-          exit 0
-        fi
-        if [ -n "$LAND_OUTPUT" ]; then
-          echo "$LAND_OUTPUT"
-          exit 0
-        fi
+	run_post_tool
         ;;
     esac
     ;;
@@ -62,40 +147,12 @@ case "$EVENT" in
     # were separate processes with independent lifecycles; preserve that by
     # subshelling here. First non-empty output wins, in hooks.json order
     # (false-claims before tool-error).
-    source "$DIR/guards/false-claims.sh"
-    source "$DIR/guards/tool-error.sh"
-
-    FC_OUTPUT=$( guard_false_claims "$INPUT" )
-    TE_OUTPUT=$( guard_tool_error "$INPUT" )
-
-    if [ -n "$FC_OUTPUT" ]; then
-      echo "$FC_OUTPUT"
-      exit 0
-    fi
-    if [ -n "$TE_OUTPUT" ]; then
-      echo "$TE_OUTPUT"
-      exit 0
-    fi
+    run_stop_tracked_guards
 
     # Mutex-respecting guards. If a prior Stop fire already blocked, skip
     # these to avoid re-blocking on the same text across consecutive fires.
     if ! dd_stop_active "$INPUT"; then
-      source "$DIR/guards/cache.sh"
-      source "$DIR/guards/estimate.sh"
-      source "$DIR/guards/premature.sh"
-      source "$DIR/guards/verify.sh"
-      source "$DIR/guards/duh.sh"
-      source "$DIR/guards/compliance.sh"
-      source "$DIR/guards/prefer.sh"
-      source "$DIR/guards/jargon.sh"
-      guard_cache "$INPUT"
-      guard_estimate "$INPUT"
-      guard_prefer "$INPUT"
-      guard_premature "$INPUT"
-      guard_verify "$INPUT"
-      guard_duh "$INPUT"
-      guard_compliance "$INPUT"
-      guard_jargon "$INPUT"
+      run_stop_mutex_guards
     fi
     ;;
 esac

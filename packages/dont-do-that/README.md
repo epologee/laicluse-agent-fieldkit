@@ -5,15 +5,17 @@ tool call, blocks the Stop event, or surfaces additional context at the moment a
 mistake is likely, forcing the active agent to course-correct instead of
 barreling past the issue.
 
-Claude Code and Codex both receive the hook stack. Claude uses `hooks/hooks.json`.
-Codex uses the explicit `hooks/hooks.codex.json` source, materialized by
+Claude Code receives the full hook stack. Codex receives the same event layers
+through the explicit `hooks/hooks.codex.json` source, materialized by
 `bin/plugin-adapters build` as `hooks/hooks.json` in the generated Codex adapter
-package. The operator correction skills (`/duh` and `/just-a-question`) ship to
-both agents.
+package. Codex skips only the `premature` Stop guard because that guard creates
+a nudge turn after otherwise-complete answers, which can replace the completed
+assistant message in the Mac app. The operator correction skills (`/duh` and
+`/just-a-question`) ship to both agents.
 
 ## Architecture
 
-One dispatcher, `hooks/dispatch.sh`, is registered against PreToolUse (shell and file-edit matchers), PostToolUse (shell and file-edit matchers), and Stop. Claude file edits arrive as `Edit` / `Write` / `MultiEdit`; Codex patches arrive as `apply_patch`. The dispatcher reads stdin once, extracts `hook_event_name`, and routes to the matching guard set. Guards live under `hooks/guards/` as sourced functions, shared helpers under `hooks/lib/common.sh`. No external script runs per guard.
+One dispatcher, `hooks/dispatch.sh`, is registered against PreToolUse (shell and file-edit matchers), PostToolUse (shell and file-edit matchers), and Stop. Claude file edits arrive as `Edit` / `Write` / `MultiEdit`; Codex patches arrive as `apply_patch`. The dispatcher reads stdin once, extracts `hook_event_name`, and routes to the matching guard set. Guards live under `hooks/guards/` as sourced functions, shared helpers under `hooks/lib/common.sh`. No external script runs per guard. Hook manifests can set `DD_SKIP_GUARDS`, `DD_ONLY_GUARDS`, or event-specific variants such as `DD_SKIP_STOP_GUARDS` to make an individual guard agent-specific without copying the dispatcher.
 
 Every user-visible hook message begins with the mnemonic prefix `[dont-do-that/<code>] `. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or `hooks/guards/<code>.sh`.
 

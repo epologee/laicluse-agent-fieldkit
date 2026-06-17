@@ -182,3 +182,35 @@ dd_emit_pre_context() {
   jq -cn --arg c "[dont-do-that/${mnemonic}] ${msg}" \
     '{hookSpecificOutput: {hookEventName: "PreToolUse", additionalContext: $c}}'
 }
+
+dd_guard_list_has() {
+  local list="$1" guard="$2" normalised
+  normalised=$(printf '%s' "$list" | tr '[:space:]' ',' | sed -E 's/,+/,/g')
+  case ",$normalised," in
+    *",$guard,"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+dd_guard_list_empty() {
+  [ -z "$(printf '%s' "$1" | tr -d '[:space:],')" ]
+}
+
+dd_guard_enabled() {
+  local guard="$1" event="$2" suffix skip_var only_var skip_event only_event skip only
+  suffix=$(printf '%s' "$event" | tr '[:lower:]' '[:upper:]' | tr -cd 'A-Z0-9_')
+  skip_var="DD_SKIP_${suffix}_GUARDS"
+  only_var="DD_ONLY_${suffix}_GUARDS"
+  skip_event="${!skip_var-}"
+  only_event="${!only_var-}"
+  skip="${DD_SKIP_GUARDS:-} ${skip_event}"
+  only="${DD_ONLY_GUARDS:-} ${only_event}"
+
+  if dd_guard_list_has "$skip" "$guard"; then
+    return 1
+  fi
+  if dd_guard_list_empty "$only"; then
+    return 0
+  fi
+  dd_guard_list_has "$only" "$guard"
+}
