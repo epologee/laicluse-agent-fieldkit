@@ -77,6 +77,36 @@ dependencies, and self-heals through pid-liveness.
 - **Occupancy, not git.** dibs prevents concurrent occupancy. It is not a git
   lock and does not replace git's own `index.lock`.
 
+## Enforcement hooks
+
+The lock only helps if it is acquired before mutation. dibs ships
+`hooks/occupancy.sh`, a vendor-neutral hook that enforces single occupancy for
+any session, not only the worktrees `bonsai` hands out. It is registered for
+both agents (`hooks/hooks.json` for Claude, `hooks/hooks.codex.json` for Codex,
+materialized into the generated Codex adapter) and shells out to this plugin's
+own CLI, so there is no second lock path.
+
+- **SessionStart** claims the working directory and records the long-lived
+  agent process as the holder (the topmost `claude`/`codex` ancestor, or
+  `DIBS_HOLDER_PID` when set). If a different live session already holds it, the
+  fresh session is not blocked (a session cannot be) but is steered aside with
+  the holder line; if dibs cannot be resolved, it surfaces an enforcement-off
+  notice rather than going silently inert.
+- **PreToolUse** (file edits: `Edit` / `Write` / `MultiEdit` / `apply_patch`)
+  re-claims the directory before the mutation and hard-denies (exit 2) when a
+  *different* live session holds it, reporting the holder and how to recover.
+  The agent's own session is recognised by the lock's session id, so a drifted
+  worker pid never self-locks the agent out; a free directory, a self-healed
+  dead holder, and any non-refusal dibs result all pass (fail-open).
+- **SessionEnd** (Claude only) releases the directory. Codex has no session-end
+  event, so a Codex lock clears through pid-liveness self-heal on the next
+  claim, which is expected rather than a leak.
+
+Shell (`Bash`) mutations are intentionally not gated; the git-native commit hook
+remains the backstop for those and for agents under bypassPermissions. Opt out
+of enforcement for a session with `DIBS_OCCUPANCY=off`. `bonsai`'s
+claim-at-handout is unaffected and complementary.
+
 ## Library
 
 `bin/dibs-lib.mjs` exports `claim`, `release`, `check`, and `formatHolder` as
