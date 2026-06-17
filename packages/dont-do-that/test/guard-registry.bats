@@ -40,6 +40,15 @@ posttool_edit() {
   [[ "$output" == *"enabled or disabled"* ]]
 }
 
+@test "validator rejects two guards sharing a function name" {
+  tmp="$(mktemp)"
+  jq '.guards.dash.function = "guard_land"' "$REGISTRY" > "$tmp"
+  run bash "$VALIDATE" "$tmp"
+  rm -f "$tmp"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"guard_land"* ]]
+}
+
 @test "validator rejects a guard with no backing script" {
   tmp="$(mktemp)"
   jq '.guards.ghost = {lane:"stop-mutex", order:99, function:"guard_ghost", contract:"final-answer", agents:{}}' "$REGISTRY" > "$tmp"
