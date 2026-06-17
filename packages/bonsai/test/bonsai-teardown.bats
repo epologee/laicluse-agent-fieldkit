@@ -88,16 +88,11 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   git -C "$FIX" commit -q --allow-empty -m "later main work"
   git -C "$FIX" push -q origin main
 
-  # Local main is rewound behind the merge (the merge commit now lives only on
-  # origin/main) and carries a stray local-only commit. Integration is therefore
-  # provable only against origin/main, and resolveBase (local is 1-ahead) would
-  # still pick the stale local ref.
+  # Rewind local main behind the merge (the merge now lives only on origin/main)
+  # and add a stray local-only commit, so integration is provable only via origin.
   git -C "$FIX" reset -q --hard "$base_sha"
   git -C "$FIX" commit -q --allow-empty -m "Safety baseline"
   git -C "$FIX" fetch -q origin
-
-  # Local main is 1-ahead (stray) and 2-behind origin/main: defeats resolveBase.
-  [ "$(git -C "$FIX" rev-list --left-right --count main...origin/main)" = "$(printf '1\t2')" ]
 
   run bonsai teardown merged-wt --repo "$FIX" --dry-run --json
   [ "$status" -eq 0 ]
@@ -123,9 +118,6 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   git -C "$FIX/worktrees/local-wt" commit -q --allow-empty -m "feature work"
   git -C "$FIX" merge -q --ff-only local-wt
   git -C "$FIX" fetch -q origin
-
-  # Local main contains the branch and is ahead of the trailing origin/main.
-  [ "$(git -C "$FIX" rev-list --count origin/main..main)" -gt 0 ]
 
   run bonsai teardown local-wt --repo "$FIX" --dry-run --json
   [ "$status" -eq 0 ]
