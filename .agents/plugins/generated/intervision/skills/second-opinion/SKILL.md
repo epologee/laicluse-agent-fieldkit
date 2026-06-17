@@ -18,7 +18,9 @@ of you talk it through.
 
 The peer here is Claude, reached through `claude -p`. It runs from the same
 repository, on its own login, with its own model behind it. That independence is
-the whole point; a peer trained the same way as you would only echo you.
+the whole point; a peer trained the same way as you would only echo you. Run it
+with `DD_HEADLESS=1 --setting-sources "" --tools ""` so local Claude Code stop
+hooks and user instructions do not overwrite the peer's actual answer.
 
 ## The peer has to be there
 
@@ -53,7 +55,7 @@ Do not summarize the work first:
   git diff --no-ext-diff
   printf '\n## untracked files\n'
   git ls-files --others --exclude-standard
-} | claude -p --input-format text --tools ""
+} | DD_HEADLESS=1 claude -p --input-format text --setting-sources "" --tools ""
 ```
 
 For a branch or single commit, replace the diff block with the concrete range:
@@ -62,12 +64,12 @@ For a branch or single commit, replace the diff block with the concrete range:
 {
   printf 'Peer review this branch diff. Report findings first and do not edit files.\n\n'
   git diff --no-ext-diff main...HEAD
-} | claude -p --input-format text --tools ""
+} | DD_HEADLESS=1 claude -p --input-format text --setting-sources "" --tools ""
 
 {
   printf 'Peer review this commit. Report findings first and do not edit files.\n\n'
   git show --stat --patch <sha>
-} | claude -p --input-format text --tools ""
+} | DD_HEADLESS=1 claude -p --input-format text --setting-sources "" --tools ""
 ```
 
 **2. Weigh a design just discussed, when there is no code yet.** Give Claude
@@ -75,7 +77,7 @@ the actual design context on stdin. Keep the shaky parts in; a flattering
 summary buys a flattering review.
 
 ```bash
-claude -p --input-format text --tools "" <<'PROMPT'
+DD_HEADLESS=1 claude -p --input-format text --setting-sources "" --tools "" <<'PROMPT'
 Peer review this plan before we build it. Do not edit files.
 <paste the design, the trade-off, the open question, including the parts we are unsure about>
 PROMPT
@@ -87,7 +89,7 @@ prior finding and your evidence. Do not loop on vibes; push one concrete point
 at a time.
 
 ```bash
-claude -p --input-format text --tools "" <<'PROMPT'
+DD_HEADLESS=1 claude -p --input-format text --setting-sources "" --tools "" <<'PROMPT'
 You flagged X as a race. The lock at <file:line> already serialises that path.
 Does that change your read? Do not edit files.
 PROMPT
@@ -104,6 +106,11 @@ The round-trip only earns its cost if the handoff is honest.
 
 - **Give the peer the real work, not a summary you are proud of.** Point it at
   the actual diff, or paste the actual design with the shaky parts left in.
+- **Keep the artifact scope intact.** If the operator asks for a language check
+  on a sentence, paragraph, PR body, or release note, hand the whole text to the
+  peer. Do not narrow a failed peer call to one suspicious word and then report
+  the result as a second opinion on the full wording. If the full-scope peer
+  call cannot produce a usable answer, say the second opinion is blocked.
 - **Read for the disagreement, not the agreement.** The peer agreeing is cheap
   and tells you little. The signal is where its independent read diverges from
   yours.
