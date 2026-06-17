@@ -20,6 +20,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.5]
+
+### Fixed
+
+- **Codex-to-Claude peer checks now use a clean headless Claude invocation.**
+  Local stop hooks no longer replace Claude's actual second-opinion answer, and
+  language checks must keep the full text under review instead of narrowing to
+  one suspicious word.
+
 ## [v2.0.1]
 
 ### Changed
