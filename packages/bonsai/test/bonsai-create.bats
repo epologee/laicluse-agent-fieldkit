@@ -58,6 +58,16 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   git -C "$FIX" show-ref --verify --quiet refs/heads/my-handle
 }
 
+@test "create from inside a linked worktree anchors at the main worktree root, not nested" {
+  run run_bonsai create first --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  run run_bonsai create second --repo "$FIX/worktrees/first" --json
+  [ "$status" -eq 0 ]
+  [ -d "$FIX/worktrees/second" ]
+  [ ! -d "$FIX/worktrees/first/worktrees/second" ]
+  echo "$output" | grep -q "$FIX/worktrees/second"
+}
+
 @test "create rejects a .. branch name as invalid" {
   run run_bonsai create .. --repo "$FIX" --json
   [ "$status" -ne 0 ]

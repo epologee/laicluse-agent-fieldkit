@@ -53,6 +53,16 @@ export function branchToDir(branch) {
   return branch.replace(/\//g, '-');
 }
 
+// allow-comment: documents the git contract this relies on. `git worktree list` always lists the main worktree first, so a linked-worktree --repo still anchors new worktrees under <main>/worktrees/ instead of nesting them.
+export function mainWorktree(repo) {
+  try {
+    const out = git(repo, ['worktree', 'list', '--porcelain']);
+    const first = out.split('\n').find((l) => l.startsWith('worktree '));
+    if (first) return first.slice('worktree '.length);
+  } catch {}
+  return resolve(repo);
+}
+
 // Deterministic dev-server port hint in [3100, 3999]. Cross-platform and
 // dependency-free; the value is a hint, not a guarantee of freeness.
 export function computePort(name) {
@@ -102,17 +112,18 @@ export async function createWorktree({ repo, branch, base, dir }) {
   if (!dirName || dirName.includes('..') || /\s/.test(dirName)) {
     throw new Error(`invalid worktree dir name ${JSON.stringify(dir)}`);
   }
-  const resolvedBase = base || resolveBase(repo);
-  const baseSha = git(repo, ['rev-parse', resolvedBase]).trim();
-  const worktreesDir = join(repo, 'worktrees');
+  const root = mainWorktree(repo);
+  const resolvedBase = base || resolveBase(root);
+  const baseSha = git(root, ['rev-parse', resolvedBase]).trim();
+  const worktreesDir = join(root, 'worktrees');
   mkdirSync(worktreesDir, { recursive: true });
   const gitignore = join(worktreesDir, '.gitignore');
   if (!existsSync(gitignore)) writeFileSync(gitignore, '*\n');
   const worktree = join(worktreesDir, dirName);
-  if (refExists(repo, `refs/heads/${branch}`)) {
-    throw new Error(`branch ${branch} already exists in ${repo}; wrap and tear down that work first, never a numbered branch`);
+  if (refExists(root, `refs/heads/${branch}`)) {
+    throw new Error(`branch ${branch} already exists in ${root}; wrap and tear down that work first, never a numbered branch`);
   }
-  git(repo, ['worktree', 'add', '-b', branch, worktree, resolvedBase]);
+  git(root, ['worktree', 'add', '-b', branch, worktree, resolvedBase]);
   const lock = await claimWorktreeLock(worktree);
   return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dirName), lock };
 }

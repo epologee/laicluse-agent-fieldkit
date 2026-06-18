@@ -4,6 +4,16 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.21]
+
+### Fixed
+
+- **No more worktree-in-a-worktree**: `bonsai create` now anchors new worktrees
+  at the main working tree even when `--repo` (or the cwd) points at a linked
+  worktree, instead of nesting `worktrees/<name>` under that worktree. A caller
+  such as conveyor that grounds an order inside a worktree no longer produces a
+  `repo/worktrees/a/worktrees/b` layout.
+
 ## [v2.0.0]
 
 ### Added
