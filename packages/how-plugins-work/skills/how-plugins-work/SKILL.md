@@ -92,6 +92,7 @@ Local CLI help verified on 2026-06-09:
 | Plugin source path | `plugins[].source.path` | `./packages/how-plugins-work` |
 | Plugin manifest | `.codex-plugin/plugin.json` | generated from `.claude-plugin/plugin.json` |
 | Skill body | `skills/<skill>/SKILL.md` | generated Codex-compatible runtime body |
+| Skill invocation in CLI/IDE | `$<skill>` mention or `/skills` picker | `$how-plugins-work`, `/skills` |
 | Active install facts | `codex plugin list --json` | `pluginId`, `version`, `enabled`, `source.path` |
 
 Important differences from Claude:
@@ -106,6 +107,14 @@ Important differences from Claude:
   the shared `SKILL.md`, then run `bin/plugin-adapters build .`.
 - Claude-only frontmatter keys such as `user-invocable` stay in the shared
   source for Claude, but Codex receives a generated sanitized copy when needed.
+- Codex CLI skill autocomplete lives under `$`, not `/`. Use `$<skill>` or the
+  `/skills` picker for explicit skill invocation. Do not expect Claude's
+  `/plugin:skill` or bare `/<skill>` skill-command behavior to work in Codex
+  CLI; `/` is for built-in commands and deprecated custom prompts such as
+  `/prompts:<name>`.
+- In the Codex app, plugin and skill invocation also has an `@` surface, and
+  enabled skills may appear in the slash command list. Treat that as an app UI
+  behavior, not as proof that Codex CLI accepts `/<skill>`.
 - `codex plugin list --json` is the authoritative local view for what Codex
   has installed and enabled right now. The working tree may already contain a
   newer generated manifest while the installed version still reports the old
