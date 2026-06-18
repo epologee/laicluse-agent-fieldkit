@@ -6,7 +6,7 @@
 		<title>l'Aicluse Agent Fieldkit</title>
 		<meta
 			name="description"
-			content="Public marketplace for l'Aicluse coding-agent plugins, skills, hooks, CLIs, and generated adapters for Claude Code and Codex."
+			content="A public multi-agent marketplace for coding-agent plugins, skills, hooks, CLIs, and generated Claude Code plus Codex adapters."
 		>
 		<link rel="stylesheet" href="styles.css">
 	</head>
@@ -14,68 +14,160 @@
 		<a class="skip-link" href="#content">Skip to content</a>
 
 		<header class="site-header" aria-label="Primary">
-			<a class="brand" href="#top">l'Aicluse Agent Fieldkit</a>
+			<a class="brand" href="#top" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true"></span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
 			<nav class="site-nav" aria-label="Sections">
+				<a href="#kit">Kit</a>
 				<a href="#catalog">Catalog</a>
 				<a href="#changelog">Changelog</a>
-				<a href="#repository">Repository</a>
 				<a href="#install">Install</a>
 			</nav>
 		</header>
 
 		<main id="content">
-			<section
-				id="top"
-				class="hero"
-				role="img"
-				aria-label="A map of source packages flowing through generated adapters into Claude Code and Codex."
-			>
-				<div class="hero-copy">
-					<p class="eyebrow">Public multi-agent marketplace</p>
-					<h1>l'Aicluse Agent Fieldkit</h1>
-					<p class="lede">
-						A collection of coding-agent plugins, skills, hooks, and CLIs for
-						Claude Code and Codex. The repository keeps package source canonical
-						and generates runtime adapters where an agent needs a different
-						shape.
-					</p>
-					<div class="hero-actions" aria-label="Primary links">
-						<a class="primary-link" href="https://github.com/epologee/laicluse-agent-fieldkit">View on GitHub</a>
-						<a class="secondary-link" href="#changelog">Read the changelog</a>
+			<section id="top" class="hero">
+				<canvas id="field-map" aria-hidden="true"></canvas>
+				<div class="hero-shell">
+					<div class="hero-copy">
+						<p class="eyebrow">Public multi-agent marketplace</p>
+						<h1>Field kit for agents that work in the wild.</h1>
+						<p class="lede">
+							Reusable operating gear for Claude Code and Codex: workflow
+							discipline, field missions, peer review, naming doctrine, feedback
+							loops, and generated runtime adapters from one canonical source.
+						</p>
+						<div class="hero-actions" aria-label="Primary links">
+							<a class="primary-link" href="#install">Install the marketplace</a>
+							<a class="secondary-link" href="https://github.com/epologee/laicluse-agent-fieldkit">View source</a>
+						</div>
+					</div>
+
+					<aside class="signal-panel" aria-label="Marketplace summary">
+						<div>
+							<span class="signal-number">15</span>
+							<span class="signal-label">source packages</span>
+						</div>
+						<div>
+							<span class="signal-number">13</span>
+							<span class="signal-label">Codex adapters</span>
+						</div>
+						<div>
+							<span class="signal-number">2</span>
+							<span class="signal-label">Claude-only packages</span>
+						</div>
+					</aside>
+				</div>
+			</section>
+
+			<section id="kit" class="section kit-section">
+				<div class="section-kicker">
+					<p class="eyebrow">What the kit does</p>
+					<h2>Less prompt folklore. More working equipment.</h2>
+				</div>
+				<div class="feature-grid">
+					<article class="feature-card discipline">
+						<span class="feature-index">01</span>
+						<h3>Discipline the workflow</h3>
+						<p>
+							Commit bodies, push policy, worktree lifecycle, single-occupancy
+							locks, and guardrails keep agent sessions from turning local speed
+							into shared mess.
+						</p>
+						<ul>
+							<li>git-discipline</li>
+							<li>bonsai</li>
+							<li>dibs</li>
+							<li>dont-do-that</li>
+						</ul>
+					</article>
+
+					<article class="feature-card fieldwork">
+						<span class="feature-index">02</span>
+						<h3>Send work into the field</h3>
+						<p>
+							Rover missions, continuation contracts, verification discipline,
+							and prepared loop files give autonomous work a real endpoint.
+						</p>
+						<ul>
+							<li>rover</li>
+							<li>autonomous</li>
+							<li>gurus</li>
+						</ul>
+					</article>
+
+					<article class="feature-card review">
+						<span class="feature-index">03</span>
+						<h3>Make second reads normal</h3>
+						<p>
+							Peer consultation, opinionated panels, duplication audits, and naming
+							doctrine make another perspective part of the workflow instead of an
+							afterthought.
+						</p>
+						<ul>
+							<li>intervision</li>
+							<li>gurus</li>
+							<li>drydry</li>
+							<li>naming-is-hard</li>
+						</ul>
+					</article>
+
+					<article class="feature-card feedback">
+						<span class="feature-index">04</span>
+						<h3>Turn friction into repairs</h3>
+						<p>
+							Feedback routes to hooks, skills, project code, or instruction files,
+							while lightweight capture commands keep irritation cheap and useful.
+						</p>
+						<ul>
+							<li>self-improvement</li>
+							<li>anger-management</li>
+							<li>clipboard</li>
+							<li>how-plugins-work</li>
+						</ul>
+					</article>
+				</div>
+			</section>
+
+			<section class="section repository-section">
+				<div class="section-kicker">
+					<p class="eyebrow">Repository shape</p>
+					<h2>One source. Runtime-specific adapters.</h2>
+				</div>
+				<div class="repo-layout">
+					<figure class="repo-figure">
+						<img src="assets/fieldkit-overview.png" alt="Fieldkit repository map showing package source, generated adapters, and Claude Code plus Codex runtime targets.">
+					</figure>
+					<div class="repo-copy">
+						<p>
+							Each plugin lives under <code>packages/&lt;plugin&gt;/</code>. Claude
+							metadata remains the source. Codex packages are generated into
+							<code>.agents/plugins/generated/</code>, so agent-specific runtime
+							shape does not fork the marketplace by hand.
+						</p>
+						<div class="repo-facts">
+							<div>
+								<strong>packages/</strong>
+								<span>canonical plugin source</span>
+							</div>
+							<div>
+								<strong>bin/plugin-adapters</strong>
+								<span>build, check, and diff generated output</span>
+							</div>
+							<div>
+								<strong>hooks/</strong>
+								<span>repo-level safety and commit discipline</span>
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>
 
-			<section class="overview-band" aria-label="Repository summary">
-				<div class="summary-grid">
-					<div>
-						<span class="summary-number">15</span>
-						<span class="summary-label">source packages</span>
-					</div>
-					<div>
-						<span class="summary-number">13</span>
-						<span class="summary-label">Codex adapters</span>
-					</div>
-					<div>
-						<span class="summary-number">2</span>
-						<span class="summary-label">Claude-only packages</span>
-					</div>
-					<div>
-						<span class="summary-number">1</span>
-						<span class="summary-label">shared marketplace</span>
-					</div>
-				</div>
-			</section>
-
-			<section id="catalog" class="section">
-				<div class="section-heading">
-					<p class="eyebrow">What is in the marketplace</p>
-					<h2>Plugin Catalog</h2>
-					<p>
-						Each package lives under <code>packages/&lt;plugin&gt;/</code>.
-						Claude metadata is the source; Codex receives generated adapters
-						for the plugins that have compatible runtime behavior.
-					</p>
+			<section id="catalog" class="section catalog-section">
+				<div class="section-kicker">
+					<p class="eyebrow">Plugin catalog</p>
+					<h2>The public shelf.</h2>
 				</div>
 
 				<div class="plugin-groups">
@@ -216,19 +308,14 @@
 				</div>
 			</section>
 
-			<section id="changelog" class="section tinted">
-				<div class="section-heading">
-					<p class="eyebrow">Release notes</p>
-					<h2>Changelog</h2>
-					<p>
-						The marketplace has one ecosystem changelog, and each package keeps
-						its own latest user-visible update in
-						<code>packages/&lt;plugin&gt;/CHANGELOG.md</code>.
-					</p>
+			<section id="changelog" class="section changelog-section">
+				<div class="section-kicker">
+					<p class="eyebrow">Latest field notes</p>
+					<h2>What changed recently.</h2>
 				</div>
 
 				<div class="timeline" aria-label="Marketplace changelog">
-					<article class="timeline-item">
+					<article class="timeline-item primary-note">
 						<span class="time-label">2026-06</span>
 						<h3>drydry joined Fieldkit</h3>
 						<p>
@@ -241,8 +328,8 @@
 						<span class="time-label">2026-06</span>
 						<h3>Codex catalog omits Claude-only runtime skills</h3>
 						<p>
-							Codex receives the generated subset with compatible runtime
-							behavior instead of inert Claude-only commands.
+							Codex receives the generated subset with compatible runtime behavior
+							instead of inert Claude-only commands.
 						</p>
 					</article>
 
@@ -254,15 +341,6 @@
 							<code>/duh</code> and <code>/just-a-question</code>.
 						</p>
 					</article>
-
-					<article class="timeline-item">
-						<span class="time-label">2026-06</span>
-						<h3>Marketplace live</h3>
-						<p>
-							The public marketplace launched with shared install paths and
-							migration guidance for previous marketplace installs.
-						</p>
-					</article>
 				</div>
 
 				<div class="change-table-wrap">
@@ -271,23 +349,17 @@
 						<thead>
 							<tr>
 								<th scope="col">Package</th>
-								<th scope="col">Latest section</th>
+								<th scope="col">Latest</th>
 								<th scope="col">Type</th>
 								<th scope="col">User-visible change</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
-								<th scope="row">anger-management</th>
-								<td>v2.0.10</td>
-								<td>Breaking</td>
-								<td><code>bin/anger-schedule</code> replaced <code>bin/anger-arm</code> and related env names.</td>
-							</tr>
-							<tr>
-								<th scope="row">autonomous</th>
-								<td>v2.0.1</td>
-								<td>Breaking</td>
-								<td>Claude-only keepalive skills are no longer advertised to Codex.</td>
+								<th scope="row">git-discipline</th>
+								<td>v2.0.32</td>
+								<td>Changed</td>
+								<td>After updates, rerun <code>/git-discipline:install-hooks --force</code> to refresh baked hook paths.</td>
 							</tr>
 							<tr>
 								<th scope="row">bonsai</th>
@@ -296,22 +368,10 @@
 								<td><code>bonsai create</code> no longer nests a worktree inside another worktree.</td>
 							</tr>
 							<tr>
-								<th scope="row">clipboard</th>
-								<td>v2.0.8</td>
-								<td>Fixed</td>
-								<td>Codex now gets its own helper-resolution instructions for <code>/clipboard</code>.</td>
-							</tr>
-							<tr>
 								<th scope="row">dibs</th>
 								<td>v2.0.9</td>
 								<td>Added</td>
 								<td>Universal occupancy hooks enforce one active agent per working directory.</td>
-							</tr>
-							<tr>
-								<th scope="row">dont-do-that</th>
-								<td>v2.0.17</td>
-								<td>Changed</td>
-								<td>Guard placement and per-agent policy now live in a registry.</td>
 							</tr>
 							<tr>
 								<th scope="row">drydry</th>
@@ -320,34 +380,10 @@
 								<td>Install from <code>drydry@laicluse-agent-fieldkit</code>; runtime state moved under <code>LAICLUSE_HOME</code>.</td>
 							</tr>
 							<tr>
-								<th scope="row">git-discipline</th>
-								<td>v2.0.32</td>
-								<td>Changed</td>
-								<td>After updates, rerun <code>/git-discipline:install-hooks --force</code> to refresh baked hook paths.</td>
-							</tr>
-							<tr>
-								<th scope="row">gurus</th>
-								<td>v2.0.1</td>
+								<th scope="row">rover</th>
+								<td>v2.0.9</td>
 								<td>Fixed</td>
-								<td>Codex guru panels no longer suggest <code>/rover:rover</code> as their default handoff.</td>
-							</tr>
-							<tr>
-								<th scope="row">how-plugins-work</th>
-								<td>v2.0.17</td>
-								<td>Changed</td>
-								<td>Single-sided <code>SKILL.claude.md</code> or <code>SKILL.codex.md</code> sources are supported.</td>
-							</tr>
-							<tr>
-								<th scope="row">intervision</th>
-								<td>v2.0.5</td>
-								<td>Fixed</td>
-								<td>Codex-to-Claude peer checks use a clean headless Claude invocation.</td>
-							</tr>
-							<tr>
-								<th scope="row">laicluse-agent-fieldkit</th>
-								<td>v2.0.2</td>
-								<td>Fixed</td>
-								<td><code>/whats-new</code> is Claude-only until a Codex runtime path exists.</td>
+								<td><code>rover</code> is multi-agent again through a host-owned continuation contract.</td>
 							</tr>
 							<tr>
 								<th scope="row">naming-is-hard</th>
@@ -356,108 +392,53 @@
 								<td>The naming doctrine now ships from the public Fieldkit marketplace.</td>
 							</tr>
 							<tr>
-								<th scope="row">rover</th>
-								<td>v2.0.9</td>
-								<td>Fixed</td>
-								<td><code>rover</code> is multi-agent again through a host-owned continuation contract.</td>
+								<th scope="row">dont-do-that</th>
+								<td>v2.0.17</td>
+								<td>Changed</td>
+								<td>Guard placement and per-agent policy now live in a registry.</td>
 							</tr>
 							<tr>
-								<th scope="row">self-improvement</th>
-								<td>v2.0.0</td>
-								<td>Changed</td>
-								<td>The skill is agent-neutral and no longer assumes Claude-only instruction targets.</td>
+								<th scope="row">laicluse-agent-fieldkit</th>
+								<td>v2.0.2</td>
+								<td>Fixed</td>
+								<td><code>/whats-new</code> is Claude-only until a Codex runtime path exists.</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
 
 				<p class="source-note">
-					Full release notes:
+					Full release notes live in the
 					<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/MARKETPLACE-CHANGELOG.md">marketplace changelog</a>
-					and the per-package changelogs in
+					and in each package under
 					<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages">packages/</a>.
 				</p>
 			</section>
 
-			<section id="repository" class="section">
-				<div class="section-heading">
-					<p class="eyebrow">How the repository is organized</p>
-					<h2>Source, Adapters, Hooks</h2>
-					<p>
-						The repository is public source, not a runtime cache. Package source
-						stays in <code>packages/</code>, generated Codex output stays under
-						<code>.agents/plugins/generated/</code>, and shared tooling stays in
-						<code>bin/</code> and <code>hooks/</code>.
-					</p>
-				</div>
-
-				<figure class="repo-figure">
-					<img src="assets/fieldkit-overview.png" alt="Fieldkit repository map showing package source, generated adapters, and Claude Code plus Codex runtime targets.">
-					<figcaption>
-						The same package source is adapted for multiple agent runtimes
-						instead of maintaining parallel marketplaces by hand.
-					</figcaption>
-				</figure>
-
-				<div class="repo-grid">
-					<article class="repo-item">
-						<h3><code>packages/&lt;plugin&gt;/</code></h3>
-						<p>Canonical source for plugin metadata, skills, hooks, CLIs, README files, and changelogs.</p>
-					</article>
-					<article class="repo-item">
-						<h3><code>.agents/plugins/generated/</code></h3>
-						<p>Generated Codex adapter packages produced from the source package layout.</p>
-					</article>
-					<article class="repo-item">
-						<h3><code>bin/plugin-adapters</code></h3>
-						<p>Build, check, and diff generated runtime forms before shipping marketplace changes.</p>
-					</article>
-					<article class="repo-item">
-						<h3><code>bin/plugin-versions</code></h3>
-						<p>Checks or writes package versions using the repository's version convention.</p>
-					</article>
-					<article class="repo-item">
-						<h3><code>hooks/</code></h3>
-						<p>Repository-level git hooks that keep versions, adapters, and commit metadata disciplined.</p>
-					</article>
-					<article class="repo-item">
-						<h3><code>docs/</code></h3>
-						<p>GitHub Pages source, migration documentation, and public site assets.</p>
-					</article>
-				</div>
-			</section>
-
 			<section id="install" class="section install-section">
-				<div class="section-heading">
-					<p class="eyebrow">Use it</p>
-					<h2>Installation</h2>
-					<p>
-						Add the marketplace once, then install the packages that match the
-						agent runtime and workflow you use.
-					</p>
-				</div>
+				<div class="install-panel">
+					<div class="section-kicker">
+						<p class="eyebrow">Install</p>
+						<h2>Add the marketplace once. Pick the gear you need.</h2>
+					</div>
 
-				<div class="install-grid">
-					<article class="install-block">
-						<h3>Claude Code</h3>
-						<pre><code>claude plugins marketplace add epologee/laicluse-agent-fieldkit
+					<div class="install-grid">
+						<article class="install-block">
+							<h3>Claude Code</h3>
+							<pre><code>claude plugins marketplace add epologee/laicluse-agent-fieldkit
 claude plugins install git-discipline@laicluse-agent-fieldkit
 claude plugins install rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
-					</article>
+						</article>
 
-					<article class="install-block">
-						<h3>Codex</h3>
-						<pre><code>codex plugin marketplace add epologee/laicluse-agent-fieldkit
+						<article class="install-block">
+							<h3>Codex</h3>
+							<pre><code>codex plugin marketplace add epologee/laicluse-agent-fieldkit
 codex plugin add git-discipline@laicluse-agent-fieldkit
 codex plugin add rover@laicluse-agent-fieldkit
 codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
-					</article>
+						</article>
+					</div>
 				</div>
-
-				<p class="source-note">
-					For local development, use <code>claude plugins marketplace add ./</code>
-					or <code>codex plugin marketplace add ./</code> from the repository root.
-				</p>
 			</section>
 		</main>
 
@@ -465,5 +446,7 @@ codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
 			<span>l'Aicluse Agent Fieldkit</span>
 			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
 		</footer>
+
+		<script src="site.js"></script>
 	</body>
 </html>
