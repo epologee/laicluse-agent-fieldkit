@@ -1,5 +1,5 @@
 {
   "name": "dibs",
   "description": "Single-occupancy lock for a working directory: a vendor-neutral, cross-platform CLI so only one coding agent occupies a directory at a time. claim/release/check on an atomic exclusive-create lockfile keyed by realpath, with pid-based liveness that self-heals a dead holder and respects a live one. No flock, no native dependency. bonsai and the discipline hooks consume it.",
-  "version": "2.0.11"
+  "version": "2.0.12"
 }

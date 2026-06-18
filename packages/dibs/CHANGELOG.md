@@ -4,6 +4,19 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.11]
+
+### Fixed
+
+- **Occupancy now refuses a codex nested under a Claude session.** A codex
+  started inside a Claude session (intervision, `codex exec`) runs below the
+  Claude process, and the holder-pid walk climbed to the topmost agent
+  ancestor, landing on the Claude pid that already held the directory, so dibs
+  read held-by-self and allowed the edit. The walk now stops at the nearest
+  agent ancestor, and the agent label keys on `PLUGIN_ROOT` (which codex sets
+  alongside `CLAUDE_PLUGIN_ROOT`) so a nested codex no longer mislabels itself
+  as claude.
+
 ## [v2.0.9]
 
 ### Added
