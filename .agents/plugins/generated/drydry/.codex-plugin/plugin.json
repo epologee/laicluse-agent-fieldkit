@@ -1,0 +1,26 @@
+{
+  "name": "drydry",
+  "version": "2.0.1",
+  "description": "Find and converge parallel paths in any artefact: code, prose, design systems. Methodology guide that disciplines how a duplication audit runs (Type-4 clone framing, verifier-burden LLM pass, allow-list scoping, drift hypothesis, triage, two-fates discipline, contrarian second-pass, method-as-artefact) without prescribing what duplication looks like in your codebase. One orchestrator (drydry:drydry) with quick and audit modes; the calling session formulates the audit checklist from the codebase in front of it. Agent-only sub-skills handle sweep, checklist seeds, triage, research, upstream/framework checks, and instruction-file audits.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "drydry"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Drydry",
+    "shortDescription": "Find and converge parallel paths in any artefact: code, prose, design systems. Methodology guide that disciplines how...",
+    "longDescription": "Find and converge parallel paths in any artefact: code, prose, design systems. Methodology guide that disciplines how a duplication audit runs (Type-4 clone framing, verifier-burden LLM pass, allow-list scoping, drift hypothesis, triage, two-fates discipline, contrarian second-pass, method-as-artefact) without prescribing what duplication looks like in your codebase. One orchestrator (drydry:drydry) with quick and audit modes; the calling session formulates the audit checklist from the codebase in front of it. Agent-only sub-skills handle sweep, checklist seeds, triage, research, upstream/framework checks, and instruction-file audits.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Drydry plugin."
+    ]
+  }
+}

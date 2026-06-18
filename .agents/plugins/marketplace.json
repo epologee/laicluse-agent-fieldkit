@@ -101,6 +101,18 @@
       "category": "Productivity"
     },
     {
+      "name": "drydry",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/drydry"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
       "name": "clipboard",
       "source": {
         "source": "local",

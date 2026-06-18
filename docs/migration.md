@@ -16,6 +16,7 @@ The package names for the individual plugins stay stable:
 - `dont-do-that`
 - `intervision`
 - `anger-management`
+- `drydry`
 - `autonomous`
 - `gurus`
 - `rover`
@@ -39,6 +40,7 @@ claude plugins install git-discipline@laicluse-agent-fieldkit
 claude plugins install dont-do-that@laicluse-agent-fieldkit
 claude plugins install intervision@laicluse-agent-fieldkit
 claude plugins install anger-management@laicluse-agent-fieldkit
+claude plugins install drydry@laicluse-agent-fieldkit
 claude plugins install autonomous@laicluse-agent-fieldkit
 claude plugins install gurus@laicluse-agent-fieldkit
 claude plugins install rover@laicluse-agent-fieldkit
@@ -56,6 +58,7 @@ codex plugin add git-discipline@laicluse-agent-fieldkit
 codex plugin add dont-do-that@laicluse-agent-fieldkit
 codex plugin add intervision@laicluse-agent-fieldkit
 codex plugin add anger-management@laicluse-agent-fieldkit
+codex plugin add drydry@laicluse-agent-fieldkit
 codex plugin add gurus@laicluse-agent-fieldkit
 codex plugin add rover@laicluse-agent-fieldkit
 codex plugin add clipboard@laicluse-agent-fieldkit

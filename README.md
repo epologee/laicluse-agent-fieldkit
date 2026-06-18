@@ -18,6 +18,9 @@ The marketplace currently ships:
 - `anger-management`: curse at your coding agent now, fix the real problem
   later. Capture commands log friction to a global pile; a delayed background
   investigation diagnoses the pattern and `repair` routes the fix.
+- `drydry`: duplication-audit methodology for code, prose, design systems, and
+  technical docs. Quick mode answers scoped "is this duplicate?" questions;
+  audit mode produces a findings artefact with verifier commands.
 - `autonomous` (Claude Code): keep an autonomous mission running across turns. A startup
   capability probe decides whether keep-alive machinery (cron heartbeat,
   backoff, wake) is needed; persistent processes run without it.
@@ -46,6 +49,7 @@ claude plugins install git-discipline@laicluse-agent-fieldkit
 claude plugins install dont-do-that@laicluse-agent-fieldkit
 claude plugins install intervision@laicluse-agent-fieldkit
 claude plugins install anger-management@laicluse-agent-fieldkit
+claude plugins install drydry@laicluse-agent-fieldkit
 claude plugins install autonomous@laicluse-agent-fieldkit
 claude plugins install gurus@laicluse-agent-fieldkit
 claude plugins install rover@laicluse-agent-fieldkit
@@ -63,6 +67,7 @@ codex plugin add git-discipline@laicluse-agent-fieldkit
 codex plugin add dont-do-that@laicluse-agent-fieldkit
 codex plugin add intervision@laicluse-agent-fieldkit
 codex plugin add anger-management@laicluse-agent-fieldkit
+codex plugin add drydry@laicluse-agent-fieldkit
 codex plugin add gurus@laicluse-agent-fieldkit
 codex plugin add rover@laicluse-agent-fieldkit
 codex plugin add clipboard@laicluse-agent-fieldkit

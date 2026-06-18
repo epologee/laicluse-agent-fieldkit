@@ -23,7 +23,7 @@ skill's matching behavior.
 
 All first-party runtime state for l'Aicluse Agent Fieldkit projects uses
 `${LAICLUSE_HOME:-$HOME/.laicluse}` as its root. Create
-subdirectories by component name, for example `~/.laicluse/circus/`, not
+subdirectories by component name, for example `~/.laicluse/drydry/`, not
 by marketplace status (`public`, `private`) or repository name, and not under
 new `~/.laicluse-*` roots.
 

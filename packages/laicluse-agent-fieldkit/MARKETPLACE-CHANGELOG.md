@@ -8,6 +8,13 @@ new plugins joining, plugins leaving, marketplace-level
 conventions, shared infrastructure, and breaking changes that
 span multiple plugins.
 
+## [2026-06] drydry joined Fieldkit
+
+`drydry` now ships as `drydry@laicluse-agent-fieldkit` for Claude Code and
+Codex. The Fieldkit copy keeps the quick/audit duplication methodology and
+uses the generated Codex adapter so the Codex marketplace receives only the
+runtime-compatible skill bodies.
+
 ## [2026-06] Codex catalog omits Claude-only runtime skills
 
 The generated Codex marketplace now serves a supported subset instead of a

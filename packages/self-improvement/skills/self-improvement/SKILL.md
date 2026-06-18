@@ -121,7 +121,7 @@ Instruction files are valid only after the stronger targets do not fit.
 
 Common targets:
 
-- Project-level: `AGENTS.md`, `CLAUDE.md`, `CIRCUS.md`, or equivalent files in
+- Project-level: `AGENTS.md`, `CLAUDE.md`, or equivalent files in
   the repo.
 - User-level: the active agent's personal instruction source.
 - Generated targets: files that say they are generated must be fixed at their

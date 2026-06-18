@@ -42,7 +42,7 @@ Public attribution references:
 ## Quick Workflow
 
 1. Read the nearest project instructions first: `AGENTS.md`, `CLAUDE.md`,
-   `CIRCUS.md`, `README.md`, and any local domain docs that clearly own the
+   `README.md`, and any local domain docs that clearly own the
    vocabulary.
 2. Search before inventing. Use `rg`, `git log`, and neighboring code/docs to
    find the existing term for the concept. A slightly imperfect established
