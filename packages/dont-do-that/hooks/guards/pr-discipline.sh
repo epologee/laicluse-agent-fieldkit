@@ -1,5 +1,5 @@
 #!/bin/bash
-# PreToolUse:Bash guard for gh pr create / gh pr edit. allow-comment: hook-header documenting the matchers and the operator escape, same pattern as sibling no-remote-create.sh. Blocks when the title uses a placement-verb dodge (git-discipline Rule 1 vocabulary) or the body carries fixed-section/AI-attribution template signatures (## Summary / ## Test plan headers, Generated with Claude Code footer, Co-Authored-By trailer with an @anthropic.com email). PR-time enforcement closes the gap left by the git-discipline commit-subject and commit-trailers guards, which fire on git commit but never on gh pr create.
+# PreToolUse:Bash guard for gh pr create / gh pr edit. allow-comment: hook-header documenting the matchers and the operator escape, same pattern as sibling no-remote-create.sh. Blocks when the title uses a placement-verb dodge (git-discipline Rule 1 vocabulary) or the body carries fixed-section or AI-attribution template signatures (## Summary / ## Test plan headers, generated-with footer, Co-Authored-By trailer with an @anthropic.com email). PR-time enforcement closes the gap left by the git-discipline commit-subject and commit-trailers guards, which fire on git commit but never on gh pr create.
 
 guard_pr_discipline() {
   local input="$1"
@@ -30,8 +30,8 @@ guard_pr_discipline() {
     dd_emit_deny pr-discipline "PR body contains '## Summary' or '## Test plan' header. The body should be one or two paragraphs about why the change matters, not a fixed-section template."
   fi
 
-  if grep -qE '(Generated with \[?Claude Code|🤖[[:space:]]+Generated with)' <<< "$cmd"; then
-    dd_emit_deny pr-discipline "PR body contains the 'Generated with Claude Code' footer. That signals AI authorship to the reviewer in a way the operator does not want; remove it."
+  if grep -qE '(^|[[:space:]])(🤖[[:space:]]+)?Generated with[[:space:]]' <<< "$cmd"; then
+    dd_emit_deny pr-discipline "PR body contains a generated-with footer. That signals AI authorship to the reviewer in a way the operator does not want; remove it."
   fi
 
   if grep -qE 'Co-Authored-By:[[:space:]]+[^<]*<[^>]*@anthropic\.com>' <<< "$cmd"; then

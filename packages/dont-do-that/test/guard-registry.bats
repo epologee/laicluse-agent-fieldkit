@@ -120,6 +120,13 @@ posttool_edit() {
   [[ "$output" == *"[dont-do-that/verify]"* ]]
 }
 
+@test "Codex estimate stays silent even on duration phrasing" {
+  run bash -c 'printf "%s" "$1" | DD_AGENT=codex bash "$2"' _ \
+    "$(stop_payload "Dat is een paar uur werk. Ik ga verder met de rest. 🏁")" "$DISPATCH"
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"[dont-do-that/estimate]"* ]]
+}
+
 @test "Codex dash still emits from PostToolUse" {
   emdash="$(printf '\xe2\x80\x94')"
   run bash -c 'printf "%s" "$1" | DD_AGENT=codex bash "$2"' _ \

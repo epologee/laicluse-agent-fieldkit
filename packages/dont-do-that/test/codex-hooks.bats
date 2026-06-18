@@ -26,6 +26,11 @@ stop_payload() {
   [ "$(jq -r '.guards.premature.agents.claude' "$REGISTRY")" = "enabled" ]
 }
 
+@test "Registry is the source of truth: estimate is disabled for codex, enabled for claude" {
+  [ "$(jq -r '.guards.estimate.agents.codex' "$REGISTRY")" = "disabled" ]
+  [ "$(jq -r '.guards.estimate.agents.claude' "$REGISTRY")" = "enabled" ]
+}
+
 @test "Codex hook manifest keeps Stop and the tool guards" {
   jq -e '.hooks.Stop | length > 0' "$SOURCE" > /dev/null
   jq -e '.hooks.PreToolUse | length > 0' "$SOURCE" > /dev/null
@@ -33,6 +38,10 @@ stop_payload() {
   jq -e '.hooks.Stop | length > 0' "$GENERATED" > /dev/null
   jq -e '.hooks.PreToolUse | length > 0' "$GENERATED" > /dev/null
   jq -e '.hooks.PostToolUse | length > 0' "$GENERATED" > /dev/null
+}
+
+@test "Prefer guard no longer hardcodes the Claude plugin registry path" {
+  ! grep -q '~/.claude/plugins/installed_plugins.json' "$BATS_TEST_DIRNAME/../hooks/guards/prefer.sh"
 }
 
 @test "Codex agent suppresses premature" {

@@ -88,7 +88,11 @@
       "lane": "stop-mutex",
       "order": 20,
       "function": "guard_estimate",
-      "contract": "final-answer"
+      "contract": "final-answer",
+      "agents": {
+        "claude": "enabled",
+        "codex": "disabled"
+      }
     },
     "prefer": {
       "lane": "stop-mutex",
