@@ -30,11 +30,11 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 15,
-		"codexPackages": 13,
+		"sourcePackages": 16,
+		"codexPackages": 14,
 		"claudeOnlyPackages": 2,
-		"changelogEntries": 15,
-		"skillEntries": 64,
+		"changelogEntries": 16,
+		"skillEntries": 65,
 		"hookFiles": 52
 	},
 	"install": {
@@ -54,7 +54,8 @@
 			"claude plugins install clipboard@laicluse-agent-fieldkit",
 			"claude plugins install gurus@laicluse-agent-fieldkit",
 			"claude plugins install rover@laicluse-agent-fieldkit",
-			"claude plugins install naming-is-hard@laicluse-agent-fieldkit"
+			"claude plugins install naming-is-hard@laicluse-agent-fieldkit",
+			"claude plugins install whywhy@laicluse-agent-fieldkit"
 		],
 		"codex": [
 			"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
@@ -70,7 +71,8 @@
 			"codex plugin add clipboard@laicluse-agent-fieldkit",
 			"codex plugin add gurus@laicluse-agent-fieldkit",
 			"codex plugin add rover@laicluse-agent-fieldkit",
-			"codex plugin add naming-is-hard@laicluse-agent-fieldkit"
+			"codex plugin add naming-is-hard@laicluse-agent-fieldkit",
+			"codex plugin add whywhy@laicluse-agent-fieldkit"
 		]
 	},
 	"plugins": [
@@ -386,6 +388,27 @@
 				"type": "Added",
 				"summary": "naming-is-hard now ships from the public laicluse-agent-fieldkit marketplace."
 			}
+		},
+		{
+			"name": "whywhy",
+			"version": "2.0.1",
+			"category": "review",
+			"summary": "Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/whywhy",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/whywhy",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Added",
+				"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace."
+			}
 		}
 	],
 	"changelog": [
@@ -508,6 +531,14 @@
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
+		},
+		{
+			"plugin": "whywhy",
+			"packageVersion": "2.0.1",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
 		}
 	]
 }
