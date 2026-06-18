@@ -25,14 +25,15 @@ occ_dibs_bin() {
   return 1
 }
 
+# allow-comment: load-bearing. Codex sets PLUGIN_ROOT (and CLAUDE_PLUGIN_ROOT too, for Claude-format hook compat); Claude sets only CLAUDE_PLUGIN_ROOT. So PLUGIN_ROOT presence is the codex signal and must be checked first, otherwise a codex launched under a Claude session mislabels itself claude. DIBS_AGENT overrides for any host.
 occ_agent_label() {
   if [ -n "${DIBS_AGENT:-}" ]; then printf '%s\n' "$DIBS_AGENT"; return 0; fi
-  if [ -n "${PLUGIN_ROOT:-}" ] && [ -z "${CLAUDE_PLUGIN_ROOT:-}" ]; then printf 'codex\n'; return 0; fi
+  if [ -n "${PLUGIN_ROOT:-}" ]; then printf 'codex\n'; return 0; fi
   if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then printf 'claude\n'; return 0; fi
   printf 'agent\n'
 }
 
-# allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. DIBS_HOLDER_PID overrides; else walk to the TOPMOST claude/codex ancestor so the same pid is recorded across SessionStart, every PreToolUse, and SessionEnd; fall back to the start pid.
+# allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. DIBS_HOLDER_PID overrides; else walk to the NEAREST claude/codex ancestor and stop there. Nearest, not topmost: a codex launched inside a Claude session (intervision, codex exec) sits below the Claude process, and topmost would climb past codex to the Claude pid that already holds the lock, so dibs would see held-by-self and wrongly allow. The nearest agent ancestor is this session's own long-lived process, stable across SessionStart, every PreToolUse, and SessionEnd. Fall back to the start pid.
 occ_holder_pid() {
   local start="${1:-$PPID}"
   if [ -n "${DIBS_HOLDER_PID:-}" ] && [ "${DIBS_HOLDER_PID}" -gt 0 ] 2>/dev/null; then
@@ -43,7 +44,7 @@ occ_holder_pid() {
   while [ -n "$pid" ] && [ "$pid" -gt 1 ] 2>/dev/null && [ "$hops" -lt 30 ]; do
     comm=$(ps -o comm= -p "$pid" 2>/dev/null)
     case "$comm" in
-      *[Cc]laude*|*[Cc]odex*) match="$pid" ;;
+      *[Cc]laude*|*[Cc]odex*) match="$pid"; break ;;
     esac
     parent=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
     [ -z "$parent" ] && break

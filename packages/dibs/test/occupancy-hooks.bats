@@ -166,7 +166,7 @@ run_hook() {
   ! echo "$output" | grep -q '\[dibs/occupancy\]'
 }
 
-@test "holder pid walk resolves the topmost claude/codex ancestor (hermetic fake ps)" {
+@test "holder pid walk resolves the nearest claude/codex ancestor (hermetic fake ps)" {
   unset DIBS_HOLDER_PID
   mkdir -p "$BATS_TEST_TMPDIR/bin"
   cat > "$BATS_TEST_TMPDIR/bin/ps" <<'PS'
@@ -190,4 +190,37 @@ PS
   PATH="$BATS_TEST_TMPDIR/bin:$PATH" run occ_holder_pid 100
   [ "$status" -eq 0 ]
   [ "$output" = "300" ]
+}
+
+@test "holder pid walk picks the inner codex, not the outer claude it runs under (hermetic fake ps)" {
+  unset DIBS_HOLDER_PID
+  mkdir -p "$BATS_TEST_TMPDIR/bin"
+  cat > "$BATS_TEST_TMPDIR/bin/ps" <<'PS'
+#!/bin/bash
+mode="$2"; pid="$4"
+if [ "$mode" = "comm=" ]; then
+  case "$pid" in
+    100) echo "/bin/bash" ;;
+    250) echo "/Users/x/.codex/packages/standalone/releases/codex-path/codex" ;;
+    350) echo "/usr/local/bin/node" ;;
+    450) echo "/Users/x/.local/bin/claude" ;;
+  esac
+elif [ "$mode" = "ppid=" ]; then
+  case "$pid" in
+    100) echo 250 ;; 250) echo 350 ;; 350) echo 450 ;; 450) echo 1 ;;
+  esac
+fi
+PS
+  chmod +x "$BATS_TEST_TMPDIR/bin/ps"
+  source "$HOOK"
+  PATH="$BATS_TEST_TMPDIR/bin:$PATH" run occ_holder_pid 100
+  [ "$status" -eq 0 ]
+  [ "$output" = "250" ]
+}
+
+@test "a codex launched under a claude session still labels itself codex" {
+  source "$HOOK"
+  PLUGIN_ROOT="/some/codex/cache" CLAUDE_PLUGIN_ROOT="/some/codex/cache" run occ_agent_label
+  [ "$status" -eq 0 ]
+  [ "$output" = "codex" ]
 }
