@@ -1,0 +1,26 @@
+{
+  "name": "whywhy",
+  "version": "2.0.1",
+  "description": "Drill N layers deep into a question or goal (default 10). Claude asks and answers \"why?\" itself, then analyses the chain for a better direction. Use when tackling unclear decisions, vague goals, root-cause analysis, or self-improvement on something that is not working as desired.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "whywhy"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Whywhy",
+    "shortDescription": "Drill N layers deep into a question or goal (default 10). Claude asks and answers \"why?\" itself, then analyses the ch...",
+    "longDescription": "Drill N layers deep into a question or goal (default 10). Claude asks and answers \"why?\" itself, then analyses the chain for a better direction. Use when tackling unclear decisions, vague goals, root-cause analysis, or self-improvement on something that is not working as desired.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Whywhy plugin."
+    ]
+  }
+}
