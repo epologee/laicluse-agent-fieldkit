@@ -1,0 +1,513 @@
+{
+	"generatedBy": "bin/build-pages",
+	"source": "packages/*/.claude-plugin/plugin.json, packages/*/CHANGELOG.md, .agents/plugins/marketplace.json",
+	"repository": "https://github.com/epologee/laicluse-agent-fieldkit",
+	"marketplace": {
+		"name": "laicluse-agent-fieldkit",
+		"displayName": "l'Aicluse Agent Fieldkit",
+		"description": "Agent skills marketplace for Claude Code and Codex"
+	},
+	"categories": [
+		{
+			"id": "workflow",
+			"label": "Repository discipline",
+			"description": "The guardrails that keep fast agent work from leaving shared state messy."
+		},
+		{
+			"id": "autonomy",
+			"label": "Autonomous work",
+			"description": "Longer missions with explicit phases, wake paths, checks, and stopping points."
+		},
+		{
+			"id": "review",
+			"label": "Review and language",
+			"description": "Second reads, duplication audits, naming doctrine, and structured critique."
+		},
+		{
+			"id": "feedback",
+			"label": "Feedback and utilities",
+			"description": "The small loops that turn irritation, confusion, and repeated friction into maintainable fixes."
+		}
+	],
+	"counts": {
+		"sourcePackages": 15,
+		"codexPackages": 13,
+		"claudeOnlyPackages": 2,
+		"changelogEntries": 15,
+		"skillEntries": 64,
+		"hookFiles": 52
+	},
+	"install": {
+		"claude": [
+			"claude plugins marketplace add epologee/laicluse-agent-fieldkit",
+			"claude plugins install how-plugins-work@laicluse-agent-fieldkit",
+			"claude plugins install bonsai@laicluse-agent-fieldkit",
+			"claude plugins install dibs@laicluse-agent-fieldkit",
+			"claude plugins install self-improvement@laicluse-agent-fieldkit",
+			"claude plugins install git-discipline@laicluse-agent-fieldkit",
+			"claude plugins install dont-do-that@laicluse-agent-fieldkit",
+			"claude plugins install intervision@laicluse-agent-fieldkit",
+			"claude plugins install anger-management@laicluse-agent-fieldkit",
+			"claude plugins install drydry@laicluse-agent-fieldkit",
+			"claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit",
+			"claude plugins install autonomous@laicluse-agent-fieldkit",
+			"claude plugins install clipboard@laicluse-agent-fieldkit",
+			"claude plugins install gurus@laicluse-agent-fieldkit",
+			"claude plugins install rover@laicluse-agent-fieldkit",
+			"claude plugins install naming-is-hard@laicluse-agent-fieldkit"
+		],
+		"codex": [
+			"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
+			"codex plugin add how-plugins-work@laicluse-agent-fieldkit",
+			"codex plugin add bonsai@laicluse-agent-fieldkit",
+			"codex plugin add dibs@laicluse-agent-fieldkit",
+			"codex plugin add self-improvement@laicluse-agent-fieldkit",
+			"codex plugin add git-discipline@laicluse-agent-fieldkit",
+			"codex plugin add dont-do-that@laicluse-agent-fieldkit",
+			"codex plugin add intervision@laicluse-agent-fieldkit",
+			"codex plugin add anger-management@laicluse-agent-fieldkit",
+			"codex plugin add drydry@laicluse-agent-fieldkit",
+			"codex plugin add clipboard@laicluse-agent-fieldkit",
+			"codex plugin add gurus@laicluse-agent-fieldkit",
+			"codex plugin add rover@laicluse-agent-fieldkit",
+			"codex plugin add naming-is-hard@laicluse-agent-fieldkit"
+		]
+	},
+	"plugins": [
+		{
+			"name": "how-plugins-work",
+			"version": "2.0.22",
+			"category": "feedback",
+			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/how-plugins-work",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/how-plugins-work",
+			"skillCount": 3,
+			"commandCount": 2,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.17",
+				"type": "Changed",
+				"summary": "Agent-specific skill sources may now be single-sided."
+			}
+		},
+		{
+			"name": "bonsai",
+			"version": "2.0.21",
+			"category": "workflow",
+			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/bonsai",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/bonsai",
+			"skillCount": 3,
+			"commandCount": 2,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.21",
+				"type": "Fixed",
+				"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree."
+			}
+		},
+		{
+			"name": "dibs",
+			"version": "2.0.12",
+			"category": "workflow",
+			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/dibs",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs",
+			"skillCount": 1,
+			"commandCount": 2,
+			"hookFileCount": 3,
+			"latestChange": {
+				"version": "v2.0.11",
+				"type": "Fixed",
+				"summary": "Occupancy now refuses a codex nested under a Claude session."
+			}
+		},
+		{
+			"name": "self-improvement",
+			"version": "2.0.4",
+			"category": "feedback",
+			"summary": "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/self-improvement",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/self-improvement",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.0",
+				"type": "Changed",
+				"summary": "First l'Aicluse release."
+			}
+		},
+		{
+			"name": "git-discipline",
+			"version": "2.0.32",
+			"category": "workflow",
+			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/git-discipline",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/git-discipline",
+			"skillCount": 13,
+			"commandCount": 2,
+			"hookFileCount": 25,
+			"latestChange": {
+				"version": "v2.0.32",
+				"type": "Changed",
+				"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks."
+			}
+		},
+		{
+			"name": "dont-do-that",
+			"version": "2.0.19",
+			"category": "workflow",
+			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/dont-do-that",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that",
+			"skillCount": 2,
+			"commandCount": 2,
+			"hookFileCount": 24,
+			"latestChange": {
+				"version": "v2.0.17",
+				"type": "Changed",
+				"summary": "Guard placement and per-agent policy now live in a registry."
+			}
+		},
+		{
+			"name": "intervision",
+			"version": "2.0.7",
+			"category": "review",
+			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/intervision",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/intervision",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.5",
+				"type": "Fixed",
+				"summary": "Codex-to-Claude peer checks now use a clean headless Claude invocation."
+			}
+		},
+		{
+			"name": "anger-management",
+			"version": "2.0.12",
+			"category": "feedback",
+			"summary": "Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/anger-management",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/anger-management",
+			"skillCount": 15,
+			"commandCount": 6,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.10",
+				"type": "Breaking",
+				"summary": "The background-repair helper is now bin/anger-schedule, not bin/anger-arm."
+			}
+		},
+		{
+			"name": "drydry",
+			"version": "2.0.1",
+			"category": "review",
+			"summary": "Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/drydry",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/drydry",
+			"skillCount": 7,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.0",
+				"type": "Breaking",
+				"summary": "Marketplace identity moved to Fieldkit."
+			}
+		},
+		{
+			"name": "laicluse-agent-fieldkit",
+			"version": "2.0.2",
+			"category": "feedback",
+			"summary": "Marketplace utilities, including a changelog reader for installed Fieldkit plugins.",
+			"support": [
+				"Claude Code"
+			],
+			"codex": false,
+			"sourcePath": "packages/laicluse-agent-fieldkit",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.2",
+				"type": "Fixed",
+				"summary": "/whats-new is Claude-only for now."
+			}
+		},
+		{
+			"name": "autonomous",
+			"version": "2.0.9",
+			"category": "autonomy",
+			"summary": "Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.",
+			"support": [
+				"Claude Code"
+			],
+			"codex": false,
+			"sourcePath": "packages/autonomous",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/autonomous",
+			"skillCount": 3,
+			"commandCount": 2,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Breaking",
+				"summary": "autonomous is no longer advertised to Codex."
+			}
+		},
+		{
+			"name": "clipboard",
+			"version": "2.0.9",
+			"category": "feedback",
+			"summary": "Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/clipboard",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/clipboard",
+			"skillCount": 1,
+			"commandCount": 2,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.8",
+				"type": "Fixed",
+				"summary": "Codex now gets its own /clipboard helper-resolution instructions."
+			}
+		},
+		{
+			"name": "gurus",
+			"version": "2.0.5",
+			"category": "review",
+			"summary": "Runs opinionated review panels for software, decisions, and prose from multiple perspectives.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/gurus",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/gurus",
+			"skillCount": 4,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Fixed",
+				"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff."
+			}
+		},
+		{
+			"name": "rover",
+			"version": "2.0.11",
+			"category": "autonomy",
+			"summary": "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/rover",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/rover",
+			"skillCount": 8,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.9",
+				"type": "Fixed",
+				"summary": "rover is multi-agent again."
+			}
+		},
+		{
+			"name": "naming-is-hard",
+			"version": "2.0.2",
+			"category": "review",
+			"summary": "Applies naming and wording doctrine across code symbols, branches, docs, UI copy, releases, and mixed-language text.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/naming-is-hard",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/naming-is-hard",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Added",
+				"summary": "naming-is-hard now ships from the public laicluse-agent-fieldkit marketplace."
+			}
+		}
+	],
+	"changelog": [
+		{
+			"plugin": "git-discipline",
+			"packageVersion": "2.0.32",
+			"version": "v2.0.32",
+			"type": "Changed",
+			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
+		},
+		{
+			"plugin": "how-plugins-work",
+			"packageVersion": "2.0.22",
+			"version": "v2.0.17",
+			"type": "Changed",
+			"summary": "Agent-specific skill sources may now be single-sided.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
+		},
+		{
+			"plugin": "bonsai",
+			"packageVersion": "2.0.21",
+			"version": "v2.0.21",
+			"type": "Fixed",
+			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
+		},
+		{
+			"plugin": "dont-do-that",
+			"packageVersion": "2.0.19",
+			"version": "v2.0.17",
+			"type": "Changed",
+			"summary": "Guard placement and per-agent policy now live in a registry.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
+		},
+		{
+			"plugin": "anger-management",
+			"packageVersion": "2.0.12",
+			"version": "v2.0.10",
+			"type": "Breaking",
+			"summary": "The background-repair helper is now bin/anger-schedule, not bin/anger-arm.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
+		},
+		{
+			"plugin": "dibs",
+			"packageVersion": "2.0.12",
+			"version": "v2.0.11",
+			"type": "Fixed",
+			"summary": "Occupancy now refuses a codex nested under a Claude session.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
+		},
+		{
+			"plugin": "rover",
+			"packageVersion": "2.0.11",
+			"version": "v2.0.9",
+			"type": "Fixed",
+			"summary": "rover is multi-agent again.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"
+		},
+		{
+			"plugin": "autonomous",
+			"packageVersion": "2.0.9",
+			"version": "v2.0.1",
+			"type": "Breaking",
+			"summary": "autonomous is no longer advertised to Codex.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/autonomous/CHANGELOG.md"
+		},
+		{
+			"plugin": "clipboard",
+			"packageVersion": "2.0.9",
+			"version": "v2.0.8",
+			"type": "Fixed",
+			"summary": "Codex now gets its own /clipboard helper-resolution instructions.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/clipboard/CHANGELOG.md"
+		},
+		{
+			"plugin": "intervision",
+			"packageVersion": "2.0.7",
+			"version": "v2.0.5",
+			"type": "Fixed",
+			"summary": "Codex-to-Claude peer checks now use a clean headless Claude invocation.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
+		},
+		{
+			"plugin": "gurus",
+			"packageVersion": "2.0.5",
+			"version": "v2.0.1",
+			"type": "Fixed",
+			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
+		},
+		{
+			"plugin": "self-improvement",
+			"packageVersion": "2.0.4",
+			"version": "v2.0.0",
+			"type": "Changed",
+			"summary": "First l'Aicluse release.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
+		},
+		{
+			"plugin": "laicluse-agent-fieldkit",
+			"packageVersion": "2.0.2",
+			"version": "v2.0.2",
+			"type": "Fixed",
+			"summary": "/whats-new is Claude-only for now.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
+		},
+		{
+			"plugin": "naming-is-hard",
+			"packageVersion": "2.0.2",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "naming-is-hard now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/naming-is-hard/CHANGELOG.md"
+		},
+		{
+			"plugin": "drydry",
+			"packageVersion": "2.0.1",
+			"version": "v2.0.0",
+			"type": "Breaking",
+			"summary": "Marketplace identity moved to Fieldkit.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
+		}
+	]
+}

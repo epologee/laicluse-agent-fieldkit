@@ -1,126 +1,265 @@
 (function () {
-	const canvas = document.getElementById("field-map");
-	if (!canvas) return;
+	"use strict";
 
-	const context = canvas.getContext("2d");
-	const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-	const colors = ["#0f766e", "#2457b8", "#a36a16", "#b42318"];
-	const labels = [
-		"git-discipline",
-		"rover",
-		"bonsai",
-		"gurus",
-		"drydry",
-		"dibs",
-		"intervision",
-		"clipboard",
-		"naming-is-hard",
-		"self-improvement",
-		"dont-do-that",
-		"how-plugins-work",
+	const state = {
+		data: null,
+		query: "",
+		support: "all",
+		category: "all",
+	};
+
+	const supportFilters = [
+		{ id: "all", label: "All" },
+		{ id: "both", label: "Claude + Codex" },
+		{ id: "claude", label: "Claude only" },
 	];
 
-	let width = 0;
-	let height = 0;
-	let ratio = 1;
-	let nodes = [];
-	let frame = 0;
+	const typeClass = {
+		Breaking: "breaking",
+		Added: "added",
+		Changed: "changed",
+		Fixed: "fixed",
+	};
 
-	function resize() {
-		ratio = Math.max(1, window.devicePixelRatio || 1);
-		width = canvas.clientWidth;
-		height = canvas.clientHeight;
-		canvas.width = Math.floor(width * ratio);
-		canvas.height = Math.floor(height * ratio);
-		context.setTransform(ratio, 0, 0, ratio, 0, 0);
-		nodes = labels.map((label, index) => {
-			const column = index % 4;
-			const row = Math.floor(index / 4);
-			return {
-				label,
-				x: width * (0.52 + column * 0.11) + Math.sin(index) * 18,
-				y: height * (0.22 + row * 0.22) + Math.cos(index * 1.8) * 22,
-				r: 4 + (index % 3),
-				color: colors[index % colors.length],
-				phase: index * 0.7,
-			};
+	function $(selector) {
+		return document.querySelector(selector);
+	}
+
+	function escapeHtml(value) {
+		return String(value || "")
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
+	function plural(count, word) {
+		return `${count} ${word}${count === 1 ? "" : "s"}`;
+	}
+
+	function supportLabel(plugin) {
+		return plugin.codex ? "Claude + Codex" : "Claude only";
+	}
+
+	function supportMode(plugin) {
+		return plugin.codex ? "both" : "claude";
+	}
+
+	function categoryLabel(id) {
+		const category = state.data.categories.find((item) => item.id === id);
+		return category ? category.label : id;
+	}
+
+	function renderHero(data) {
+		$("#hero-stats").innerHTML = `
+			<div class="stat-row">
+				<strong>${data.counts.sourcePackages}</strong>
+				<span>source packages</span>
+			</div>
+			<div class="stat-row">
+				<strong>${data.counts.codexPackages}</strong>
+				<span>Codex-compatible adapters</span>
+			</div>
+			<div class="stat-row muted">
+				<strong>${data.counts.claudeOnlyPackages}</strong>
+				<span>Claude-only packages</span>
+			</div>
+			<div class="stat-row">
+				<strong>${data.counts.skillEntries}</strong>
+				<span>skill entries indexed</span>
+			</div>
+		`;
+
+		const latest = data.changelog[0];
+		$("#hero-change").innerHTML = latest
+			? `
+				<span class="mini-label">latest package note</span>
+				<strong>${escapeHtml(latest.plugin)} ${escapeHtml(latest.packageVersion)}</strong>
+				<p>${escapeHtml(latest.summary)}</p>
+			`
+			: "";
+	}
+
+	function renderSummaries(data) {
+		$("#catalog-summary").innerHTML = `
+			<span>${plural(data.counts.sourcePackages, "package")}</span>
+			<span>${plural(data.counts.codexPackages, "Codex adapter")}</span>
+			<span>${plural(data.counts.changelogEntries, "changelog note")}</span>
+		`;
+	}
+
+	function renderFilterButtons(container, filters, active, onSelect) {
+		container.innerHTML = filters
+			.map(
+				(filter) => `
+					<button type="button" data-filter="${escapeHtml(filter.id)}" aria-pressed="${filter.id === active}">
+						${escapeHtml(filter.label)}
+					</button>
+				`,
+			)
+			.join("");
+		container.querySelectorAll("button").forEach((button) => {
+			button.addEventListener("click", () => {
+				onSelect(button.dataset.filter);
+			});
 		});
-		draw();
 	}
 
-	function draw() {
-		context.clearRect(0, 0, width, height);
-		context.lineCap = "round";
-		context.lineJoin = "round";
+	function syncFilterButtons() {
+		document.querySelectorAll("#support-filters button").forEach((button) => {
+			button.setAttribute("aria-pressed", String(button.dataset.filter === state.support));
+		});
+		document.querySelectorAll("#category-filters button").forEach((button) => {
+			button.setAttribute("aria-pressed", String(button.dataset.filter === state.category));
+		});
+	}
 
-		const t = frame / 60;
-		for (let i = 0; i < nodes.length; i += 1) {
-			for (let j = i + 1; j < nodes.length; j += 1) {
-				if ((i + j) % 5 !== 0 && Math.abs(i - j) !== 4) continue;
-				const a = nodes[i];
-				const b = nodes[j];
-				const pulse = 0.35 + Math.sin(t + a.phase + b.phase) * 0.12;
-				context.strokeStyle = `rgba(20, 21, 20, ${pulse})`;
-				context.lineWidth = 1;
-				context.beginPath();
-				context.moveTo(a.x, a.y);
-				context.bezierCurveTo((a.x + b.x) / 2, a.y - 48, (a.x + b.x) / 2, b.y + 48, b.x, b.y);
-				context.stroke();
-			}
-		}
-
-		nodes.forEach((node, index) => {
-			const drift = prefersReduced ? 0 : Math.sin(t + node.phase) * 3;
-			const x = node.x + drift;
-			const y = node.y + Math.cos(t * 0.8 + node.phase) * 2;
-			context.fillStyle = "rgba(255, 255, 255, 0.78)";
-			context.strokeStyle = "rgba(20, 21, 20, 0.16)";
-			context.lineWidth = 1;
-			const w = Math.max(92, node.label.length * 7.6 + 28);
-			const h = 34;
-			const rx = x - w / 2;
-			const ry = y - h / 2;
-			roundRect(rx, ry, w, h, 8);
-			context.fill();
-			context.stroke();
-
-			context.fillStyle = node.color;
-			context.beginPath();
-			context.arc(rx + 15, y, node.r, 0, Math.PI * 2);
-			context.fill();
-
-			context.fillStyle = "#232722";
-			context.font = "700 12px Inter, system-ui, sans-serif";
-			context.fillText(node.label, rx + 28, y + 4);
-
-			if (index % 4 === 0) {
-				context.fillStyle = "rgba(163, 106, 22, 0.08)";
-				context.beginPath();
-				context.arc(x, y, 70, 0, Math.PI * 2);
-				context.fill();
-			}
+	function renderControls(data) {
+		renderFilterButtons($("#support-filters"), supportFilters, state.support, (filter) => {
+			state.support = filter;
+			syncFilterButtons();
+			renderCatalog();
 		});
 
-		if (!prefersReduced) {
-			frame += 1;
-			requestAnimationFrame(draw);
-		}
+		renderFilterButtons(
+			$("#category-filters"),
+			[{ id: "all", label: "All categories" }, ...data.categories],
+			state.category,
+			(filter) => {
+				state.category = filter;
+				syncFilterButtons();
+				renderCatalog();
+			},
+		);
+
+		$("#catalog-search").addEventListener("input", (event) => {
+			state.query = event.target.value.toLowerCase().trim();
+			renderCatalog();
+		});
 	}
 
-	function roundRect(x, y, w, h, r) {
-		context.beginPath();
-		context.moveTo(x + r, y);
-		context.lineTo(x + w - r, y);
-		context.quadraticCurveTo(x + w, y, x + w, y + r);
-		context.lineTo(x + w, y + h - r);
-		context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-		context.lineTo(x + r, y + h);
-		context.quadraticCurveTo(x, y + h, x, y + h - r);
-		context.lineTo(x, y + r);
-		context.quadraticCurveTo(x, y, x + r, y);
-		context.closePath();
+	function pluginMatches(plugin) {
+		if (state.support !== "all" && supportMode(plugin) !== state.support) return false;
+		if (state.category !== "all" && plugin.category !== state.category) return false;
+		if (!state.query) return true;
+		const haystack = [
+			plugin.name,
+			plugin.summary,
+			categoryLabel(plugin.category),
+			supportLabel(plugin),
+			plugin.latestChange && plugin.latestChange.summary,
+		]
+			.filter(Boolean)
+			.join(" ")
+			.toLowerCase();
+		return haystack.includes(state.query);
 	}
 
-	window.addEventListener("resize", resize);
-	resize();
+	function renderCatalog() {
+		const grid = $("#plugin-grid");
+		const plugins = state.data.plugins.filter(pluginMatches);
+		$("#empty-state").hidden = plugins.length > 0;
+		grid.innerHTML = plugins.map(renderPluginCard).join("");
+	}
+
+	function renderPluginCard(plugin) {
+		const change = plugin.latestChange;
+		const type = change ? change.type : "Changed";
+		const badgeClass = typeClass[type] || "changed";
+		const featureBits = [
+			plural(plugin.skillCount, "skill"),
+			plugin.commandCount ? plural(plugin.commandCount, "command") : null,
+			plugin.hookFileCount ? "hooks" : null,
+		].filter(Boolean);
+
+		return `
+			<article class="plugin-card">
+				<header class="plugin-head">
+					<div>
+						<p class="plugin-category">${escapeHtml(categoryLabel(plugin.category))}</p>
+						<h3>${escapeHtml(plugin.name)}</h3>
+					</div>
+					<span class="version-pill">${escapeHtml(plugin.version)}</span>
+				</header>
+				<p class="plugin-summary">${escapeHtml(plugin.summary)}</p>
+				<div class="plugin-meta" aria-label="Package metadata">
+					<span class="support-pill ${supportMode(plugin)}">${escapeHtml(supportLabel(plugin))}</span>
+					${featureBits.map((bit) => `<span>${escapeHtml(bit)}</span>`).join("")}
+				</div>
+				${
+					change
+						? `
+							<div class="latest-note">
+								<span class="change-type ${badgeClass}">${escapeHtml(type)}</span>
+								<p>${escapeHtml(change.summary)}</p>
+							</div>
+						`
+						: ""
+				}
+				<a class="source-link" href="${escapeHtml(plugin.sourceUrl)}">Package source</a>
+			</article>
+		`;
+	}
+
+	function renderInstall(data) {
+		$("#claude-install").textContent = data.install.claude.join("\n");
+		$("#codex-install").textContent = data.install.codex.join("\n");
+		document.querySelectorAll("[data-copy-target]").forEach((button) => {
+			button.addEventListener("click", async () => {
+				const target = document.getElementById(button.dataset.copyTarget);
+				if (!target || !navigator.clipboard) return;
+				await navigator.clipboard.writeText(target.textContent);
+				button.textContent = "Copied";
+				window.setTimeout(() => {
+					button.textContent = "Copy";
+				}, 1400);
+			});
+		});
+	}
+
+	function renderChangelog(data) {
+		$("#change-feed").innerHTML = data.changelog
+			.map((change) => {
+				const badgeClass = typeClass[change.type] || "changed";
+				return `
+					<article class="change-item">
+						<div class="change-head">
+							<div>
+								<p>${escapeHtml(change.plugin)}</p>
+								<h3>${escapeHtml(change.packageVersion)}</h3>
+							</div>
+							<span class="change-type ${badgeClass}">${escapeHtml(change.type)}</span>
+						</div>
+						<p>${escapeHtml(change.summary)}</p>
+						<a href="${escapeHtml(change.sourceUrl)}">Full changelog</a>
+					</article>
+				`;
+			})
+			.join("");
+	}
+
+	function renderError(error) {
+		$("#hero-stats").innerHTML = "<p>Catalog data could not be loaded.</p>";
+		$("#plugin-grid").innerHTML = `
+			<p class="error-state">
+				${escapeHtml(error.message || "Unable to load docs/site-data.json.")}
+			</p>
+		`;
+	}
+
+	fetch("site-data.json")
+		.then((response) => {
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			return response.json();
+		})
+		.then((data) => {
+			state.data = data;
+			renderHero(data);
+			renderSummaries(data);
+			renderControls(data);
+			renderCatalog();
+			renderInstall(data);
+			renderChangelog(data);
+		})
+		.catch(renderError);
 })();

@@ -114,6 +114,13 @@ bin/plugin-adapters check .
 bin/plugin-adapters diff .
 ```
 
+The GitHub Pages catalog data is generated from the same source manifests and
+package changelogs:
+
+```bash
+bin/build-pages .
+```
+
 Plugin versions follow `2.0.<commit-count>` per package:
 
 ```bash

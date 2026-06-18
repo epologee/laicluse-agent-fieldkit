@@ -1,0 +1,321 @@
+#!/usr/bin/env node
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+
+const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
+
+const copy = {
+	"how-plugins-work": {
+		category: "feedback",
+		summary: "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
+	},
+	bonsai: {
+		category: "workflow",
+		summary: "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
+	},
+	dibs: {
+		category: "workflow",
+		summary: "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
+	},
+	"self-improvement": {
+		category: "feedback",
+		summary: "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
+	},
+	"git-discipline": {
+		category: "workflow",
+		summary: "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
+	},
+	"dont-do-that": {
+		category: "workflow",
+		summary: "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
+	},
+	intervision: {
+		category: "review",
+		summary: "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
+	},
+	"anger-management": {
+		category: "feedback",
+		summary: "Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.",
+	},
+	drydry: {
+		category: "review",
+		summary: "Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.",
+	},
+	"laicluse-agent-fieldkit": {
+		category: "feedback",
+		summary: "Marketplace utilities, including a changelog reader for installed Fieldkit plugins.",
+	},
+	autonomous: {
+		category: "autonomy",
+		summary: "Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.",
+	},
+	clipboard: {
+		category: "feedback",
+		summary: "Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.",
+	},
+	gurus: {
+		category: "review",
+		summary: "Runs opinionated review panels for software, decisions, and prose from multiple perspectives.",
+	},
+	rover: {
+		category: "autonomy",
+		summary: "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
+	},
+	"naming-is-hard": {
+		category: "review",
+		summary: "Applies naming and wording doctrine across code symbols, branches, docs, UI copy, releases, and mixed-language text.",
+	},
+	whywhy: {
+		category: "review",
+		summary: "Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.",
+	},
+};
+
+const categories = [
+	{
+		id: "workflow",
+		label: "Repository discipline",
+		description: "The guardrails that keep fast agent work from leaving shared state messy.",
+	},
+	{
+		id: "autonomy",
+		label: "Autonomous work",
+		description: "Longer missions with explicit phases, wake paths, checks, and stopping points.",
+	},
+	{
+		id: "review",
+		label: "Review and language",
+		description: "Second reads, duplication audits, naming doctrine, and structured critique.",
+	},
+	{
+		id: "feedback",
+		label: "Feedback and utilities",
+		description: "The small loops that turn irritation, confusion, and repeated friction into maintainable fixes.",
+	},
+];
+
+function readJson(file) {
+	return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+function maybeReadJson(file, fallback) {
+	if (!fs.existsSync(file)) return fallback;
+	return readJson(file);
+}
+
+function cleanInline(value) {
+	return value
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+		.replace(/`([^`]+)`/g, "$1")
+		.replace(/\*\*([^*]+)\*\*/g, "$1")
+		.replace(/\*/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function firstSentence(value) {
+	const cleaned = cleanInline(value);
+	const match = cleaned.match(/^(.{80,220}?[.!?])\s/);
+	return match ? match[1] : cleaned.slice(0, 190);
+}
+
+function briefChange(value) {
+	const cleaned = cleanInline(value);
+	const sentence = cleaned.match(/^(.{1,280}?[.!?])(?:\s|$)/);
+	if (sentence) return sentence[1];
+	if (cleaned.length <= 260) return cleaned;
+	return `${cleaned.slice(0, 257).replace(/\s+\S*$/, "")}...`;
+}
+
+function listDirs(dir) {
+	if (!fs.existsSync(dir)) return [];
+	return fs
+		.readdirSync(dir, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name)
+		.sort();
+}
+
+function countFiles(dir) {
+	if (!fs.existsSync(dir)) return 0;
+	let count = 0;
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		const fullPath = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			count += countFiles(fullPath);
+		} else {
+			count += 1;
+		}
+	}
+	return count;
+}
+
+function countSkillDirs(pluginDir) {
+	return listDirs(path.join(pluginDir, "skills")).filter((skill) => {
+		const skillDir = path.join(pluginDir, "skills", skill);
+		return ["SKILL.md", "SKILL.claude.md", "SKILL.codex.md"].some((file) =>
+			fs.existsSync(path.join(skillDir, file)),
+		);
+	}).length;
+}
+
+function commandCount(pluginDir) {
+	const binDir = path.join(pluginDir, "bin");
+	if (!fs.existsSync(binDir)) return 0;
+	return fs
+		.readdirSync(binDir, { withFileTypes: true })
+		.filter((entry) => entry.isFile() && !entry.name.endsWith(".md"))
+		.length;
+}
+
+function parseLatestChange(changelogPath) {
+	if (!fs.existsSync(changelogPath)) return null;
+	const lines = fs.readFileSync(changelogPath, "utf8").split(/\r?\n/);
+	const start = lines.findIndex((line) => /^## \[/.test(line));
+	if (start === -1) return null;
+
+	const versionMatch = lines[start].match(/^## \[([^\]]+)\]/);
+	const section = [];
+	for (let index = start + 1; index < lines.length; index += 1) {
+		if (/^## \[/.test(lines[index])) break;
+		section.push(lines[index]);
+	}
+
+	let type = "Changed";
+	let bulletStart = -1;
+	for (let index = 0; index < section.length; index += 1) {
+		const heading = section[index].match(/^###\s+(.+)/);
+		if (heading) type = cleanInline(heading[1]);
+		if (/^-\s+/.test(section[index])) {
+			bulletStart = index;
+			break;
+		}
+	}
+
+	if (bulletStart === -1) {
+		return {
+			version: versionMatch ? versionMatch[1] : "latest",
+			type,
+			summary: "See the package changelog for the latest user-visible note.",
+		};
+	}
+
+	const bullet = [section[bulletStart].replace(/^-\s+/, "")];
+	for (let index = bulletStart + 1; index < section.length; index += 1) {
+		const line = section[index];
+		if (/^-\s+/.test(line) || /^###\s+/.test(line)) break;
+		if (line.trim() === "") continue;
+		bullet.push(line.trim());
+	}
+
+	return {
+		version: versionMatch ? versionMatch[1] : "latest",
+		type,
+		summary: briefChange(bullet.join(" ")),
+	};
+}
+
+function compareSemverDesc(a, b) {
+	const parse = (value) =>
+		String(value)
+			.replace(/^v/, "")
+			.split(".")
+			.map((part) => Number.parseInt(part, 10) || 0);
+	const left = parse(a);
+	const right = parse(b);
+	for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+		const delta = (right[index] || 0) - (left[index] || 0);
+		if (delta !== 0) return delta;
+	}
+	return 0;
+}
+
+function build(repoRoot) {
+	const claudeMarketplace = readJson(path.join(repoRoot, ".claude-plugin", "marketplace.json"));
+	const codexMarketplace = maybeReadJson(path.join(repoRoot, ".agents", "plugins", "marketplace.json"), {
+		plugins: [],
+	});
+	const codexNames = new Set((codexMarketplace.plugins || []).map((plugin) => plugin.name));
+
+	const plugins = (claudeMarketplace.plugins || []).map((entry) => {
+		const sourcePath = entry.source.replace(/^\.\//, "");
+		const pluginDir = path.join(repoRoot, sourcePath);
+		const manifest = readJson(path.join(pluginDir, ".claude-plugin", "plugin.json"));
+		const latestChange = parseLatestChange(path.join(pluginDir, "CHANGELOG.md"));
+		const support = ["Claude Code"];
+		if (codexNames.has(entry.name)) support.push("Codex");
+
+		return {
+			name: entry.name,
+			version: manifest.version,
+			category: (copy[entry.name] || {}).category || "feedback",
+			summary: (copy[entry.name] || {}).summary || firstSentence(manifest.description || entry.description || ""),
+			support,
+			codex: codexNames.has(entry.name),
+			sourcePath,
+			sourceUrl: `${REPO_URL}/tree/main/${sourcePath}`,
+			skillCount: countSkillDirs(pluginDir),
+			commandCount: commandCount(pluginDir),
+			hookFileCount: countFiles(path.join(pluginDir, "hooks")),
+			latestChange,
+		};
+	});
+
+	const changelog = plugins
+		.filter((plugin) => plugin.latestChange)
+		.map((plugin) => ({
+			plugin: plugin.name,
+			packageVersion: plugin.version,
+			...plugin.latestChange,
+			sourceUrl: `${REPO_URL}/blob/main/${plugin.sourcePath}/CHANGELOG.md`,
+		}))
+		.sort((a, b) => compareSemverDesc(a.packageVersion, b.packageVersion) || a.plugin.localeCompare(b.plugin));
+
+	return {
+		generatedBy: "bin/build-pages",
+		source: "packages/*/.claude-plugin/plugin.json, packages/*/CHANGELOG.md, .agents/plugins/marketplace.json",
+		repository: REPO_URL,
+		marketplace: {
+			name: claudeMarketplace.name,
+			displayName: (claudeMarketplace.owner && claudeMarketplace.owner.name) || "l'Aicluse Agent Fieldkit",
+			description:
+				(claudeMarketplace.metadata && claudeMarketplace.metadata.description) ||
+				"Agent skills marketplace for Claude Code and Codex",
+		},
+		categories,
+		counts: {
+			sourcePackages: plugins.length,
+			codexPackages: plugins.filter((plugin) => plugin.codex).length,
+			claudeOnlyPackages: plugins.filter((plugin) => !plugin.codex).length,
+			changelogEntries: changelog.length,
+			skillEntries: plugins.reduce((total, plugin) => total + plugin.skillCount, 0),
+			hookFiles: plugins.reduce((total, plugin) => total + plugin.hookFileCount, 0),
+		},
+		install: {
+			claude: [
+				"claude plugins marketplace add epologee/laicluse-agent-fieldkit",
+				...plugins.map((plugin) => `claude plugins install ${plugin.name}@laicluse-agent-fieldkit`),
+			],
+			codex: [
+				"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
+				...plugins
+					.filter((plugin) => plugin.codex)
+					.map((plugin) => `codex plugin add ${plugin.name}@laicluse-agent-fieldkit`),
+			],
+		},
+		plugins,
+		changelog,
+	};
+}
+
+function main() {
+	const repoRoot = path.resolve(process.argv[2] || process.cwd());
+	const outputPath = path.join(repoRoot, "docs", "site-data.json");
+	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+	fs.writeFileSync(outputPath, `${JSON.stringify(build(repoRoot), null, "\t")}\n`);
+	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
+}
+
+main();

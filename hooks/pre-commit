@@ -52,3 +52,12 @@ if [ -x "$adapter_script" ] && [ -f ".claude-plugin/marketplace.json" ]; then
     exit 1
   fi
 fi
+
+pages_script="bin/build-pages"
+if [ -x "$pages_script" ] && [ -f "docs/index.html" ]; then
+  if ! "$pages_script" . >/dev/null; then
+    echo "ERROR: $pages_script failed." >&2
+    exit 1
+  fi
+  git add -A "docs/site-data.json"
+fi

@@ -6,7 +6,7 @@
 		<title>l'Aicluse Agent Fieldkit</title>
 		<meta
 			name="description"
-			content="A public multi-agent marketplace for coding-agent plugins, skills, hooks, CLIs, and generated Claude Code plus Codex adapters."
+			content="A public Claude Code and Codex plugin marketplace for agent guardrails, workflow discipline, peer review, autonomous work, feedback repair, and changelogs."
 		>
 		<link rel="stylesheet" href="styles.css">
 	</head>
@@ -15,430 +15,152 @@
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="#top" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-mark" aria-hidden="true"></span>
+				<span class="brand-mark" aria-hidden="true">AF</span>
 				<span>l'Aicluse Agent Fieldkit</span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
-				<a href="#kit">Kit</a>
 				<a href="#catalog">Catalog</a>
-				<a href="#changelog">Changelog</a>
 				<a href="#install">Install</a>
+				<a href="#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit">GitHub</a>
 			</nav>
 		</header>
 
 		<main id="content">
 			<section id="top" class="hero">
-				<canvas id="field-map" aria-hidden="true"></canvas>
-				<div class="hero-shell">
+				<div class="hero-grid">
 					<div class="hero-copy">
-						<p class="eyebrow">Public multi-agent marketplace</p>
-						<h1>Field kit for agents that work in the wild.</h1>
+						<p class="eyebrow">Claude Code + Codex plugin marketplace</p>
+						<h1>Guardrails for coding agents that touch real repositories.</h1>
 						<p class="lede">
-							Reusable operating gear for Claude Code and Codex: workflow
-							discipline, field missions, peer review, naming doctrine, feedback
-							loops, and generated runtime adapters from one canonical source.
+							Install opinionated plugins for git discipline, worktree safety,
+							occupancy locks, peer review, autonomous missions, naming doctrine,
+							and feedback repair.
 						</p>
-						<div class="hero-actions" aria-label="Primary links">
-							<a class="primary-link" href="#install">Install the marketplace</a>
-							<a class="secondary-link" href="https://github.com/epologee/laicluse-agent-fieldkit">View source</a>
+						<div class="hero-actions" aria-label="Primary actions">
+							<a class="button primary" href="#install">Install</a>
+							<a class="button secondary" href="#catalog">Browse plugins</a>
 						</div>
 					</div>
 
-					<aside class="signal-panel" aria-label="Marketplace summary">
-						<div>
-							<span class="signal-number">15</span>
-							<span class="signal-label">source packages</span>
+					<aside class="hero-console" aria-label="Repository snapshot">
+						<div class="console-top">
+							<span></span>
+							<span></span>
+							<span></span>
+							<strong>fieldkit status</strong>
 						</div>
-						<div>
-							<span class="signal-number">13</span>
-							<span class="signal-label">Codex adapters</span>
+						<div id="hero-stats" class="hero-stats" aria-live="polite">
+							<div class="skeleton-line"></div>
+							<div class="skeleton-line short"></div>
 						</div>
-						<div>
-							<span class="signal-number">2</span>
-							<span class="signal-label">Claude-only packages</span>
+						<div class="terminal-command">
+							<span>$</span>
+							<code>codex plugin add git-discipline@laicluse-agent-fieldkit</code>
 						</div>
+						<div id="hero-change" class="hero-change"></div>
 					</aside>
 				</div>
 			</section>
 
-			<section id="kit" class="section kit-section">
-				<div class="section-kicker">
-					<p class="eyebrow">What the kit does</p>
-					<h2>Less prompt folklore. More working equipment.</h2>
+			<section class="section principles-section" aria-labelledby="principles-title">
+				<div class="section-heading">
+					<p class="eyebrow">Why it exists</p>
+					<h2 id="principles-title">Built for repositories that move under agent hands.</h2>
 				</div>
-				<div class="feature-grid">
-					<article class="feature-card discipline">
-						<span class="feature-index">01</span>
-						<h3>Discipline the workflow</h3>
-						<p>
-							Commit bodies, push policy, worktree lifecycle, single-occupancy
-							locks, and guardrails keep agent sessions from turning local speed
-							into shared mess.
-						</p>
-						<ul>
-							<li>git-discipline</li>
-							<li>bonsai</li>
-							<li>dibs</li>
-							<li>dont-do-that</li>
-						</ul>
+				<div class="principles-grid">
+					<article>
+						<span class="principle-number">01</span>
+						<h3>Installable plugins</h3>
+						<p>A marketplace of installable agent plugins, not a general AI manifesto.</p>
 					</article>
-
-					<article class="feature-card fieldwork">
-						<span class="feature-index">02</span>
-						<h3>Send work into the field</h3>
-						<p>
-							Rover missions, continuation contracts, verification discipline,
-							and prepared loop files give autonomous work a real endpoint.
-						</p>
-						<ul>
-							<li>rover</li>
-							<li>autonomous</li>
-							<li>gurus</li>
-						</ul>
+					<article>
+						<span class="principle-number">02</span>
+						<h3>Explicit support</h3>
+						<p>Each package states whether it supports Claude Code, Codex, or one runtime only.</p>
 					</article>
-
-					<article class="feature-card review">
-						<span class="feature-index">03</span>
-						<h3>Make second reads normal</h3>
-						<p>
-							Peer consultation, opinionated panels, duplication audits, and naming
-							doctrine make another perspective part of the workflow instead of an
-							afterthought.
-						</p>
-						<ul>
-							<li>intervision</li>
-							<li>gurus</li>
-							<li>drydry</li>
-							<li>naming-is-hard</li>
-						</ul>
+					<article>
+						<span class="principle-number">03</span>
+						<h3>Guardrails first</h3>
+						<p>The strongest plugins prevent avoidable repository damage before speed turns expensive.</p>
 					</article>
-
-					<article class="feature-card feedback">
-						<span class="feature-index">04</span>
-						<h3>Turn friction into repairs</h3>
-						<p>
-							Feedback routes to hooks, skills, project code, or instruction files,
-							while lightweight capture commands keep irritation cheap and useful.
-						</p>
-						<ul>
-							<li>self-improvement</li>
-							<li>anger-management</li>
-							<li>clipboard</li>
-							<li>how-plugins-work</li>
-						</ul>
+					<article>
+						<span class="principle-number">04</span>
+						<h3>Visible change</h3>
+						<p>The changelog is first-class because this repository is meant to keep moving.</p>
 					</article>
 				</div>
 			</section>
 
-			<section class="section repository-section">
-				<div class="section-kicker">
-					<p class="eyebrow">Repository shape</p>
-					<h2>One source. Runtime-specific adapters.</h2>
-				</div>
-				<div class="repo-layout">
-					<figure class="repo-figure">
-						<img src="assets/fieldkit-overview.png" alt="Fieldkit repository map showing package source, generated adapters, and Claude Code plus Codex runtime targets.">
-					</figure>
-					<div class="repo-copy">
-						<p>
-							Each plugin lives under <code>packages/&lt;plugin&gt;/</code>. Claude
-							metadata remains the source. Codex packages are generated into
-							<code>.agents/plugins/generated/</code>, so agent-specific runtime
-							shape does not fork the marketplace by hand.
-						</p>
-						<div class="repo-facts">
-							<div>
-								<strong>packages/</strong>
-								<span>canonical plugin source</span>
-							</div>
-							<div>
-								<strong>bin/plugin-adapters</strong>
-								<span>build, check, and diff generated output</span>
-							</div>
-							<div>
-								<strong>hooks/</strong>
-								<span>repo-level safety and commit discipline</span>
-							</div>
-						</div>
+			<section id="catalog" class="section catalog-section" aria-labelledby="catalog-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Plugin catalog</p>
+						<h2 id="catalog-title">Every package, current support, latest note.</h2>
 					</div>
+					<div id="catalog-summary" class="catalog-summary"></div>
 				</div>
+
+				<div class="catalog-toolbar" aria-label="Catalog controls">
+					<label class="search-field">
+						<span>Search</span>
+						<input id="catalog-search" type="search" autocomplete="off" placeholder="plugin, workflow, review">
+					</label>
+					<div id="support-filters" class="segmented" aria-label="Agent support filter"></div>
+					<div id="category-filters" class="segmented wide" aria-label="Category filter"></div>
+				</div>
+
+				<div id="plugin-grid" class="plugin-grid" aria-live="polite"></div>
+				<p id="empty-state" class="empty-state" hidden>No plugins match those filters.</p>
+				<noscript>
+					<p class="no-script">
+						The catalog data lives in <code>docs/site-data.json</code>. Enable JavaScript
+						to use filters on this page.
+					</p>
+				</noscript>
 			</section>
 
-			<section id="catalog" class="section catalog-section">
-				<div class="section-kicker">
-					<p class="eyebrow">Plugin catalog</p>
-					<h2>The public shelf.</h2>
-				</div>
-
-				<div class="plugin-groups">
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>git-discipline</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Git workflow skills, repo-aware push policy, and commit/push hooks.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/git-discipline">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>dont-do-that</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Guardrail hooks plus correction skills for common agent reflexes.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>dibs</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Single-occupancy locks so one coding agent owns a directory at a time.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>bonsai</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Git worktree creation, setup, and teardown behind a safety gate.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/bonsai">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>rover</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>A field-mission framework with decide, pride, trim, and verify passes.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/rover">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>autonomous</h3>
-							<span class="agent-tag claude">Claude only</span>
-						</div>
-						<p>Keepalive, cron heartbeat, wake, and restore for interactive missions.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/autonomous">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>intervision</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Peer consultation: Claude hands work to Codex, Codex hands work to Claude.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/intervision">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>gurus</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Opinionated review panels for software, decisions, and prose.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/gurus">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>drydry</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Duplication-audit methodology for code, prose, design systems, and docs.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/drydry">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>anger-management</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Capture friction now, then repair recurring agent behavior later.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/anger-management">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>self-improvement</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Routes feedback about agent behavior to the strongest durable target.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/self-improvement">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>how-plugins-work</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Reference material for plugin naming, skill resolution, and adapters.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/how-plugins-work">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>naming-is-hard</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Naming and wording doctrine for code, docs, branches, UI copy, and releases.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/naming-is-hard">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>clipboard</h3>
-							<span class="agent-tag both">Claude + Codex</span>
-						</div>
-						<p>Copy the core content of the last answer to the macOS clipboard.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/clipboard">Package source</a>
-					</article>
-
-					<article class="plugin-card">
-						<div class="card-head">
-							<h3>laicluse-agent-fieldkit</h3>
-							<span class="agent-tag claude">Claude only</span>
-						</div>
-						<p>Marketplace-wide utilities, including <code>/whats-new</code>.</p>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit">Package source</a>
-					</article>
-				</div>
-			</section>
-
-			<section id="changelog" class="section changelog-section">
-				<div class="section-kicker">
-					<p class="eyebrow">Latest field notes</p>
-					<h2>What changed recently.</h2>
-				</div>
-
-				<div class="timeline" aria-label="Marketplace changelog">
-					<article class="timeline-item primary-note">
-						<span class="time-label">2026-06</span>
-						<h3>drydry joined Fieldkit</h3>
-						<p>
-							The duplication-audit methodology now ships from
-							<code>drydry@laicluse-agent-fieldkit</code> for Claude Code and Codex.
-						</p>
-					</article>
-
-					<article class="timeline-item">
-						<span class="time-label">2026-06</span>
-						<h3>Codex catalog omits Claude-only runtime skills</h3>
-						<p>
-							Codex receives the generated subset with compatible runtime behavior
-							instead of inert Claude-only commands.
-						</p>
-					</article>
-
-					<article class="timeline-item">
-						<span class="time-label">2026-06</span>
-						<h3>dont-do-that joined Fieldkit</h3>
-						<p>
-							Claude keeps the full guardrail hook stack; Codex receives
-							<code>/duh</code> and <code>/just-a-question</code>.
-						</p>
-					</article>
-				</div>
-
-				<div class="change-table-wrap">
-					<table class="change-table">
-						<caption>Latest package changelog sections</caption>
-						<thead>
-							<tr>
-								<th scope="col">Package</th>
-								<th scope="col">Latest</th>
-								<th scope="col">Type</th>
-								<th scope="col">User-visible change</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<th scope="row">git-discipline</th>
-								<td>v2.0.32</td>
-								<td>Changed</td>
-								<td>After updates, rerun <code>/git-discipline:install-hooks --force</code> to refresh baked hook paths.</td>
-							</tr>
-							<tr>
-								<th scope="row">bonsai</th>
-								<td>v2.0.21</td>
-								<td>Fixed</td>
-								<td><code>bonsai create</code> no longer nests a worktree inside another worktree.</td>
-							</tr>
-							<tr>
-								<th scope="row">dibs</th>
-								<td>v2.0.9</td>
-								<td>Added</td>
-								<td>Universal occupancy hooks enforce one active agent per working directory.</td>
-							</tr>
-							<tr>
-								<th scope="row">drydry</th>
-								<td>v2.0.0</td>
-								<td>Breaking</td>
-								<td>Install from <code>drydry@laicluse-agent-fieldkit</code>; runtime state moved under <code>LAICLUSE_HOME</code>.</td>
-							</tr>
-							<tr>
-								<th scope="row">rover</th>
-								<td>v2.0.9</td>
-								<td>Fixed</td>
-								<td><code>rover</code> is multi-agent again through a host-owned continuation contract.</td>
-							</tr>
-							<tr>
-								<th scope="row">naming-is-hard</th>
-								<td>v2.0.1</td>
-								<td>Added</td>
-								<td>The naming doctrine now ships from the public Fieldkit marketplace.</td>
-							</tr>
-							<tr>
-								<th scope="row">dont-do-that</th>
-								<td>v2.0.17</td>
-								<td>Changed</td>
-								<td>Guard placement and per-agent policy now live in a registry.</td>
-							</tr>
-							<tr>
-								<th scope="row">laicluse-agent-fieldkit</th>
-								<td>v2.0.2</td>
-								<td>Fixed</td>
-								<td><code>/whats-new</code> is Claude-only until a Codex runtime path exists.</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-
-				<p class="source-note">
-					Full release notes live in the
-					<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/MARKETPLACE-CHANGELOG.md">marketplace changelog</a>
-					and in each package under
-					<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages">packages/</a>.
-				</p>
-			</section>
-
-			<section id="install" class="section install-section">
-				<div class="install-panel">
-					<div class="section-kicker">
+			<section id="install" class="section install-section" aria-labelledby="install-title">
+				<div class="section-heading split-heading">
+					<div>
 						<p class="eyebrow">Install</p>
-						<h2>Add the marketplace once. Pick the gear you need.</h2>
+						<h2 id="install-title">Add the marketplace once. Install only what you need.</h2>
 					</div>
-
-					<div class="install-grid">
-						<article class="install-block">
-							<h3>Claude Code</h3>
-							<pre><code>claude plugins marketplace add epologee/laicluse-agent-fieldkit
-claude plugins install git-discipline@laicluse-agent-fieldkit
-claude plugins install rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
-						</article>
-
-						<article class="install-block">
-							<h3>Codex</h3>
-							<pre><code>codex plugin marketplace add epologee/laicluse-agent-fieldkit
-codex plugin add git-discipline@laicluse-agent-fieldkit
-codex plugin add rover@laicluse-agent-fieldkit
-codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
-						</article>
-					</div>
+					<p>
+						Codex receives the generated subset with compatible runtime behavior.
+						Claude-only packages stay visible here, but they are not advertised to Codex.
+					</p>
 				</div>
+				<div class="install-grid">
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>Claude Code</h3>
+							<button class="copy-button" type="button" data-copy-target="claude-install">Copy</button>
+						</div>
+						<pre><code id="claude-install">Loading install commands...</code></pre>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>Codex</h3>
+							<button class="copy-button" type="button" data-copy-target="codex-install">Copy</button>
+						</div>
+						<pre><code id="codex-install">Loading install commands...</code></pre>
+					</article>
+				</div>
+			</section>
+
+			<section id="changelog" class="section changelog-section" aria-labelledby="changelog-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Changelog</p>
+						<h2 id="changelog-title">Follow the moving parts without reading every package.</h2>
+					</div>
+					<p>
+						This feed is generated from the top section of each package changelog.
+						The full notes remain in the package directories.
+					</p>
+				</div>
+				<div id="change-feed" class="change-feed" aria-live="polite"></div>
 			</section>
 		</main>
 
