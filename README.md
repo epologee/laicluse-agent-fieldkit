@@ -2,6 +2,10 @@
 
 Agent tooling for Claude Code and Codex.
 
+The GitHub Pages source for a public overview of the repository and changelog
+lives in [docs/index.html](docs/index.html). Publish GitHub Pages from the
+`main` branch's `/docs` folder to serve it as a project page.
+
 The marketplace currently ships:
 
 - `how-plugins-work`: reference material for plugin names, skill names,
@@ -10,6 +14,10 @@ The marketplace currently ships:
   project code, or instruction files.
 - `git-discipline`: git workflow skills plus commit and push hooks for agent
   sessions and direct CLI commits.
+- `bonsai`: git worktree lifecycle as a cross-platform CLI with setup and
+  guarded teardown.
+- `dibs`: single-occupancy locks so one coding agent owns a working directory
+  at a time.
 - `dont-do-that`: guardrail hooks for Claude Code plus `/duh` and
   `/just-a-question` correction skills for Claude Code and Codex.
 - `intervision`: bring another coding agent in as a peer to review work just
@@ -26,6 +34,8 @@ The marketplace currently ships:
   backoff, wake) is needed; persistent processes run without it.
 - `gurus`: opinionated review panels for code, decisions, and prose. The
   orchestrator routes to the software, council, or writers panel.
+- `naming-is-hard`: naming and wording doctrine for code symbols, docs,
+  branches, UI copy, releases, and mixed-language wording.
 - `rover`: dispatch a rover at a task and stay back while it decides in the
   field: a phase machine with decide, pride/trim quality gates, verify
   evidence discipline, and a stop communique.
@@ -46,12 +56,15 @@ claude plugins marketplace add epologee/laicluse-agent-fieldkit
 claude plugins install how-plugins-work@laicluse-agent-fieldkit
 claude plugins install self-improvement@laicluse-agent-fieldkit
 claude plugins install git-discipline@laicluse-agent-fieldkit
+claude plugins install bonsai@laicluse-agent-fieldkit
+claude plugins install dibs@laicluse-agent-fieldkit
 claude plugins install dont-do-that@laicluse-agent-fieldkit
 claude plugins install intervision@laicluse-agent-fieldkit
 claude plugins install anger-management@laicluse-agent-fieldkit
 claude plugins install drydry@laicluse-agent-fieldkit
 claude plugins install autonomous@laicluse-agent-fieldkit
 claude plugins install gurus@laicluse-agent-fieldkit
+claude plugins install naming-is-hard@laicluse-agent-fieldkit
 claude plugins install rover@laicluse-agent-fieldkit
 claude plugins install clipboard@laicluse-agent-fieldkit
 claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
@@ -64,11 +77,14 @@ codex plugin marketplace add epologee/laicluse-agent-fieldkit
 codex plugin add how-plugins-work@laicluse-agent-fieldkit
 codex plugin add self-improvement@laicluse-agent-fieldkit
 codex plugin add git-discipline@laicluse-agent-fieldkit
+codex plugin add bonsai@laicluse-agent-fieldkit
+codex plugin add dibs@laicluse-agent-fieldkit
 codex plugin add dont-do-that@laicluse-agent-fieldkit
 codex plugin add intervision@laicluse-agent-fieldkit
 codex plugin add anger-management@laicluse-agent-fieldkit
 codex plugin add drydry@laicluse-agent-fieldkit
 codex plugin add gurus@laicluse-agent-fieldkit
+codex plugin add naming-is-hard@laicluse-agent-fieldkit
 codex plugin add rover@laicluse-agent-fieldkit
 codex plugin add clipboard@laicluse-agent-fieldkit
 ```
