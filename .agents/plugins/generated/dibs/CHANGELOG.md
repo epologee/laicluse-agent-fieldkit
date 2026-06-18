@@ -4,6 +4,23 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.9]
+
+### Added
+
+- **Universal occupancy enforcement hooks.** dibs now ships
+  `hooks/occupancy.sh` (with `hooks/hooks.json` for Claude and
+  `hooks/hooks.codex.json` for Codex), so single-occupancy is enforced for every
+  agent session, not only the worktrees `bonsai` hands out. SessionStart claims
+  the working directory and steers a latecomer aside, a PreToolUse file-edit gate
+  hard-denies a write when a different live agent session holds the directory,
+  and Claude SessionEnd releases while Codex relies on pid-liveness self-heal.
+  Self-recognition keys on the lock's session id so a drifted worker pid never
+  blocks the agent against its own lock, and the gate fails open on anything that
+  is not a positive cross-session refusal. The hooks shell out to this plugin's
+  own CLI; no lock logic is duplicated. Opt out per session with
+  `DIBS_OCCUPANCY=off`.
+
 ## [v1.0.0]
 
 ### Added
