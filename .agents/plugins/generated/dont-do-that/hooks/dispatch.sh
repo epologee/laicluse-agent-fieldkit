@@ -1,8 +1,5 @@
 #!/bin/bash
-# Single entry point for all dont-do-that hooks. Registered against
-# PreToolUse (Bash|file-edit tools), PostToolUse (Bash|file-edit tools), and
-# Stop in hooks.json.
-# Routes to the right guard set based on hook_event_name in the stdin JSON.
+# Entry point for all dont-do-that hooks; routes by hook_event_name and tool_name. Guard membership and order per lane come from hooks/guards.json (the registry), filtered by the agent the manifest signalled via DD_AGENT. allow-comment: this file owns event/tool routing and per-lane execution semantics only, never a guard enumeration; add or re-scope a guard by editing the registry.
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$DIR/lib/common.sh"
@@ -10,121 +7,44 @@ source "$DIR/lib/common.sh"
 INPUT=$(cat)
 EVENT=$(dd_event "$INPUT")
 
-run_pre_bash() {
-  if dd_guard_enabled no-remote PreToolUse; then
-    source "$DIR/guards/no-remote.sh"
-    guard_no_remote "$INPUT"
-  fi
-  if dd_guard_enabled no-remote-create PreToolUse; then
-    source "$DIR/guards/no-remote-create.sh"
-    guard_no_remote_create "$INPUT"
-  fi
-  if dd_guard_enabled no-worktree-deploy PreToolUse; then
-    source "$DIR/guards/no-worktree-deploy.sh"
-    guard_no_worktree_deploy "$INPUT"
-  fi
-  if dd_guard_enabled pr-discipline PreToolUse; then
-    source "$DIR/guards/pr-discipline.sh"
-    guard_pr_discipline "$INPUT"
-  fi
-  if dd_guard_enabled followup PreToolUse; then
-    source "$DIR/guards/followup.sh"
-    guard_followup "$INPUT"
-  fi
+# run_direct_lane <lane> <event>: guards run in-process and may exit the dispatcher themselves (PreToolUse dd_emit_deny exits 2; Stop mutex dd_emit_block exits 0); a guard that does not fire returns and the next runs. allow-comment: documents the deny/block control flow.
+run_direct_lane() {
+  local lane="$1" event="$2" id fn
+  while IFS=$'\t' read -r id fn; do
+    [ -n "$id" ] || continue
+    dd_guard_enabled "$id" "$event" || continue
+    source "$DIR/guards/$id.sh"
+    "$fn" "$INPUT"
+  done < <(dd_registry_lane_guards "$lane")
 }
 
-run_pre_edit() {
-  if dd_guard_enabled no-code-comments PreToolUse; then
-    source "$DIR/guards/no-code-comments.sh"
-    guard_no_code_comments "$INPUT"
-  fi
-}
-
-run_post_tool() {
-  local dash_output="" land_output=""
-  if dd_guard_enabled dash PostToolUse; then
-    source "$DIR/guards/dash.sh"
-    dash_output=$( guard_dash "$INPUT" )
-  fi
-  if dd_guard_enabled land PostToolUse; then
-    source "$DIR/guards/land.sh"
-    land_output=$( guard_land "$INPUT" )
-  fi
-  if [ -n "$dash_output" ]; then
-    echo "$dash_output"
+# run_capture_lane <lane> <event>: each guard runs in a subshell, first non-empty stdout wins and is emitted with exit 0, but every guard still runs so per-session line trackers update on each fire. allow-comment: preserves the independent lifecycles of dash/land and false-claims/tool-error.
+run_capture_lane() {
+  local lane="$1" event="$2" id fn out="" emitted
+  while IFS=$'\t' read -r id fn; do
+    [ -n "$id" ] || continue
+    dd_guard_enabled "$id" "$event" || continue
+    source "$DIR/guards/$id.sh"
+    emitted=$( "$fn" "$INPUT" )
+    [ -z "$out" ] && out="$emitted"
+  done < <(dd_registry_lane_guards "$lane")
+  if [ -n "$out" ]; then
+    echo "$out"
     exit 0
-  fi
-  if [ -n "$land_output" ]; then
-    echo "$land_output"
-    exit 0
-  fi
-}
-
-run_stop_tracked_guards() {
-  local false_claims_output="" tool_error_output=""
-  if dd_guard_enabled false-claims Stop; then
-    source "$DIR/guards/false-claims.sh"
-    false_claims_output=$( guard_false_claims "$INPUT" )
-  fi
-  if dd_guard_enabled tool-error Stop; then
-    source "$DIR/guards/tool-error.sh"
-    tool_error_output=$( guard_tool_error "$INPUT" )
-  fi
-
-  if [ -n "$false_claims_output" ]; then
-    echo "$false_claims_output"
-    exit 0
-  fi
-  if [ -n "$tool_error_output" ]; then
-    echo "$tool_error_output"
-    exit 0
-  fi
-}
-
-run_stop_mutex_guards() {
-  if dd_guard_enabled cache Stop; then
-    source "$DIR/guards/cache.sh"
-    guard_cache "$INPUT"
-  fi
-  if dd_guard_enabled estimate Stop; then
-    source "$DIR/guards/estimate.sh"
-    guard_estimate "$INPUT"
-  fi
-  if dd_guard_enabled prefer Stop; then
-    source "$DIR/guards/prefer.sh"
-    guard_prefer "$INPUT"
-  fi
-  if dd_guard_enabled premature Stop; then
-    source "$DIR/guards/premature.sh"
-    guard_premature "$INPUT"
-  fi
-  if dd_guard_enabled verify Stop; then
-    source "$DIR/guards/verify.sh"
-    guard_verify "$INPUT"
-  fi
-  if dd_guard_enabled duh Stop; then
-    source "$DIR/guards/duh.sh"
-    guard_duh "$INPUT"
-  fi
-  if dd_guard_enabled compliance Stop; then
-    source "$DIR/guards/compliance.sh"
-    guard_compliance "$INPUT"
-  fi
-  if dd_guard_enabled jargon Stop; then
-    source "$DIR/guards/jargon.sh"
-    guard_jargon "$INPUT"
   fi
 }
 
 case "$EVENT" in
   PreToolUse)
     TOOL=$(dd_tool_name "$INPUT")
+    # allow-comment: fail closed so a missing or corrupt guards.json cannot silently disarm the PreToolUse safety gates; the manifest only routes edit/shell tools to this hook.
+    dd_registry_readable || dd_emit_deny registry "guards.json missing or not valid JSON; refusing the tool call until the registry is restored (run bin/validate-registry)"
     case "$TOOL" in
       Bash)
-	run_pre_bash
+        run_direct_lane pre-bash PreToolUse
         ;;
       Edit|Write|MultiEdit|apply_patch)
-	run_pre_edit
+        run_direct_lane pre-edit PreToolUse
         ;;
     esac
     ;;
@@ -133,7 +53,7 @@ case "$EVENT" in
     TOOL=$(dd_tool_name "$INPUT")
     case "$TOOL" in
       Edit|Write|MultiEdit|Bash|apply_patch)
-	run_post_tool
+        run_capture_lane post PostToolUse
         ;;
     esac
     ;;
@@ -141,18 +61,10 @@ case "$EVENT" in
   Stop)
     # allow-comment: headless `claude -p` returns its last turn as the result, so any Stop-block forces a nudge-turn that overwrites it; DD_HEADLESS opts the whole Stop set out while PreToolUse safety stays on.
     [ -n "$DD_HEADLESS" ] && exit 0
-    # false-claims and tool-error run in subshells so that an emit + exit in
-    # one of them does not prevent the other from updating its own
-    # per-session state on the same fire. Pre-refactor they
-    # were separate processes with independent lifecycles; preserve that by
-    # subshelling here. First non-empty output wins, in hooks.json order
-    # (false-claims before tool-error).
-    run_stop_tracked_guards
-
-    # Mutex-respecting guards. If a prior Stop fire already blocked, skip
-    # these to avoid re-blocking on the same text across consecutive fires.
+    run_capture_lane stop-tracked Stop
+    # allow-comment: if a prior Stop fire already blocked, skip the mutex guards so the same text is not re-blocked across consecutive fires.
     if ! dd_stop_active "$INPUT"; then
-      run_stop_mutex_guards
+      run_direct_lane stop-mutex Stop
     fi
     ;;
 esac

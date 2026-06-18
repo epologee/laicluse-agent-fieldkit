@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+# Validate the dont-do-that guard registry (hooks/guards.json).
+# Catches impossible placements: a guard assigned to a lane whose event does
+# not provide the payload contract the guard inspects (for example a Stop-only
+# guard with contract "final-answer" placed on a PostToolUse lane). Also checks
+# structural integrity so the dispatcher can trust the file at runtime.
+#
+# Usage: bin/validate-registry [path/to/guards.json]
+# Exit 0 when valid, 1 when any violation is found (all violations printed).
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REGISTRY="${1:-$SCRIPT_DIR/../hooks/guards.json}"
+
+if [ ! -f "$REGISTRY" ]; then
+  printf 'validate-registry: registry not found: %s\n' "$REGISTRY" >&2
+  exit 1
+fi
+
+if ! jq -e . "$REGISTRY" >/dev/null 2>&1; then
+  printf 'validate-registry: %s is not valid JSON\n' "$REGISTRY" >&2
+  exit 1
+fi
+
+errors=$(jq -r '
+  . as $r
+  | ($r.contracts | keys) as $contracts
+  | ($r.events | keys) as $events
+  | ($r.lanes | keys) as $lanes
+  | [
+      # Every lane must name a known event.
+      ( $r.lanes | to_entries[]
+        | . as $lane
+        | ( if ($r.events[$lane.value.event] | not)
+            then "lane \($lane.key): unknown event \($lane.value.event // "<null>")"
+            else empty end )
+      ),
+      # Every guard must be well-formed and placeable on its lane.
+      ( $r.guards | to_entries[]
+        | . as $g
+        | ( if ($g.value.lane | not) then "guard \($g.key): missing lane"
+            elif (($lanes | index($g.value.lane)) | not) then "guard \($g.key): unknown lane \($g.value.lane)"
+            else empty end ),
+          ( if ($g.value.function | not) then "guard \($g.key): missing function" else empty end ),
+          ( if ($g.value.order | type) != "number" then "guard \($g.key): order must be a number" else empty end ),
+          ( if ($g.value.contract | not) then "guard \($g.key): missing contract"
+            elif (($contracts | index($g.value.contract)) | not) then "guard \($g.key): unknown contract \($g.value.contract)"
+            else empty end ),
+          # The core placement rule: the guard lane event must provide the contract the guard inspects.
+          ( ($r.lanes[$g.value.lane].event) as $ev
+            | ($r.events[$ev].provides // []) as $provides
+            | if ($g.value.lane and $r.lanes[$g.value.lane] and $g.value.contract and ($contracts | index($g.value.contract)))
+                 and (($provides | index($g.value.contract)) | not)
+              then "guard \($g.key): contract \($g.value.contract) is not provided by event \($ev) (lane \($g.value.lane)); the guard inspects data this event does not carry"
+              else empty end ),
+          # Agent policy values must be enabled/disabled only.
+          ( $g.value.agents // {} | to_entries[]
+            | if (.value != "enabled" and .value != "disabled")
+              then "guard \($g.key): agent \(.key) policy must be enabled or disabled, got \(.value)"
+              else empty end )
+      )
+    ]
+  | .[]
+' "$REGISTRY")
+
+if [ -n "$errors" ]; then
+  printf 'validate-registry: %s is invalid:\n' "$REGISTRY" >&2
+  printf '  - %s\n' "$errors" >&2
+  exit 1
+fi
+
+# Order must be unique within a lane so dispatch ordering is deterministic.
+dupes=$(jq -r '
+  .guards | to_entries
+  | group_by(.value.lane)
+  | map(select((map(.value.order) | (. as $o | ($o | unique | length) != ($o | length)))))
+  | .[] | .[0].value.lane
+' "$REGISTRY" | sort -u)
+
+if [ -n "$dupes" ]; then
+  printf 'validate-registry: duplicate order values within lane(s): %s\n' "$(echo "$dupes" | tr '\n' ' ')" >&2
+  exit 1
+fi
+
+# Two guards sharing a function name would clobber each other when sourced into
+# the same dispatcher process, so the binding must be one-to-one.
+dup_fns=$(jq -r '
+  .guards | to_entries | group_by(.value.function)
+  | map(select(length > 1)) | .[] | .[0].value.function
+' "$REGISTRY" | sort -u)
+
+if [ -n "$dup_fns" ]; then
+  printf 'validate-registry: function name(s) used by more than one guard: %s\n' "$(echo "$dup_fns" | tr '\n' ' ')" >&2
+  exit 1
+fi
+
+guards_dir="$SCRIPT_DIR/../hooks/guards"
+missing=()
+while IFS=$'\t' read -r id fn; do
+  script="$guards_dir/$id.sh"
+  if [ ! -f "$script" ]; then
+    missing+=("guard ${id}: no backing script at hooks/guards/${id}.sh")
+  elif ! grep -qE "(^|[[:space:]])${fn}[[:space:]]*\(\)" "$script"; then
+    missing+=("guard ${id}: hooks/guards/${id}.sh does not define ${fn}()")
+  fi
+done < <(jq -r '.guards | to_entries[] | "\(.key)\t\(.value.function)"' "$REGISTRY")
+
+if [ "${#missing[@]}" -gt 0 ]; then
+  printf 'validate-registry: %s references guards without a backing script:\n' "$REGISTRY" >&2
+  printf '  - %s\n' "${missing[@]}" >&2
+  exit 1
+fi
+
+guard_count=$(jq -r '.guards | length' "$REGISTRY")
+printf 'validate-registry: %s ok (%s guards)\n' "$REGISTRY" "$guard_count"

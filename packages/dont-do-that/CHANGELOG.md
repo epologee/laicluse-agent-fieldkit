@@ -22,6 +22,29 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.17]
+
+### Changed
+
+- **Guard placement and per-agent policy now live in a registry.**
+  `hooks/guards.json` is the source of truth for which guard runs on which hook
+  event for which agent; the dispatcher reads guard membership and order from it
+  instead of hard-coding them. Manifests signal the agent with `DD_AGENT`
+  (`claude` / `codex`), replacing the ad hoc `DD_SKIP_STOP_GUARDS=premature`
+  variable. To silence a guard durably, set its `agents.<agent>` to `disabled`
+  in the registry; the per-event `DD_SKIP_*` env vars remain as a one-off
+  override.
+
+### Added
+
+- **`bin/validate-registry`** rejects an impossible placement (a guard on a hook
+  event whose payload it cannot inspect), a duplicate guard order or function
+  name, and a registry entry with no backing script.
+- **Fail-closed on a broken registry.** If `guards.json` is missing or invalid,
+  PreToolUse now denies the tool call with a `[dont-do-that/registry]` message
+  instead of silently running no guards, so a corrupt registry cannot disarm the
+  safety gates unnoticed.
+
 ## [v2.0.7]
 
 ### Changed

@@ -1,0 +1,134 @@
+{
+  "$comment": "Source of truth for which dont-do-that guard runs on which hook event for which agent. dispatch.sh reads guard membership, order, and agent policy from here; the dispatcher itself owns lane execution mechanics (deny vs capture, the Stop mutex gate). order is ordinal within a lane (gaps are deliberate, leaving room to insert). After editing, run bin/validate-registry to check the schema and placements, then bin/plugin-adapters build . to sync the Codex adapter.",
+  "contracts": {
+    "tool-call": "The pending tool invocation (shell command, apply_patch, or file-edit arguments) inspected before it is applied.",
+    "persisted-edit": "File content or shell command inspected after a write/edit has been applied.",
+    "final-answer": "The assistant's final-turn text, available at Stop."
+  },
+  "events": {
+    "PreToolUse": { "provides": ["tool-call"] },
+    "PostToolUse": { "provides": ["persisted-edit"] },
+    "Stop": { "provides": ["final-answer"] }
+  },
+  "lanes": {
+    "pre-bash": { "event": "PreToolUse" },
+    "pre-edit": { "event": "PreToolUse" },
+    "post": { "event": "PostToolUse" },
+    "stop-tracked": { "event": "Stop" },
+    "stop-mutex": { "event": "Stop" }
+  },
+  "guards": {
+    "no-remote": {
+      "lane": "pre-bash",
+      "order": 10,
+      "function": "guard_no_remote",
+      "contract": "tool-call"
+    },
+    "no-remote-create": {
+      "lane": "pre-bash",
+      "order": 20,
+      "function": "guard_no_remote_create",
+      "contract": "tool-call"
+    },
+    "no-worktree-deploy": {
+      "lane": "pre-bash",
+      "order": 30,
+      "function": "guard_no_worktree_deploy",
+      "contract": "tool-call"
+    },
+    "pr-discipline": {
+      "lane": "pre-bash",
+      "order": 40,
+      "function": "guard_pr_discipline",
+      "contract": "tool-call"
+    },
+    "followup": {
+      "lane": "pre-bash",
+      "order": 50,
+      "function": "guard_followup",
+      "contract": "tool-call"
+    },
+    "no-code-comments": {
+      "lane": "pre-edit",
+      "order": 10,
+      "function": "guard_no_code_comments",
+      "contract": "tool-call"
+    },
+    "dash": {
+      "lane": "post",
+      "order": 10,
+      "function": "guard_dash",
+      "contract": "persisted-edit"
+    },
+    "land": {
+      "lane": "post",
+      "order": 20,
+      "function": "guard_land",
+      "contract": "persisted-edit"
+    },
+    "false-claims": {
+      "lane": "stop-tracked",
+      "order": 10,
+      "function": "guard_false_claims",
+      "contract": "final-answer"
+    },
+    "tool-error": {
+      "lane": "stop-tracked",
+      "order": 20,
+      "function": "guard_tool_error",
+      "contract": "final-answer"
+    },
+    "cache": {
+      "lane": "stop-mutex",
+      "order": 10,
+      "function": "guard_cache",
+      "contract": "final-answer"
+    },
+    "estimate": {
+      "lane": "stop-mutex",
+      "order": 20,
+      "function": "guard_estimate",
+      "contract": "final-answer"
+    },
+    "prefer": {
+      "lane": "stop-mutex",
+      "order": 30,
+      "function": "guard_prefer",
+      "contract": "final-answer"
+    },
+    "premature": {
+      "lane": "stop-mutex",
+      "order": 40,
+      "function": "guard_premature",
+      "contract": "final-answer",
+      "agents": {
+        "claude": "enabled",
+        "codex": "disabled"
+      }
+    },
+    "verify": {
+      "lane": "stop-mutex",
+      "order": 50,
+      "function": "guard_verify",
+      "contract": "final-answer"
+    },
+    "duh": {
+      "lane": "stop-mutex",
+      "order": 60,
+      "function": "guard_duh",
+      "contract": "final-answer"
+    },
+    "compliance": {
+      "lane": "stop-mutex",
+      "order": 70,
+      "function": "guard_compliance",
+      "contract": "final-answer"
+    },
+    "jargon": {
+      "lane": "stop-mutex",
+      "order": 80,
+      "function": "guard_jargon",
+      "contract": "final-answer"
+    }
+  }
+}

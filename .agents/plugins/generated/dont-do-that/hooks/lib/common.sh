@@ -214,3 +214,36 @@ dd_guard_enabled() {
   fi
   dd_guard_list_has "$only" "$guard"
 }
+
+# hooks/guards.json is the source of truth for which guard runs on which lane for which agent; DD_REGISTRY overrides it for tests. allow-comment: BASH_SOURCE[0] resolves to common.sh so the registry path stays anchored to the plugin regardless of caller cwd.
+dd_registry_file() {
+  printf '%s\n' "${DD_REGISTRY:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../guards.json}"
+}
+
+# dd_registry_readable: 0 when the registry exists and parses as JSON, else 1. allow-comment: lets the dispatcher fail closed on the PreToolUse safety gates instead of silently running no guards when guards.json is missing or corrupt.
+dd_registry_readable() {
+  local registry
+  registry="$(dd_registry_file)"
+  [ -f "$registry" ] || return 1
+  jq -e . "$registry" >/dev/null 2>&1
+}
+
+# dd_agent defaults to claude so a direct dispatch run and any manifest without DD_AGENT run the full stack. allow-comment: the default is load-bearing, not decorative.
+dd_agent() {
+  printf '%s' "${DD_AGENT:-claude}"
+}
+
+# dd_registry_lane_guards <lane> prints "<id><TAB><function>" per enabled guard, ascending by order; absence in a guard's agents map defaults to enabled so future agents run the full stack. allow-comment: the enabled-by-default policy is non-obvious.
+dd_registry_lane_guards() {
+  local lane="$1" registry
+  registry="$(dd_registry_file)"
+  [ -f "$registry" ] || return 0
+  jq -r --arg lane "$lane" --arg agent "$(dd_agent)" '
+    .guards
+    | to_entries
+    | map(select(.value.lane == $lane))
+    | map(select((.value.agents[$agent] // "enabled") == "enabled"))
+    | sort_by(.value.order)
+    | .[] | "\(.key)\t\(.value.function)"
+  ' "$registry" 2>/dev/null
+}
