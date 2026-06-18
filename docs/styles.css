@@ -121,21 +121,22 @@ pre code {
 }
 
 .hero {
-  min-height: 70vh;
+  min-height: clamp(520px, 62vh, 700px);
   display: flex;
   align-items: center;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.88) 38%, rgba(255, 255, 255, 0.18) 100%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.94) 43%, rgba(255, 255, 255, 0.3) 100%),
     url("assets/fieldkit-hero.png");
-  background-position: center;
-  background-size: cover;
+  background-position: center, right 3vw center;
+  background-repeat: no-repeat;
+  background-size: auto, min(60vw, 900px) auto;
   border-bottom: 1px solid var(--line);
 }
 
 .hero-copy {
   width: min(760px, calc(100% - 2rem));
   margin-left: clamp(1rem, 6vw, 5rem);
-  padding: 5rem 0;
+  padding: 4rem 0;
 }
 
 .eyebrow {
@@ -278,7 +279,7 @@ h3 {
 .install-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
 .plugin-card,
@@ -289,11 +290,11 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--paper);
-  padding: 1rem;
+  padding: 1.05rem;
 }
 
 .plugin-card {
-  min-height: 172px;
+  min-height: 164px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -316,6 +317,11 @@ h3 {
 .plugin-card a {
   margin-top: 1rem;
   font-weight: 680;
+}
+
+.plugin-card:hover,
+.repo-item:hover {
+  border-color: #a9bac4;
 }
 
 .agent-tag {
@@ -396,6 +402,10 @@ h3 {
   font-weight: 780;
 }
 
+.change-table tbody tr:nth-child(even) {
+  background: #fbfcfd;
+}
+
 .source-note {
   margin-top: 1.2rem;
   color: var(--muted);
@@ -453,12 +463,13 @@ h3 {
 
 @media (max-width: 940px) {
   .hero {
-    min-height: 62vh;
+    min-height: 520px;
     background:
-      linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 56%, rgba(255, 255, 255, 0.62) 100%),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.93) 58%, rgba(255, 255, 255, 0.72) 100%),
       url("assets/fieldkit-hero.png");
-    background-position: 58% center;
-    background-size: cover;
+    background-position: center, right -10rem center;
+    background-repeat: no-repeat;
+    background-size: auto, 760px auto;
   }
 
   h1 {
@@ -523,5 +534,84 @@ h3 {
 
   .site-footer {
     flex-direction: column;
+  }
+
+  pre {
+    white-space: pre-wrap;
+  }
+
+  pre code {
+    overflow-wrap: anywhere;
+  }
+
+  .change-table-wrap {
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  .change-table {
+    min-width: 0;
+  }
+
+  .change-table caption {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .change-table thead {
+    display: none;
+  }
+
+  .change-table,
+  .change-table tbody,
+  .change-table tr,
+  .change-table th,
+  .change-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .change-table tbody {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0.9rem;
+  }
+
+  .change-table tbody tr {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    padding: 0.85rem;
+  }
+
+  .change-table tbody th,
+  .change-table tbody td {
+    border: 0;
+    padding: 0;
+  }
+
+  .change-table tbody td {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.55rem;
+  }
+
+  .change-table tbody td::before {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 780;
+    text-transform: uppercase;
+  }
+
+  .change-table tbody td:nth-child(2)::before {
+    content: "Latest";
+  }
+
+  .change-table tbody td:nth-child(3)::before {
+    content: "Type";
+  }
+
+  .change-table tbody td:nth-child(4)::before {
+    content: "Change";
   }
 }
