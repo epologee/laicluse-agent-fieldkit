@@ -26,6 +26,7 @@ JSON
 { "name": "demo", "description": "demo plugin", "version": "1.0.0" }
 JSON
   printf '# demo changelog\n' > "$REPO/packages/demo/CHANGELOG.md"
+  printf '# demo marketplace changelog\n' > "$REPO/packages/demo/MARKETPLACE-CHANGELOG.md"
   # user-invocable forces the sanitized/generated-dir path for Codex.
   cat > "$REPO/packages/demo/skills/demo/SKILL.md" <<'MD'
 ---
@@ -61,6 +62,13 @@ MD
 
   [ -f "$REPO/.agents/plugins/generated/demo/CHANGELOG.md" ]
   grep -q 'demo changelog' "$REPO/.agents/plugins/generated/demo/CHANGELOG.md"
+}
+
+@test "build copies marketplace changelog into the generated codex dir" {
+  bash "$SCRIPT" build "$REPO" > /dev/null
+
+  [ -f "$REPO/.agents/plugins/generated/demo/MARKETPLACE-CHANGELOG.md" ]
+  grep -q 'demo marketplace changelog' "$REPO/.agents/plugins/generated/demo/MARKETPLACE-CHANGELOG.md"
 }
 
 @test "build materializes explicit Codex hooks into the generated codex dir" {

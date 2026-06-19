@@ -29,23 +29,25 @@ The marketplace currently ships:
 - `drydry`: duplication-audit methodology for code, prose, design systems, and
   technical docs. Quick mode answers scoped "is this duplicate?" questions;
   audit mode produces a findings artefact with verifier commands.
-- `autonomous` (Claude Code): keep an autonomous mission running across turns. A startup
-  capability probe decides whether keep-alive machinery (cron heartbeat,
-  backoff, wake) is needed; persistent processes run without it.
-- `gurus`: opinionated review panels for code, decisions, and prose. The
-  orchestrator routes to the software, council, or writers panel.
-- `naming-is-hard`: naming and wording doctrine for code symbols, docs,
-  branches, UI copy, releases, and mixed-language wording.
-- `rover`: dispatch a rover at a task and stay back while it decides in the
-  field: a phase machine with decide, pride/trim quality gates, verify
-  evidence discipline, and a stop communique.
-- `clipboard`: copy the core content of the last answer to the macOS
-  clipboard. Plain text by default, `/clipboard slack` for rich text.
-- `laicluse-agent-fieldkit` (Claude Code): marketplace-wide utilities.
+- `laicluse-agent-fieldkit`: marketplace-wide utilities.
   `/whats-new [plugin]`
   re-reads the latest CHANGELOG section of any installed plugin, or the
   marketplace-wide news without arguments. Use
   `/laicluse-agent-fieldkit:whats-new` only when a namespaced form is needed.
+- `autonomous` (Claude Code): keep an autonomous mission running across turns. A startup
+  capability probe decides whether keep-alive machinery (cron heartbeat,
+  backoff, wake) is needed; persistent processes run without it.
+- `clipboard`: copy the core content of the last answer to the macOS
+  clipboard. Plain text by default, `/clipboard slack` for rich text.
+- `gurus`: opinionated review panels for code, decisions, and prose. The
+  orchestrator routes to the software, council, or writers panel.
+- `rover`: dispatch a rover at a task and stay back while it decides in the
+  field: a phase machine with decide, pride/trim quality gates, verify
+  evidence discipline, and a stop communique.
+- `house-rules`: programming, testing, and naming doctrine, including
+  `naming-is-hard`.
+- `whywhy`: drills a configurable why-chain into a question or goal, then
+  reads the chain for assumptions, forks, and better framing.
 
 ## Installation
 
@@ -54,20 +56,21 @@ Claude Code:
 ```bash
 claude plugins marketplace add epologee/laicluse-agent-fieldkit
 claude plugins install how-plugins-work@laicluse-agent-fieldkit
-claude plugins install self-improvement@laicluse-agent-fieldkit
-claude plugins install git-discipline@laicluse-agent-fieldkit
 claude plugins install bonsai@laicluse-agent-fieldkit
 claude plugins install dibs@laicluse-agent-fieldkit
+claude plugins install self-improvement@laicluse-agent-fieldkit
+claude plugins install git-discipline@laicluse-agent-fieldkit
 claude plugins install dont-do-that@laicluse-agent-fieldkit
 claude plugins install intervision@laicluse-agent-fieldkit
 claude plugins install anger-management@laicluse-agent-fieldkit
 claude plugins install drydry@laicluse-agent-fieldkit
-claude plugins install autonomous@laicluse-agent-fieldkit
-claude plugins install gurus@laicluse-agent-fieldkit
-claude plugins install naming-is-hard@laicluse-agent-fieldkit
-claude plugins install rover@laicluse-agent-fieldkit
-claude plugins install clipboard@laicluse-agent-fieldkit
 claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
+claude plugins install autonomous@laicluse-agent-fieldkit
+claude plugins install clipboard@laicluse-agent-fieldkit
+claude plugins install gurus@laicluse-agent-fieldkit
+claude plugins install rover@laicluse-agent-fieldkit
+claude plugins install house-rules@laicluse-agent-fieldkit
+claude plugins install whywhy@laicluse-agent-fieldkit
 ```
 
 Codex:
@@ -75,18 +78,20 @@ Codex:
 ```bash
 codex plugin marketplace add epologee/laicluse-agent-fieldkit
 codex plugin add how-plugins-work@laicluse-agent-fieldkit
-codex plugin add self-improvement@laicluse-agent-fieldkit
-codex plugin add git-discipline@laicluse-agent-fieldkit
 codex plugin add bonsai@laicluse-agent-fieldkit
 codex plugin add dibs@laicluse-agent-fieldkit
+codex plugin add self-improvement@laicluse-agent-fieldkit
+codex plugin add git-discipline@laicluse-agent-fieldkit
 codex plugin add dont-do-that@laicluse-agent-fieldkit
 codex plugin add intervision@laicluse-agent-fieldkit
 codex plugin add anger-management@laicluse-agent-fieldkit
 codex plugin add drydry@laicluse-agent-fieldkit
-codex plugin add gurus@laicluse-agent-fieldkit
-codex plugin add naming-is-hard@laicluse-agent-fieldkit
-codex plugin add rover@laicluse-agent-fieldkit
+codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit
 codex plugin add clipboard@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit
+codex plugin add rover@laicluse-agent-fieldkit
+codex plugin add house-rules@laicluse-agent-fieldkit
+codex plugin add whywhy@laicluse-agent-fieldkit
 ```
 
 Codex receives the generated subset that has Codex-compatible runtime

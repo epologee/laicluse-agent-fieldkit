@@ -1,8 +1,8 @@
 # laicluse-agent-fieldkit
 
 Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. This
-plugin is currently Claude Code-only because `/whats-new` reads Claude plugin
-install metadata and broadcast sentinel state.
+plugin ships `/whats-new` for Claude Code and Codex, using each agent's own
+installed-plugin index.
 
 ## Commands
 
@@ -22,6 +22,7 @@ Use `/laicluse-agent-fieldkit:whats-new` only when a namespaced form is needed.
 
 ```bash
 claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
+codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit
 ```
 
 This command covers plugins installed from `@laicluse-agent-fieldkit`.

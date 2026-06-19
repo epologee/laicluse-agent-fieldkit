@@ -1,0 +1,26 @@
+{
+  "name": "laicluse-agent-fieldkit",
+  "version": "2.0.3",
+  "description": "Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. Currently ships /whats-new (namespaced as /laicluse-agent-fieldkit:whats-new when needed), a one-stop reader for the post-update CHANGELOG section of any installed plugin.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "laicluse-agent-fieldkit"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Laicluse Agent Fieldkit",
+    "shortDescription": "Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. Currently ships /whats-new (namespaced as /la...",
+    "longDescription": "Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. Currently ships /whats-new (namespaced as /laicluse-agent-fieldkit:whats-new when needed), a one-stop reader for the post-update CHANGELOG section of any installed plugin.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Laicluse Agent Fieldkit plugin."
+    ]
+  }
+}

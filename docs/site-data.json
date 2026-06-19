@@ -31,8 +31,8 @@
 	],
 	"counts": {
 		"sourcePackages": 16,
-		"codexPackages": 14,
-		"claudeOnlyPackages": 2,
+		"codexPackages": 15,
+		"claudeOnlyPackages": 1,
 		"changelogEntries": 16,
 		"skillEntries": 67,
 		"hookFiles": 52
@@ -68,6 +68,7 @@
 			"codex plugin add intervision@laicluse-agent-fieldkit",
 			"codex plugin add anger-management@laicluse-agent-fieldkit",
 			"codex plugin add drydry@laicluse-agent-fieldkit",
+			"codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit",
 			"codex plugin add clipboard@laicluse-agent-fieldkit",
 			"codex plugin add gurus@laicluse-agent-fieldkit",
 			"codex plugin add rover@laicluse-agent-fieldkit",
@@ -267,22 +268,23 @@
 		},
 		{
 			"name": "laicluse-agent-fieldkit",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "feedback",
 			"summary": "Marketplace utilities, including a changelog reader for installed Fieldkit plugins.",
 			"support": [
-				"Claude Code"
+				"Claude Code",
+				"Codex"
 			],
-			"codex": false,
+			"codex": true,
 			"sourcePath": "packages/laicluse-agent-fieldkit",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit",
 			"skillCount": 1,
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.2",
-				"type": "Fixed",
-				"summary": "/whats-new is Claude-only for now."
+				"version": "v2.0.3",
+				"type": "Added",
+				"summary": "$whats-new now works in Codex."
 			}
 		},
 		{
@@ -518,10 +520,10 @@
 		},
 		{
 			"plugin": "laicluse-agent-fieldkit",
-			"packageVersion": "2.0.2",
-			"version": "v2.0.2",
-			"type": "Fixed",
-			"summary": "/whats-new is Claude-only for now.",
+			"packageVersion": "2.0.3",
+			"version": "v2.0.3",
+			"type": "Added",
+			"summary": "$whats-new now works in Codex.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
 		},
 		{

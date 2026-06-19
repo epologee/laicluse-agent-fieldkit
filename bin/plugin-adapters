@@ -191,7 +191,7 @@ copy_codex_bin() {
 
 copy_codex_root_files() {
   local plugin_dir="$1" target_dir="$2" rel
-  for rel in CHANGELOG.md; do
+  for rel in CHANGELOG.md MARKETPLACE-CHANGELOG.md; do
     [ -f "$plugin_dir/$rel" ] || continue
     cp -p "$plugin_dir/$rel" "$target_dir/$rel"
   done
