@@ -33,8 +33,8 @@
 		"sourcePackages": 16,
 		"codexPackages": 14,
 		"claudeOnlyPackages": 2,
-		"changelogEntries": 16,
-		"skillEntries": 65,
+		"changelogEntries": 15,
+		"skillEntries": 67,
 		"hookFiles": 52
 	},
 	"install": {
@@ -54,7 +54,7 @@
 			"claude plugins install clipboard@laicluse-agent-fieldkit",
 			"claude plugins install gurus@laicluse-agent-fieldkit",
 			"claude plugins install rover@laicluse-agent-fieldkit",
-			"claude plugins install naming-is-hard@laicluse-agent-fieldkit",
+			"claude plugins install house-rules@laicluse-agent-fieldkit",
 			"claude plugins install whywhy@laicluse-agent-fieldkit"
 		],
 		"codex": [
@@ -71,7 +71,7 @@
 			"codex plugin add clipboard@laicluse-agent-fieldkit",
 			"codex plugin add gurus@laicluse-agent-fieldkit",
 			"codex plugin add rover@laicluse-agent-fieldkit",
-			"codex plugin add naming-is-hard@laicluse-agent-fieldkit",
+			"codex plugin add house-rules@laicluse-agent-fieldkit",
 			"codex plugin add whywhy@laicluse-agent-fieldkit"
 		]
 	},
@@ -369,25 +369,21 @@
 			}
 		},
 		{
-			"name": "naming-is-hard",
-			"version": "2.0.2",
-			"category": "review",
-			"summary": "Applies naming and wording doctrine across code symbols, branches, docs, UI copy, releases, and mixed-language text.",
+			"name": "house-rules",
+			"version": "2.0.1",
+			"category": "feedback",
+			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
 				"Claude Code",
 				"Codex"
 			],
 			"codex": true,
-			"sourcePath": "packages/naming-is-hard",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/naming-is-hard",
-			"skillCount": 1,
-			"commandCount": 1,
+			"sourcePath": "packages/house-rules",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/house-rules",
+			"skillCount": 3,
+			"commandCount": 0,
 			"hookFileCount": 0,
-			"latestChange": {
-				"version": "v2.0.1",
-				"type": "Added",
-				"summary": "naming-is-hard now ships from the public laicluse-agent-fieldkit marketplace."
-			}
+			"latestChange": null
 		},
 		{
 			"name": "whywhy",
@@ -515,14 +511,6 @@
 			"type": "Fixed",
 			"summary": "/whats-new is Claude-only for now.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
-		},
-		{
-			"plugin": "naming-is-hard",
-			"packageVersion": "2.0.2",
-			"version": "v2.0.1",
-			"type": "Added",
-			"summary": "naming-is-hard now ships from the public laicluse-agent-fieldkit marketplace.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/naming-is-hard/CHANGELOG.md"
 		},
 		{
 			"plugin": "whywhy",

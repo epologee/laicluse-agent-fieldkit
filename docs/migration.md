@@ -21,7 +21,30 @@ The package names for the individual plugins stay stable:
 - `gurus`
 - `rover`
 - `clipboard`
+- `house-rules`
 - `laicluse-agent-fieldkit`
+
+## house-rules absorbs naming-is-hard
+
+`house-rules` is the opinionated craft-doctrine plugin: it ships the
+`programming-philosophy`, `testing-philosophy`, and `naming-is-hard` skills
+together. The `naming-is-hard` skill is unchanged; it now ships from
+`house-rules` instead of its own plugin. The standalone `naming-is-hard` plugin
+has been retired.
+
+If you installed the standalone plugin, switch to `house-rules`:
+
+```bash
+claude plugins install house-rules@laicluse-agent-fieldkit
+claude plugins uninstall naming-is-hard@laicluse-agent-fieldkit
+```
+
+```bash
+codex plugin add house-rules@laicluse-agent-fieldkit
+```
+
+`/naming-is-hard` keeps working exactly as before once `house-rules` is
+installed.
 
 ## Existing Installs
 
@@ -45,6 +68,7 @@ claude plugins install autonomous@laicluse-agent-fieldkit
 claude plugins install gurus@laicluse-agent-fieldkit
 claude plugins install rover@laicluse-agent-fieldkit
 claude plugins install clipboard@laicluse-agent-fieldkit
+claude plugins install house-rules@laicluse-agent-fieldkit
 claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
 ```
 
@@ -62,6 +86,7 @@ codex plugin add drydry@laicluse-agent-fieldkit
 codex plugin add gurus@laicluse-agent-fieldkit
 codex plugin add rover@laicluse-agent-fieldkit
 codex plugin add clipboard@laicluse-agent-fieldkit
+codex plugin add house-rules@laicluse-agent-fieldkit
 ```
 
 Claude Code needs `/reload-plugins` plus `/reload-skills`, or a session

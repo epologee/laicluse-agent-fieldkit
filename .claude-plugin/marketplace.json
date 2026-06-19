@@ -78,9 +78,9 @@
       "source": "./packages/rover"
     },
     {
-      "name": "naming-is-hard",
-      "description": "Canonical l'Aicluse naming and wording doctrine for code symbols, domain language, branches, worktrees, projects, features, commits, pull requests, docs, UI copy, human communication, mixed Dutch-English wording, jargon translation, and other naming decisions.",
-      "source": "./packages/naming-is-hard"
+      "name": "house-rules",
+      "description": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler. These are chosen conventions among defensible options, not universal law. Skills: programming-philosophy, testing-philosophy, naming-is-hard.",
+      "source": "./packages/house-rules"
     },
     {
       "name": "whywhy",

@@ -1,0 +1,26 @@
+{
+  "name": "house-rules",
+  "version": "2.0.1",
+  "description": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler. These are chosen conventions among defensible options, not universal law. Skills: programming-philosophy, testing-philosophy, naming-is-hard.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "house-rules"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "House Rules",
+    "shortDescription": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Marti...",
+    "longDescription": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler. These are chosen conventions among defensible options, not universal law. Skills: programming-philosophy, testing-philosophy, naming-is-hard.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the House Rules plugin."
+    ]
+  }
+}

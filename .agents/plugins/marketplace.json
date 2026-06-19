@@ -149,10 +149,10 @@
       "category": "Productivity"
     },
     {
-      "name": "naming-is-hard",
+      "name": "house-rules",
       "source": {
         "source": "local",
-        "path": "./.agents/plugins/generated/naming-is-hard"
+        "path": "./.agents/plugins/generated/house-rules"
       },
       "policy": {
         "installation": "AVAILABLE",

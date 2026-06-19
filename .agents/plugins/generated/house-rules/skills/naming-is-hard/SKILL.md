@@ -1,31 +1,7 @@
 ---
 name: naming-is-hard
-user-invocable: true
 description: Canonical l'Aicluse naming and wording doctrine. Use when choosing, reviewing, or revising names or terminology for code symbols, files, directories, modules, packages, plugins, skills, CLI commands, config keys, APIs, events, database fields, domain language, feature names, project names, branch names, worktree names, commit messages, pull requests, issues, release notes, docs, UI copy, human communication, Dutch/English mixed-language wording, jargon translation, or any "what should this be called?" task.
 ---
-
-<post-update-broadcast>
-BEFORE doing the actual work below, run this one-time check only when
-`CLAUDE_PLUGIN_ROOT` is set:
-
-```bash
-if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
-  node "${CLAUDE_PLUGIN_ROOT}/bin/check-broadcast"
-fi
-```
-
-If the command produces output, the naming-is-hard plugin was updated since
-the last time you saw the broadcast on this machine. Show the output
-verbatim in a markdown block, prefixed with one short sentence
-("naming-is-hard was updated; here is what changed."). Then continue with
-the rest of this skill.
-
-If the command produces no output, say nothing about updates and proceed.
-
-The helper writes the sentinel only when stdout was non-empty, so a silent
-run does not mark the version as seen. `/whats-new naming-is-hard`
-re-shows the section on demand without touching the sentinel.
-</post-update-broadcast>
 
 # Naming Is Hard
 
