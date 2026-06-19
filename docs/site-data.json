@@ -33,7 +33,7 @@
 		"sourcePackages": 16,
 		"codexPackages": 14,
 		"claudeOnlyPackages": 2,
-		"changelogEntries": 15,
+		"changelogEntries": 16,
 		"skillEntries": 67,
 		"hookFiles": 52
 	},
@@ -370,7 +370,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.1",
+			"version": "2.0.2",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -381,9 +381,13 @@
 			"sourcePath": "packages/house-rules",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/house-rules",
 			"skillCount": 3,
-			"commandCount": 0,
+			"commandCount": 1,
 			"hookFileCount": 0,
-			"latestChange": null
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Breaking",
+				"summary": "naming-is-hard has moved into house-rules."
+			}
 		},
 		{
 			"name": "whywhy",
@@ -503,6 +507,14 @@
 			"type": "Changed",
 			"summary": "First l'Aicluse release.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
+		},
+		{
+			"plugin": "house-rules",
+			"packageVersion": "2.0.2",
+			"version": "v2.0.1",
+			"type": "Breaking",
+			"summary": "naming-is-hard has moved into house-rules.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{
 			"plugin": "laicluse-agent-fieldkit",
