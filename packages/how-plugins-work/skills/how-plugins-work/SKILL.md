@@ -150,7 +150,20 @@ When `true`: the model cannot auto-activate the skill based on context. The skil
 
 ### description
 
-What the model sees in the skill list and uses to decide auto-invocation. Two anti-patterns to avoid:
+What the model sees in the skill list and uses to decide auto-invocation.
+Treat it as routing metadata, not documentation. The primary reader is the
+model router; the secondary reader is a human picker or autocomplete UI. Search
+engines and GEO are not direct readers of `SKILL.md` frontmatter unless another
+system publishes that text onto a web page.
+
+Keep descriptions short: one sentence is the normal shape, and under 160
+characters is a good working target. Front-load the task and natural trigger
+words, then stop. Include one boundary only when it prevents wrong activation.
+Procedures, examples, edge cases, installation details, internal routing, and
+long alias lists belong in the body because the body is loaded only after the
+skill is selected.
+
+Two anti-patterns to avoid:
 
 - **"Use when the user types /X to ..." prefix.** When the skill has `disable-model-invocation: true`, the slash command is the only way in, so the prefix is redundant. When the skill is model-triggerable, the trigger lives in the auto-invocation criteria the rest of the description describes; restating the slash form is noise.
 - **Embedding the skill body in the description.** Disambiguation rules, edge cases, and step-by-step procedures belong in the body, not the description. The description is read on every turn the skill list is loaded; the body is read only when the skill is invoked.
