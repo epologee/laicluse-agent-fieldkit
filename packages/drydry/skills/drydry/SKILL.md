@@ -1,7 +1,8 @@
 ---
 name: drydry
 user-invocable: true
-description: Use when you suspect parallel paths exist in any artefact (code in any language, prose, design systems, technical documentation), or when a colleague or you yourself just wrote something that smells familiar. Triggers on "/drydry:drydry", "is dit een dubbeling?", "did I write this somewhere else?", "are these two doing the same thing?", "audit dit op duplication". Routes between a quick inline check (small scope, no artefact) and a full audit (large scope, produces a findings markdown). Six agent-only sub-skills handle detection, checklist bootstrap, triage, online research, cross-toolbox audit, and instruction-file audit.
+description: >-
+  Audit code, prose, docs, or design systems for duplicated logic, parallel paths, or familiar-looking work.
 allowed-tools:
   - Skill
   - Agent

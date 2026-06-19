@@ -1,6 +1,7 @@
 ---
 name: keepalive
-description: Startup probe for the autonomy layer. Answers one question for a dispatched mission, am I in a persistent process or an interactive session that needs a heartbeat to survive across turns, by probing CronCreate availability. Sets up the cron heartbeat when one is needed and reports back when it is not. Loaded by rover at dispatch.
+description: >-
+  Probe whether a rover needs a heartbeat in the current host session and set it up when needed.
 user-invocable: false
 effort: low
 ---

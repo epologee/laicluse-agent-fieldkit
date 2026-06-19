@@ -1,6 +1,7 @@
 ---
 name: naming-is-hard
-description: Opinionated naming and wording doctrine. Use for any naming or wording choice where a term will be reused or interpreted by future readers, spanning code symbols, data contracts, domain language, files, branches, commits, pull requests, docs, UI copy, and human communication, including Dutch/English mixed-language wording and jargon translation. Those categories are illustrative, not a closed checklist; apply the doctrine to whatever you are actually naming, or any "what should this be called?" task.
+description: >-
+  Apply naming and wording doctrine to code symbols, files, branches, docs, UI copy, and mixed Dutch/English terms.
 ---
 
 <post-update-broadcast>

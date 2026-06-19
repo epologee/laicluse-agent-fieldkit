@@ -2,12 +2,7 @@
 name: dibs
 user-invocable: true
 description: >-
-  Take exclusive occupancy of a working directory so only one coding agent
-  works in it at a time. Use before a tool or agent starts mutating a directory
-  that another agent (often a different vendor) might also pick up, or when you
-  need to know who currently holds a directory. claim/release/check on a
-  vendor-neutral, cross-platform lockfile keyed by the directory's realpath;
-  self-heals a lock left by a dead process and respects a live one.
+  Claim, check, or release a vendor-neutral directory lock before mutating a repo another agent might touch.
 ---
 
 # dibs

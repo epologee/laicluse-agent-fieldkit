@@ -1,9 +1,7 @@
 ---
 name: run-spec
-description: >
-  Detect the project's test runner and run a single spec/test file.
-  Echoes PASS or FAIL plus the runner output. Useful as an ergonomic
-  helper for /git-discipline:commit-discipline workflows.
+description: >-
+  Run one spec/test file with the detected project test runner and report PASS or FAIL.
 ---
 
 # /git-discipline:run-spec

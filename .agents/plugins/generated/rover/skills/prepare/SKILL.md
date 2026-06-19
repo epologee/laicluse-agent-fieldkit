@@ -1,6 +1,7 @@
 ---
 name: prepare
-description: Lay a rover loop file in another repo's .autonomous/ now, so the operator can wake it later from inside that repo. Triggers on /rover:prepare. Writes the loop file and .gitignore with full mission context, but does not start host continuation, create the mission branch, or run SURVEY. The operator drives those at wake time.
+description: >-
+  Prepare a rover loop file in another repo so it can be woken later.
 ---
 
 # Autonomy Prepare

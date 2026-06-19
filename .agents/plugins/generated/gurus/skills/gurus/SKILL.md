@@ -1,6 +1,7 @@
 ---
 name: gurus
-description: Orchestrator that routes between the guru panels. `gurus:software` for code review by eight engineering personas. `gurus:council` for abstract decisions by five adversarial lenses plus chairman synthesis. `gurus:writers` for prose review by six writers (essays, scripts, manuscripts, narrative copy). Use this skill when /gurus was typed without a suffix and the right panel is not yet known.
+description: >-
+  Route /gurus to the software, council, or writers panel when the right panel is not yet known.
 allowed-tools:
   - Skill
   - Bash(git diff *)

@@ -79,7 +79,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.22",
+			"version": "2.0.23",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -100,7 +100,7 @@
 		},
 		{
 			"name": "bonsai",
-			"version": "2.0.21",
+			"version": "2.0.22",
 			"category": "workflow",
 			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
 			"support": [
@@ -121,7 +121,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.12",
+			"version": "2.0.13",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -142,7 +142,7 @@
 		},
 		{
 			"name": "self-improvement",
-			"version": "2.0.4",
+			"version": "2.0.5",
 			"category": "feedback",
 			"summary": "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
 			"support": [
@@ -163,7 +163,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.32",
+			"version": "2.0.33",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -184,7 +184,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.19",
+			"version": "2.0.20",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -205,7 +205,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.7",
+			"version": "2.0.8",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -226,7 +226,7 @@
 		},
 		{
 			"name": "anger-management",
-			"version": "2.0.12",
+			"version": "2.0.13",
 			"category": "feedback",
 			"summary": "Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.",
 			"support": [
@@ -247,7 +247,7 @@
 		},
 		{
 			"name": "drydry",
-			"version": "2.0.1",
+			"version": "2.0.2",
 			"category": "review",
 			"summary": "Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.",
 			"support": [
@@ -268,7 +268,7 @@
 		},
 		{
 			"name": "laicluse-agent-fieldkit",
-			"version": "2.0.3",
+			"version": "2.0.4",
 			"category": "feedback",
 			"summary": "Marketplace utilities, including a changelog reader for installed Fieldkit plugins.",
 			"support": [
@@ -289,7 +289,7 @@
 		},
 		{
 			"name": "autonomous",
-			"version": "2.0.9",
+			"version": "2.0.10",
 			"category": "autonomy",
 			"summary": "Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.",
 			"support": [
@@ -309,7 +309,7 @@
 		},
 		{
 			"name": "clipboard",
-			"version": "2.0.9",
+			"version": "2.0.10",
 			"category": "feedback",
 			"summary": "Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.",
 			"support": [
@@ -330,7 +330,7 @@
 		},
 		{
 			"name": "gurus",
-			"version": "2.0.5",
+			"version": "2.0.6",
 			"category": "review",
 			"summary": "Runs opinionated review panels for software, decisions, and prose from multiple perspectives.",
 			"support": [
@@ -351,7 +351,7 @@
 		},
 		{
 			"name": "rover",
-			"version": "2.0.11",
+			"version": "2.0.12",
 			"category": "autonomy",
 			"summary": "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
 			"support": [
@@ -372,7 +372,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.3",
+			"version": "2.0.4",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -393,7 +393,7 @@
 		},
 		{
 			"name": "whywhy",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "review",
 			"summary": "Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.",
 			"support": [
@@ -416,7 +416,7 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.32",
+			"packageVersion": "2.0.33",
 			"version": "v2.0.32",
 			"type": "Changed",
 			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",
@@ -424,7 +424,7 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.22",
+			"packageVersion": "2.0.23",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Agent-specific skill sources may now be single-sided.",
@@ -432,7 +432,7 @@
 		},
 		{
 			"plugin": "bonsai",
-			"packageVersion": "2.0.21",
+			"packageVersion": "2.0.22",
 			"version": "v2.0.21",
 			"type": "Fixed",
 			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",
@@ -440,7 +440,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.19",
+			"packageVersion": "2.0.20",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Guard placement and per-agent policy now live in a registry.",
@@ -448,7 +448,7 @@
 		},
 		{
 			"plugin": "anger-management",
-			"packageVersion": "2.0.12",
+			"packageVersion": "2.0.13",
 			"version": "v2.0.10",
 			"type": "Breaking",
 			"summary": "The background-repair helper is now bin/anger-schedule, not bin/anger-arm.",
@@ -456,7 +456,7 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.12",
+			"packageVersion": "2.0.13",
 			"version": "v2.0.11",
 			"type": "Fixed",
 			"summary": "Occupancy now refuses a codex nested under a Claude session.",
@@ -464,7 +464,7 @@
 		},
 		{
 			"plugin": "rover",
-			"packageVersion": "2.0.11",
+			"packageVersion": "2.0.12",
 			"version": "v2.0.9",
 			"type": "Fixed",
 			"summary": "rover is multi-agent again.",
@@ -472,7 +472,7 @@
 		},
 		{
 			"plugin": "autonomous",
-			"packageVersion": "2.0.9",
+			"packageVersion": "2.0.10",
 			"version": "v2.0.1",
 			"type": "Breaking",
 			"summary": "autonomous is no longer advertised to Codex.",
@@ -480,7 +480,7 @@
 		},
 		{
 			"plugin": "clipboard",
-			"packageVersion": "2.0.9",
+			"packageVersion": "2.0.10",
 			"version": "v2.0.8",
 			"type": "Fixed",
 			"summary": "Codex now gets its own /clipboard helper-resolution instructions.",
@@ -488,7 +488,7 @@
 		},
 		{
 			"plugin": "intervision",
-			"packageVersion": "2.0.7",
+			"packageVersion": "2.0.8",
 			"version": "v2.0.5",
 			"type": "Fixed",
 			"summary": "Codex-to-Claude peer checks now use a clean headless Claude invocation.",
@@ -496,7 +496,7 @@
 		},
 		{
 			"plugin": "gurus",
-			"packageVersion": "2.0.5",
+			"packageVersion": "2.0.6",
 			"version": "v2.0.1",
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
@@ -504,7 +504,7 @@
 		},
 		{
 			"plugin": "self-improvement",
-			"packageVersion": "2.0.4",
+			"packageVersion": "2.0.5",
 			"version": "v2.0.0",
 			"type": "Changed",
 			"summary": "First l'Aicluse release.",
@@ -512,7 +512,7 @@
 		},
 		{
 			"plugin": "house-rules",
-			"packageVersion": "2.0.3",
+			"packageVersion": "2.0.4",
 			"version": "v2.0.1",
 			"type": "Breaking",
 			"summary": "naming-is-hard has moved into house-rules.",
@@ -520,7 +520,7 @@
 		},
 		{
 			"plugin": "laicluse-agent-fieldkit",
-			"packageVersion": "2.0.3",
+			"packageVersion": "2.0.4",
 			"version": "v2.0.3",
 			"type": "Added",
 			"summary": "$whats-new now works in Codex.",
@@ -528,7 +528,7 @@
 		},
 		{
 			"plugin": "whywhy",
-			"packageVersion": "2.0.2",
+			"packageVersion": "2.0.3",
 			"version": "v2.0.1",
 			"type": "Added",
 			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
@@ -536,7 +536,7 @@
 		},
 		{
 			"plugin": "drydry",
-			"packageVersion": "2.0.1",
+			"packageVersion": "2.0.2",
 			"version": "v2.0.0",
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",

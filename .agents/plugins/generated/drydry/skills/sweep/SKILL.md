@@ -1,13 +1,7 @@
 ---
 name: sweep
-description: >
-  Internal sub-skill of the drydry plugin. Dispatched by the drydry:drydry
-  orchestrator (audit mode step 3) or by another skill that already has a
-  scope and a checklist. Uses an independent detection pass that walks the scope
-  against the checklist with verifier-burden discipline: every finding
-  carries a runnable verifier command, and hits without one are dropped.
-  Returns a structured findings list. Does not write artefacts or invoke
-  triage; the caller handles output.
+description: >-
+  Internal drydry detection pass over a known scope and checklist; returns verified duplication findings only.
 allowed-tools:
   - Agent
   - Read

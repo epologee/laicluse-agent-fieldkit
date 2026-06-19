@@ -1,9 +1,8 @@
 ---
 name: disable-discipline
 user-invocable: true
-description: >
-  Disable the git-discipline PreToolUse:Bash guards for the current Claude session by
-  writing a sentinel file to ${LAICLUSE_HOME:-~/.laicluse}/git-discipline/. Other sessions are not affected.
+description: >-
+  Explicit /git-discipline:disable-discipline: turn off Claude git-discipline guards for this session.
 disable-model-invocation: true
 argument-hint: ""
 ---

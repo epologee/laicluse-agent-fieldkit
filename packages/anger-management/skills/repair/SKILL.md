@@ -1,7 +1,8 @@
 ---
 name: repair
 user-invocable: true
-description: Invoked as /anger-management:repair. Reads the accumulated cuss-capture log, judges whether there is one concrete recurring thing worth fixing, and if so fixes it at the owning source, or routes it there when a gate blocks the edit. Runs only when the operator types it.
+description: >-
+  Analyze captured friction notes and fix one recurring issue at its source when /anger-management:repair is typed.
 ---
 
 # Repair

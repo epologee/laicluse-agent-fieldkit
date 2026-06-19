@@ -1,7 +1,7 @@
 ---
 name: stop
 description: >-
-  End a rover mission on purpose. Stops or marks the host continuation, writes a final log entry, and transmits a mission report home: a length-scaled narrative of the traverse, a qualitative conclusion, a (usually empty) not-done listing, and any external-action gates the rover could not take itself (push, merge, deploy). Reached via the rover entry point.
+  Stop a rover mission and send home its final report, open gates, and not-done list.
 ---
 
 # Autonomy Stop

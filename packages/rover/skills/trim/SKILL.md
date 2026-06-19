@@ -1,6 +1,7 @@
 ---
 name: trim
-description: Subtraction-pass before STOW. Uses an independent reviewer to walk the mission diff and ask "what did we write that does not earn its weight?" (the inverse of pride). Hard gate in INSPECT.
+description: >-
+  Run an independent subtraction review before a rover mission is stowed.
 user-invocable: true
 argument-hint: "[git-range | uncommitted]"
 effort: max

@@ -2,10 +2,7 @@
 name: second-opinion
 user-invocable: true
 description: >-
-  Use when you want a peer second opinion on work just done or just discussed
-  from another vendor's coding agent. Claude-side variant: hands the diff or
-  design to Codex via `codex exec`, surfaces its independent read, and goes
-  back and forth.
+  Get a Codex second opinion on recent work or a design from Claude Code.
 ---
 
 <post-update-broadcast>

@@ -1,15 +1,7 @@
 ---
 name: checklist
-description: >
-  Internal sub-skill of the drydry plugin. Opt-in seed source. The
-  default audit flow does NOT dispatch this skill; the calling session
-  formulates the duplication checklist from the codebase in front of
-  it (see drydry:drydry audit mode step 2). This skill is invoked only
-  when the operator passes "seed-from <domain>" or the calling session
-  explicitly requests inspiration. Returns baked seed examples for
-  iOS/SwiftUI, Rails, React/TypeScript, Markdown prose, and design
-  tokens as a starting point that the calling session then rewrites
-  against the actual codebase before passing to drydry:sweep.
+description: >-
+  Internal drydry seed source for duplication checklist examples when `seed-from <domain>` is requested.
 allowed-tools:
   - Read
   - Glob

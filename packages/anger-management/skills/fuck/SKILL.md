@@ -1,7 +1,8 @@
 ---
 name: fuck
 user-invocable: true
-description: Invoked as /fuck. Captures a one-line friction note for a later repair pass; runs only when the operator explicitly types this command, never auto-activated.
+description: >-
+  Capture /fuck as a one-line friction note for later repair.
 ---
 
 # /fuck

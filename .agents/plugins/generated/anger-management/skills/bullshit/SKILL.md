@@ -1,6 +1,7 @@
 ---
 name: bullshit
-description: Invoked as /bullshit. Captures a one-line friction note for a later repair pass; runs only when the operator explicitly types this command, never auto-activated.
+description: >-
+  Capture /bullshit as a one-line friction note for later repair.
 ---
 
 # /bullshit

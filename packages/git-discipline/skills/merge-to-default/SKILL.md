@@ -1,6 +1,7 @@
 ---
 name: merge-to-default
-description: Use when the user wants to land the current branch on the project's default branch with a github-style merge commit. Triggers on /git-discipline:merge-to-default, "merge naar default", "merge to main", "merge this into main". Commits any pending work via commit-all-the-things first, rebases the source branch onto the latest default before merging so the --no-ff merge is always a clean commit, keeps a reactive rebase fallback for rare residual conflicts, and deletes the local source branch after the merge is confirmed (remote branches are left to GitHub workflows).
+description: >-
+  Merge the current branch to the repo's default branch with git-discipline checks and a no-ff merge commit.
 allowed-tools: Bash(git symbolic-ref:*), Bash(git rev-parse:*), Bash(git status:*), Bash(git checkout:*), Bash(git merge:*), Bash(git rebase:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-remote:*), Bash(git remote:*), Bash(git branch:*), Bash(git worktree:*), Skill(git-discipline:commit-all-the-things), Skill(git-discipline:rebase-latest-default)
 ---
 

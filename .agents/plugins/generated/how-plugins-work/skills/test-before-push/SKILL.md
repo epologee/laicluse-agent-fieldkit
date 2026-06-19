@@ -1,10 +1,7 @@
 ---
 name: test-before-push
 description: >-
-  Canonical procedure for rolling multi-agent plugin marketplace changes out to
-  Claude Code and Codex locally before pushing to GitHub. Triggers on
-  /test-before-push, "test this locally", "test this branch", "install in a
-  different session", and "check before push".
+  Test multi-agent plugin marketplace changes locally in Claude Code and Codex before pushing.
 ---
 
 # Test before push

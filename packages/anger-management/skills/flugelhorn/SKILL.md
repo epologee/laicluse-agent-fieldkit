@@ -2,10 +2,7 @@
 name: flugelhorn
 user-invocable: true
 description: >-
-  Invoked as /flugelhorn. A fix-now safeword: the operator caught one visible
-  problem while they can still steer, and wants it fixed durably at its source
-  right now. The now-mode entry to /anger-management:repair with a single
-  instance. Runs only when explicitly typed.
+  Explicit fix-now safeword /flugelhorn; route one caught problem into immediate durable repair.
 disable-model-invocation: true
 ---
 

@@ -1,9 +1,8 @@
 ---
 name: enable-discipline
 user-invocable: true
-description: >
-  Re-enable the git-discipline PreToolUse:Bash guards for the current Claude session
-  by removing the sentinel file written by /git-discipline:disable-discipline.
+description: >-
+  Explicit /git-discipline:enable-discipline: re-enable Claude git-discipline guards for this session.
 disable-model-invocation: true
 argument-hint: ""
 ---

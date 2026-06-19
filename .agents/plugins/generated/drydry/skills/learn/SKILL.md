@@ -1,16 +1,7 @@
 ---
 name: learn
-description: >
-  Internal sub-skill of the drydry plugin. Dispatched by the drydry:drydry
-  orchestrator when the operator asks "what does the world say about
-  duplication?" or "update the checklist seeds", or directly when an
-  external trigger wants to enrich the drydry pattern vocabulary.
-  Uses the host's native research capability across
-  five tracks: clone-detection literature, LLM and agent failure-mode
-  write-ups, framework-specific deduplication patterns, design-system
-  convergence techniques, and prose-deduplication tactics. Synthesises
-  findings into checklist enrichment proposals and writes them to
-  <project_root>/.drydry/learnings/<date>-<topic>.md. One-shot, not scheduled.
+description: >-
+  Internal drydry research task that enriches duplication-checklist seeds from external sources.
 allowed-tools:
   - Agent
   - WebSearch

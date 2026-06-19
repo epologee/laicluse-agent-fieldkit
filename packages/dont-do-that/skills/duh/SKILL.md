@@ -1,7 +1,8 @@
 ---
 name: duh
 user-invocable: true
-description: Execute the proposal from the assistant's previous turn instead of explaining it. If that turn contained multiple distinct proposals, list every option as a numbered menu and ask which one before running.
+description: >-
+  Explicit /duh: execute the assistant's previous proposal instead of explaining it again.
 disable-model-invocation: true
 ---
 

@@ -1,7 +1,8 @@
 ---
 name: restart-claude-agents
 user-invocable: true
-description: Restart running Claude Code background agents so a fresh process loads updated plugins, preserving each agent's conversation context and original launch flags. /restart-claude-agents lists then restarts idle background agents; pass agent ids to target specific ones, --force to include busy ones. Triggers on /restart-claude-agents, "restart the agents to pick up the plugin update", "my background agents are running the old plugin".
+description: >-
+  Explicit /restart-claude-agents: restart Claude Code background agents so they load updated plugins.
 allowed-tools:
   - Bash(*restart-claude-agents*)
 effort: low

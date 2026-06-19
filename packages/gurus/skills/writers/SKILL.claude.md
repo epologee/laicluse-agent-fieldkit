@@ -1,7 +1,8 @@
 ---
 name: writers
 user-invocable: true
-description: Opinionated writers' review panel. Six gurus (Watts, Rovelli, Gladwell, Urban, Didion, Saunders) read a piece of prose and review it from their own craft. Triggers on /gurus:writers, writers panel, prose review, essay review, manuscript review, narrative review, copy review, voice and tone review.
+description: >-
+  Run an opinionated writers' review panel over essays, scripts, narrative copy, or voice and tone.
 allowed-tools:
   - Bash(git diff *)
   - Bash(git log *)

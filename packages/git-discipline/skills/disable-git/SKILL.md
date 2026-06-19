@@ -1,11 +1,8 @@
 ---
 name: disable-git
 user-invocable: true
-description: >
-  Lock git for the current repo so Claude only allows read-only inspection
-  (status, log, diff, show, blame, rev-parse, etc.) and blocks every
-  command that touches the working directory, index, refs, or remote.
-  Writes a sentinel file at .git/git-discipline-deny.
+description: >-
+  Explicit /git-discipline:disable-git: make the current repo read-only for Claude git commands.
 disable-model-invocation: true
 argument-hint: "[reason]"
 ---

@@ -1,6 +1,7 @@
 ---
 name: programming-philosophy
-description: Use when writing, refactoring, or reviewing code; when writing a conditional or gate that encodes a state; when choosing between a shortcut and a structural solution; when deciding root cause vs symptom; under scope or quick-fix pressure. Covers Beck/Martin/Fowler baseline, intent-revealing names, source-of-truth predicates and correlated-proxy detection, downgrade and feature-disable bans, DRY, cruft tolerance, scope discipline, review-finding handling, listening, error handling, and host-owned capability contracts (ports and adapters) for published agent tooling.
+description: >-
+  Use when writing, refactoring, or reviewing code, especially state gates, root-cause fixes, DRY, and error handling.
 user-invocable: true
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: whywhy
-description: Drill N layers deep into a question or goal (default 10). Claude asks and answers "why?" itself, then analyses the chain for a better direction. Use when tackling unclear decisions, vague goals, root-cause analysis, or self-improvement on something that is not working as desired.
+description: >-
+  Drill repeated why-questions into a goal, root cause, or unclear decision to find a better direction.
 args: "[count] <question, goal, or statement>"
 ---
 

@@ -1,9 +1,8 @@
 ---
 name: discipline-status
 user-invocable: true
-description: >
-  Report the current enable/disable state of the git-discipline guards for this
-  session, the sentinel paths, and the active plugin version.
+description: >-
+  Report whether git-discipline guards are enabled for this session and plugin version.
 disable-model-invocation: true
 argument-hint: ""
 effort: low

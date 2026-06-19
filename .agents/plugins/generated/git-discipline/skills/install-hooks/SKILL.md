@@ -1,11 +1,7 @@
 ---
 name: install-hooks
-description: >
-  Install git-discipline's four git-native hooks (commit-msg, prepare-commit-msg,
-  post-commit, pre-push) into the current repo so commits and pushes done
-  outside Claude Code's PreToolUse layer (CLI, IDE, Codex, another tool) still get the body-schema
-  validation and wip-gate enforcement. Run once per clone. Use --force to
-  overwrite existing hooks.
+description: >-
+  Install git-discipline git hooks in the current repo so CLI/IDE commits get the same guardrails.
 ---
 
 # Install Hooks

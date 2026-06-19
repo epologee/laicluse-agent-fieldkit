@@ -1,7 +1,8 @@
 ---
 name: clipboard
 user-invocable: true
-description: Copy the core content of the last answer to the macOS clipboard via the clipboard-copy helper. Formats output based on content type. /clipboard slack for rich text.
+description: >-
+  Explicit /clipboard handoff: copy the core of the last answer via the clipboard-copy helper.
 allowed-tools:
   - Bash(*clipboard-copy*)
 effort: low

@@ -1,6 +1,7 @@
 ---
 name: testing-philosophy
-description: Use when writing tests, debugging test failures, reviewing test strategy, or making decisions about what/how to test. Covers TDD workflow, Cucumber/Gherkin conventions, flaky tests, and test suite health.
+description: >-
+  Use when writing tests, debugging failures, reviewing test strategy, or judging suite health.
 ---
 
 # Testing Philosophy

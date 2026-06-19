@@ -1,7 +1,8 @@
 ---
 name: council
 user-invocable: true
-description: Five advisors attack an idea, decision, or plan from five different angles. Pre-mortem, first-principles, opportunity-finder, stranger, action. Responses are anonymised and blind peer-reviewed; a chairman synthesises one verdict. Triggers on /gurus:council, board of advisors, critical review panel, when you suspect Claude is just being agreeable.
+description: >-
+  Run a five-lens critical advisory review of an idea, decision, or plan.
 effort: high
 ---
 

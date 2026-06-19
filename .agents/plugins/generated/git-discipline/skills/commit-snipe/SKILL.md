@@ -1,6 +1,7 @@
 ---
 name: commit-snipe
-description: Use when committing changes and the working tree contains modifications from multiple unrelated tasks. Also triggers on the word "snipe". Precisely stages only files belonging to the current conversation's work.
+description: >-
+  Stage and commit only the current task's hunks when the worktree contains unrelated changes.
 ---
 
 # Commit Snipe

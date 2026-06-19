@@ -2,10 +2,7 @@
 name: whats-new
 user-invocable: true
 description: >-
-  With a plugin-name argument (e.g. `git-discipline`), reprints the latest
-  CHANGELOG section for that installed laicluse-agent-fieldkit plugin without
-  touching broadcast sentinels. Without argument, prints the latest marketplace
-  news and lists which installed plugins have per-plugin CHANGELOG support.
+  Explicit /whats-new: print latest marketplace or plugin CHANGELOG news without touching broadcast sentinels.
 disable-model-invocation: true
 argument-hint: "[plugin-name]"
 ---

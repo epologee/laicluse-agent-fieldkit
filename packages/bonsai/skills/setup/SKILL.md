@@ -2,10 +2,7 @@
 name: setup
 user-invocable: true
 description: >-
-  Prime an existing git worktree: copy the .bonsai-listed files from the
-  canonical checkout and install dependencies per directory by the package
-  manager each lockfile names. Use when a worktree already exists (made by
-  hand or by another tool) and still needs its gitignored files and packages.
+  Prime an existing git worktree with `.bonsai` files and package installs.
 ---
 
 # setup

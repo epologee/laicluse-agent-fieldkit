@@ -1,6 +1,7 @@
 ---
 name: rover
-description: Dispatch a rover at a task. You stay back, the rover works in the field and decides autonomously. Accepts a loop file path to wake, or free-form text (a GitHub URL, a description, anything) describing the mission.
+description: >-
+  Dispatch a rover mission from a loop file, GitHub URL, or free-form task description.
 user-invocable: true
 argument-hint: "standing by for mission parameters..."
 effort: high

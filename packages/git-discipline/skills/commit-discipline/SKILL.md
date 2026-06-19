@@ -1,14 +1,8 @@
 ---
 name: commit-discipline
 user-invocable: true
-description: >
-  Reference skill for the git-discipline commit body schema: subject + WHY
-  paragraph + Slice / Tests / Red-then-green trailers parsed via
-  git interpret-trailers, with opt-out enum tokens. Read this skill
-  when about to run git commit, git add, or git push, or after a
-  hook deny prefixed [git-discipline/...]. The body holds the canonical
-  schema, the AI quick reference for passing the gate in one
-  attempt, examples, escape-hatches, and troubleshooting.
+description: >-
+  Reference for git-discipline commit bodies, trailers, hook denials, examples, and escape hatches.
 argument-hint: ""
 ---
 

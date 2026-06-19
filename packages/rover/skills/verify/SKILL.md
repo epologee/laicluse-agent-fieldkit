@@ -1,6 +1,7 @@
 ---
 name: verify
-description: Evidence discipline for the rover. Writes Done criteria so the mission has an actual endpoint, then gathers evidence against each criterion (run the code, screenshot the UI, curl the endpoint, query the state) and reports what is proven, unverified, or failed.
+description: >-
+  Define rover Done criteria and gather evidence against each criterion.
 user-invocable: true
 argument-hint: "[--propose <loop-file> | <loop-file> | free text]"
 effort: high

@@ -1,10 +1,7 @@
 ---
 name: prune
 description: >-
-  Tear down a git worktree behind a safety gate: keep any non-integrated work
-  unless explicitly forced, and warn when removal would orphan unpushed commits
-  or when the default branch has moved on. Use to clean up a finished or
-  abandoned worktree without losing work by accident.
+  Safely remove a finished or abandoned git worktree while preserving unintegrated work.
 ---
 
 # prune

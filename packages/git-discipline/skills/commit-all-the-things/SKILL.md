@@ -1,7 +1,8 @@
 ---
 name: commit-all-the-things
 user-invocable: true
-description: Use when the user wants to commit ALL uncommitted changes in the working tree, grouped into logical commits. Triggers on /git-discipline:commit-all-the-things, "commit everything", "clean up the working tree", and "commit what's left".
+description: >-
+  Commit every relevant uncommitted change in logical groups when the user asks to commit everything.
 ---
 
 <post-update-broadcast>

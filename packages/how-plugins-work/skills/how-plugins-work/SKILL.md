@@ -2,12 +2,7 @@
 name: how-plugins-work
 user-invocable: true
 description: >-
-  Use when diagnosing Unknown command errors, slash-command autocomplete misses,
-  cross-agent skill or plugin marketplace sync, or any confusion about how plugin
-  and skill names resolve in Claude Code, Codex, and future coding agents. Living
-  document explaining plugin naming, skill resolution, multi-agent adapter
-  boundaries, marketplace aliases, runtime caches, and the plugin:skill
-  invocation pattern, based on empirical testing.
+  Diagnose plugin/skill resolution, slash-command misses, Unknown command errors, marketplace sync, and agent adapters.
 ---
 
 <post-update-broadcast>

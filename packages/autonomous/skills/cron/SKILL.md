@@ -1,6 +1,7 @@
 ---
 name: cron
-description: Uplink cadence machine for the rover. Handles CronCreate, CronDelete, exponential backoff when the field goes quiet, auto-stop after sustained standby, and cron restoration after a session restart. Loaded by keepalive (interactive setup), wake, and rover:stop.
+description: >-
+  Maintain rover heartbeat cron state: create/delete cadence, back off quiet missions, and restore after restart.
 user-invocable: false
 effort: low
 ---

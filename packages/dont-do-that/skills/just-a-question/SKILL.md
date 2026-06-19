@@ -2,10 +2,7 @@
 name: just-a-question
 user-invocable: true
 description: >-
-  Operator explicitly marks the turn as a question, not a request, even when
-  phrased as "fix X". Read-only tools only: file reads, search, and read-only
-  shell commands. No file-edit tools or mutating shell commands. Name obvious
-  fixes without applying them.
+  Explicit question-only guard: treat the turn as read-only even if it sounds like a fix request.
 disable-model-invocation: true
 ---
 

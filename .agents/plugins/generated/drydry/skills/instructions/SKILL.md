@@ -1,16 +1,7 @@
 ---
 name: instructions
-description: >
-  Internal sub-skill of the drydry plugin. Dispatched by the drydry:drydry
-  orchestrator in audit mode when agent instruction files (AGENTS.md,
-  CLAUDE.md, or equivalents) are within scope, or directly
-  when the operator wants only an instruction-file audit. Audits those files for two failure
-  modes: (a) instructions prescribe two paths for the same job
-  (a duplication that pushes agents to pick one of two diverging
-  approaches), and (b) instructions are silent on existing project
-  helpers so agents generate new parallel code instead of reusing
-  them. Returns findings the orchestrator folds into the audit artefact
-  under "## Instruction-file duplication".
+description: >-
+  Internal drydry audit for instruction files that create duplicate workflows or hide reusable helpers.
 allowed-tools:
   - Agent
   - Read

@@ -1,16 +1,7 @@
 ---
 name: upstream
-description: >
-  Internal sub-skill of the drydry plugin. Dispatched by the drydry:drydry
-  orchestrator in audit mode when a framework or library is detected or
-  named, or directly when the operator wants only a cross-toolbox audit.
-  Detects installed frameworks from manifest files (Gemfile, Package.swift,
-  package.json, pyproject.toml). For each framework, runs an independent
-  review that compares operator helpers against framework-provided
-  functionality and produces drift hypotheses for each duplication.
-  Uses inspire and ground patterns to verify the framework actually
-  offers the helper before reporting. Returns findings the orchestrator
-  folds into the audit artefact under "## Upstream duplication".
+description: >-
+  Internal drydry cross-toolbox audit for helpers duplicated by frameworks or libraries.
 allowed-tools:
   - Agent
   - Read

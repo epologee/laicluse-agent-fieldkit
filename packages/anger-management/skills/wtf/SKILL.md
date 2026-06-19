@@ -1,7 +1,8 @@
 ---
 name: wtf
 user-invocable: true
-description: Invoked as /wtf. Captures a one-line friction note for a later repair pass; runs only when the operator explicitly types this command, never auto-activated.
+description: >-
+  Capture /wtf as a one-line friction note for later repair.
 ---
 
 # /wtf

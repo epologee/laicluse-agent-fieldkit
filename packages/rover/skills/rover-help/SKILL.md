@@ -1,6 +1,7 @@
 ---
 name: rover-help
-description: Rover briefing. Explains what the autonomous Rover does and how to dispatch, steer, and stop one. Read this when you are about to send a Rover out for the first time, or when you forgot which command does what.
+description: >-
+  Explain how to dispatch, steer, and stop a rover mission.
 user-invocable: true
 ---
 

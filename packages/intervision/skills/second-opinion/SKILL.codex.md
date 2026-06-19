@@ -1,10 +1,7 @@
 ---
 name: second-opinion
 description: >-
-  Use when you want a peer second opinion on work just done or just discussed
-  from another vendor's coding agent. Codex-side variant: hands the diff or
-  design to Claude via `claude -p`, surfaces its independent read, and goes
-  back and forth.
+  Get a Claude second opinion on recent work or a design from Codex.
 ---
 
 # Second opinion

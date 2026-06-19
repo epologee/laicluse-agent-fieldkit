@@ -1,14 +1,8 @@
 ---
 name: push-policy
 user-invocable: true
-description: >
-  Reference skill for the per-repo git push-policy: how to decide
-  whether and when a push is appropriate for the repository you are
-  in. Read this on any push decision, or when a teammate asks why a
-  push was or was not made automatically. Resolves repo facts
-  (collaboration, visibility, default-branch protection, push access)
-  into one of five modes (local-only, solo-trunk, team-trunk, pr-flow,
-  external) and tells you how each mode behaves.
+description: >-
+  Reference for deciding whether pushing is appropriate for this repo's collaboration mode.
 argument-hint: ""
 optional: true
 scope: global

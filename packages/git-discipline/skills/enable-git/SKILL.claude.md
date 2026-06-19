@@ -1,9 +1,8 @@
 ---
 name: enable-git
 user-invocable: true
-description: >
-  Lift the per-repo git lock set by /git-discipline:disable-git. Removes the sentinel
-  file at .git/git-discipline-deny so Claude can run mutating git commands again.
+description: >-
+  Explicit /git-discipline:enable-git: remove the repo read-only git lock for Claude.
 disable-model-invocation: true
 argument-hint: ""
 ---

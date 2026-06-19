@@ -1,13 +1,8 @@
 ---
 name: triage
 user-invocable: false
-description: >
-  Internal sub-skill of the drydry plugin. Dispatched by the drydry:drydry
-  orchestrator (audit mode step 4) or by another skill that already has
-  a findings list. Classifies each finding into one of three buckets
-  (cheap-and-safe, partial, needs-design) with a one-line convergence
-  cost. Implements Chapter 5 of the drydry framework. Returns the
-  findings list annotated with bucket and cost; does not write artefacts.
+description: >-
+  Internal drydry classifier that buckets duplication findings by convergence cost.
 allowed-tools:
   - Read
   - Grep

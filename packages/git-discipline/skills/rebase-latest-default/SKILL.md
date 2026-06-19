@@ -1,11 +1,8 @@
 ---
 name: rebase-latest-default
 user-invocable: true
-description: >
-  Rebase current branch on the latest default branch (local or remote).
-  Determines whether local main/master or origin/main is further ahead
-  and rebases on the best target. Resolves simple merge conflicts
-  automatically.
+description: >-
+  Rebase the current branch onto the freshest local or remote default branch.
 allowed-tools: Bash(git rev-parse:*), Bash(git ls-remote:*), Bash(git rebase:*), Bash(git rev-list:*), Bash(git add:*), Bash(git diff:*), Bash(git status:*), Bash(git symbolic-ref:*), Bash(git remote:*), Bash(git log:*), Bash(git push:*), Bash(git config:*)
 optional: true
 scope: global

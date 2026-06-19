@@ -2,11 +2,7 @@
 name: bonsai
 user-invocable: true
 description: >-
-  Make a ready git worktree: create a branch off the freshest default and prime
-  it from the repo's .bonsai file list, then report the worktree path, branch,
-  and dev-server port as facts. Use when the operator wants a worktree to work
-  in by hand. No agent is launched and nothing is copied to a clipboard; the
-  caller decides what to do in the worktree.
+  Create a ready git worktree from the freshest default branch and prime its `.bonsai` files.
 ---
 
 # bonsai

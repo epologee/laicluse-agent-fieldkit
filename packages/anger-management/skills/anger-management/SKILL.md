@@ -1,7 +1,8 @@
 ---
 name: anger-management
 user-invocable: true
-description: Invoked as /anger-management. A read-only window onto the cuss-capture pile, a tally with no analysis; /anger-management:repair is the single place that analyses the pile and fixes recurring issues. Runs only when the operator types it.
+description: >-
+  Show the captured friction tally; use /anger-management for read-only review before /anger-management:repair.
 ---
 
 <post-update-broadcast>

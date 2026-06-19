@@ -2,10 +2,7 @@
 name: self-improvement
 user-invocable: true
 description: >-
-  Use when the user gives feedback about agent behavior, says "remember this",
-  asks to improve instructions, or asks to create/update a skill, hook, plugin,
-  or durable workflow rule. Routes feedback to hooks, skills, project code, or
-  instruction files instead of reflexively appending to AGENTS.md/CLAUDE.md.
+  Route agent-behavior feedback into durable fixes in hooks, skills, code, or instruction sources.
 ---
 
 <post-update-broadcast>

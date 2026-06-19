@@ -1,6 +1,7 @@
 ---
 name: crap
-description: Invoked as /crap. Captures a one-line friction note for a later repair pass; runs only when the operator explicitly types this command, never auto-activated.
+description: >-
+  Capture /crap as a one-line friction note for later repair.
 ---
 
 # /crap

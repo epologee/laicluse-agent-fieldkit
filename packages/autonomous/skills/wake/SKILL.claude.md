@@ -1,6 +1,7 @@
 ---
 name: wake
-description: Bring a stalled rover back online. Reads the loop file, relights the cron via autonomous:cron, summarises where the traverse left off, and fires the next iteration. Reached via rover:rover with a loop-file path.
+description: >-
+  Resume a stalled rover from its loop file and restart its heartbeat.
 user-invocable: false
 effort: low
 ---

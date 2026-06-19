@@ -1,6 +1,7 @@
 ---
 name: decide
-description: Choice framework for a rover in the field, or for any moment an operator is stuck between options. Classifies the call, resolves it, and logs the verdict when a loop file is present.
+description: >-
+  Resolve a rover field decision or any operator choice, and log the verdict when a loop file exists.
 user-invocable: true
 argument-hint: "[free text describing the choice]"
 effort: high

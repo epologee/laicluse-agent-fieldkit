@@ -1,7 +1,8 @@
 ---
 name: software
 user-invocable: true
-description: Opinionated software engineering review panel. Eight gurus (Beck, Fowler, Uncle Bob, DHH, Metz, Evans, Hickey, Ousterhout) review code from their own philosophy. Triggers on /gurus:software, code review panel, engineering guru review.
+description: >-
+  Run an opinionated software engineering review panel over code, diffs, or design choices.
 allowed-tools:
   - Bash(git diff *)
   - Bash(git log *)
