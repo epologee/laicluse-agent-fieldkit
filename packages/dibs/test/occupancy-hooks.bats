@@ -128,6 +128,38 @@ run_hook() {
   [ "$status" -eq 0 ]
 }
 
+@test "apply_patch gates the target git worktree instead of an occupied parent cwd" {
+  local parent="$BATS_TEST_TMPDIR/repo"
+  local child="$parent/worktrees/child"
+  mkdir -p "$parent"
+  git -C "$parent" init >/dev/null
+  git -C "$parent" config user.email test@example.invalid
+  git -C "$parent" config user.name Test
+  echo root > "$parent/README.md"
+  git -C "$parent" add README.md
+  git -C "$parent" commit -m init >/dev/null
+  git -C "$parent" worktree add -b child "$child" >/dev/null
+
+  sleep 60 & local other=$!
+  dibs claim "$parent" --pid "$other" --agent claude --session other-sess >/dev/null
+  export DIBS_HOLDER_PID=$$
+  jq -nc --arg cwd "$parent" --arg target "$child/new.txt" '
+    {
+      hook_event_name:"PreToolUse",
+      tool_name:"apply_patch",
+      cwd:$cwd,
+      session_id:"sess-1",
+      tool_input:{patch:"*** Begin Patch\n*** Add File: \($target)\n+ok\n*** End Patch\n"}
+    }' > "$BATS_TEST_TMPDIR/in.json"
+
+  run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+  local rc=$status
+  run dibs check "$child" --json
+  kill "$other" 2>/dev/null || true
+  [ "$rc" -eq 0 ]
+  echo "$output" | grep -q "\"pid\": $$"
+}
+
 @test "SessionStart steers aside (no block) when a live other-session agent holds the dir" {
   sleep 60 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
