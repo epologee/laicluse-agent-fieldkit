@@ -54,15 +54,15 @@
 		$("#hero-stats").innerHTML = `
 			<div class="stat-row">
 				<strong>${data.counts.sourcePackages}</strong>
-				<span>source packages</span>
+				<span>packages</span>
 			</div>
 			<div class="stat-row">
 				<strong>${data.counts.codexPackages}</strong>
-				<span>Codex-compatible adapters</span>
+				<span>Claude Code + Codex packages</span>
 			</div>
 			<div class="stat-row muted">
 				<strong>${data.counts.claudeOnlyPackages}</strong>
-				<span>Claude-only packages</span>
+				<span>Claude Code-only package</span>
 			</div>
 			<div class="stat-row">
 				<strong>${data.counts.skillEntries}</strong>
@@ -83,7 +83,7 @@
 	function renderSummaries(data) {
 		$("#catalog-summary").innerHTML = `
 			<span>${plural(data.counts.sourcePackages, "package")}</span>
-			<span>${plural(data.counts.codexPackages, "Codex adapter")}</span>
+			<span>${plural(data.counts.codexPackages, "Claude + Codex package")}</span>
 			<span>${plural(data.counts.changelogEntries, "changelog note")}</span>
 		`;
 	}

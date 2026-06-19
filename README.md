@@ -1,6 +1,7 @@
 # l'Aicluse Agent Fieldkit
 
-Agent tooling for Claude Code and Codex.
+Agent tooling for Claude Code and Codex. Most packages ship to both hosts;
+runtime-specific adapters are generated from the package sources.
 
 The GitHub Pages source for a public overview of the repository and changelog
 lives in [docs/index.html](docs/index.html). Publish GitHub Pages from the
@@ -94,9 +95,9 @@ codex plugin add house-rules@laicluse-agent-fieldkit
 codex plugin add whywhy@laicluse-agent-fieldkit
 ```
 
-Codex receives the generated subset that has Codex-compatible runtime
-behavior. Claude-only plugins and skills are intentionally omitted from the
-Codex marketplace instead of being served as inert commands.
+Most packages ship to both Claude Code and Codex. Runtime-specific adapters are
+generated from the package sources; `autonomous` remains Claude Code-only
+because its keep-alive behavior is host-specific.
 
 Existing installs under the previous marketplace identity do not rename
 themselves. See [docs/migration.md](docs/migration.md) for the hard-cutover
@@ -111,7 +112,8 @@ claude plugins marketplace add ./
 codex plugin marketplace add ./
 ```
 
-Claude metadata is the source. Codex metadata is generated:
+Host runtimes use their own adapter metadata. Claude manifests are edited in
+place; Codex manifests are generated from the same package sources:
 
 ```bash
 bin/plugin-adapters build .
