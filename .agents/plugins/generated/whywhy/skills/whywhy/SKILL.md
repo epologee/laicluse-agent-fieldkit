@@ -67,7 +67,7 @@ Ask yourself a sharp "why?" and answer it. Build each next question on the previ
 
 The questions may be uncomfortable. The goal is depth, not comfort. Do not rationalize. If an answer contains an uncomfortable truth, name it instead of talking around it.
 
-**Use sources.** Answers must not come purely from model weights when they are verifiable. Use Grep, Read, WebSearch where relevant. A "why does our deploy run so slowly?" deserves a look at the codebase, not just reasoning.
+**Use sources.** Answers must not come purely from model weights when they are verifiable. Reach for whatever code-search, file-reading, and web tools the host provides where relevant. A "why does our deploy run so slowly?" deserves a look at the codebase, not just reasoning.
 
 ### 3. Show the chain
 

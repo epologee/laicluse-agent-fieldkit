@@ -391,7 +391,7 @@
 		},
 		{
 			"name": "whywhy",
-			"version": "2.0.1",
+			"version": "2.0.2",
 			"category": "review",
 			"summary": "Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.",
 			"support": [
@@ -525,20 +525,20 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/naming-is-hard/CHANGELOG.md"
 		},
 		{
+			"plugin": "whywhy",
+			"packageVersion": "2.0.2",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
+		},
+		{
 			"plugin": "drydry",
 			"packageVersion": "2.0.1",
 			"version": "v2.0.0",
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
-		},
-		{
-			"plugin": "whywhy",
-			"packageVersion": "2.0.1",
-			"version": "v2.0.1",
-			"type": "Added",
-			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
 		}
 	]
 }
