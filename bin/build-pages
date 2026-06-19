@@ -3,8 +3,13 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
+const { execFileSync } = require("child_process");
 
 const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
+const PAGES_URL = "https://epologee.github.io/laicluse-agent-fieldkit";
+const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
+const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
 
 const copy = {
 	"how-plugins-work": {
@@ -310,12 +315,173 @@ function build(repoRoot) {
 	};
 }
 
+function xmlEscape(value) {
+	return String(value)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
+}
+
+function categoryCounts(data) {
+	return data.categories
+		.map((category) => ({
+			label: category.label,
+			count: data.plugins.filter((plugin) => plugin.category === category.id).length,
+		}))
+		.filter((entry) => entry.count > 0);
+}
+
+// Build the share card as an SVG string. The plugin count, per-category counts,
+// and skill/Codex totals come from the live marketplace data, so the card stays
+// in sync every time the page is generated.
+function buildOgSvg(data) {
+	const pluginCount = data.plugins.length;
+	const skillCount = data.counts.skillEntries;
+	const codexCount = data.counts.codexPackages;
+
+	let x = 80;
+	const pillY = 444;
+	const pillH = 44;
+	const pills = categoryCounts(data)
+		.map(({ label, count }) => {
+			const width = Math.round(52 + label.length * 9.0 + 26);
+			const group = `	<g>
+		<rect x="${x}" y="${pillY}" width="${width}" height="${pillH}" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
+		<circle cx="${x + 22}" cy="${pillY + pillH / 2}" r="4.5" fill="#31d994"/>
+		<text x="${x + 38}" y="${pillY + pillH / 2 + 5}" font-family="${OG_MONO}" font-size="15" fill="#d7dcd8">${xmlEscape(label)}</text>
+		<text x="${x + width - 20}" y="${pillY + pillH / 2 + 5}" text-anchor="end" font-family="${OG_MONO}" font-size="15" font-weight="700" fill="#31d994">${count}</text>
+	</g>`;
+			x += width + 12;
+			return group;
+		})
+		.join("\n");
+
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<defs>
+		<radialGradient id="glow" cx="78%" cy="6%" r="55%">
+			<stop offset="0%" stop-color="#31d994" stop-opacity="0.20"/>
+			<stop offset="62%" stop-color="#31d994" stop-opacity="0"/>
+		</radialGradient>
+		<pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+			<circle cx="2" cy="2" r="1.4" fill="rgba(255,255,255,0.05)"/>
+		</pattern>
+	</defs>
+	<rect width="1200" height="630" fill="#070807"/>
+	<rect width="1200" height="630" fill="url(#dots)"/>
+	<rect width="1200" height="630" fill="url(#glow)"/>
+	<rect x="80" y="74" width="64" height="64" rx="14" fill="#0d1511" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
+	<text x="112" y="115" text-anchor="middle" font-family="${OG_MONO}" font-size="24" font-weight="800" fill="#31d994">AF</text>
+	<text x="162" y="116" font-family="${OG_SANS}" font-size="29" font-weight="700" fill="#f7f7f2">l'Aicluse Agent Fieldkit</text>
+	<text x="80" y="236" font-family="${OG_MONO}" font-size="21" letter-spacing="1.5" fill="#31d994">${pluginCount} PLUGINS · CLAUDE CODE + CODEX</text>
+	<text x="78" y="312" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
+	<text x="78" y="378" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
+${pills}
+	<circle cx="86" cy="556" r="6" fill="#31d994"/>
+	<text x="102" y="562" font-family="${OG_MONO}" font-size="20" fill="#31d994">epologee.github.io/laicluse-agent-fieldkit</text>
+	<text x="1120" y="562" text-anchor="end" font-family="${OG_MONO}" font-size="18" fill="#a8b0aa">${skillCount} skills · ${codexCount} on Codex</text>
+</svg>
+`;
+}
+
+function ogHash(buffer) {
+	return crypto.createHash("sha256").update(buffer).digest("hex").slice(0, 10);
+}
+
+function validatePng(buffer, width, height) {
+	const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+	if (buffer.length < 24 || !buffer.subarray(0, 8).equals(signature)) {
+		throw new Error("rasterizer did not produce a PNG");
+	}
+	const actualWidth = buffer.readUInt32BE(16);
+	const actualHeight = buffer.readUInt32BE(20);
+	if (actualWidth !== width || actualHeight !== height) {
+		throw new Error(`og PNG is ${actualWidth}x${actualHeight}, expected ${width}x${height}`);
+	}
+}
+
+function hasBinary(bin, args) {
+	try {
+		execFileSync(bin, args, { stdio: "ignore", timeout: 5000 });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+// rsvg-convert is the canonical renderer so committed bytes stay reproducible;
+// vips is a graceful fallback. Mixing renderers per build would churn the PNG.
+function findRenderer() {
+	if (hasBinary("rsvg-convert", ["--version"])) {
+		return (svgPath, outPath) =>
+			execFileSync("rsvg-convert", ["-w", "1200", "-h", "630", "-o", outPath, svgPath], {
+				stdio: "ignore",
+				timeout: 20000,
+			});
+	}
+	if (hasBinary("vips", ["--version"])) {
+		return (svgPath, outPath) =>
+			execFileSync("vips", ["thumbnail", svgPath, outPath, "1200", "--height", "630", "--size", "force"], {
+				stdio: "ignore",
+				timeout: 20000,
+			});
+	}
+	return null;
+}
+
+// Write the SVG always; replace the PNG only when its bytes change, so a no-op
+// build leaves the binary untouched. Returns the content hash for cache-busting.
+function renderOgImage(repoRoot, svg) {
+	const assetsDir = path.join(repoRoot, "docs", "assets");
+	fs.mkdirSync(assetsDir, { recursive: true });
+	const svgPath = path.join(assetsDir, "og-card.svg");
+	fs.writeFileSync(svgPath, svg);
+
+	const pngPath = path.join(assetsDir, "og-image.png");
+	const keepExisting = () =>
+		fs.existsSync(pngPath) ? ogHash(fs.readFileSync(pngPath)) : ogHash(Buffer.from(svg));
+
+	const render = findRenderer();
+	if (!render) {
+		process.stdout.write("build-pages: no SVG rasterizer (rsvg-convert/vips) found; kept existing og-image.png\n");
+		return keepExisting();
+	}
+
+	const tmpPath = path.join(assetsDir, ".og-image.tmp.png");
+	try {
+		render(svgPath, tmpPath);
+		const bytes = fs.readFileSync(tmpPath);
+		validatePng(bytes, 1200, 630);
+		const changed = !fs.existsSync(pngPath) || !fs.readFileSync(pngPath).equals(bytes);
+		if (changed) fs.writeFileSync(pngPath, bytes);
+		return ogHash(bytes);
+	} catch (error) {
+		process.stdout.write(`build-pages: og rasterize failed (${error.message}); kept existing og-image.png\n`);
+		return keepExisting();
+	} finally {
+		if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+	}
+}
+
+// Point the og:image/twitter:image meta at the freshly hashed asset so social
+// platforms refetch the card after it changes.
+function updateOgMeta(repoRoot, hash) {
+	const indexPath = path.join(repoRoot, "docs", "index.html");
+	const html = fs.readFileSync(indexPath, "utf8");
+	const updated = html.replace(/(assets\/og-image\.png)(\?v=[a-z0-9]+)?/g, `$1?v=${hash}`);
+	if (updated !== html) fs.writeFileSync(indexPath, updated);
+}
+
 function main() {
 	const repoRoot = path.resolve(process.argv[2] || process.cwd());
+	const data = build(repoRoot);
 	const outputPath = path.join(repoRoot, "docs", "site-data.json");
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-	fs.writeFileSync(outputPath, `${JSON.stringify(build(repoRoot), null, "\t")}\n`);
+	fs.writeFileSync(outputPath, `${JSON.stringify(data, null, "\t")}\n`);
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
+
+	const hash = renderOgImage(repoRoot, buildOgSvg(data));
+	updateOgMeta(repoRoot, hash);
+	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
 }
 
 main();
