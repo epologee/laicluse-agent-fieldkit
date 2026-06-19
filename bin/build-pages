@@ -340,22 +340,32 @@ function buildOgSvg(data) {
 	const pluginCount = data.plugins.length;
 	const skillCount = data.counts.skillEntries;
 
-	let x = 80;
-	const pillY = 496;
-	const pillH = 44;
-	const pills = categoryCounts(data)
-		.map(({ label, count }) => {
-			const width = Math.round(52 + label.length * 9.0 + 26);
-			const group = `	<g>
-		<rect x="${x}" y="${pillY}" width="${width}" height="${pillH}" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
-		<circle cx="${x + 22}" cy="${pillY + pillH / 2}" r="4.5" fill="#31d994"/>
-		<text x="${x + 38}" y="${pillY + pillH / 2 + 5}" font-family="${OG_MONO}" font-size="15" fill="#d7dcd8">${xmlEscape(label)}</text>
-		<text x="${x + width - 20}" y="${pillY + pillH / 2 + 5}" text-anchor="end" font-family="${OG_MONO}" font-size="15" font-weight="700" fill="#31d994">${count}</text>
+	const cats = categoryCounts(data);
+	const pillH = 52;
+	const pillFont = 23;
+	const charW = 14.2;
+	const pillTopY = 450;
+	const rowGap = 14;
+	const colGap = 16;
+	const firstRow = Math.ceil(cats.length / 2);
+	const rowX = [80, 80];
+	const pills = cats
+		.map(({ label, count }, i) => {
+			const row = i < firstRow ? 0 : 1;
+			const y = pillTopY + row * (pillH + rowGap);
+			const width = Math.round(48 + label.length * charW + 44);
+			const x = rowX[row];
+			rowX[row] += width + colGap;
+			return `	<g>
+		<rect x="${x}" y="${y}" width="${width}" height="${pillH}" rx="26" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
+		<circle cx="${x + 26}" cy="${y + pillH / 2}" r="6" fill="#31d994"/>
+		<text x="${x + 46}" y="${y + pillH / 2 + 7}" font-family="${OG_MONO}" font-size="${pillFont}" fill="#d7dcd8">${xmlEscape(label)}</text>
+		<text x="${x + width - 24}" y="${y + pillH / 2 + 7}" text-anchor="end" font-family="${OG_MONO}" font-size="${pillFont}" font-weight="700" fill="#31d994">${count}</text>
 	</g>`;
-			x += width + 12;
-			return group;
 		})
 		.join("\n");
+
+	const wmScale = 1040 / WORDMARK.adv;
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
 	<defs>
@@ -370,10 +380,10 @@ function buildOgSvg(data) {
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#dots)"/>
 	<rect width="1200" height="630" fill="url(#glow)"/>
-	<g transform="translate(80, 152) scale(${(68 / WORDMARK.upm).toFixed(5)}, ${(-68 / WORDMARK.upm).toFixed(5)})"><path d="${WORDMARK.d}" fill="#f7f7f2"/></g>
-	<text x="80" y="270" font-family="${OG_MONO}" font-size="21" letter-spacing="1.5" fill="#31d994">${pluginCount} PLUGINS · ${skillCount} SKILLS · CLAUDE CODE + CODEX</text>
-	<text x="78" y="352" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
-	<text x="78" y="420" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
+	<g transform="translate(80, 168) scale(${wmScale.toFixed(6)}, ${(-wmScale).toFixed(6)})"><path d="${WORDMARK.d}" fill="#f7f7f2"/></g>
+	<text x="80" y="268" font-family="${OG_MONO}" font-size="33" letter-spacing="1" fill="#31d994">${pluginCount} PLUGINS · ${skillCount} SKILLS · CLAUDE CODE + CODEX</text>
+	<text x="78" y="348" font-family="${OG_SANS}" font-size="54" font-weight="800" letter-spacing="-1.1" fill="#ffffff">Guardrails for coding agents</text>
+	<text x="78" y="410" font-family="${OG_SANS}" font-size="54" font-weight="800" letter-spacing="-1.1" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
 ${pills}
 </svg>
 `;
