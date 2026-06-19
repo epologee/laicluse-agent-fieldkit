@@ -8,8 +8,19 @@ one concept should have one name across code, docs, UI, commits, PRs, scripts,
 automation, and human communication unless the domain deliberately uses
 different words for different audiences.
 
-This reference gathers the naming categories that tend to drift when agents
+This reference gathers the naming decisions that tend to drift when agents
 follow generic training-corpus defaults.
+
+## How To Read This
+
+The principles below are the doctrine. The examples are illustrations of how to
+reason, not a catalog to match against. They lean on one author's domain
+(energy, EV, Dutch/English code-switching) on purpose, to show the reasoning in
+a concrete setting. Do not reuse their domains, nouns, verbs, categories, or
+exact phrasings unless they fit the project in front of you. When an example and
+your project disagree, the project wins. A list here is never closed: it names
+common cases, not the only cases, and the lists framed as smells are prompts to
+question a name, not tokens to ban.
 
 ## Mental Models
 
@@ -36,10 +47,11 @@ follow generic training-corpus defaults.
 3. Name the result, not the move. `Allow users to disconnect their car from the
    app` is better than `Add disconnect button`; `Plan charging sessions and
    generate energy profiles` is better than `Add ExampleSolverBuilder`.
-4. Avoid generic wrapper nouns unless the framework or domain makes them
-   specific: `Manager`, `Handler`, `Helper`, `Service`, `Util`, `Data`, `Info`,
-   `Thing`, `Item`, `Processor`, and `Controller` are usually placeholders for
-   a missing domain name.
+4. Treat a generic role noun as a smell when it hides the domain
+   responsibility. When a name leans on a word like `Manager` or `Helper` and
+   the prefix does not say what domain responsibility the object owns, a domain
+   name is probably missing. Keep such a noun when the framework or local vocabulary
+   gives it a precise meaning.
 5. Avoid cleverness. Names must survive being read in isolation, searched with
    `rg`, spoken in a review, and reused by another agent months later.
 6. Keep the vocabulary stable across artifacts. A feature name, branch name,
@@ -56,12 +68,17 @@ follow generic training-corpus defaults.
 10. If two names seem possible, ask what future search term should find this.
     Searchability beats private cleverness.
 
-## Naming Patterns
+## Shapes That Sometimes Help
+
+These are reasoning aids, not templates to fill. Reach for the principle first;
+use a shape only when it makes the call site or the artifact clearer, and drop
+it when the local language or framework suggests something better.
 
 - **Capability subject:** name a commit, PR title, feature, or changelog entry
   after the capability now present, not the files changed to create it.
-- **Domain noun plus specific verb:** combine the domain object with the action
-  it owns, such as `recipeSaver`, `tariffWindow`, or `sessionPlanner`.
+- **Domain noun plus specific verb:** expose the domain object and the
+  responsibility at the call site. One possible shape is a domain noun joined to
+  the action it owns; choose another when it reads more clearly.
 - **Audience split with explicit mapping:** keep precise domain terms in code
   and user-natural labels in UI only when the relationship is clear.
 - **Protocol term preservation:** keep protocol-defined names such as
@@ -72,41 +89,22 @@ follow generic training-corpus defaults.
 - **Negative example pair:** when replacing a bad name, record the before/after
   as a compact contrast so future agents learn the boundary.
 
-## Categories To Check
+## Where Names Become Vocabulary
 
-- Code symbols: variables, constants, functions, methods, classes, interfaces,
-  modules, namespaces, components, hooks, jobs, migrations, policies, commands,
-  and exceptions.
-- Domain-specific language: business concepts, protocol terms, product terms,
-  hardware terms, finance/legal/regulatory terms, roles, states, transitions,
-  and units.
-- Data contracts: API endpoints, route names, event names, queue names,
-  database tables, columns, JSON keys, GraphQL fields, cache keys, metrics,
-  analytics events, feature flags, env vars, config keys, and error codes.
-- Project and product identity: project names, repo names, package names,
-  marketplace names, product names, feature names, initiative names, and
-  internal codenames.
-- Filesystem names: files, directories, package names, plugin names, skill
-  names, scripts, assets, generated targets, fixtures, templates, and docs.
-- Test language: spec filenames, describe/context labels, fixture names,
-  snapshot names, fake builders, scenario names, and example prompts.
-- Source-control language: branch names, worktree names, commit subjects,
-  commit bodies, trailers, tags, release names, changelog bullets, PR titles,
-  PR bodies, issue titles, and issue references.
-- Product and UX language: feature names, UI labels, button text, empty states,
-  onboarding steps, notifications, help text, navigation labels, and support
-  macros.
-- Human communication: chat messages, customer/partner emails, recaps,
-  summaries, handoff notes, review comments, and status updates.
-- Mixed-language use: Dutch/English code-switching, jargon translation,
-  metaphor verbs, decimal and thousands notation, issue/PR URL style, and
-  product names that should not be translated.
-- Operational language: daemon names, launchd labels, cron names, queue names,
-  workbench orders, automation reports, and local-only helper names.
-- Brand and voice: brand nouns, product names, claims, proof points, tone,
-  bilingual copy, and words that sound like marketing hype.
-- Privacy boundaries: private personal names, client/employer details,
-  credentials, local tool names, and generated-process vocabulary.
+A name is worth checking wherever it becomes part of the system's shared
+vocabulary, because that is where drift and accidental splits happen. The
+question to carry to each spot is the same: who reads this term later, and where
+do they meet it again?
+
+The surface area varies by project. It usually spans identifiers and code
+symbols, data contracts (APIs, events, schemas, keys, flags, env vars), domain
+and protocol language, source-control prose (branches, commits, tags, PR and
+issue text), product and UX copy, operations and automation names, and human
+communication. One axis cuts across all of them: privacy boundaries. Private
+personal names, client or employer details, credentials, and local tool or
+process vocabulary do not belong in shareable names, however technically
+correct they are. Treat this as a map of where to look, not a checklist to
+complete; follow the actual surface area of the project in front of you.
 
 ## Language Rules
 
@@ -168,23 +166,13 @@ term, but document the relationship if both terms must coexist.
 
 ## Branches And Worktrees
 
-Branch and worktree names describe the feature or domain slice. Do not include
-agent names, vendor names, or tooling signatures. Prefer lower-case hyphenated
-phrases unless a repo has a stricter local convention.
-
-Good branch-name shapes:
-
-- `naming-is-hard`
-- `recipe-saving-endpoints`
-- `worktree-default-reporter`
-- `charging-session-planning`
-
-Poor branch-name shapes:
-
-- `codex/naming-plugin`
-- `claude-fix`
-- `agent-generated-cleanup`
-- `update-stuff`
+A branch or worktree name should be the phrase a future maintainer would search
+for when looking for this change. Prefer lower-case hyphenated phrases unless a
+repo has a stricter local convention. As an illustration,
+`recipe-saving-endpoints` reads as that searchable phrase, while `claude-fix` or
+`update-stuff` name the agent or the activity rather than the change. The shape
+matters less than whether the name would surface the work in a later search and
+whether it stays free of agent, vendor, or tooling signatures.
 
 When a tool derives worktree directories from branch names, keep both readable.
 If slashes flatten to dashes in the worktree directory, choose a branch name
@@ -202,10 +190,11 @@ The subject answers one of these questions:
 - What invariant is now protected?
 - Which user-visible or maintainer-visible risk is reduced?
 
-Avoid starting with these generic verbs unless the local project explicitly
-requires them: `Add`, `Fix`, `Improve`, `Update`, `Change`, `Refactor`,
-`Extract`, `Move`, `Remove`, `Rename`. These usually describe the git operation
-or coding activity instead of the resulting behavior.
+A leading verb is suspect when it names the editing operation rather than the
+resulting behavior. Verbs like `Add` or `Fix` are fine when the rest of the
+subject names the actual outcome; they are weak when they stand in for thought.
+A quick test: if the subject would still be true after a completely different
+change, it is describing the activity, not the result.
 
 Avoid file inventories, class inventories, and meta triggers:
 
@@ -213,7 +202,7 @@ Avoid file inventories, class inventories, and meta triggers:
 - Poor: `Add FooBuilder with bar and baz`
 - Poor: `Address PR feedback`
 - Better: `Prevent duplicate charging sessions for same vehicle`
-- Better: `Use device from gum filter instead of stale variable`
+- Better: `Use the selected account instead of the stale cached one`
 
 Commit bodies explain WHY when the subject cannot carry enough context. Do not
 add agent footers or `Co-Authored-By` trailers unless the project explicitly

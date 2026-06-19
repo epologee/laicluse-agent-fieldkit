@@ -1,7 +1,7 @@
 ---
 name: naming-is-hard
 user-invocable: true
-description: Canonical l'Aicluse naming and wording doctrine. Use when choosing, reviewing, or revising names or terminology for code symbols, files, directories, modules, packages, plugins, skills, CLI commands, config keys, APIs, events, database fields, domain language, feature names, project names, branch names, worktree names, commit messages, pull requests, issues, release notes, docs, UI copy, human communication, Dutch/English mixed-language wording, jargon translation, or any "what should this be called?" task.
+description: Opinionated naming and wording doctrine. Use for any naming or wording choice where a term will be reused or interpreted by future readers, spanning code symbols, data contracts, domain language, files, branches, commits, pull requests, docs, UI copy, and human communication, including Dutch/English mixed-language wording and jargon translation. Those categories are illustrative, not a closed checklist; apply the doctrine to whatever you are actually naming, or any "what should this be called?" task.
 ---
 
 <post-update-broadcast>
