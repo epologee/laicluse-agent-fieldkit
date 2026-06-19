@@ -337,10 +337,9 @@ function categoryCounts(data) {
 function buildOgSvg(data) {
 	const pluginCount = data.plugins.length;
 	const skillCount = data.counts.skillEntries;
-	const codexCount = data.counts.codexPackages;
 
 	let x = 80;
-	const pillY = 444;
+	const pillY = 496;
 	const pillH = 44;
 	const pills = categoryCounts(data)
 		.map(({ label, count }) => {
@@ -369,16 +368,11 @@ function buildOgSvg(data) {
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#dots)"/>
 	<rect width="1200" height="630" fill="url(#glow)"/>
-	<rect x="80" y="74" width="64" height="64" rx="14" fill="#0d1511" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
-	<text x="112" y="115" text-anchor="middle" font-family="${OG_MONO}" font-size="24" font-weight="800" fill="#31d994">AF</text>
-	<text x="162" y="116" font-family="${OG_SANS}" font-size="29" font-weight="700" fill="#f7f7f2">l'Aicluse Agent Fieldkit</text>
-	<text x="80" y="236" font-family="${OG_MONO}" font-size="21" letter-spacing="1.5" fill="#31d994">${pluginCount} PLUGINS · CLAUDE CODE + CODEX</text>
-	<text x="78" y="312" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
-	<text x="78" y="378" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
+	<text x="80" y="158" font-family="${OG_SANS}" font-size="32" font-weight="700" fill="#f7f7f2">l'Aicluse Agent Fieldkit</text>
+	<text x="80" y="270" font-family="${OG_MONO}" font-size="21" letter-spacing="1.5" fill="#31d994">${pluginCount} PLUGINS · ${skillCount} SKILLS · CLAUDE CODE + CODEX</text>
+	<text x="78" y="352" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
+	<text x="78" y="420" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
 ${pills}
-	<circle cx="86" cy="556" r="6" fill="#31d994"/>
-	<text x="102" y="562" font-family="${OG_MONO}" font-size="20" fill="#31d994">epologee.github.io/laicluse-agent-fieldkit</text>
-	<text x="1120" y="562" text-anchor="end" font-family="${OG_MONO}" font-size="18" fill="#a8b0aa">${skillCount} skills · ${codexCount} on Codex</text>
 </svg>
 `;
 }

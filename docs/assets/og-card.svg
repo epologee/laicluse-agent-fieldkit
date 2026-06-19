@@ -11,37 +11,32 @@
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#dots)"/>
 	<rect width="1200" height="630" fill="url(#glow)"/>
-	<rect x="80" y="74" width="64" height="64" rx="14" fill="#0d1511" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
-	<text x="112" y="115" text-anchor="middle" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="24" font-weight="800" fill="#31d994">AF</text>
-	<text x="162" y="116" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="29" font-weight="700" fill="#f7f7f2">l'Aicluse Agent Fieldkit</text>
-	<text x="80" y="236" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="21" letter-spacing="1.5" fill="#31d994">16 PLUGINS · CLAUDE CODE + CODEX</text>
-	<text x="78" y="312" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
-	<text x="78" y="378" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
+	<text x="80" y="158" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="700" fill="#f7f7f2">l'Aicluse Agent Fieldkit</text>
+	<text x="80" y="270" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="21" letter-spacing="1.5" fill="#31d994">16 PLUGINS · 65 SKILLS · CLAUDE CODE + CODEX</text>
+	<text x="78" y="352" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
+	<text x="78" y="420" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
 	<g>
-		<rect x="80" y="444" width="267" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
-		<circle cx="102" cy="466" r="4.5" fill="#31d994"/>
-		<text x="118" y="471" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Repository discipline</text>
-		<text x="327" y="471" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">4</text>
+		<rect x="80" y="496" width="267" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
+		<circle cx="102" cy="518" r="4.5" fill="#31d994"/>
+		<text x="118" y="523" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Repository discipline</text>
+		<text x="327" y="523" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">4</text>
 	</g>
 	<g>
-		<rect x="359" y="444" width="213" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
-		<circle cx="381" cy="466" r="4.5" fill="#31d994"/>
-		<text x="397" y="471" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Autonomous work</text>
-		<text x="552" y="471" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">2</text>
+		<rect x="359" y="496" width="213" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
+		<circle cx="381" cy="518" r="4.5" fill="#31d994"/>
+		<text x="397" y="523" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Autonomous work</text>
+		<text x="552" y="523" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">2</text>
 	</g>
 	<g>
-		<rect x="584" y="444" width="249" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
-		<circle cx="606" cy="466" r="4.5" fill="#31d994"/>
-		<text x="622" y="471" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Review and language</text>
-		<text x="813" y="471" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">5</text>
+		<rect x="584" y="496" width="249" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
+		<circle cx="606" cy="518" r="4.5" fill="#31d994"/>
+		<text x="622" y="523" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Review and language</text>
+		<text x="813" y="523" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">5</text>
 	</g>
 	<g>
-		<rect x="845" y="444" width="276" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
-		<circle cx="867" cy="466" r="4.5" fill="#31d994"/>
-		<text x="883" y="471" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Feedback and utilities</text>
-		<text x="1101" y="471" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">5</text>
+		<rect x="845" y="496" width="276" height="44" rx="22" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
+		<circle cx="867" cy="518" r="4.5" fill="#31d994"/>
+		<text x="883" y="523" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" fill="#d7dcd8">Feedback and utilities</text>
+		<text x="1101" y="523" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#31d994">5</text>
 	</g>
-	<circle cx="86" cy="556" r="6" fill="#31d994"/>
-	<text x="102" y="562" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="20" fill="#31d994">epologee.github.io/laicluse-agent-fieldkit</text>
-	<text x="1120" y="562" text-anchor="end" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="18" fill="#a8b0aa">65 skills · 14 on Codex</text>
 </svg>
