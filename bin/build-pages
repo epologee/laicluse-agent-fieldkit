@@ -10,6 +10,8 @@ const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
 const PAGES_URL = "https://epologee.github.io/laicluse-agent-fieldkit";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
+// allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
+const WORDMARK = require("./wordmark.json");
 
 const copy = {
 	"how-plugins-work": {
@@ -368,7 +370,7 @@ function buildOgSvg(data) {
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#dots)"/>
 	<rect width="1200" height="630" fill="url(#glow)"/>
-	<text x="80" y="158" font-family="${OG_SANS}" font-size="32" font-weight="700" fill="#f7f7f2">l'Aicluse Agent Fieldkit</text>
+	<g transform="translate(80, 150) scale(${(52 / WORDMARK.upm).toFixed(5)}, ${(-52 / WORDMARK.upm).toFixed(5)})"><path d="${WORDMARK.d}" fill="#f7f7f2"/></g>
 	<text x="80" y="270" font-family="${OG_MONO}" font-size="21" letter-spacing="1.5" fill="#31d994">${pluginCount} PLUGINS · ${skillCount} SKILLS · CLAUDE CODE + CODEX</text>
 	<text x="78" y="352" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
 	<text x="78" y="420" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
