@@ -370,7 +370,7 @@ function buildOgSvg(data) {
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#dots)"/>
 	<rect width="1200" height="630" fill="url(#glow)"/>
-	<g transform="translate(80, 150) scale(${(52 / WORDMARK.upm).toFixed(5)}, ${(-52 / WORDMARK.upm).toFixed(5)})"><path d="${WORDMARK.d}" fill="#f7f7f2"/></g>
+	<g transform="translate(80, 152) scale(${(68 / WORDMARK.upm).toFixed(5)}, ${(-68 / WORDMARK.upm).toFixed(5)})"><path d="${WORDMARK.d}" fill="#f7f7f2"/></g>
 	<text x="80" y="270" font-family="${OG_MONO}" font-size="21" letter-spacing="1.5" fill="#31d994">${pluginCount} PLUGINS · ${skillCount} SKILLS · CLAUDE CODE + CODEX</text>
 	<text x="78" y="352" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" fill="#ffffff">Guardrails for coding agents</text>
 	<text x="78" y="420" font-family="${OG_SANS}" font-size="58" font-weight="800" letter-spacing="-1.2" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
