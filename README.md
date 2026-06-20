@@ -47,6 +47,8 @@ The marketplace currently ships:
   evidence discipline, and a stop communique.
 - `house-rules`: programming, testing, and naming doctrine, including
   `naming-is-hard`.
+- `hermes-tweet`: Hermes Agent X/Twitter search, social listening, account
+  reads, and gated action guidance for the upstream Hermes Tweet plugin.
 - `whywhy`: drills a configurable why-chain into a question or goal, then
   reads the chain for assumptions, forks, and better framing.
 
@@ -71,6 +73,7 @@ claude plugins install clipboard@laicluse-agent-fieldkit
 claude plugins install gurus@laicluse-agent-fieldkit
 claude plugins install rover@laicluse-agent-fieldkit
 claude plugins install house-rules@laicluse-agent-fieldkit
+claude plugins install hermes-tweet@laicluse-agent-fieldkit
 claude plugins install whywhy@laicluse-agent-fieldkit
 ```
 
@@ -92,6 +95,7 @@ codex plugin add clipboard@laicluse-agent-fieldkit
 codex plugin add gurus@laicluse-agent-fieldkit
 codex plugin add rover@laicluse-agent-fieldkit
 codex plugin add house-rules@laicluse-agent-fieldkit
+codex plugin add hermes-tweet@laicluse-agent-fieldkit
 codex plugin add whywhy@laicluse-agent-fieldkit
 ```
 

@@ -30,11 +30,11 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 18,
-		"codexPackages": 17,
+		"sourcePackages": 19,
+		"codexPackages": 18,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 18,
-		"skillEntries": 71,
+		"changelogEntries": 19,
+		"skillEntries": 72,
 		"hookFiles": 54
 	},
 	"install": {
@@ -55,6 +55,7 @@
 			"claude plugins install gurus@laicluse-agent-fieldkit",
 			"claude plugins install rover@laicluse-agent-fieldkit",
 			"claude plugins install house-rules@laicluse-agent-fieldkit",
+			"claude plugins install hermes-tweet@laicluse-agent-fieldkit",
 			"claude plugins install whywhy@laicluse-agent-fieldkit",
 			"claude plugins install lifeline@laicluse-agent-fieldkit",
 			"claude plugins install saysay@laicluse-agent-fieldkit"
@@ -75,6 +76,7 @@
 			"codex plugin add gurus@laicluse-agent-fieldkit",
 			"codex plugin add rover@laicluse-agent-fieldkit",
 			"codex plugin add house-rules@laicluse-agent-fieldkit",
+			"codex plugin add hermes-tweet@laicluse-agent-fieldkit",
 			"codex plugin add whywhy@laicluse-agent-fieldkit",
 			"codex plugin add lifeline@laicluse-agent-fieldkit",
 			"codex plugin add saysay@laicluse-agent-fieldkit"
@@ -411,6 +413,28 @@
 			}
 		},
 		{
+			"name": "hermes-tweet",
+			"version": "2.0.1",
+			"category": "feedback",
+			"summary": "Guide Hermes Agent X/Twitter workflows through the source-native Hermes Tweet plugin.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"detailPath": "agent-fieldkit/hermes-tweet/",
+			"sourcePath": "packages/hermes-tweet",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/hermes-tweet",
+			"skillCount": 1,
+			"commandCount": 0,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Added",
+				"summary": "Hermes Tweet joins the Fieldkit marketplace."
+			}
+		},
+		{
 			"name": "whywhy",
 			"version": "2.0.3",
 			"category": "review",
@@ -630,6 +654,15 @@
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
+		},
+		{
+			"plugin": "hermes-tweet",
+			"packageVersion": "2.0.1",
+			"detailPath": "agent-fieldkit/hermes-tweet/",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "Hermes Tweet joins the Fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/hermes-tweet/CHANGELOG.md"
 		},
 		{
 			"plugin": "lifeline",
