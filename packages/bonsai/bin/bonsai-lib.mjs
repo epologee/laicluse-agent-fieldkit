@@ -313,7 +313,7 @@ export function teardownWorktree({ repo, target, force = false, dryRun = false }
   git(repo, ['worktree', 'remove', ...(force ? ['--force'] : []), c.worktree]);
   if (c.branch) {
     try {
-      git(repo, ['branch', force ? '-D' : '-d', c.branch]);
+      git(repo, ['branch', (force || c.integrated) ? '-D' : '-d', c.branch]);
     } catch (err) {
       base.warnings.push(`worktree removed but branch ${c.branch} was not deleted: ${err.message.split('\n')[0]}`);
     }

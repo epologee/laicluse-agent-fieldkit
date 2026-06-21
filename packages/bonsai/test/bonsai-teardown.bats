@@ -126,3 +126,36 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   # Integrated via local default, so no orphan and no rebase advice.
   ! echo "$output" | grep -qiE 'advanced|rebase'
 }
+
+@test "teardown deletes the branch when integrated only via origin and local default is stale" {
+  # Incident reproduction, non-dry-run: bonsai proves integration against origin/main,
+  # but git branch -d re-checks against the stale local main and the branch upstream,
+  # so it refuses and leaves the branch behind with a "was not deleted" warning.
+  # bonsai's origin-based verdict is the authority, so an integrated branch must be
+  # deleted (git branch -D) regardless of the stale local ref.
+  ORIGIN="$BATS_TEST_TMPDIR/origin.git"
+  git init -q --bare -b main "$ORIGIN"
+  git -C "$FIX" remote add origin "$ORIGIN"
+  git -C "$FIX" push -q origin main
+  base_sha="$(git -C "$FIX" rev-parse main)"
+
+  bonsai create merged-wt --repo "$FIX" --json
+  git -C "$FIX/worktrees/merged-wt" commit -q --allow-empty -m "feature work"
+  git -C "$FIX" merge -q --ff-only merged-wt
+
+  git -C "$FIX" commit -q --allow-empty -m "later main work"
+  git -C "$FIX" push -q origin main
+
+  git -C "$FIX" reset -q --hard "$base_sha"
+  git -C "$FIX" commit -q --allow-empty -m "Safety baseline"
+  git -C "$FIX" fetch -q origin
+
+  run bonsai teardown merged-wt --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"removed": true'
+  [ ! -d "$FIX/worktrees/merged-wt" ]
+  # The branch bonsai proved integrated against origin/main must be gone, with no
+  # "branch ... was not deleted" warning from git's stale local-ref re-check.
+  ! git -C "$FIX" show-ref --verify --quiet refs/heads/merged-wt
+  ! echo "$output" | grep -qiE 'was not deleted'
+}
