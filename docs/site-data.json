@@ -100,7 +100,7 @@
 		},
 		{
 			"name": "bonsai",
-			"version": "2.0.23",
+			"version": "2.0.24",
 			"category": "workflow",
 			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
 			"support": [
@@ -432,7 +432,7 @@
 		},
 		{
 			"plugin": "bonsai",
-			"packageVersion": "2.0.23",
+			"packageVersion": "2.0.24",
 			"version": "v2.0.21",
 			"type": "Fixed",
 			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",

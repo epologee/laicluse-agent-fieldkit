@@ -150,9 +150,14 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   git -C "$FIX" commit -q --allow-empty -m "Safety baseline"
   git -C "$FIX" fetch -q origin
 
+  # Guard against a vacuous pass: the branch must exist going in, so the
+  # post-teardown absence assertion witnesses the delete rather than a no-op.
+  git -C "$FIX" show-ref --verify --quiet refs/heads/merged-wt
+
   run bonsai teardown merged-wt --repo "$FIX" --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"removed": true'
+  echo "$output" | grep -q '"removable": true'
   [ ! -d "$FIX/worktrees/merged-wt" ]
   # The branch bonsai proved integrated against origin/main must be gone, with no
   # "branch ... was not deleted" warning from git's stale local-ref re-check.
