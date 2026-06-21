@@ -110,6 +110,12 @@ has_codex_hooks() {
   [ -f "$plugin_dir/hooks/hooks.codex.json" ]
 }
 
+validate_codex_hooks_config() {
+  local plugin="$1" path="$2"
+  jq -e 'type == "object" and (keys == ["hooks"]) and (.hooks | type == "object")' "$path" >/dev/null ||
+    die "plugin $plugin Codex hooks config must have exactly one top-level hooks key: $path"
+}
+
 skill_source_for_agent() {
   local skill_dir="$1" agent="$2"
   if [ -f "$skill_dir/SKILL.claude.md" ] || [ -f "$skill_dir/SKILL.codex.md" ]; then
@@ -263,6 +269,9 @@ generate_into() {
     [ -d "$plugin_dir/skills" ] || die "plugin $name is missing skills/"
     validate_skill_sources "$name" "$plugin_dir"
     copy_claude_skill_targets "$repo" "$out_root" "$plugin_dir"
+    if has_codex_hooks "$plugin_dir"; then
+      validate_codex_hooks_config "$name" "$plugin_dir/hooks/hooks.codex.json"
+    fi
 
     if ! has_skill_source_for_agent "$plugin_dir" codex && [ ! -d "$plugin_dir/agents.codex" ] && ! has_codex_hooks "$plugin_dir"; then
       rm -rf "$out_root/.agents/plugins/generated/$name"
@@ -283,6 +292,9 @@ generate_into() {
       copy_codex_hooks "$plugin_dir" "$target_dir"
       codex_plugin_payload "$manifest" "$name" > "$target_dir/.codex-plugin/plugin.json"
     else
+      if [ -f "$plugin_dir/hooks/hooks.json" ]; then
+				validate_codex_hooks_config "$name" "$plugin_dir/hooks/hooks.json"
+      fi
       codex_source="$source"
       target_dir="$out_root/${source#./}/.codex-plugin"
       rm -rf "$out_root/.agents/plugins/generated/$name"

@@ -277,6 +277,14 @@ Minimum copy rules:
   guards, and libraries. Do not copy Claude's `hooks/hooks.json` merely because
   the source package has it; a Claude hook manifest in a Codex package is inert
   at best and misleading at worst.
+- If the Codex marketplace points directly at a shared plugin root that already
+  contains `hooks/hooks.json`, Codex parses that file too. That shared hook
+  manifest must use the strict Codex shape: exactly one top-level key,
+  `"hooks"`. Claude accepts a top-level `"description"` in hook configs; Codex
+  rejects it with `unknown field 'description', expected 'hooks'`. Either keep
+  the shared hook manifest strict and use host-neutral commands such as
+  `${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}`, or route Codex through a generated
+  package with `hooks/hooks.codex.json`.
 - Make `check` compare the full generated file set, not only `SKILL.md` and
   manifest files. A stale generated helper that no longer exists in the source
   is drift.
@@ -521,6 +529,13 @@ The schema has a double `hooks` nesting that is easy to get wrong. Working examp
 ```
 
 The outer `"hooks"` is the object that groups events; within each event entry there is a **second** `"hooks": [...]` array containing the actual commands. Omit that nesting and the plugin validates but the hook array comes through the validator as the wrong type.
+
+Codex is stricter than Claude here. When Codex reads `hooks/hooks.json`, the
+top-level object must contain only `"hooks"`. Claude's optional top-level
+`"description"` is useful for `claude plugins inspect`, but it is not portable
+to a Codex-facing hook config. Keep that description only in a Claude-only
+source, or use an explicit `hooks/hooks.codex.json` source for Codex and let the
+adapter materialize it as runtime `hooks/hooks.json`.
 
 ### Matcher syntax
 
