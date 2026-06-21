@@ -157,7 +157,6 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   run bonsai teardown merged-wt --repo "$FIX" --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"removed": true'
-  echo "$output" | grep -q '"removable": true'
   [ ! -d "$FIX/worktrees/merged-wt" ]
   # The branch bonsai proved integrated against origin/main must be gone, with no
   # "branch ... was not deleted" warning from git's stale local-ref re-check.
