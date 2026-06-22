@@ -81,7 +81,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.26",
+			"version": "2.0.27",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -144,7 +144,7 @@
 		},
 		{
 			"name": "self-improvement",
-			"version": "2.0.6",
+			"version": "2.0.7",
 			"category": "feedback",
 			"summary": "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
 			"support": [
@@ -186,7 +186,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.21",
+			"version": "2.0.22",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -447,7 +447,7 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.26",
+			"packageVersion": "2.0.27",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Agent-specific skill sources may now be single-sided.",
@@ -463,7 +463,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.21",
+			"packageVersion": "2.0.22",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Guard placement and per-agent policy now live in a registry.",
@@ -518,20 +518,20 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
+			"plugin": "self-improvement",
+			"packageVersion": "2.0.7",
+			"version": "v2.0.0",
+			"type": "Changed",
+			"summary": "First l'Aicluse release.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
+		},
+		{
 			"plugin": "gurus",
 			"packageVersion": "2.0.6",
 			"version": "v2.0.1",
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
-		},
-		{
-			"plugin": "self-improvement",
-			"packageVersion": "2.0.6",
-			"version": "v2.0.0",
-			"type": "Changed",
-			"summary": "First l'Aicluse release.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
 		},
 		{
 			"plugin": "house-rules",

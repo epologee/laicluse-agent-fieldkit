@@ -113,8 +113,13 @@ codex plugin marketplace add ./
 ```
 
 Host runtimes use their own adapter metadata. Claude manifests are edited in
-place; the Codex manifests under `.agents/plugins/` are generated adapters,
-committed alongside the package sources they derive from.
+place; Codex manifests are generated from the same package sources:
+
+```bash
+bin/plugin-adapters build .
+bin/plugin-adapters check .
+bin/plugin-adapters diff .
+```
 
 The GitHub Pages catalog data is generated from the same source manifests and
 package changelogs:

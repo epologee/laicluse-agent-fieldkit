@@ -119,8 +119,12 @@ session.
 
 ## Maintainers
 
-Claude metadata stays the source; the Codex adapters under `.agents/plugins/`
-are generated and committed alongside it.
+Keep Claude metadata as source, then regenerate Codex adapters:
+
+```bash
+bin/plugin-adapters build .
+bin/plugin-adapters check .
+```
 
 Runtime state stays under `${LAICLUSE_HOME:-$HOME/.laicluse}` by component
 name, not by marketplace name.
