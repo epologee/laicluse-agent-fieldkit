@@ -20,6 +20,16 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.15]
+
+### Changed
+
+- **Codex-only background diagnosis resolves the cheap model dynamically.**
+  The fallback now reads `codex debug models`, prefers the advertised Codex
+  Spark or ultra-fast coding model, falls back to mini, and skips the
+  background pass instead of silently using the expensive default when no cheap
+  coding model is advertised.
+
 ## [v2.0.14]
 
 ### Changed

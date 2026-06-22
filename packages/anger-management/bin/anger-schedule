@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, writeFileSync, openSync, writeSync, closeSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { execSync, spawn } from 'node:child_process';
+import { execFileSync, execSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { repairWatermark, openCaptures, angerDir } from './anger-lib.mjs';
 
@@ -36,18 +36,33 @@ function cliPath(name) {
   return p && !p.includes('\n') && p.startsWith('/') ? p : '';
 }
 
+function codexFallbackModel() {
+  try {
+    return {
+      model: execFileSync(join(here, 'codex-fast-coding-model'), ['ANGER_SCHEDULE_CODEX_MODEL'], {
+	encoding: 'utf8',
+	stdio: ['ignore', 'pipe', 'pipe'],
+	timeout: 5000,
+      }).trim(),
+    };
+  } catch (error) {
+    const stderr = error?.stderr?.toString().trim();
+    return { error: stderr || 'no cheap Codex coding model available; skipping background investigation' };
+  }
+}
+
 let runner = process.env.ANGER_SCHEDULE_RUNNER || '';
 if (!runner) {
   const claudePath = cliPath('claude');
   const codexPath = claudePath ? '' : cliPath('codex');
   if (claudePath) runner = `${claudePath} -p --model sonnet`;
   else if (codexPath) {
-    const codexModel = process.env.ANGER_SCHEDULE_CODEX_MODEL || 'gpt-5.3-codex-spark';
-    if (!/^[A-Za-z0-9._:-]+$/.test(codexModel)) {
-      console.log('invalid ANGER_SCHEDULE_CODEX_MODEL; use a plain model id such as gpt-5.3-codex-spark');
+    const codexModel = codexFallbackModel();
+    if (codexModel.error) {
+      console.log(codexModel.error);
       process.exit(0);
     }
-    runner = `${codexPath} exec --model ${codexModel} -s read-only`;
+    runner = `${codexPath} exec --model ${codexModel.model} -s read-only`;
   }
   else {
     console.log('no agent CLI (claude or codex) resolvable to a path; skipping background investigation (run /anger-management:repair manually)');

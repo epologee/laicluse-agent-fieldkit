@@ -56,7 +56,7 @@ The vocabulary avoids slurs and identity-targeted abuse.
 3. **Cool down (you do not have to remember).** A capture schedules a single background
    investigation: 22 minutes 22 seconds later (a wink, and long enough for the heat to
    pass) a separate headless agent (`claude -p --model sonnet`, or
-   `codex exec --model gpt-5.3-codex-spark -s read-only` when only Codex is
+   `codex exec --model <fast-coding-model> -s read-only` when only Codex is
    installed) reads the open captures, the repair history,
    and the recent transcripts, and writes a diagnosis. If you are still in that session, a
    check-in cron may surface it between turns; otherwise it shows up at your next
@@ -107,8 +107,9 @@ keep the captures open so the next pass has more evidence.
 - `bin/anger-log` captures a line. `bin/anger-schedule` single-flight launches the background
   investigation. `bin/anger-resolve` records a routed fix so its captures close.
 - `ANGER_SCHEDULE_CODEX_MODEL` overrides the Codex fallback model; by default
-  the fallback uses `gpt-5.3-codex-spark` so background diagnosis does not pick
-  the expensive Codex session default.
+  `bin/codex-fast-coding-model` reads `codex debug models`, prefers Codex
+  Spark or an ultra-fast coding model, then falls back to mini so background
+  diagnosis does not pick the expensive Codex session default.
 - The cuss skills are generated from `capture-skill.template.md` by
   `bin/sync-capture-skills` (repo root); edit the template, not the generated files.
 - The safeword skills are generated from `safeword-skill.template.md` by

@@ -7,6 +7,7 @@ setup() {
   SCHEDULE="$REPO/packages/anger-management/bin/anger-schedule"
   RESOLVE="$REPO/packages/anger-management/bin/anger-resolve"
   NODE_BIN="$(asdf which node 2>/dev/null || command -v node)"
+  NODE_DIR="$(dirname "$NODE_BIN")"
   HOME="$BATS_TEST_TMPDIR/home"
   DIR="$HOME/.laicluse/anger-management"
   mkdir -p "$DIR"
@@ -22,9 +23,15 @@ write_fake_codex() {
   FAKE_BIN="$BATS_TEST_TMPDIR/fake-bin"
   mkdir -p "$FAKE_BIN"
   CODEX_ARGS="$BATS_TEST_TMPDIR/codex-args.txt"
-  export CODEX_ARGS
+  CODEX_MODELS="$BATS_TEST_TMPDIR/codex-models.json"
+  export CODEX_ARGS CODEX_MODELS
+  printf '%s\n' '{"models":[{"slug":"gpt-6.1-codex-spark","display_name":"GPT-6.1 Codex Spark","description":"Ultra-fast coding model","visibility":"list"}]}' > "$CODEX_MODELS"
   printf '%s\n' \
     '#!/bin/sh' \
+    'if [ "$1" = "debug" ] && [ "$2" = "models" ]; then' \
+    '  cat "$CODEX_MODELS"' \
+    '  exit 0' \
+    'fi' \
     'printf "%s\n" "$*" > "$CODEX_ARGS"' \
     'cat >/dev/null' \
     'printf "%s\n" "VERDICT: nothing" "CONFIDENCE: 0.00" "MITIGATION-LEVEL: none" "TARGET-SCOPE: none"' \
@@ -88,22 +95,49 @@ write_fake_codex() {
   [[ "$output" == *"scheduled"* ]]
 }
 
-@test "codex fallback uses Spark in read-only mode when Claude is unavailable" {
+@test "codex fallback uses the advertised Spark model in read-only mode when Claude is unavailable" {
   write_fake_codex
   printf '%s\n' '{"ts":"2026-06-05T09:00:00.000Z","word":"fuck","cwd":"/x","git":"main@a","note":"x"}' > "$LOG"
-  run env HOME="$HOME" PATH="$FAKE_BIN:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_DELAY=1 "$NODE_BIN" "$SCHEDULE"
+  run env HOME="$HOME" PATH="$FAKE_BIN:$NODE_DIR:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_DELAY=1 "$NODE_BIN" "$SCHEDULE"
   [ "$status" -eq 0 ]
   [[ "$output" == *"scheduled"* ]]
   sleep 3
   [ -f "$CODEX_ARGS" ]
-  [ "$(cat "$CODEX_ARGS")" = "exec --model gpt-5.3-codex-spark -s read-only" ]
+  [ "$(cat "$CODEX_ARGS")" = "exec --model gpt-6.1-codex-spark -s read-only" ]
+}
+
+@test "codex fallback uses mini when Spark is absent from the catalog" {
+  write_fake_codex
+  printf '%s\n' '{"models":[{"slug":"gpt-6.1-mini","display_name":"GPT-6.1 Mini","description":"Fast coding model","visibility":"list"}]}' > "$CODEX_MODELS"
+  printf '%s\n' '{"ts":"2026-06-05T09:00:00.000Z","word":"fuck","cwd":"/x","git":"main@a","note":"x"}' > "$LOG"
+  run env HOME="$HOME" PATH="$FAKE_BIN:$NODE_DIR:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_DELAY=1 "$NODE_BIN" "$SCHEDULE"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"scheduled"* ]]
+  sleep 3
+  [ -f "$CODEX_ARGS" ]
+  [ "$(cat "$CODEX_ARGS")" = "exec --model gpt-6.1-mini -s read-only" ]
+}
+
+@test "codex fallback skips when the catalog has no cheap coding model" {
+  write_fake_codex
+  printf '%s\n' '{"models":[{"slug":"gpt-6.1","display_name":"GPT-6.1","description":"Frontier model","visibility":"list"}]}' > "$CODEX_MODELS"
+  printf '%s\n' '{"ts":"2026-06-05T09:00:00.000Z","word":"fuck","cwd":"/x","git":"main@a","note":"x"}' > "$LOG"
+  run env HOME="$HOME" PATH="$FAKE_BIN:$NODE_DIR:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_DELAY=1 "$NODE_BIN" "$SCHEDULE"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"no cheap Codex coding model"* ]]
+  [ ! -f "$DIR/investigation.pending" ]
+  [ ! -f "$CODEX_ARGS" ]
 }
 
 @test "codex fallback rejects unsafe model overrides" {
   write_fake_codex
   printf '%s\n' '{"ts":"2026-06-05T09:00:00.000Z","word":"fuck","cwd":"/x","git":"main@a","note":"x"}' > "$LOG"
-  run env HOME="$HOME" PATH="$FAKE_BIN:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_CODEX_MODEL='bad;rm' "$NODE_BIN" "$SCHEDULE"
+  run env HOME="$HOME" PATH="$FAKE_BIN:$NODE_DIR:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_CODEX_MODEL='bad;rm' "$NODE_BIN" "$SCHEDULE"
   [ "$status" -eq 0 ]
   [[ "$output" == *"invalid ANGER_SCHEDULE_CODEX_MODEL"* ]]
   [ ! -f "$DIR/investigation.pending" ]
+}
+
+@test "plugin copies of codex-fast-coding-model stay in sync" {
+  cmp "$REPO/packages/intervision/bin/codex-fast-coding-model" "$REPO/packages/anger-management/bin/codex-fast-coding-model"
 }

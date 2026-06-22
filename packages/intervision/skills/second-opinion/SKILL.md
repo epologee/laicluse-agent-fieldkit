@@ -37,13 +37,17 @@ the same repository, on its own login, with its own model behind it. That
 independence is the whole point; a peer trained the same way as you would only
 echo you.
 
-Start on Codex Spark: `--model gpt-5.3-codex-spark`. The local Codex model
-catalog describes it as the ultra-fast coding model, and this skill uses it as
-the normal first-pass peer so routine second opinions do not burn the frontier
-session model. Escalate by rerunning the same handoff on the configured Codex
-default (omit `--model`, or name the stronger model explicitly) only when Spark
-says the context is too large or uncertain, misses a concrete concern you can
-point to, the change is high-risk, or the operator asks for a deeper pass.
+Start on the cheap coding model returned by
+`${CLAUDE_PLUGIN_ROOT}/bin/codex-fast-coding-model`. The helper reads
+`codex debug models`, prefers the visible Codex Spark or ultra-fast coding
+model, falls back to a visible mini coding model, and only uses the legacy
+Spark slug when the model catalog cannot be read. This keeps routine second
+opinions off the frontier session model without tying the skill to one OpenAI
+model slug. Escalate by rerunning the same handoff on the configured Codex
+default (omit `--model`, or name the stronger model explicitly) only when the
+cheap pass says the context is too large or uncertain, misses a concrete
+concern you can point to, the change is high-risk, or the operator asks for a
+deeper pass.
 
 ## The peer has to be there
 
@@ -55,6 +59,19 @@ command -v codex >/dev/null 2>&1 || { echo "codex CLI not found; intervision nee
 
 If `codex` is missing, or `codex login status` shows you are not logged in, say so plainly and stop. There is no peer to ask, and pretending otherwise wastes the operator's time. This is the one hard precondition.
 
+Then resolve the cheap first-pass model before any handoff:
+
+```bash
+: "${CLAUDE_PLUGIN_ROOT:?CLAUDE_PLUGIN_ROOT not set; intervision needs its installed plugin helper}"
+CODEX_PEER_MODEL="$("${CLAUDE_PLUGIN_ROOT}/bin/codex-fast-coding-model" INTERVISION_CODEX_MODEL)" || {
+  echo "no cheap Codex coding model found; stop instead of using the expensive Codex default"
+  exit 1
+}
+```
+
+`INTERVISION_CODEX_MODEL` can override the catalog choice for one run. Keep it
+to a plain model id; the helper rejects shell metacharacters.
+
 ## Three ways to get the second opinion
 
 Pick by what just happened. All three run through `codex exec`, and they combine: review a diff first, then go back and forth on whatever the review leaves open.
@@ -62,15 +79,15 @@ Pick by what just happened. All three run through `codex exec`, and they combine
 **1. Check work just done, when there is a diff.** Codex's review path reads the repository's changes directly, so point it at the change set that matches "what we just did":
 
 ```bash
-codex exec --model gpt-5.3-codex-spark review --uncommitted     # staged, unstaged, and untracked work
-codex exec --model gpt-5.3-codex-spark review --base main       # everything on this branch against main
-codex exec --model gpt-5.3-codex-spark review --commit <sha>    # the changes in one commit
+codex exec --model "$CODEX_PEER_MODEL" review --uncommitted     # staged, unstaged, and untracked work
+codex exec --model "$CODEX_PEER_MODEL" review --base main       # everything on this branch against main
+codex exec --model "$CODEX_PEER_MODEL" review --commit <sha>    # the changes in one commit
 ```
 
 **2. Weigh a design just discussed, when there is no code yet.** Give Codex the context on stdin and keep it read-only so it reflects rather than edits. The `-s` flag rides on `codex exec` itself, not on a subcommand: neither `review` nor `resume` accepts it (`resume` inherits the session's sandbox, and passing `-s` there fails with `error: unexpected argument '-s' found`). Use a quoted heredoc so nothing in the pasted text is expanded by the shell:
 
 ```bash
-codex exec --model gpt-5.3-codex-spark -s read-only - <<'PROMPT'
+codex exec --model "$CODEX_PEER_MODEL" -s read-only - <<'PROMPT'
 Peer review this plan before we build it.
 <paste the design, the trade-off, the open question, including the parts we are unsure about>
 PROMPT
@@ -85,8 +102,8 @@ PROMPT
 ```
 
 To escalate, start a fresh default-model handoff with the same original prompt
-and Spark's answer quoted underneath. Do not resume the Spark session for the
-escalation; resuming keeps that consultation on the cheap model.
+and the cheap peer's answer quoted underneath. Do not resume the cheap session
+for the escalation; resuming keeps that consultation on the same cheap model.
 
 Keep resuming until each disagreement is either resolved or sharpened into a question the operator should decide. If two rounds pass with no movement, stop and surface the disagreement to the operator with both positions rather than looping.
 

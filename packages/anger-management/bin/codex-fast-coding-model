@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+import { execFileSync } from 'node:child_process';
+
+const MODEL_ID = /^[A-Za-z0-9._:-]+$/;
+const LEGACY_SPARK = 'gpt-5.3-codex-spark';
+
+const overrideName = /^[A-Z0-9_]+$/.test(process.argv[2] || '')
+  ? process.argv[2]
+  : 'CODEX_FAST_CODING_MODEL';
+const override = process.env[overrideName] || process.env.CODEX_FAST_CODING_MODEL || '';
+
+if (override) {
+  if (!MODEL_ID.test(override)) {
+    console.error(`invalid ${overrideName}; use a plain model id such as gpt-5.3-codex-spark`);
+    process.exit(2);
+  }
+  console.log(override);
+  process.exit(0);
+}
+
+function modelText(model) {
+  return [
+    model.slug,
+    model.display_name,
+    model.displayName,
+    model.description,
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function visibleModels(catalog) {
+  if (!catalog || !Array.isArray(catalog.models)) return [];
+  return catalog.models.filter((model) => {
+    if (!model || typeof model.slug !== 'string' || !MODEL_ID.test(model.slug)) return false;
+    return String(model.visibility || 'list').toLowerCase() !== 'hidden';
+  });
+}
+
+function selectFastCodingModel(catalog) {
+  const models = visibleModels(catalog);
+  const spark = models.find((model) => {
+    const text = modelText(model);
+    return /codex[-_ ]?spark/.test(text)
+      || (/spark/.test(text) && /codex|coding/.test(text))
+      || /ultra-fast coding model/.test(text);
+  });
+  if (spark) return spark.slug;
+
+  const mini = models.find((model) => {
+    const text = modelText(model);
+    return /mini/.test(text) && /codex|coding|gpt/.test(text);
+  });
+  return mini ? mini.slug : '';
+}
+
+let catalog;
+try {
+  catalog = JSON.parse(execFileSync('codex', ['debug', 'models'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+    timeout: 5000,
+  }));
+} catch {
+  console.log(LEGACY_SPARK);
+  process.exit(0);
+}
+
+const model = selectFastCodingModel(catalog);
+if (!model) {
+  console.error('no cheap Codex coding model found in codex debug models');
+  process.exit(2);
+}
+
+console.log(model);
