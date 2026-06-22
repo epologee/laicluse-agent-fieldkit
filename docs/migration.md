@@ -46,6 +46,30 @@ codex plugin add house-rules@laicluse-agent-fieldkit
 `/naming-is-hard` keeps working exactly as before once `house-rules` is
 installed.
 
+## lifeline absorbs inspire and ground
+
+`lifeline` is the consult-outside-yourself plugin: it ships the `inspire` and
+`ground` skills together. `/inspire` researches what others did before you
+commit to a path; `/ground` verifies your own recent output against external
+sources when a claim is doubted. Both skills are unchanged; they now ship from
+`lifeline` instead of their own standalone plugins. The slash commands and
+trigger phrases are identical.
+
+If you installed the standalone plugins, switch to `lifeline`:
+
+```bash
+claude plugins install lifeline@laicluse-agent-fieldkit
+claude plugins uninstall inspire@leclause
+claude plugins uninstall ground@leclause
+```
+
+```bash
+codex plugin add lifeline@laicluse-agent-fieldkit
+```
+
+`/inspire` and `/ground` keep working exactly as before once `lifeline` is
+installed.
+
 ## Existing Installs
 
 Marketplace aliases are installation identities. Existing installs under the
@@ -95,12 +119,8 @@ session.
 
 ## Maintainers
 
-Keep Claude metadata as source, then regenerate Codex adapters:
-
-```bash
-bin/plugin-adapters build .
-bin/plugin-adapters check .
-```
+Claude metadata stays the source; the Codex adapters under `.agents/plugins/`
+are generated and committed alongside it.
 
 Runtime state stays under `${LAICLUSE_HOME:-$HOME/.laicluse}` by component
 name, not by marketplace name.

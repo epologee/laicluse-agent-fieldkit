@@ -6,9 +6,8 @@ mistake is likely, forcing the active agent to course-correct instead of
 barreling past the issue.
 
 Claude Code receives the full hook stack. Codex receives the same event layers
-through the explicit `hooks/hooks.codex.json` source, materialized by
-`bin/plugin-adapters build` as `hooks/hooks.json` in the generated Codex adapter
-package. Which guard runs on which event for which agent is decided by the guard
+through the explicit `hooks/hooks.codex.json` source, materialized as
+`hooks/hooks.json` in the generated Codex adapter package. Which guard runs on which event for which agent is decided by the guard
 registry (`hooks/guards.json`), not by the dispatcher or bespoke per-manifest
 shell variables. Codex skips only the `premature` Stop guard, because that guard
 creates a nudge turn after otherwise-complete answers, which can replace the
@@ -53,7 +52,7 @@ bash packages/dont-do-that/bin/validate-registry
 
 If `guards.json` is missing or not valid JSON, the dispatcher fails closed on PreToolUse: it denies the tool call with a `[dont-do-that/registry]` message instead of silently running no guards, so a corrupt registry cannot disarm the safety gates unnoticed. The PostToolUse and Stop lanes (context and nudge output, not irreversible-action gates) stay quiet in that state; the PreToolUse denial surfaces the problem on the next tool call regardless.
 
-After editing the registry, run `bin/plugin-adapters build .` so the generated Codex adapter picks up the new `guards.json` and any manifest change. To verify an edit took effect without writing anything, `bin/plugin-adapters check .` reports drift read-only (it is what CI and a pre-commit check would run); `build` is only needed when `check` reports the adapter is behind.
+After editing the registry, the generated Codex adapter under `.agents/plugins/` is regenerated so it picks up the new `guards.json` and any manifest change, and the regenerated adapter is committed alongside the source.
 
 ### Adding a new guard
 
@@ -62,7 +61,7 @@ A registry entry is only half of a guard; it also needs a backing script. To add
 1. Write `hooks/guards/<id>.sh` defining a shell function `guard_<id>()` that reads the hook JSON on `$1` and, when it fires, calls one of the `dd_emit_*` helpers from `hooks/lib/common.sh` (`dd_emit_deny` to block a PreToolUse tool, `dd_emit_context` to surface PostToolUse context, `dd_emit_block` to block a Stop) with the `<id>` mnemonic.
 2. Register it in `guards.json`: pick a `lane` whose `event` provides the `contract` your guard inspects, give it a unique `order` within that lane, name its `function`, and set an `agents` policy (omit an agent to default it to `enabled`).
 3. Run `bash bin/validate-registry` to confirm the placement and the script-and-function binding.
-4. Run `bin/plugin-adapters build .` to sync the Codex adapter.
+4. The generated Codex adapter under `.agents/plugins/` is regenerated and committed so it picks up the new guard.
 
 Every user-visible hook message begins with the mnemonic prefix `[dont-do-that/<code>] `. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or `hooks/guards/<code>.sh`.
 
@@ -142,7 +141,7 @@ codex plugin add dont-do-that@laicluse-agent-fieldkit
 
 ## Disabling individual guards
 
-The dispatcher always runs, but individual guards fire based on the message content. To silence one guard for an agent durably, set that guard's `agents.<agent>` to `disabled` in `hooks/guards.json` and run `bin/plugin-adapters build .`. For a one-off silence in your own install, set `DD_SKIP_GUARDS=<id>` (or the event-specific `DD_SKIP_STOP_GUARDS=<id>`) on the dispatcher command in your hook manifest. To silence the plugin entirely, uninstall:
+The dispatcher always runs, but individual guards fire based on the message content. To silence one guard for an agent durably, set that guard's `agents.<agent>` to `disabled` in `hooks/guards.json`; the regenerated Codex adapter is committed alongside it. For a one-off silence in your own install, set `DD_SKIP_GUARDS=<id>` (or the event-specific `DD_SKIP_STOP_GUARDS=<id>`) on the dispatcher command in your hook manifest. To silence the plugin entirely, uninstall:
 
 ```bash
 claude plugins uninstall dont-do-that@laicluse-agent-fieldkit

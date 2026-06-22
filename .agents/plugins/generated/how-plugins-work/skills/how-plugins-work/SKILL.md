@@ -97,8 +97,8 @@ Important differences from Claude:
   `.codex-plugin/plugin.json`.
 - Codex frontmatter parsing uses stricter YAML behavior; a `description` with
   YAML-special punctuation must use a folded scalar.
-- Generated Codex targets are adapter files. Edit the Claude/source metadata or
-  the shared `SKILL.md`, then run `bin/plugin-adapters build .`.
+- Generated Codex targets are adapter files materialized from the Claude/source
+  metadata or the shared `SKILL.md`, and committed alongside the source.
 - Claude-only frontmatter keys such as `user-invocable` stay in the shared
   source for Claude, but Codex receives a generated sanitized copy when needed.
 - Codex CLI skill autocomplete lives under `$`, not `/`. Use `$<skill>` or the
@@ -706,9 +706,10 @@ local marketplace.
 4. For Git-backed marketplace snapshots, run `codex plugin marketplace upgrade
    <marketplace>` before reinstalling when the remote changed. For local
    marketplace development, rebuild the generated adapters first.
-5. If the plugin exists in Claude metadata but not Codex, run
-   `bin/plugin-adapters check .`. Drift means the Codex adapter files are stale;
-   a clean check means the omission is intentional single-agent coverage.
+5. If the plugin exists in Claude metadata but not Codex, inspect
+   `.agents/plugins/marketplace.json` and the package `.codex-plugin`: a stale
+   or missing adapter means the generated files are behind; their clean absence
+   means the omission is intentional single-agent coverage.
 6. If `codex plugin add` cannot find the plugin, inspect
    `.agents/plugins/marketplace.json` first, then the package
    `.codex-plugin/plugin.json`.

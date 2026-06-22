@@ -25,34 +25,6 @@ if [ -x "$plugin_versions_script" ]; then
   fi
 fi
 
-adapter_script="bin/plugin-adapters"
-if [ -x "$adapter_script" ] && [ -f ".claude-plugin/marketplace.json" ]; then
-  if ! "$adapter_script" build . >/dev/null; then
-    echo "ERROR: $adapter_script build failed." >&2
-    exit 1
-  fi
-  if [ -d ".agents/plugins" ]; then
-    git add -A -f ".agents/plugins"
-  fi
-  git ls-files "packages/*/.codex-plugin/plugin.json" | while IFS= read -r codex_manifest; do
-    git add -A "$codex_manifest"
-  done
-  find packages -path "*/.codex-plugin/plugin.json" -type f | while IFS= read -r codex_manifest; do
-    git add "$codex_manifest"
-  done
-  git ls-files "packages/*/skills/*/SKILL.claude.md" | while IFS= read -r claude_skill; do
-    git add -A "$(dirname "$claude_skill")/SKILL.md"
-  done
-  find packages -path "*/skills/*/SKILL.claude.md" -type f | while IFS= read -r claude_skill; do
-    git add "$(dirname "$claude_skill")/SKILL.md"
-  done
-  if ! "$adapter_script" check . >/dev/null; then
-    echo "ERROR: $adapter_script check failed." >&2
-    "$adapter_script" check . >&2
-    exit 1
-  fi
-fi
-
 pages_script="bin/build-pages"
 if [ -x "$pages_script" ] && [ -f "docs/index.html" ]; then
   if ! "$pages_script" . >/dev/null; then

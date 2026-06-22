@@ -49,8 +49,8 @@ point at `laicluse-agent-fieldkit`.
 - Skills live under `packages/<plugin>/skills/<skill>/`.
 - Use `SKILL.md` only when the skill is truly multi-agent-compatible.
 - Use `SKILL.claude.md` and/or `SKILL.codex.md` when the workflow differs per
-  agent or only one agent can support it; `bin/plugin-adapters build .`
-  materializes the runtime `SKILL.md` targets that exist for each agent.
+  agent or only one agent can support it; the runtime `SKILL.md` targets that
+  exist for each agent are generated adapters committed alongside the source.
 - Prefer host-owned capability contracts over hard runtime dependency routes in
   shared skill text. Describe the outcome the active host must arrange
   (continue the loop, provide an independent reviewer, drive a browser, send a

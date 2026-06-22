@@ -30,11 +30,11 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 16,
-		"codexPackages": 15,
+		"sourcePackages": 17,
+		"codexPackages": 16,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 16,
-		"skillEntries": 67,
+		"changelogEntries": 17,
+		"skillEntries": 69,
 		"hookFiles": 52
 	},
 	"install": {
@@ -55,7 +55,8 @@
 			"claude plugins install gurus@laicluse-agent-fieldkit",
 			"claude plugins install rover@laicluse-agent-fieldkit",
 			"claude plugins install house-rules@laicluse-agent-fieldkit",
-			"claude plugins install whywhy@laicluse-agent-fieldkit"
+			"claude plugins install whywhy@laicluse-agent-fieldkit",
+			"claude plugins install lifeline@laicluse-agent-fieldkit"
 		],
 		"codex": [
 			"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
@@ -73,13 +74,14 @@
 			"codex plugin add gurus@laicluse-agent-fieldkit",
 			"codex plugin add rover@laicluse-agent-fieldkit",
 			"codex plugin add house-rules@laicluse-agent-fieldkit",
-			"codex plugin add whywhy@laicluse-agent-fieldkit"
+			"codex plugin add whywhy@laicluse-agent-fieldkit",
+			"codex plugin add lifeline@laicluse-agent-fieldkit"
 		]
 	},
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.25",
+			"version": "2.0.26",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -142,7 +144,7 @@
 		},
 		{
 			"name": "self-improvement",
-			"version": "2.0.5",
+			"version": "2.0.6",
 			"category": "feedback",
 			"summary": "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
 			"support": [
@@ -184,7 +186,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.20",
+			"version": "2.0.21",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -205,7 +207,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.9",
+			"version": "2.0.10",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -216,17 +218,17 @@
 			"sourcePath": "packages/intervision",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/intervision",
 			"skillCount": 1,
-			"commandCount": 1,
+			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.9",
+				"version": "v2.0.10",
 				"type": "Changed",
-				"summary": "Claude-to-Codex second opinions now start on Codex Spark."
+				"summary": "Claude-to-Codex second opinions resolve the cheap model dynamically."
 			}
 		},
 		{
 			"name": "anger-management",
-			"version": "2.0.14",
+			"version": "2.0.15",
 			"category": "feedback",
 			"summary": "Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.",
 			"support": [
@@ -237,12 +239,12 @@
 			"sourcePath": "packages/anger-management",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/anger-management",
 			"skillCount": 15,
-			"commandCount": 6,
+			"commandCount": 7,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.14",
+				"version": "v2.0.15",
 				"type": "Changed",
-				"summary": "Codex-only background diagnosis now defaults to Codex Spark."
+				"summary": "Codex-only background diagnosis resolves the cheap model dynamically."
 			}
 		},
 		{
@@ -411,6 +413,27 @@
 				"type": "Added",
 				"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace."
 			}
+		},
+		{
+			"name": "lifeline",
+			"version": "2.0.1",
+			"category": "review",
+			"summary": "Two lifelines for when your own certainty runs out: research what others did before committing, and verify your own claims against external sources when challenged.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/lifeline",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/lifeline",
+			"skillCount": 2,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v1.0.0",
+				"type": "Added",
+				"summary": "inspire and ground now ship together from the lifeline plugin."
+			}
 		}
 	],
 	"changelog": [
@@ -423,6 +446,14 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
+			"plugin": "how-plugins-work",
+			"packageVersion": "2.0.26",
+			"version": "v2.0.17",
+			"type": "Changed",
+			"summary": "Agent-specific skill sources may now be single-sided.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
+		},
+		{
 			"plugin": "bonsai",
 			"packageVersion": "2.0.25",
 			"version": "v2.0.21",
@@ -431,16 +462,8 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
 		},
 		{
-			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.25",
-			"version": "v2.0.17",
-			"type": "Changed",
-			"summary": "Agent-specific skill sources may now be single-sided.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
-		},
-		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.20",
+			"packageVersion": "2.0.21",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Guard placement and per-agent policy now live in a registry.",
@@ -448,10 +471,10 @@
 		},
 		{
 			"plugin": "anger-management",
-			"packageVersion": "2.0.14",
-			"version": "v2.0.14",
+			"packageVersion": "2.0.15",
+			"version": "v2.0.15",
 			"type": "Changed",
-			"summary": "Codex-only background diagnosis now defaults to Codex Spark.",
+			"summary": "Codex-only background diagnosis resolves the cheap model dynamically.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
 		},
 		{
@@ -488,10 +511,10 @@
 		},
 		{
 			"plugin": "intervision",
-			"packageVersion": "2.0.9",
-			"version": "v2.0.9",
+			"packageVersion": "2.0.10",
+			"version": "v2.0.10",
 			"type": "Changed",
-			"summary": "Claude-to-Codex second opinions now start on Codex Spark.",
+			"summary": "Claude-to-Codex second opinions resolve the cheap model dynamically.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
@@ -504,7 +527,7 @@
 		},
 		{
 			"plugin": "self-improvement",
-			"packageVersion": "2.0.5",
+			"packageVersion": "2.0.6",
 			"version": "v2.0.0",
 			"type": "Changed",
 			"summary": "First l'Aicluse release.",
@@ -541,6 +564,14 @@
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
+		},
+		{
+			"plugin": "lifeline",
+			"packageVersion": "2.0.1",
+			"version": "v1.0.0",
+			"type": "Added",
+			"summary": "inspire and ground now ship together from the lifeline plugin.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
 		}
 	]
 }
