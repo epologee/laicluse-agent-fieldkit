@@ -99,9 +99,8 @@ Most packages ship to both Claude Code and Codex. Runtime-specific adapters are
 generated from the package sources; `autonomous` remains Claude Code-only
 because its keep-alive behavior is host-specific.
 
-Existing installs under the previous marketplace identity do not rename
-themselves. See [docs/migration.md](docs/migration.md) for the hard-cutover
-commands.
+Coming from the retired `leclause` marketplace? Its plugins moved here; see the
+[migration guide](https://github.com/epologee/leclause-skills/blob/main/docs/migration.md).
 
 ## Development
 

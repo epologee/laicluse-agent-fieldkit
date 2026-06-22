@@ -7,7 +7,7 @@ const crypto = require("crypto");
 const { execFileSync } = require("child_process");
 
 const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
-const PAGES_URL = "https://epologee.github.io/laicluse-agent-fieldkit";
+const PAGES_URL = "https://laicluse.com";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
 // allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
