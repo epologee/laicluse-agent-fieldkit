@@ -5,6 +5,7 @@ OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 occ_event()   { jq -r '.hook_event_name // empty' <<< "$1" 2>/dev/null; }
 occ_tool()    { jq -r '.tool_name // empty' <<< "$1" 2>/dev/null; }
+occ_source()  { jq -r '.source // .hook_source // empty' <<< "$1" 2>/dev/null; }
 occ_session() { jq -r '.session_id // .sessionId // empty' <<< "$1" 2>/dev/null; }
 
 occ_cwd() {
@@ -31,6 +32,26 @@ occ_agent_label() {
   if [ -n "${PLUGIN_ROOT:-}" ]; then printf 'codex\n'; return 0; fi
   if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then printf 'claude\n'; return 0; fi
   printf 'agent\n'
+}
+
+occ_owner() {
+  local input="$1" agent sid
+  if [ -n "${DIBS_OWNER:-}" ]; then printf '%s\n' "$DIBS_OWNER"; return 0; fi
+  agent="$(occ_agent_label)"
+  sid="$(occ_session "$input")"
+  if [ "$agent" = "codex" ]; then
+    if [ -n "${CMUX_TAB_ID:-}" ]; then printf '%s\n' "$CMUX_TAB_ID"; return 0; fi
+    if [ -n "${CMUX_WORKSPACE_ID:-}" ]; then printf '%s\n' "$CMUX_WORKSPACE_ID"; return 0; fi
+    if [ -n "${CODEX_THREAD_ID:-}" ]; then printf '%s\n' "$CODEX_THREAD_ID"; return 0; fi
+  fi
+  [ -n "$sid" ] && printf '%s\n' "$sid"
+}
+
+occ_legacy_codex_resume() {
+  local input="$1"
+  [ "$(occ_agent_label)" = "codex" ] || return 1
+  [ "$(occ_event "$input")" = "SessionStart" ] || return 1
+  [ "$(occ_source "$input")" = "resume" ] || return 1
 }
 
 # allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. DIBS_HOLDER_PID overrides; else walk to the NEAREST claude/codex ancestor and stop there. Nearest, not topmost: a codex launched inside a Claude session (intervision, codex exec) sits below the Claude process, and topmost would climb past codex to the Claude pid that already holds the lock, so dibs would see held-by-self and wrongly allow. The nearest agent ancestor is this session's own long-lived process, stable across SessionStart, every PreToolUse, and SessionEnd. Fall back to the start pid.
@@ -65,7 +86,7 @@ occ_holder_line() {
 }
 
 occ_claim_output() {
-  local input="$1" dibs dir pid agent sid
+  local input="$1" dibs dir pid agent sid owner
   dibs="$(occ_dibs_bin)" || return 2
   command -v node >/dev/null 2>&1 || return 2
   dir="$(occ_cwd "$input")"
@@ -73,18 +94,22 @@ occ_claim_output() {
   pid="$(occ_holder_pid "${OCC_PPID:-$PPID}")"
   agent="$(occ_agent_label)"
   sid="$(occ_session "$input")"
-  if [ -n "$sid" ]; then
-    node "$dibs" claim "$dir" --pid "$pid" --agent "$agent" --session "$sid" --json 2>/dev/null
-  else
-    node "$dibs" claim "$dir" --pid "$pid" --agent "$agent" --json 2>/dev/null
-  fi
+  owner="$(occ_owner "$input")"
+  set -- claim "$dir" --pid "$pid" --agent "$agent"
+  [ -n "$sid" ] && set -- "$@" --session "$sid"
+  [ -n "$owner" ] && set -- "$@" --owner "$owner"
+  occ_legacy_codex_resume "$input" && set -- "$@" --legacy-codex-resume
+  node "$dibs" "$@" --json 2>/dev/null
 }
 
 # allow-comment: load-bearing. Return 0 only when a DIFFERENT live session holds the directory. dibs matches self on exact pid; keying self-recognition on the session id makes a drifted worker pid harmless. An unidentifiable self (no session id) fails open.
 occ_refused_by_other() {
-  local input="$1" out="$2" state my_sid holder_sid
+  local input="$1" out="$2" state my_sid holder_sid my_owner holder_owner
   state="$(printf '%s' "$out" | jq -r '.state // empty' 2>/dev/null)"
   [ "$state" = "refused" ] || return 1
+  my_owner="$(occ_owner "$input")"
+  holder_owner="$(printf '%s' "$out" | jq -r '.holder.owner // empty' 2>/dev/null)"
+  [ -n "$my_owner" ] && [ "$my_owner" = "$holder_owner" ] && return 1
   my_sid="$(occ_session "$input")"
   [ -n "$my_sid" ] || return 1
   holder_sid="$(printf '%s' "$out" | jq -r '.holder.session // empty' 2>/dev/null)"

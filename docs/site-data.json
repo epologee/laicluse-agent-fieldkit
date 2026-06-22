@@ -123,7 +123,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.13",
+			"version": "2.0.14",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -137,9 +137,9 @@
 			"commandCount": 2,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.11",
+				"version": "v2.0.14",
 				"type": "Fixed",
-				"summary": "Occupancy now refuses a codex nested under a Claude session."
+				"summary": "Codex resumes no longer self-lock on their old dibs claim."
 			}
 		},
 		{
@@ -479,10 +479,10 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.13",
-			"version": "v2.0.11",
+			"packageVersion": "2.0.14",
+			"version": "v2.0.14",
 			"type": "Fixed",
-			"summary": "Occupancy now refuses a codex nested under a Claude session.",
+			"summary": "Codex resumes no longer self-lock on their old dibs claim.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{

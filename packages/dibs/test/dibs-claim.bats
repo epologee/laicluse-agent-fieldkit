@@ -49,6 +49,47 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"state": "held-by-self"'
 }
 
+@test "a resumed owner can reclaim with a new pid" {
+  sleep 120 & local old=$!
+  sleep 120 & local new=$!
+  dibs claim "$DIR" --pid "$old" --agent codex --owner cmux-tab-1 --json >/dev/null
+
+  run dibs claim "$DIR" --pid "$new" --agent codex --owner cmux-tab-1 --json
+  local rc=$status
+  local out="$output"
+  run dibs check "$DIR" --json
+  kill "$old" "$new" 2>/dev/null || true
+
+  [ "$rc" -eq 0 ]
+  echo "$out" | grep -q '"state": "reclaimed-by-owner"'
+  echo "$output" | grep -q "\"pid\": $new"
+}
+
+@test "a different owner is still refused" {
+  sleep 120 & local old=$!
+  sleep 120 & local new=$!
+  dibs claim "$DIR" --pid "$old" --agent codex --owner cmux-tab-1 --json >/dev/null
+
+  run dibs claim "$DIR" --pid "$new" --agent codex --owner cmux-tab-2 --json
+  kill "$old" "$new" 2>/dev/null || true
+
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q '"state": "refused"'
+}
+
+@test "a codex resume can reclaim an older ownerless foreign codex lock" {
+  dibs claim "$DIR" --pid $$ --agent codex --json >/dev/null
+  local lockpath
+  lockpath="$(dibs check "$DIR" --json | "$NODE_BIN" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).path))')"
+  "$NODE_BIN" -e 'const fs=require("fs");const p=process.argv[1];const r=JSON.parse(fs.readFileSync(p,"utf8"));r.hostname="some-other-host";r.session="old-thread";delete r.owner;fs.writeFileSync(p,JSON.stringify(r))' "$lockpath"
+
+  run dibs claim "$DIR" --pid $$ --agent codex --owner cmux-tab-1 --legacy-codex-resume --json
+
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"state": "reclaimed-by-owner"'
+  echo "$output" | grep -q '"reason": "legacy-codex-resume"'
+}
+
 @test "a dead holder's lock is taken over by the next claimer" {
   sleep 120 & local holder=$!
   dibs claim "$DIR" --pid "$holder" --agent claude --json

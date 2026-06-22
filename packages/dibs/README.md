@@ -14,7 +14,7 @@ the directory it hands out; the lock logic lives in exactly one place.
 ## CLI
 
 ```
-dibs claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--max-age-hours <n>] [--json]
+dibs claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
 dibs release <dir> [--pid <n>] [--nonce <hex>] [--json]
 dibs check   <dir> [--max-age-hours <n>] [--json]
 ```
@@ -36,12 +36,19 @@ key.
 calling process's parent pid. Record the long-lived agent or session process,
 not the ephemeral `dibs` invocation.
 
+`--owner` is a stable owner key for the human/tool surface that survives a
+process or thread resume. A later claim by the same `agent` and `owner` rewrites
+the lock to the new pid/host instead of self-locking. The occupancy hook sets it
+from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
+`CODEX_THREAD_ID`, or finally the hook session id.
+
 ## How it works
 
 A lock is a file written with an atomic exclusive create (`open(O_CREAT|O_EXCL)`,
 the node `wx` flag) at
 `${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`. The record
-is JSON: realpath, holder pid, agent, session, hostname, nonce, acquired-at.
+is JSON: realpath, holder pid, agent, session, owner, hostname, nonce,
+acquired-at.
 
 To acquire, dibs tries the atomic create. On collision it reads the record and
 checks liveness with `process.kill(pid, 0)` on the same host. A dead holder
@@ -95,12 +102,14 @@ own CLI, so there is no second lock path.
 - **PreToolUse** (file edits: `Edit` / `Write` / `MultiEdit` / `apply_patch`)
   re-claims the directory before the mutation and hard-denies (exit 2) when a
   *different* live session holds it, reporting the holder and how to recover.
-  The agent's own session is recognised by the lock's session id, so a drifted
-  worker pid never self-locks the agent out; a free directory, a self-healed
-  dead holder, and any non-refusal dibs result all pass (fail-open).
+  The agent's own session is recognised by the lock's stable owner id first and
+  the hook session id second, so a drifted worker pid or resumed Codex thread
+  never self-locks the agent out; a free directory, a self-healed dead holder,
+  and any non-refusal dibs result all pass (fail-open).
 - **SessionEnd** (Claude only) releases the directory. Codex has no session-end
   event, so a Codex lock clears through pid-liveness self-heal on the next
-  claim, which is expected rather than a leak.
+  claim, or through owner-based reclaim on a Codex resume, which is expected
+  rather than a leak.
 
 Shell (`Bash`) mutations are intentionally not gated; the git-native commit hook
 remains the backstop for those and for agents under bypassPermissions. Opt out
@@ -124,5 +133,6 @@ if (!result.ok) console.warn(`held by ${result.holder.agent}`);
 An embedder that hands out a directory on behalf of a long-lived caller (as
 `bonsai` does) records that caller's pid, not its own short-lived process.
 `bonsai` reads `DIBS_HOLDER_PID`, `DIBS_AGENT`, and `DIBS_SESSION` to label the
-holder, and `DIBS_LIB` to point at an alternate lib path. The CLI honours
-`DIBS_BIN` for a fixed binary path.
+holder, `DIBS_OWNER` to preserve identity across resumes, and `DIBS_LIB` to
+point at an alternate lib path. The CLI honours `DIBS_BIN` for a fixed binary
+path.

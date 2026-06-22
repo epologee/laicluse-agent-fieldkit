@@ -15,6 +15,8 @@ options:
                        parent pid, correct only when that parent is the holder)
   --agent <name>       label the holder (e.g. claude, codex)
   --session <id>       holder session id
+  --owner <id>         stable owner id across resumed sessions
+  --legacy-codex-resume  allow a Codex resume to reclaim older ownerless Codex locks
   --nonce <hex>        on release, require this claim nonce to match the holder
   --max-age-hours <n>  treat a lock older than this as breakable (last-resort cap)
   --json               machine-readable output
@@ -44,6 +46,8 @@ function parse(args) {
       pid: { type: 'string' },
       agent: { type: 'string' },
       session: { type: 'string' },
+      owner: { type: 'string' },
+      'legacy-codex-resume': { type: 'boolean', default: false },
       nonce: { type: 'string' },
       'max-age-hours': { type: 'string' },
       json: { type: 'boolean', default: false },
@@ -83,9 +87,18 @@ function emit(result, human, exitCode = 0) {
 
 try {
   if (command === 'claim') {
-    const result = claim({ dir, pid, agent: values.agent, session: values.session, maxAgeHours });
+    const result = claim({
+      dir,
+      pid,
+      agent: values.agent,
+      session: values.session,
+      owner: values.owner,
+      maxAgeHours,
+      legacyCodexResume: values['legacy-codex-resume'],
+    });
     if (result.state === 'claimed') emit(result, `claimed ${result.holder.realpath} (pid ${pid}${values.agent ? `, agent ${values.agent}` : ''})`);
     else if (result.state === 'held-by-self') emit(result, `already held by you (pid ${pid})`);
+    else if (result.state === 'reclaimed-by-owner') emit(result, `reclaimed ${result.holder.realpath} for owner ${result.holder.owner} (pid ${pid})`);
     else if (result.state === 'took-over-stale') emit(result, `took over stale lock on ${result.holder.realpath} (previous ${result.brokeStale.reason}); now held (pid ${pid})`);
     else emit(result, `refused: ${formatHolder(result.holder)}`, 1);
   } else if (command === 'release') {
