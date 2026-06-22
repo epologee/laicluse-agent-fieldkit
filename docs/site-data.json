@@ -205,7 +205,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.8",
+			"version": "2.0.9",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -219,14 +219,14 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.5",
-				"type": "Fixed",
-				"summary": "Codex-to-Claude peer checks now use a clean headless Claude invocation."
+				"version": "v2.0.9",
+				"type": "Changed",
+				"summary": "Claude-to-Codex second opinions now start on Codex Spark."
 			}
 		},
 		{
 			"name": "anger-management",
-			"version": "2.0.13",
+			"version": "2.0.14",
 			"category": "feedback",
 			"summary": "Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.",
 			"support": [
@@ -240,9 +240,9 @@
 			"commandCount": 6,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.10",
-				"type": "Breaking",
-				"summary": "The background-repair helper is now bin/anger-schedule, not bin/anger-arm."
+				"version": "v2.0.14",
+				"type": "Changed",
+				"summary": "Codex-only background diagnosis now defaults to Codex Spark."
 			}
 		},
 		{
@@ -448,10 +448,10 @@
 		},
 		{
 			"plugin": "anger-management",
-			"packageVersion": "2.0.13",
-			"version": "v2.0.10",
-			"type": "Breaking",
-			"summary": "The background-repair helper is now bin/anger-schedule, not bin/anger-arm.",
+			"packageVersion": "2.0.14",
+			"version": "v2.0.14",
+			"type": "Changed",
+			"summary": "Codex-only background diagnosis now defaults to Codex Spark.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
 		},
 		{
@@ -488,10 +488,10 @@
 		},
 		{
 			"plugin": "intervision",
-			"packageVersion": "2.0.8",
-			"version": "v2.0.5",
-			"type": "Fixed",
-			"summary": "Codex-to-Claude peer checks now use a clean headless Claude invocation.",
+			"packageVersion": "2.0.9",
+			"version": "v2.0.9",
+			"type": "Changed",
+			"summary": "Claude-to-Codex second opinions now start on Codex Spark.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{

@@ -32,7 +32,18 @@ post-update broadcast path in this plugin; skip this block silently there.
 
 Intervision is peer consultation: equals looking at each other's work, not a supervisor looking down. Etymology says it plainly, `inter-` (between, among, together) against `super-` (from above). This skill brings a second coding agent in as that peer for an independent read. You hand it the work just done or just discussed, it looks with fresh eyes and a different training, and the two of you talk it through.
 
-The peer here is Codex, reached through its `codex exec` command. It runs from the same repository, on its own login, with its own model behind it. That independence is the whole point; a peer trained the same way as you would only echo you.
+The peer here is Codex, reached through its `codex exec` command. It runs from
+the same repository, on its own login, with its own model behind it. That
+independence is the whole point; a peer trained the same way as you would only
+echo you.
+
+Start on Codex Spark: `--model gpt-5.3-codex-spark`. The local Codex model
+catalog describes it as the ultra-fast coding model, and this skill uses it as
+the normal first-pass peer so routine second opinions do not burn the frontier
+session model. Escalate by rerunning the same handoff on the configured Codex
+default (omit `--model`, or name the stronger model explicitly) only when Spark
+says the context is too large or uncertain, misses a concrete concern you can
+point to, the change is high-risk, or the operator asks for a deeper pass.
 
 ## The peer has to be there
 
@@ -51,15 +62,15 @@ Pick by what just happened. All three run through `codex exec`, and they combine
 **1. Check work just done, when there is a diff.** Codex's review path reads the repository's changes directly, so point it at the change set that matches "what we just did":
 
 ```bash
-codex exec review --uncommitted     # staged, unstaged, and untracked work
-codex exec review --base main       # everything on this branch against main
-codex exec review --commit <sha>    # the changes in one commit
+codex exec --model gpt-5.3-codex-spark review --uncommitted     # staged, unstaged, and untracked work
+codex exec --model gpt-5.3-codex-spark review --base main       # everything on this branch against main
+codex exec --model gpt-5.3-codex-spark review --commit <sha>    # the changes in one commit
 ```
 
 **2. Weigh a design just discussed, when there is no code yet.** Give Codex the context on stdin and keep it read-only so it reflects rather than edits. The `-s` flag rides on `codex exec` itself, not on a subcommand: neither `review` nor `resume` accepts it (`resume` inherits the session's sandbox, and passing `-s` there fails with `error: unexpected argument '-s' found`). Use a quoted heredoc so nothing in the pasted text is expanded by the shell:
 
 ```bash
-codex exec -s read-only - <<'PROMPT'
+codex exec --model gpt-5.3-codex-spark -s read-only - <<'PROMPT'
 Peer review this plan before we build it.
 <paste the design, the trade-off, the open question, including the parts we are unsure about>
 PROMPT
@@ -72,6 +83,10 @@ codex exec resume --last - <<'PROMPT'
 You flagged X as a race. The lock at <file:line> already serialises that path. Does that change your read?
 PROMPT
 ```
+
+To escalate, start a fresh default-model handoff with the same original prompt
+and Spark's answer quoted underneath. Do not resume the Spark session for the
+escalation; resuming keeps that consultation on the cheap model.
 
 Keep resuming until each disagreement is either resolved or sharpened into a question the operator should decide. If two rounds pass with no movement, stop and surface the disagreement to the operator with both positions rather than looping.
 

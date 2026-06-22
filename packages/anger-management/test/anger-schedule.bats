@@ -18,6 +18,20 @@ setup() {
 
 run_schedule() { HOME="$HOME" ANGER_SCHEDULE_RUNNER="$ANGER_SCHEDULE_RUNNER" ANGER_SCHEDULE_DELAY="$ANGER_SCHEDULE_DELAY" "$NODE_BIN" "$SCHEDULE"; }
 
+write_fake_codex() {
+  FAKE_BIN="$BATS_TEST_TMPDIR/fake-bin"
+  mkdir -p "$FAKE_BIN"
+  CODEX_ARGS="$BATS_TEST_TMPDIR/codex-args.txt"
+  export CODEX_ARGS
+  printf '%s\n' \
+    '#!/bin/sh' \
+    'printf "%s\n" "$*" > "$CODEX_ARGS"' \
+    'cat >/dev/null' \
+    'printf "%s\n" "VERDICT: nothing" "CONFIDENCE: 0.00" "MITIGATION-LEVEL: none" "TARGET-SCOPE: none"' \
+    > "$FAKE_BIN/codex"
+  chmod +x "$FAKE_BIN/codex"
+}
+
 @test "no captures: scheduling does nothing and writes no pending marker" {
   run run_schedule
   [ "$status" -eq 0 ]
@@ -72,4 +86,24 @@ run_schedule() { HOME="$HOME" ANGER_SCHEDULE_RUNNER="$ANGER_SCHEDULE_RUNNER" ANG
   run run_schedule
   [ "$status" -eq 0 ]
   [[ "$output" == *"scheduled"* ]]
+}
+
+@test "codex fallback uses Spark in read-only mode when Claude is unavailable" {
+  write_fake_codex
+  printf '%s\n' '{"ts":"2026-06-05T09:00:00.000Z","word":"fuck","cwd":"/x","git":"main@a","note":"x"}' > "$LOG"
+  run env HOME="$HOME" PATH="$FAKE_BIN:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_DELAY=1 "$NODE_BIN" "$SCHEDULE"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"scheduled"* ]]
+  sleep 3
+  [ -f "$CODEX_ARGS" ]
+  [ "$(cat "$CODEX_ARGS")" = "exec --model gpt-5.3-codex-spark -s read-only" ]
+}
+
+@test "codex fallback rejects unsafe model overrides" {
+  write_fake_codex
+  printf '%s\n' '{"ts":"2026-06-05T09:00:00.000Z","word":"fuck","cwd":"/x","git":"main@a","note":"x"}' > "$LOG"
+  run env HOME="$HOME" PATH="$FAKE_BIN:/usr/bin:/bin" ANGER_SCHEDULE_RUNNER="" ANGER_SCHEDULE_CODEX_MODEL='bad;rm' "$NODE_BIN" "$SCHEDULE"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"invalid ANGER_SCHEDULE_CODEX_MODEL"* ]]
+  [ ! -f "$DIR/investigation.pending" ]
 }

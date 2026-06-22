@@ -20,6 +20,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.14]
+
+### Changed
+
+- **Codex-only background diagnosis now defaults to Codex Spark.** When Claude
+  is unavailable, the delayed investigation uses
+  `codex exec --model gpt-5.3-codex-spark -s read-only` instead of inheriting
+  the expensive Codex default. `ANGER_SCHEDULE_CODEX_MODEL` can override it.
+
 ## [v2.0.10]
 
 ### Breaking

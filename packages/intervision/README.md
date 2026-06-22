@@ -12,8 +12,9 @@ you and the peer disagree.
 ### `/intervision:second-opinion`
 
 Hands the recent work to the other agent and talks it through. Claude uses
-`codex exec`; Codex uses `claude -p`. Three shapes, picked by what just
-happened:
+`codex exec` on Codex Spark first, escalating to the configured Codex default
+only when the cheap pass is uncertain, misses a concrete concern, or the work is
+high-risk. Codex uses `claude -p`. Three shapes, picked by what just happened:
 
 - **Work just done (a diff):** the peer reviews the actual change set.
 - **A design just discussed (no code yet):** the peer reflects on the plan

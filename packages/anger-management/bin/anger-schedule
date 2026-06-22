@@ -41,7 +41,14 @@ if (!runner) {
   const claudePath = cliPath('claude');
   const codexPath = claudePath ? '' : cliPath('codex');
   if (claudePath) runner = `${claudePath} -p --model sonnet`;
-  else if (codexPath) runner = `${codexPath} exec`;
+  else if (codexPath) {
+    const codexModel = process.env.ANGER_SCHEDULE_CODEX_MODEL || 'gpt-5.3-codex-spark';
+    if (!/^[A-Za-z0-9._:-]+$/.test(codexModel)) {
+      console.log('invalid ANGER_SCHEDULE_CODEX_MODEL; use a plain model id such as gpt-5.3-codex-spark');
+      process.exit(0);
+    }
+    runner = `${codexPath} exec --model ${codexModel} -s read-only`;
+  }
   else {
     console.log('no agent CLI (claude or codex) resolvable to a path; skipping background investigation (run /anger-management:repair manually)');
     process.exit(0);

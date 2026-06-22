@@ -20,6 +20,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.9]
+
+### Changed
+
+- **Claude-to-Codex second opinions now start on Codex Spark.** Routine peer
+  checks use `gpt-5.3-codex-spark` first and escalate to the configured Codex
+  default only when the cheap pass is uncertain, misses a concrete concern, the
+  change is high-risk, or the operator asks for more depth.
+
 ## [v2.0.5]
 
 ### Fixed
