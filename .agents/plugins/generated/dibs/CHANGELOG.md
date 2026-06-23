@@ -4,6 +4,18 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.14]
+
+### Fixed
+
+- **Codex resumes no longer self-lock on their old dibs claim.** Locks now carry
+  a stable `owner` in addition to pid and hook session id. The occupancy hook
+  fills it from `DIBS_OWNER`, then Codex surface ids (`CMUX_TAB_ID`,
+  `CMUX_WORKSPACE_ID`, `CODEX_THREAD_ID`) before falling back to the hook
+  session id. A resumed Codex with the same owner rewrites the lock to its new
+  pid/host; a one-time legacy handoff lets resume clear older ownerless Codex
+  locks.
+
 ## [v2.0.11]
 
 ### Fixed

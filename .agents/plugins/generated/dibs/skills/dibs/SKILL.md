@@ -14,8 +14,8 @@ needs to know about the other's hooks.
 The lock is a file created with an atomic exclusive create
 (`open(O_CREAT|O_EXCL)`, the node `wx` flag) at a deterministic path keyed by
 the target directory's realpath: `${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`.
-The record holds the realpath, holder pid, agent, session id, hostname, a
-nonce, and an acquired-at timestamp. Liveness is pid-based
+The record holds the realpath, holder pid, agent, session id, stable owner id,
+hostname, a nonce, and an acquired-at timestamp. Liveness is pid-based
 (`process.kill(pid, 0)` on the same host), not a heartbeat: a lock whose holder
 process is gone is taken over by the next claimer, while a live holder is
 refused. No external binary, no `flock`, no native dependency.
@@ -41,16 +41,17 @@ DIBS="${DIBS_BIN:-$ROOT/bin/dibs}"
 ## Use the lock
 
 ```bash
-node "$DIBS" claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--max-age-hours <n>] [--json]
+node "$DIBS" claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
 node "$DIBS" release <dir> [--pid <n>] [--json]
 node "$DIBS" check   <dir> [--max-age-hours <n>] [--json]
 ```
 
 - **claim** takes exclusive occupancy. It exits 0 when it claims a free
-  directory, re-claims one you already hold (`held-by-self`), or takes over a
-  stale lock whose holder is dead (`took-over-stale`). It exits non-zero and
-  names the holder (`refused: held by <agent> (pid <pid>) since <acquired-at>`)
-  when a live holder exists.
+  directory, re-claims one you already hold (`held-by-self`), reclaims one with
+  the same stable owner (`reclaimed-by-owner`), or takes over a stale lock whose
+  holder is dead (`took-over-stale`). It exits non-zero and names the holder
+  (`refused: held by <agent> (pid <pid>) since <acquired-at>`) when a live holder
+  exists.
 - **release** deletes the lock only if you are the holder; releasing a lock held
   by someone else is refused and exits non-zero, releasing an unheld directory
   is a no-op.
@@ -60,6 +61,11 @@ node "$DIBS" check   <dir> [--max-age-hours <n>] [--json]
 the long-lived holder (the agent or session process), not the ephemeral process
 that runs `dibs`. It defaults to the calling process's parent pid. `--json`
 prints the full result record for machine consumers.
+
+`--owner` is a stable identity for resumed sessions. The occupancy hook sets it
+from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
+`CODEX_THREAD_ID`, or the hook session id, so a Codex resume can reclaim its own
+old lock even when pid, host, or thread id changed.
 
 ## Who calls dibs
 

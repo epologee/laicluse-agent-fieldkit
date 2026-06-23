@@ -45,12 +45,13 @@ export function formatHolder(record) {
   return `held by ${record.agent} (pid ${record.pid}) on ${record.hostname} since ${record.acquiredAt}`;
 }
 
-function buildRecord({ realpath, pid, agent, session }) {
+function buildRecord({ realpath, pid, agent, session, owner }) {
   return {
     realpath,
     pid,
     agent: agent || 'unknown',
     session: session || null,
+    owner: owner || null,
     hostname: hostname(),
     nonce: randomBytes(8).toString('hex'),
     acquiredAt: new Date().toISOString(),
@@ -103,13 +104,35 @@ function classifyHolder(record, maxAgeHours) {
   return { breakable: false, reason: 'foreign-host', alive };
 }
 
-function inspectExisting(path, ownPid, maxAgeHours) {
+function sameOwner(existing, incoming) {
+  return existing.owner
+    && incoming.owner
+    && existing.owner === incoming.owner
+    && existing.agent === incoming.agent;
+}
+
+function legacyCodexResume(existing, incoming, enabled) {
+  return enabled
+    && !existing.owner
+    && incoming.owner
+    && existing.agent === 'codex'
+    && incoming.agent === 'codex'
+    && existing.hostname !== hostname();
+}
+
+function inspectExisting(path, incoming, maxAgeHours, legacyCodexResumeEnabled) {
   const existing = readRecordStable(path);
   if (!existing) {
     return existsSync(path) ? { action: 'break', reason: 'corrupt' } : { action: 'retry' };
   }
-  if (existing.hostname === hostname() && existing.pid === ownPid) {
+  if (existing.hostname === hostname() && existing.pid === incoming.pid) {
     return { action: 'held-by-self', holder: existing };
+  }
+  if (sameOwner(existing, incoming)) {
+    return { action: 'reclaim-by-owner', reason: 'same-owner', previous: existing };
+  }
+  if (legacyCodexResume(existing, incoming, legacyCodexResumeEnabled)) {
+    return { action: 'reclaim-by-owner', reason: 'legacy-codex-resume', previous: existing };
   }
   const decision = classifyHolder(existing, maxAgeHours);
   return decision.breakable
@@ -117,24 +140,26 @@ function inspectExisting(path, ownPid, maxAgeHours) {
     : { action: 'refuse', reason: decision.reason, holder: existing };
 }
 
-export function claim({ dir, pid, agent, session, maxAgeHours }) {
+export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCodexResume: legacyCodexResumeEnabled }) {
   const realpath = canonicalDir(dir);
   const path = lockPathForRealpath(realpath);
   ensureLocksDir();
-  const record = buildRecord({ realpath, pid, agent, session });
+  const record = buildRecord({ realpath, pid, agent, session, owner });
   const json = JSON.stringify(record, null, 2);
   let displaced = null;
+  let displacedState = null;
   for (let attempt = 0; attempt < MAX_CLAIM_ATTEMPTS; attempt++) {
     try {
       // allow-comment: the exclusive wx create is the sole arbiter; do not relax it to an overwrite
       writeFileSync(path, json, { flag: 'wx' });
+      if (displacedState === 'reclaimed-by-owner') return { ok: true, state: 'reclaimed-by-owner', path, holder: record, reclaimed: displaced };
       return displaced
         ? { ok: true, state: 'took-over-stale', path, holder: record, brokeStale: displaced }
         : { ok: true, state: 'claimed', path, holder: record };
     } catch (err) {
       if (err.code !== 'EEXIST') throw err;
     }
-    const verdict = inspectExisting(path, pid, maxAgeHours);
+    const verdict = inspectExisting(path, record, maxAgeHours, legacyCodexResumeEnabled);
     if (verdict.action === 'held-by-self') {
       return { ok: true, state: 'held-by-self', path, holder: verdict.holder };
     }
@@ -144,6 +169,12 @@ export function claim({ dir, pid, agent, session, maxAgeHours }) {
     if (verdict.action === 'break') {
       rmSync(path, { force: true });
       displaced = { reason: verdict.reason, previous: verdict.previous };
+      displacedState = 'took-over-stale';
+    }
+    if (verdict.action === 'reclaim-by-owner') {
+      rmSync(path, { force: true });
+      displaced = { reason: verdict.reason, previous: verdict.previous };
+      displacedState = 'reclaimed-by-owner';
     }
   }
   const finalHolder = readRecordStable(path);

@@ -49,6 +49,40 @@ run_hook() {
   ! echo "$output" | grep -q '\[dibs/occupancy\]'
 }
 
+@test "gate allows a resumed codex owner even when the session id changed" {
+  sleep 60 & local other=$!
+  dibs claim "$DIR" --pid "$other" --agent codex --session old-thread --owner cmux-tab-1 >/dev/null
+  export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs" CMUX_TAB_ID=cmux-tab-1
+  jq -nc --arg cwd "$DIR" '{hook_event_name:"PreToolUse", tool_name:"Write", cwd:$cwd, session_id:"new-thread", tool_input:{file_path:($cwd+"/f.txt"), content:"x"}}' > "$BATS_TEST_TMPDIR/in.json"
+
+  run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+  local rc=$status
+  run dibs check "$DIR" --json
+  kill "$other" 2>/dev/null || true
+
+  [ "$rc" -eq 0 ]
+  ! echo "$output" | grep -q '\[dibs/occupancy\]'
+  echo "$output" | grep -q "\"pid\": $$"
+}
+
+@test "SessionStart resume reclaims an older ownerless foreign codex lock" {
+  dibs claim "$DIR" --pid $$ --agent codex --session old-thread >/dev/null
+  local lockpath
+  lockpath="$(dibs check "$DIR" --json | jq -r '.path')"
+  jq '.hostname="some-other-host" | del(.owner)' "$lockpath" > "$lockpath.tmp"
+  mv "$lockpath.tmp" "$lockpath"
+  export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs" CMUX_TAB_ID=cmux-tab-1
+  jq -nc --arg cwd "$DIR" '{hook_event_name:"SessionStart", source:"resume", cwd:$cwd, session_id:"new-thread"}' > "$BATS_TEST_TMPDIR/in.json"
+
+  run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+  local rc=$status
+  run dibs check "$DIR" --json
+
+  [ "$rc" -eq 0 ]
+  echo "$output" | grep -q "\"pid\": $$"
+  echo "$output" | grep -q '"owner": "cmux-tab-1"'
+}
+
 @test "gate allows a free dir and records occupancy" {
   export DIBS_HOLDER_PID=$$
   run_hook PreToolUse Write

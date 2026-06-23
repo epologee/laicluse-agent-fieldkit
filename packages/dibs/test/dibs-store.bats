@@ -47,13 +47,14 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   ! echo "$output" | grep -vqE "from 'node:"
 }
 
-@test "the lock record carries realpath, pid, agent, hostname, nonce and acquired-at" {
-  dibs claim "$DIR" --pid $$ --agent claude --session abc --json >/dev/null
+@test "the lock record carries realpath, pid, agent, owner, hostname, nonce and acquired-at" {
+  dibs claim "$DIR" --pid $$ --agent claude --session abc --owner owner-1 --json >/dev/null
   local rec
   rec="$(cat "$LAICLUSE_HOME"/locks/*.lock)"
   echo "$rec" | grep -q '"realpath"'
   echo "$rec" | grep -q '"pid"'
   echo "$rec" | grep -q '"agent": "claude"'
+  echo "$rec" | grep -q '"owner": "owner-1"'
   echo "$rec" | grep -q '"hostname"'
   echo "$rec" | grep -q '"nonce"'
   echo "$rec" | grep -q '"acquiredAt"'
