@@ -67,14 +67,14 @@ run_hook() {
   echo "$output" | grep -q "\"pid\": $$"
 }
 
-@test "SessionStart resume reclaims an older ownerless foreign codex lock" {
+@test "first codex write reclaims an older ownerless foreign codex lock" {
   dibs claim "$DIR" --pid $$ --agent codex --session old-thread >/dev/null
   local lockpath
   lockpath="$(dibs check "$DIR" --json | jq -r '.path')"
   jq '.hostname="some-other-host" | del(.owner)' "$lockpath" > "$lockpath.tmp"
   mv "$lockpath.tmp" "$lockpath"
   export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs" CMUX_TAB_ID=cmux-tab-1
-  jq -nc --arg cwd "$DIR" '{hook_event_name:"SessionStart", source:"resume", cwd:$cwd, session_id:"new-thread"}' > "$BATS_TEST_TMPDIR/in.json"
+  jq -nc --arg cwd "$DIR" '{hook_event_name:"PreToolUse", tool_name:"Write", cwd:$cwd, session_id:"new-thread", tool_input:{file_path:($cwd+"/f.txt"), content:"x"}}' > "$BATS_TEST_TMPDIR/in.json"
 
   run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
   local rc=$status
@@ -162,35 +162,35 @@ run_hook() {
   echo "$output" | grep -q "\"pid\": $$"
 }
 
-@test "SessionStart steers aside (no block) when a live other-session agent holds the dir" {
+@test "SessionStart does not steer aside when a live other-session agent holds the dir" {
   sleep 60 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   run_hook SessionStart startup
+  local rc=$status
+  local session_output="$output"
+  run dibs check "$DIR" --json
   kill "$other" 2>/dev/null || true
-  [ "$status" -eq 0 ]
-  echo "$output" | grep -q "SessionStart"
-  echo "$output" | grep -qi "held by codex"
-  echo "$output" | grep -qi "step aside"
+  [ "$rc" -eq 0 ]
+  [ -z "$session_output" ]
+  echo "$output" | grep -q '"agent": "codex"'
 }
 
-@test "SessionStart claims a free dir silently" {
+@test "SessionStart leaves a free dir unclaimed" {
   export DIBS_HOLDER_PID=$$
   run_hook SessionStart startup
   [ "$status" -eq 0 ]
   run dibs check "$DIR" --json
-  echo "$output" | grep -q "\"pid\": $$"
+  echo "$output" | grep -q '"state": "free"'
 }
 
-@test "SessionStart surfaces enforcement-off when dibs cannot be resolved" {
+@test "SessionStart ignores missing dibs because enforcement starts at write time" {
   export DIBS_BIN="$BATS_TEST_TMPDIR/nonexistent-dibs"
   export CLAUDE_PLUGIN_ROOT="$BATS_TEST_TMPDIR/nowhere"
   export DIBS_HOLDER_PID=$$
-  source "$HOOK"
-  occ_dibs_bin() { return 1; }
-  run occ_claim "$(emit SessionStart startup)"
+  run_hook SessionStart startup
   [ "$status" -eq 0 ]
-  echo "$output" | grep -qi "enforcement is OFF"
+  [ -z "$output" ]
 }
 
 @test "SessionEnd releases the dir the holder held" {
@@ -216,7 +216,7 @@ run_hook() {
 
 @test "the recorded holder pid equals DIBS_HOLDER_PID, not the hook shell" {
   export DIBS_HOLDER_PID=$$
-  run_hook SessionStart startup
+  run_hook PreToolUse Write
   [ "$status" -eq 0 ]
   local lockpath
   lockpath="$(dibs check "$DIR" --json | jq -r '.path')"

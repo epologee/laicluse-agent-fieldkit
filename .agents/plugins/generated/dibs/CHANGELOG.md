@@ -4,6 +4,15 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.20]
+
+### Changed
+
+- **Occupancy starts at the first write, not session start.** Claude and Codex
+  no longer claim or steer aside on `SessionStart`; the occupancy hook claims at
+  the mutating file-edit gate and only suggests a separate worktree when that
+  write would collide with another live agent.
+
 ## [v2.0.15]
 
 ### Changed

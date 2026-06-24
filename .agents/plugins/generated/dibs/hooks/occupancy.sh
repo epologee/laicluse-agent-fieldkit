@@ -1,11 +1,10 @@
 #!/bin/bash
-# allow-comment: load-bearing contract. dibs occupancy enforcement: claim the working directory at SessionStart, hard-deny a file edit when a different live agent session already holds it (PreToolUse), release at SessionEnd (Claude only; Codex has no session-end event and relies on dibs pid-liveness self-heal). No lock logic lives here; every verb shells out to this plugin's own dibs CLI. The decision is driven off `dibs claim --json` state, and the gate fails open on anything that is not a positive cross-session refusal, so a broken or missing lock never blocks an agent; SessionStart instead surfaces that enforcement is off. Opt out per session with DIBS_OCCUPANCY=off.
+# allow-comment: load-bearing contract. dibs occupancy enforcement: claim the working directory only at the first mutating file edit (PreToolUse), hard-deny that edit when a different live agent session already holds it, and release at SessionEnd (Claude only; Codex has no session-end event and relies on dibs pid-liveness self-heal). Read-only sessions never take occupancy and never get steered aside. No lock logic lives here; every verb shells out to this plugin's own dibs CLI. The decision is driven off `dibs claim --json` state, and the gate fails open on anything that is not a positive cross-session refusal, so a broken or missing lock never blocks an agent. Opt out per session with DIBS_OCCUPANCY=off.
 
 OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 occ_event()   { jq -r '.hook_event_name // empty' <<< "$1" 2>/dev/null; }
 occ_tool()    { jq -r '.tool_name // empty' <<< "$1" 2>/dev/null; }
-occ_source()  { jq -r '.source // .hook_source // empty' <<< "$1" 2>/dev/null; }
 occ_session() { jq -r '.session_id // .sessionId // empty' <<< "$1" 2>/dev/null; }
 
 occ_cwd() {
@@ -135,14 +134,14 @@ occ_owner() {
   [ -n "$sid" ] && printf '%s\n' "$sid"
 }
 
-occ_legacy_codex_resume() {
+occ_legacy_codex_reclaim() {
   local input="$1"
   [ "$(occ_agent_label)" = "codex" ] || return 1
-  [ "$(occ_event "$input")" = "SessionStart" ] || return 1
-  [ "$(occ_source "$input")" = "resume" ] || return 1
+  [ -n "$(occ_owner "$input")" ] || return 1
+  [ "$(occ_event "$input")" = "PreToolUse" ] || return 1
 }
 
-# allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. DIBS_HOLDER_PID overrides; else walk to the NEAREST claude/codex ancestor and stop there. Nearest, not topmost: a codex launched inside a Claude session (intervision, codex exec) sits below the Claude process, and topmost would climb past codex to the Claude pid that already holds the lock, so dibs would see held-by-self and wrongly allow. The nearest agent ancestor is this session's own long-lived process, stable across SessionStart, every PreToolUse, and SessionEnd. Fall back to the start pid.
+# allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. DIBS_HOLDER_PID overrides; else walk to the NEAREST claude/codex ancestor and stop there. Nearest, not topmost: a codex launched inside a Claude session (intervision, codex exec) sits below the Claude process, and topmost would climb past codex to the Claude pid that already holds the lock, so dibs would see held-by-self and wrongly allow. The nearest agent ancestor is this session's own long-lived process, stable across every PreToolUse and SessionEnd. Fall back to the start pid.
 occ_holder_pid() {
   local start="${1:-$PPID}"
   if [ -n "${DIBS_HOLDER_PID:-}" ] && [ "${DIBS_HOLDER_PID}" -gt 0 ] 2>/dev/null; then
@@ -190,7 +189,7 @@ occ_claim_output() {
   set -- claim "$dir" --pid "$pid" --agent "$agent"
   [ -n "$sid" ] && set -- "$@" --session "$sid"
   [ -n "$owner" ] && set -- "$@" --owner "$owner"
-  occ_legacy_codex_resume "$input" && set -- "$@" --legacy-codex-resume
+  occ_legacy_codex_reclaim "$input" && set -- "$@" --legacy-codex-resume
   node "$dibs" "$@" --json 2>/dev/null
 }
 
@@ -207,23 +206,6 @@ occ_refused_by_other() {
   holder_sid="$(printf '%s' "$out" | jq -r '.holder.session // empty' 2>/dev/null)"
   [ "$my_sid" = "$holder_sid" ] && return 1
   return 0
-}
-
-occ_session_context() {
-  jq -cn --arg c "[dibs/occupancy] $1" '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $c}}'
-}
-
-occ_claim() {
-  local input="$1" out rc
-  out="$(occ_claim_output "$input")"
-  rc=$?
-  if [ "$rc" -eq 2 ]; then
-    occ_session_context "dibs CLI not found; single-occupancy enforcement is OFF for this session. Set DIBS_BIN to restore it."
-    return 0
-  fi
-  { [ "$rc" -eq 0 ] || [ "$rc" -eq 3 ]; } && return 0
-  occ_refused_by_other "$input" "$out" || return 0
-  occ_session_context "$(printf '%s' "$out" | occ_holder_line); another agent occupies this directory. Step aside. $(printf '%s' "$out" | occ_refusal_suggestion)"
 }
 
 occ_gate() {
@@ -255,7 +237,6 @@ occ_release() {
 occ_dispatch() {
   local input="$1"
   case "$(occ_event "$input")" in
-    SessionStart) occ_claim "$input" ;;
     SessionEnd)   occ_release "$input" ;;
     PreToolUse)
       case "$(occ_tool "$input")" in

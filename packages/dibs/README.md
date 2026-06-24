@@ -3,9 +3,9 @@
 A single-occupancy lock for a working directory. Two coding agents, often
 cross-vendor (a Claude and a Codex), can start working in the same directory at
 the same time and overwrite each other. dibs lets one agent take exclusive
-occupancy of a directory and makes the next one step aside. Any tool or agent
-can take the lock and any other can observe it, regardless of vendor or
-platform.
+occupancy before mutation and makes the next mutating agent step aside. Any
+tool or agent can take the lock and any other can observe it, regardless of
+vendor or platform.
 
 It is deliberately not a git tool: it locks any working directory or resource,
 not only git worktrees. `bonsai` creates worktrees and consumes dibs to claim
@@ -89,26 +89,24 @@ dependencies, and self-heals through pid-liveness.
 
 The lock only helps if it is acquired before mutation. dibs ships
 `hooks/occupancy.sh`, a vendor-neutral hook that enforces single occupancy for
-any session, not only the worktrees `bonsai` hands out. It is registered for
-both agents (`hooks/hooks.json` for Claude, `hooks/hooks.codex.json` for Codex,
-materialized into the generated Codex adapter) and shells out to this plugin's
-own CLI, so there is no second lock path.
+mutating file edits, not only the worktrees `bonsai` hands out. It is registered
+for both agents (`hooks/hooks.json` for Claude, `hooks/hooks.codex.json` for
+Codex, materialized into the generated Codex adapter) and shells out to this
+plugin's own CLI, so there is no second lock path.
 
-- **SessionStart** claims the working directory and records the long-lived
-  agent process as the holder (the topmost `claude`/`codex` ancestor, or
-  `DIBS_HOLDER_PID` when set). If a different live session already holds it, the
-  fresh session is not blocked (a session cannot be) but is steered aside with
-  the holder line; if dibs cannot be resolved, it surfaces an enforcement-off
-  notice rather than going silently inert.
+- **SessionStart** does not claim the working directory. A read-only question in
+  a directory another live agent holds stays quiet and does not occupy the
+  directory.
 - **PreToolUse** (file edits: `Edit` / `Write` / `MultiEdit` / `apply_patch`)
-  re-claims the directory before the mutation and hard-denies (exit 2) when a
+  claims the directory before the mutation and hard-denies (exit 2) when a
   *different* live session holds it, reporting the holder and how to recover.
   The recovery text points the blocked agent at a separate git worktree on a new
   branch, so the safe next move is visible at the denial point.
   The agent's own session is recognised by the lock's stable owner id first and
   the hook session id second, so a drifted worker pid or resumed Codex thread
-  never self-locks the agent out; a free directory, a self-healed dead holder,
-  and any non-refusal dibs result all pass (fail-open).
+  never self-locks the agent out. A legacy ownerless Codex resume is reclaimed
+  at the first write. A free directory, a self-healed dead holder, and any
+  non-refusal dibs result all pass (fail-open).
 - **SessionEnd** (Claude only) releases the directory. Codex has no session-end
   event, so a Codex lock clears through pid-liveness self-heal on the next
   claim, or through owner-based reclaim on a Codex resume, which is expected

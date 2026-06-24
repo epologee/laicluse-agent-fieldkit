@@ -7,7 +7,7 @@ description: >-
 # dibs
 
 Calling dibs on a directory: a small, vendor-neutral, cross-platform lock so
-only one coding agent occupies a working directory at a time. A Claude and a
+only one coding agent mutates a working directory at a time. A Claude and a
 Codex contend for the same lock through the same on-disk artifact, so neither
 needs to know about the other's hooks.
 
@@ -70,12 +70,15 @@ old lock even when pid, host, or thread id changed.
 
 ## Who calls dibs
 
-The lock only helps if it is acquired before mutation, so the two reliable
+The lock only helps if it is acquired before mutation, so the reliable
 acquisition points are:
 
-- **Session start.** A coding agent claims the directory it is about to work in
-  as part of its session-start path, and releases on session end. Claude and
-  Codex call the same CLI; the on-disk lock is the shared artifact.
+- **Pre-mutation hook.** A coding agent claims the directory at its first
+  mutating file edit, not when the session starts. Read-only questions in an
+  occupied directory stay quiet; the refusal and worktree recovery suggestion
+  appear only when another live session already holds the directory and this
+  session tries to write. Claude and Codex call the same CLI; the on-disk lock
+  is the shared artifact.
 - **Directory handout.** `bonsai` claims the lock for a worktree it hands out
   (it consumes this one implementation; there is no second lock anywhere). The
   git-native commit hook in the branch-worktree-discipline order remains the
