@@ -21,7 +21,10 @@ JSON
 { "name": "demo", "description": "demo plugin", "version": "2.0.1" }
 JSON
   cat > "$REPO/docs/index.html" <<'HTML'
+<link rel="canonical" href="https://example.test/old/">
+<meta property="og:url" content="https://example.test/old/">
 <meta property="og:image" content="https://example.test/assets/og-image.png?v=dev">
+<meta property="og:image:secure_url" content="https://example.test/assets/og-image.png?v=dev">
 <meta name="twitter:image" content="https://example.test/assets/og-image.png?v=dev">
 HTML
   node "$SCRIPT" "$REPO" > /dev/null
@@ -35,6 +38,14 @@ HTML
   run grep -c 'og-image.png?v=dev' "$REPO/docs/index.html"
   [ "$output" -eq 0 ]
   grep -Eq 'og-image\.png\?v=[0-9a-f]{10}' "$REPO/docs/index.html"
+}
+
+@test "the canonical and social URLs use the configured Pages URL" {
+  grep -q '<link rel="canonical" href="https://laicluse.com/">' "$REPO/docs/index.html"
+  grep -q '<meta property="og:url" content="https://laicluse.com/">' "$REPO/docs/index.html"
+  grep -Eq '<meta property="og:image" content="https://laicluse\.com/assets/og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
+  grep -Eq '<meta property="og:image:secure_url" content="https://laicluse\.com/assets/og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
+  grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
 }
 
 @test "the rasterized PNG keeps the 1200x630 OG dimensions" {

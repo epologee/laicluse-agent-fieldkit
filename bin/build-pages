@@ -474,12 +474,22 @@ function renderOgImage(repoRoot, svg) {
 	}
 }
 
-// Point the og:image/twitter:image meta at the freshly hashed asset so social
-// platforms refetch the card after it changes.
+// Keep the canonical/social URLs tied to PAGES_URL and point the image meta at
+// the freshly hashed asset so social platforms refetch the card after it changes.
 function updateOgMeta(repoRoot, hash) {
 	const indexPath = path.join(repoRoot, "docs", "index.html");
 	const html = fs.readFileSync(indexPath, "utf8");
-	const updated = html.replace(/(assets\/og-image\.png)(\?v=[a-z0-9]+)?/g, `$1?v=${hash}`);
+	const pageUrl = `${PAGES_URL}/`;
+	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+	const updated = html
+		.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl}">`)
+		.replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${pageUrl}">`)
+		.replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${imageUrl}">`)
+		.replace(
+			/<meta property="og:image:secure_url" content="[^"]*">/,
+			`<meta property="og:image:secure_url" content="${imageUrl}">`,
+		)
+		.replace(/<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${imageUrl}">`);
 	if (updated !== html) fs.writeFileSync(indexPath, updated);
 }
 
