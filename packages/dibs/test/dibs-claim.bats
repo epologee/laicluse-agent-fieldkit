@@ -29,6 +29,9 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -qi "refused"
   echo "$output" | grep -qi "held by claude"
   echo "$output" | grep -qi "since"
+  echo "$output" | grep -qi "git worktree"
+  echo "$output" | grep -qi "new branch"
+  echo "$output" | grep -qi "claim that worktree path"
 }
 
 @test "refused claim under --json reports state refused and the holder" {
@@ -40,6 +43,8 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"state": "refused"'
   echo "$output" | grep -q '"agent": "claude"'
   echo "$output" | grep -q '"acquiredAt"'
+  echo "$output" | grep -q '"suggestion"'
+  echo "$output" | grep -qi "git worktree"
 }
 
 @test "re-claim by the same pid is idempotent (held-by-self)" {

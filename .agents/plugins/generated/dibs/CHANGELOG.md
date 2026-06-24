@@ -4,6 +4,15 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.15]
+
+### Changed
+
+- **Blocked directories now point at a worktree recovery path.** `dibs claim`,
+  JSON refusals, and the occupancy hook suggest creating a separate git worktree
+  on a new branch and claiming that worktree path when another live agent holds
+  the requested directory.
+
 ## [v2.0.14]
 
 ### Fixed

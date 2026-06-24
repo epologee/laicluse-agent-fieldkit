@@ -27,7 +27,8 @@ key.
   Exits 0 on a fresh claim, on an idempotent re-claim by the same holder
   (`held-by-self`), or on taking over a stale lock whose holder pid is dead
   (`took-over-stale`). Exits non-zero and reports the holder when a live holder
-  exists.
+  exists. A refused claim also suggests creating a separate git worktree on a
+  new branch and claiming that worktree path.
 - **release** deletes the lock only if you are the holder. Releasing a lock held
   by another is refused; releasing an unheld directory is a no-op.
 - **check** reports `free`, or the holder with its liveness and staleness.
@@ -102,6 +103,8 @@ own CLI, so there is no second lock path.
 - **PreToolUse** (file edits: `Edit` / `Write` / `MultiEdit` / `apply_patch`)
   re-claims the directory before the mutation and hard-denies (exit 2) when a
   *different* live session holds it, reporting the holder and how to recover.
+  The recovery text points the blocked agent at a separate git worktree on a new
+  branch, so the safe next move is visible at the denial point.
   The agent's own session is recognised by the lock's stable owner id first and
   the hook session id second, so a drifted worker pid or resumed Codex thread
   never self-locks the agent out; a free directory, a self-healed dead holder,

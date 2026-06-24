@@ -37,6 +37,8 @@ run_hook() {
   echo "$output" | grep -q '\[dibs/occupancy\]'
   echo "$output" | grep -qi "held by codex"
   echo "$output" | grep -qi "since"
+  echo "$output" | grep -qi "git worktree"
+  echo "$output" | grep -qi "new branch"
 }
 
 @test "gate allows a different live pid of the SAME session (no self-lockout)" {

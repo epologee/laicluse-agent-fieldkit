@@ -85,6 +85,13 @@ function emit(result, human, exitCode = 0) {
   process.exit(exitCode);
 }
 
+function claimRefusalMessage(result) {
+  const holder = result.holder
+    ? formatHolder(result.holder)
+    : 'another live agent holds this directory';
+  return `refused: ${holder}. ${result.suggestion}`;
+}
+
 try {
   if (command === 'claim') {
     const result = claim({
@@ -100,7 +107,7 @@ try {
     else if (result.state === 'held-by-self') emit(result, `already held by you (pid ${pid})`);
     else if (result.state === 'reclaimed-by-owner') emit(result, `reclaimed ${result.holder.realpath} for owner ${result.holder.owner} (pid ${pid})`);
     else if (result.state === 'took-over-stale') emit(result, `took over stale lock on ${result.holder.realpath} (previous ${result.brokeStale.reason}); now held (pid ${pid})`);
-    else emit(result, `refused: ${formatHolder(result.holder)}`, 1);
+    else emit(result, claimRefusalMessage(result), 1);
   } else if (command === 'release') {
     const result = release({ dir, pid, nonce: values.nonce });
     if (result.state === 'released') emit(result, `released ${result.holder.realpath}`);
