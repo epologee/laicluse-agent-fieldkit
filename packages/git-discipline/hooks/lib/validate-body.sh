@@ -332,7 +332,11 @@ validate_body() {
 
   # Rule: Slice trailer must be present and non-empty.
   if [[ -z "$slice_value" ]]; then
-    _vb_err 'missing-slice: Slice trailer is absent or empty'
+    local missing_slice_message='missing-slice: Slice trailer is absent or empty'
+    if grep -qiE '^[[:space:]]*Slice:[[:space:]]*[^[:space:]]' <<< "$content"; then
+      missing_slice_message+='. A Slice line exists in the message text but git interpret-trailers did not parse it, usually because multiple -m flags or blank lines split the trailer block. Keep Tests, Slice, Red-then-green, Verified, and Visual lines contiguous at the bottom of one heredoc commit message.'
+    fi
+    _vb_err "$missing_slice_message"
   fi
 
   # Determine if Slice value is an opt-out token.

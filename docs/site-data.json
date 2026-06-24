@@ -165,7 +165,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.33",
+			"version": "2.0.34",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -439,7 +439,7 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.33",
+			"packageVersion": "2.0.34",
 			"version": "v2.0.32",
 			"type": "Changed",
 			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",
