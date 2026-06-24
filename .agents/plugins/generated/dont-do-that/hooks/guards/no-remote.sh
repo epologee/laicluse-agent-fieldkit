@@ -16,13 +16,16 @@ guard_no_remote() {
   # operator (`&&`, `;`, `||`, newline). Skip when nothing pushes.
   grep -Eq '(^|&&|;|\|\||[[:space:]])[[:space:]]*git[[:space:]]+push([[:space:]]|$)' <<< "$cmd" || return 0
 
-  # allow-comment: honor leading `cd <path> &&` so the remote check runs in the target repo, mirroring git-discipline's cd-target handling.
+  # allow-comment: honor leading `cd <path> &&` so the remote check follows the command itself; otherwise use Codex/Claude hook cwd before falling back to the hook process cwd.
   local target=""
   if [[ "$cmd" =~ ^[[:space:]]*cd[[:space:]]+(\"[^\"]+\"|\'[^\']+\'|[^[:space:]\&]+)[[:space:]]*\&\& ]]; then
     target="${BASH_REMATCH[1]}"
     target="${target#\"}"; target="${target%\"}"
     target="${target#\'}"; target="${target%\'}"
     target="${target/#\~/$HOME}"
+  fi
+  if [ -z "$target" ]; then
+    target=$(jq -r '.cwd // .tool_input.cwd // empty' <<< "$input" 2>/dev/null)
   fi
   if [ -n "$target" ] && [ -d "$target" ]; then
     cd "$target" 2>/dev/null || true

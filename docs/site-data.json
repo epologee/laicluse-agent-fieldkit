@@ -186,7 +186,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.22",
+			"version": "2.0.23",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -463,7 +463,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.22",
+			"packageVersion": "2.0.23",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Guard placement and per-agent policy now live in a registry.",
