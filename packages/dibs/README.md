@@ -33,6 +33,12 @@ key.
   by another is refused; releasing an unheld directory is a no-op.
 - **check** reports `free`, or the holder with its liveness and staleness.
 
+`release` is for explicit recovery or operator-directed teardown. It is not
+normal end-of-task cleanup for a coding agent that claimed occupancy through the
+hook. That lock should stay held until the host session ends (Claude), or until
+pid-liveness/owner reclaim clears it on the next claim (Codex). A green test
+suite, clean worktree, commit, or final answer is not a release condition.
+
 `--pid` is the holder pid whose liveness defines the lock; default is the
 calling process's parent pid. Record the long-lived agent or session process,
 not the ephemeral `dibs` invocation.

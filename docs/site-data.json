@@ -123,7 +123,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.20",
+			"version": "2.0.21",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -471,7 +471,7 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.20",
+			"packageVersion": "2.0.21",
 			"version": "v2.0.20",
 			"type": "Changed",
 			"summary": "Occupancy starts at the first write, not session start.",

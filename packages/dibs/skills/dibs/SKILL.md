@@ -59,6 +59,13 @@ node "$DIBS" check   <dir> [--max-age-hours <n>] [--json]
   is a no-op.
 - **check** prints `free` or the holder plus its liveness and staleness.
 
+`release` is an explicit recovery/operator action, not normal end-of-task
+cleanup. After a coding agent claims occupancy through the hook, keep the lock
+until the host's session end mechanism releases it (Claude) or until
+pid-liveness/owner reclaim clears it on the next claim (Codex). Do not manually
+release a live agent lock just because the current task is committed, tests are
+green, or the final answer is being written.
+
 `--pid` is the pid that must stay alive for the lock to count as live. Record
 the long-lived holder (the agent or session process), not the ephemeral process
 that runs `dibs`. It defaults to the calling process's parent pid. `--json`

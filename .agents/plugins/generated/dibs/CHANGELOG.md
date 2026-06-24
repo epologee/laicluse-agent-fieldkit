@@ -12,6 +12,10 @@ short; categories are Breaking, Added, Changed, Fixed.
   no longer claim or steer aside on `SessionStart`; the occupancy hook claims at
   the mutating file-edit gate and only suggests a separate worktree when that
   write would collide with another live agent.
+- **Agent-held locks stay held after task completion.** The dibs skill and
+  README now spell out that `release` is recovery/operator teardown, not normal
+  end-of-task cleanup. Claude releases on `SessionEnd`; Codex relies on
+  pid-liveness or owner reclaim.
 
 ## [v2.0.15]
 
