@@ -2,7 +2,11 @@
 name: how-plugins-work
 user-invocable: true
 description: >-
-  Diagnose plugin/skill resolution, slash-command misses, Unknown command errors, marketplace sync, and agent adapters.
+  Build, scaffold, or diagnose Claude/Codex plugins, skills, and marketplaces.
+  Read this BEFORE creating a new plugin, marketplace, marketplace.json source,
+  skill, or Codex adapter, and when generating adapters with plugin-adapters —
+  not only when debugging plugin/skill resolution, slash-command misses, Unknown
+  command errors, marketplace sync, or agent adapters.
 ---
 
 <post-update-broadcast>

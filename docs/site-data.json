@@ -81,7 +81,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.27",
+			"version": "2.0.28",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -447,7 +447,7 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.27",
+			"packageVersion": "2.0.28",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Agent-specific skill sources may now be single-sided.",
