@@ -51,7 +51,8 @@ node "$DIBS" check   <dir> [--max-age-hours <n>] [--json]
   the same stable owner (`reclaimed-by-owner`), or takes over a stale lock whose
   holder is dead (`took-over-stale`). It exits non-zero and names the holder
   (`refused: held by <agent> (pid <pid>) since <acquired-at>`) when a live holder
-  exists.
+  exists. A refusal suggests creating a separate git worktree on a new branch
+  and claiming that worktree path.
 - **release** deletes the lock only if you are the holder; releasing a lock held
   by someone else is refused and exits non-zero, releasing an unheld directory
   is a no-op.

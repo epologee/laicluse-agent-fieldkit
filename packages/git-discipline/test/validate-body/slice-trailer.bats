@@ -30,6 +30,36 @@ MSG
   [[ "$output" == *"missing-slice"* ]]
 }
 
+@test "missing Slice explains visible but unparsed trailer lines" {
+  use_trailers "Verified: red-then-green"
+  local body
+  body="$(cat <<'MSG'
+Add voice retry command
+
+Allow hands-free dictation to discard a polluted pending turn before it
+reaches the agent surface. This makes the spoken retry phrase a
+first-class voice command instead of a literal text fragment.
+
+Tests: vocalist-swift/Tests/VocalistTests/TurnComposerTests.swift
+
+Slice: command processing + docs + specs
+
+Red-then-green: vocalist-swift/Tests/VocalistTests/TurnComposerTests.swift:81 # testRetryCommandDiscardsPendingTurnWithoutTouchingSurface
+
+Verified: red-then-green
+MSG
+)"
+  local file
+  file=$(write_fixture "split-trailers.txt" "$body")
+
+  run invoke_validator "$file"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"missing-slice"* ]]
+  [[ "$output" == *"Slice line exists in the message text"* ]]
+  [[ "$output" == *"multiple -m flags"* ]]
+  [[ "$output" == *"Keep Tests, Slice, Red-then-green, Verified, and Visual lines contiguous"* ]]
+}
+
 @test "commit with empty Slice value fails with missing-slice" {
   # Shim returns Slice: with empty value (trailing space stripped by grep).
   use_trailers "Tests: spec/services/session_spec.rb"$'\n'"Red-then-green: n/a (test fixture, no spec applies)"$'\n'"Verified: operator-confirmed"

@@ -6,6 +6,10 @@ import { createHash, randomBytes } from 'node:crypto';
 const MAX_CLAIM_ATTEMPTS = 3;
 const STABLE_READ_TRIES = 10;
 const STABLE_READ_SLEEP_MS = 15;
+export const BLOCKED_DIRECTORY_SUGGESTION = [
+  'Create a separate git worktree on a new branch,',
+  'then claim that worktree path.',
+].join(' ');
 
 function locksDir() {
   const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
@@ -43,6 +47,17 @@ function isAlive(pid) {
 
 export function formatHolder(record) {
   return `held by ${record.agent} (pid ${record.pid}) on ${record.hostname} since ${record.acquiredAt}`;
+}
+
+function refusalResult(path, holder, reason) {
+  return {
+    ok: false,
+    state: 'refused',
+    path,
+    holder,
+    reason,
+    suggestion: BLOCKED_DIRECTORY_SUGGESTION,
+  };
 }
 
 function buildRecord({ realpath, pid, agent, session, owner }) {
@@ -164,7 +179,7 @@ export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCode
       return { ok: true, state: 'held-by-self', path, holder: verdict.holder };
     }
     if (verdict.action === 'refuse') {
-      return { ok: false, state: 'refused', path, holder: verdict.holder, reason: verdict.reason };
+      return refusalResult(path, verdict.holder, verdict.reason);
     }
     if (verdict.action === 'break') {
       rmSync(path, { force: true });
@@ -178,8 +193,8 @@ export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCode
     }
   }
   const finalHolder = readRecordStable(path);
-  if (!finalHolder) return { ok: false, state: 'refused', path, holder: null, reason: 'contended' };
-  return { ok: false, state: 'refused', path, holder: finalHolder, reason: classifyHolder(finalHolder, maxAgeHours).reason };
+  if (!finalHolder) return refusalResult(path, null, 'contended');
+  return refusalResult(path, finalHolder, classifyHolder(finalHolder, maxAgeHours).reason);
 }
 
 export function release({ dir, pid, nonce }) {

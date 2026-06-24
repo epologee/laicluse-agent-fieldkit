@@ -123,7 +123,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.17",
+			"version": "2.0.19",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -137,9 +137,9 @@
 			"commandCount": 2,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.14",
-				"type": "Fixed",
-				"summary": "Codex resumes no longer self-lock on their old dibs claim."
+				"version": "v2.0.15",
+				"type": "Changed",
+				"summary": "Blocked directories now point at a worktree recovery path."
 			}
 		},
 		{
@@ -165,7 +165,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.33",
+			"version": "2.0.35",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -439,7 +439,7 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.33",
+			"packageVersion": "2.0.35",
 			"version": "v2.0.32",
 			"type": "Changed",
 			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",
@@ -471,10 +471,10 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.17",
-			"version": "v2.0.14",
-			"type": "Fixed",
-			"summary": "Codex resumes no longer self-lock on their old dibs claim.",
+			"packageVersion": "2.0.19",
+			"version": "v2.0.15",
+			"type": "Changed",
+			"summary": "Blocked directories now point at a worktree recovery path.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{

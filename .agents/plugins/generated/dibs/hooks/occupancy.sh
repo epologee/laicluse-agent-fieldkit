@@ -173,6 +173,10 @@ occ_holder_line() {
   jq -r 'if .holder then "held by \(.holder.agent) (pid \(.holder.pid)) on \(.holder.hostname) since \(.holder.acquiredAt)" else "another live agent holds this directory" end' 2>/dev/null
 }
 
+occ_refusal_suggestion() {
+  jq -r '.suggestion // "Create a separate git worktree on a new branch, then claim that worktree path."' 2>/dev/null
+}
+
 occ_claim_output() {
   local input="$1" dir="${2:-}" dibs pid agent sid owner
   dibs="$(occ_dibs_bin)" || return 2
@@ -219,7 +223,7 @@ occ_claim() {
   fi
   { [ "$rc" -eq 0 ] || [ "$rc" -eq 3 ]; } && return 0
   occ_refused_by_other "$input" "$out" || return 0
-  occ_session_context "$(printf '%s' "$out" | occ_holder_line); another agent occupies this directory. Step aside and work elsewhere, or stop."
+  occ_session_context "$(printf '%s' "$out" | occ_holder_line); another agent occupies this directory. Step aside. $(printf '%s' "$out" | occ_refusal_suggestion)"
 }
 
 occ_gate() {
@@ -233,7 +237,7 @@ occ_gate() {
     rc=$?
     case "$rc" in 0 | 2 | 3) continue ;; esac
     occ_refused_by_other "$input" "$out" || continue
-    printf '[dibs/occupancy] %s; another live agent occupies this directory. Work elsewhere; if that holder is stale, inspect it with '\''dibs check %s'\'' and clear it with '\''dibs release %s'\''.\n' "$(printf '%s' "$out" | occ_holder_line)" "$dir" "$dir" >&2
+    printf '[dibs/occupancy] %s; another live agent occupies this directory. %s If that holder is stale, inspect it with '\''dibs check %s'\'' and clear it with '\''dibs release %s'\''.\n' "$(printf '%s' "$out" | occ_holder_line)" "$(printf '%s' "$out" | occ_refusal_suggestion)" "$dir" "$dir" >&2
     exit 2
   done <<< "$dirs"
 }
