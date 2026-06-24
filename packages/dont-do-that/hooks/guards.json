@@ -18,6 +18,12 @@
     "stop-mutex": { "event": "Stop" }
   },
   "guards": {
+    "no-osascript": {
+      "lane": "pre-bash",
+      "order": 5,
+      "function": "guard_no_osascript",
+      "contract": "tool-call"
+    },
     "no-remote": {
       "lane": "pre-bash",
       "order": 10,

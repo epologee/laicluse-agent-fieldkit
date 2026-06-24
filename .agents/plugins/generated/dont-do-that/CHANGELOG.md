@@ -22,6 +22,15 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.18]
+
+### Added
+
+- **New PreToolUse:Bash guard `no-osascript`.** Blocks `osascript` and common
+  wrapper forms before they can drive local apps or user-facing system state via
+  AppleScript. Use an explicit host-owned UI/browser capability or a
+  project-native command path instead.
+
 ## [v2.0.17]
 
 ### Changed

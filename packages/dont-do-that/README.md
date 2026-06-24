@@ -77,6 +77,9 @@ Known limitations. Ruby and Bash heredoc bodies are not shielded, so a `#`-prefi
 
 ### PreToolUse (Bash)
 
+**`no-osascript`** in `hooks/guards/no-osascript.sh`
+Denies Bash tool calls that invoke `osascript`, including `/usr/bin/osascript`, common wrappers such as `sudo`, `env`, `command`, `exec`, `nohup`, `arch`, and command substitutions. Pass condition: use an explicit host-owned UI/browser capability, or a project-native command path that does not execute AppleScript.
+
 **`followup`** in `hooks/guards/followup.sh`
 Denies `gh api` commands whose body contains deferral language ("follow-up", "wordt opgepakt", "buiten scope", "in een volgende pr", and similar) unless the body starts with `Bewust uitgesteld:`. Pass condition: prefix the body with `Bewust uitgesteld:` to claim an explicit deferral, or rewrite the body without deferral language.
 

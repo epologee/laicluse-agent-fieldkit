@@ -506,6 +506,25 @@ expect_allow "followup: echoing a sentence about gh api body fields and follow-u
 expect_allow "followup: grep for follow-up in a notes file that also names gh api and body passes" \
   "$(pretool_bash 'grep -n "follow-up" /tmp/Notes-on-gh-api-body.md')"
 
+expect_deny "no-osascript: direct command blocked" \
+  "$(pretool_bash "osascript -e 'return 1'")" \
+  "no-osascript"
+
+expect_deny "no-osascript: absolute path after chain blocked" \
+  "$(pretool_bash "echo ready && /usr/bin/osascript -e 'return 1'")" \
+  "no-osascript"
+
+expect_deny "no-osascript: wrapper command blocked" \
+  "$(pretool_bash "sudo osascript -e 'return 1'")" \
+  "no-osascript"
+
+expect_deny "no-osascript: command substitution blocked" \
+  "$(pretool_bash 'echo $(osascript -e "return 1")')" \
+  "no-osascript"
+
+expect_allow "no-osascript: searching for the word passes" \
+  "$(pretool_bash 'rg osascript packages/dont-do-that')"
+
 # --- no-remote ---
 # Each case sets up a temp git repo and cd's in before invoking the hook,
 # because the guard reads `git remote` against the current working directory.
