@@ -790,3 +790,48 @@ validate_body() {
 
   return 0
 }
+
+# allow-comment: vb_validate_commit <sha> validates one existing commit's body
+# allow-comment: with the same trivial-ok and skip-classify rules the PreToolUse
+# allow-comment: guard applies to staged work, but reading the real object via
+# allow-comment: the range context. It echoes the first violation line on stdout
+# allow-comment: and returns 1 on a real miss; returns 0 when clean, skip-
+# allow-comment: classified, or unreadable. This is the single home for the
+# allow-comment: per-commit loop body that push-body-gate, the PostToolUse net,
+# allow-comment: and the git-native pre-push hook all share.
+vb_validate_commit() {
+  local sha="$1"
+  local subject shortstat file_count insertion_count trivial_ok tmpfile out rc slice
+  subject=$(git log -1 --pretty=format:%s "$sha" 2>/dev/null || true)
+  if validate_body_classify_skip "$subject"; then
+    return 0
+  fi
+  # allow-comment: a Slice: wip commit is intentionally incomplete and governed
+  # allow-comment: solely by the wip-gate (blocked at push, bypassable on purpose);
+  # allow-comment: the body schema does not apply, so every body-gate layer that
+  # allow-comment: routes through here exempts it uniformly.
+  slice=$(git log -1 --pretty=format:%B "$sha" 2>/dev/null | git interpret-trailers --parse 2>/dev/null | sed -n 's/^Slice:[[:space:]]*//p' | head -1)
+  if [[ "$slice" = "wip" ]]; then
+    return 0
+  fi
+  shortstat=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" _vb_delta_shortstat)
+  file_count=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" _vb_delta_files | grep -c . | tr -d ' ')
+  insertion_count=0
+  if [[ "$shortstat" =~ ([0-9]+)[[:space:]]+insertion ]]; then
+    insertion_count="${BASH_REMATCH[1]}"
+  fi
+  trivial_ok=0
+  if [[ "$file_count" -le 1 && "$insertion_count" -le 5 ]]; then
+    trivial_ok=1
+  fi
+  tmpfile=$(mktemp "${TMPDIR:-/tmp}/git-discipline-vb-commit-XXXXXX")
+  git log -1 --pretty=format:%B "$sha" > "$tmpfile" 2>/dev/null
+  out=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" GIT_DISCIPLINE_TRIVIAL_OK="$trivial_ok" validate_body "$tmpfile" 2>&1)
+  rc=$?
+  rm -f "$tmpfile"
+  if [[ "$rc" -eq 1 ]]; then
+    printf '%s' "$(printf '%s' "$out" | head -1)"
+    return 1
+  fi
+  return 0
+}

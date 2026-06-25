@@ -116,7 +116,7 @@ fi
 # Slice 7 will add pre-push, slice 8 prepare-commit-msg. Both will be
 # auto-picked up here when the source files appear, no edits needed.
 
-hook_candidates=(commit-msg prepare-commit-msg post-commit pre-push)
+hook_candidates=(commit-msg prepare-commit-msg post-commit post-rewrite pre-push)
 
 # ---------------------------------------------------------------------------
 # Install loop

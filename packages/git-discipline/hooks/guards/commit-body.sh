@@ -10,6 +10,12 @@
 # allow-comment: against the staged area. Validates every git commit command,
 # allow-comment: --no-verify included; the layer split is documented in the
 # allow-comment: commit-discipline SKILL.md section "--no-verify".
+# allow-comment: This guard only sees a body it can parse from a direct
+# allow-comment: `git commit -m`/heredoc string (dd_extract_commit_message). A
+# allow-comment: commit written by a rebase, cherry-pick, merge --continue, or an
+# allow-comment: --amend that reuses the message leaves no parseable string here;
+# allow-comment: commit-body-posttool (PostToolUse) catches those by validating
+# allow-comment: the commits the command actually wrote.
 
 guard_commit_body() {
   local input="$1"

@@ -285,6 +285,23 @@ dd_is_git_commit_command() {
   [[ "$stripped" =~ (^|[^A-Za-z0-9_/.-])git[[:space:]]+commit($|[[:space:]]) ]]
 }
 
+# allow-comment: dd_is_commit_graph_writer <bash-command> is true for any git
+# allow-comment: command that can create or rewrite commit objects (commit,
+# allow-comment: rebase, cherry-pick, revert, merge, am). The PreToolUse path
+# allow-comment: snapshots HEAD before such a command and the PostToolUse path
+# allow-comment: validates the commits it wrote; a read-only subcommand never
+# allow-comment: matches and an --abort that writes nothing matches harmlessly
+# allow-comment: because the post-tool range then resolves empty.
+dd_is_commit_graph_writer() {
+  local command="$1"
+  dd_is_git_commit_command "$command" && return 0
+  local stripped
+  stripped=$(dd_strip_commit_message "$command")
+  local pre='(^|[[:space:];&|(])'
+  local opts='((-[^[:space:]]+)([[:space:]]+[^-][^[:space:]]*)?[[:space:]]+)*'
+  [[ "$stripped" =~ ${pre}git[[:space:]]+${opts}(rebase|cherry-pick|revert|merge|am)([[:space:]]|$) ]]
+}
+
 dd_is_git_push_command() {
   local command="$1"
   local stripped

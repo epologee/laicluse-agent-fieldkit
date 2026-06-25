@@ -72,7 +72,7 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
 - **commit-discipline** is the canonical reference for the body schema,
   error-codes, opt-out enum, and escape-hatches.
 - **install-hooks** copies the git-native `commit-msg`, `prepare-commit-msg`,
-  `post-commit`, and `pre-push` hooks into the current repo so commits
+  `post-commit`, `post-rewrite`, and `pre-push` hooks into the current repo so commits
   made outside Claude Code still get validated. `--force` overwrites
   existing hooks (a backup is taken automatically); `--dry-run` previews.
 - **run-spec** runs a single test/spec file through the project's
@@ -113,8 +113,10 @@ PreToolUse:Bash dispatcher chain (`hooks/dispatch.sh`):
 | `commit-format.sh` | `git commit` | editor-mode commits without `-m` |
 | `commit-subject.sh` | `git commit -m` | subjects past 50/72, lowercase first, trailing period |
 | `commit-body.sh` | `git commit -m` | bodies that fail `validate-body.sh` |
+| `commit-body-posttool.sh` | PostToolUse, any commit-graph writer (commit/rebase/cherry-pick/revert/merge/am) | bodies of the commits the command wrote (rebase/cherry-pick/merge/amend paths the string parser cannot see) |
 | `commit-trailers.sh` | `git commit -m` | `Co-Authored-By:` with `@anthropic.com` email |
 | `push-wip-gate.sh` | `git push` | push range containing a `Slice: wip` commit |
+| `push-body-gate.sh` | `git push` | push range containing a body that fails `validate-body.sh` |
 
 Git-native hooks (installed per-repo via `/git-discipline:install-hooks`,
 sourced from `skills/commit-discipline/git-hooks/`):
@@ -124,7 +126,8 @@ sourced from `skills/commit-discipline/git-hooks/`):
 | `commit-msg` | runs `validate-body.sh` on every non-Claude commit |
 | `prepare-commit-msg` | pre-fills the editor with a layer-classified template |
 | `post-commit` | logs `--no-verify` usage to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` |
-| `pre-push` | re-runs the wip-gate on the push range |
+| `post-rewrite` | validates rebase/amend-rewritten bodies; warns and logs (git ignores its exit status) since `commit-msg` does not fire on rebase-picked commits |
+| `pre-push` | re-runs the wip-gate and validates each body on the push range |
 
 Both layers source the same `hooks/lib/validate-body.sh`, so behavior never
 diverges between Claude-driven and CLI-driven commits.

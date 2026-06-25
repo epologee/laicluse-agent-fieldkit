@@ -45,9 +45,23 @@ fi
 # shellcheck disable=SC1090
 . "$LIB"
 
+# allow-comment: the body validator is the same lib the commit-msg hook and the
+# allow-comment: Claude push-body-gate use; sourcing it here gives Codex/CLI
+# allow-comment: pushes the body gate Claude already had. Soft-fail when missing
+# allow-comment: (older install) so the wip-gate still runs.
+VALIDATOR="$PLUGIN_PATH/hooks/lib/validate-body.sh"
+have_body_validator=0
+if [[ -f "$VALIDATOR" ]]; then
+  # shellcheck disable=SC1090
+  . "$VALIDATOR"
+  have_body_validator=1
+fi
+me=$(git config user.email 2>/dev/null || true)
+
 zero_sha="0000000000000000000000000000000000000000"
 
 all_wip=""
+all_body=""
 seen_branch=""
 
 while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
@@ -71,7 +85,30 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       all_wip="$all_wip"$'\n'"$wip"
     fi
   fi
+
+  if [[ "$have_body_validator" -eq 1 ]]; then
+    while IFS= read -r bsha; do
+      [[ -z "$bsha" ]] && continue
+      wip_gate_commit_is_ours "$bsha" "$me" || continue
+      if bline=$(vb_validate_commit "$bsha"); then
+        continue
+      fi
+      bsub=$(git log -1 --pretty=format:%s "$bsha" 2>/dev/null || true)
+      bshort=$(git rev-parse --short "$bsha" 2>/dev/null || printf '%s' "${bsha:0:7}")
+      all_body="$all_body"$'\n'"  $bshort \"$bsub\": $bline"
+    done < <(git rev-list "$range" 2>/dev/null || true)
+  fi
 done
+
+if [[ -n "$all_body" ]]; then
+  {
+    printf '\n[git-discipline/pre-push] Body schema misses in push range:'
+    printf '%s\n' "$all_body"
+    printf '\nAmend or rebase each commit to fix the body, then retry push.\n'
+    printf 'Use git push --no-verify (logged) only as an emergency bypass.\n'
+  } >&2
+  exit 1
+fi
 
 # No wip commits -> let the push through.
 if [[ -z "$all_wip" ]]; then

@@ -30,6 +30,19 @@ Claude Code does not offer a native PreCommit lifecycle event
 (https://github.com/anthropics/claude-code/issues/4834, closed not planned),
 so the two-layer architecture is final, not provisional.
 
+Each layer has a creation-time guard plus a backstop for commits that guard
+cannot see. The PreToolUse guard only parses a body out of a direct
+`git commit -m`/heredoc command string, so a commit a `git rebase`,
+`git cherry-pick`, `git merge --continue`, or `git commit --amend` wrote leaves
+no parseable string. A PostToolUse net (`commit-body-posttool`) covers those by
+validating the commits the command actually wrote and blocking so the body is
+fixed at creation time. On the git-native side, `commit-msg` does not fire on
+rebase-picked commits, so a `post-rewrite` hook validates rewritten bodies
+(warn + log only, because git ignores its exit status) and `pre-push` runs the
+same body validation over the push range as the last gate. The point of the
+PostToolUse and git-native backstops is that a repo without a remote never
+reaches a push gate, so every commit must be clean at creation time.
+
 ## Quick reference for AI: pass the gate in one attempt
 
 Sessions that come in cold burn many turns rediscovering the same shape of

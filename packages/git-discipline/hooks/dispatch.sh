@@ -43,6 +43,14 @@ case "$EVENT" in
 
     source "$DIR/lib/validate-body.sh"
     source "$DIR/lib/example-synth.sh"
+
+    # allow-comment: snapshot HEAD before any commit-graph writer runs so the
+    # allow-comment: PostToolUse commit-body net can validate exactly the commits
+    # allow-comment: this command writes, including the rebase/cherry-pick/merge/
+    # allow-comment: amend paths the PreToolUse string-parsing guard cannot see.
+    source "$DIR/guards/commit-body-posttool.sh"
+    commit_body_snapshot_head "$INPUT"
+
     source "$DIR/guards/git-first-contact.sh"
     guard_git_first_contact "$INPUT"
 
@@ -88,6 +96,18 @@ case "$EVENT" in
 
     source "$DIR/guards/commit-subject.sh"
     guard_commit_subject_posttool "$INPUT"
+
+    # allow-comment: validate the bodies of commits a commit-graph writer just
+    # allow-comment: wrote (rebase/cherry-pick/merge/amend); the shared
+    # allow-comment: vb_validate_commit and wip-gate ours filter keep the verdict
+    # allow-comment: identical to push-body-gate. Blocks via exit 2 so the body is
+    # allow-comment: fixed at creation time, before any push (remote-less repos
+    # allow-comment: never reach the push gate).
+    dd_cd_to_bash_target "$INPUT"
+    source "$DIR/lib/validate-body.sh"
+    source "$DIR/lib/wip-gate.sh"
+    source "$DIR/guards/commit-body-posttool.sh"
+    guard_commit_body_posttool "$INPUT"
     ;;
 esac
 

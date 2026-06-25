@@ -6,18 +6,19 @@ description: >-
 
 # Install Hooks
 
-Place git-discipline's four git-native hooks into the current repo, so commits
+Place git-discipline's git-native hooks into the current repo, so commits
 and pushes made outside Claude Code's PreToolUse layer are also guarded. In
 Codex, these git-native hooks are the enforcement layer.
 
-The four hooks:
+The hooks:
 
 | Hook | Purpose |
 |------|---------|
 | `commit-msg` | Validates the commit message against `validate-body.sh` (the same lib as the PreToolUse guard). |
 | `prepare-commit-msg` | Pre-fills the editor window with a structured body template based on the staged diff. |
 | `post-commit` | Detects `--no-verify` usage and logs it to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log`. |
-| `pre-push` | Re-runs the wip-gate on the push range: commits with `Slice: wip` are blocked. |
+| `post-rewrite` | Runs after `git rebase` and `git commit --amend` and validates each rewritten body. git ignores its exit status, so it warns and logs to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-post-rewrite.log` rather than blocking; `pre-push` is the blocking gate for these commits. It exists because `commit-msg` does not fire on rebase-picked commits. |
+| `pre-push` | Blocks the push when any commit in the range carries `Slice: wip` (wip-gate) or a body that fails `validate-body.sh`. The body check mirrors the Claude-side push-body-gate so CLI/Codex pushes reach the same verdict. |
 
 ## Why
 

@@ -1,0 +1,62 @@
+#!/bin/bash
+# packages/git-discipline/skills/commit-discipline/git-hooks/post-rewrite
+#
+# git-native post-rewrite hook. git runs it after `git rebase` and after
+# `git commit --amend`, passing the trigger ("rebase"/"amend") as $1 and a list
+# of "<old-sha> <new-sha>" pairs on stdin. It validates each rewritten body
+# against the shared validate-body.sh and warns + logs on a miss.
+#
+# IMPORTANT: git IGNORES this hook's exit status, so it can never block a
+# rewrite. It is observability only. The real git-native body gate for these
+# paths is pre-push (body validation over the push range); the real creation-time
+# block for Claude sessions is the PostToolUse commit-body net. This hook exists
+# so a rewritten body that escapes both (a rebase in a remote-less repo driven
+# outside Claude) is at least surfaced and recorded for the audit log.
+#
+# At install time /git-discipline:install-hooks substitutes __PLUGIN_INSTALL_PATH__.
+
+set -uo pipefail
+
+PLUGIN_PATH="__PLUGIN_INSTALL_PATH__"
+VALIDATOR="$PLUGIN_PATH/hooks/lib/validate-body.sh"
+WIP_LIB="$PLUGIN_PATH/hooks/lib/wip-gate.sh"
+
+[[ -f "$VALIDATOR" ]] || exit 0
+[[ -f "$WIP_LIB" ]] || exit 0
+
+# shellcheck disable=SC1090
+. "$VALIDATOR"
+# shellcheck disable=SC1090
+. "$WIP_LIB"
+
+me=$(git config user.email 2>/dev/null || true)
+
+log_dir="${LAICLUSE_HOME:-$HOME/.laicluse}/git-discipline"
+log_file="$log_dir/git-discipline-post-rewrite.log"
+mkdir -p "$log_dir" 2>/dev/null || true
+
+misses=""
+while IFS=' ' read -r old_sha new_sha _rest; do
+  [[ -z "$new_sha" ]] && continue
+  wip_gate_commit_is_ours "$new_sha" "$me" || continue
+  if line=$(vb_validate_commit "$new_sha"); then
+    continue
+  fi
+  short=$(git rev-parse --short "$new_sha" 2>/dev/null || printf '%s' "${new_sha:0:7}")
+  sub=$(git log -1 --pretty=format:%s "$new_sha" 2>/dev/null || true)
+  misses="$misses"$'\n'"  $short \"$sub\": $line"
+  ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || printf 'unknown')
+  printf '%s|%s|%s|%s\n' "$ts" "${1:-rewrite}" "$short" "$line" >> "$log_file" 2>/dev/null || true
+done
+
+if [[ -n "$misses" ]]; then
+  {
+    printf '\n[git-discipline/post-rewrite] Rewritten commit bodies fall short of the schema:'
+    printf '%s\n' "$misses"
+    printf '\nThis is a warning (git ignores post-rewrite exit status). Fix with\n'
+    printf 'git commit --amend or a message-only rebase before you push; pre-push\n'
+    printf 'will block the push otherwise.\n'
+  } >&2
+fi
+
+exit 0

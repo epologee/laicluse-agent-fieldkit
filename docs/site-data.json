@@ -35,7 +35,7 @@
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 17,
 		"skillEntries": 69,
-		"hookFiles": 53
+		"hookFiles": 54
 	},
 	"install": {
 		"claude": [
@@ -165,7 +165,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.35",
+			"version": "2.0.36",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -177,7 +177,7 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/git-discipline",
 			"skillCount": 13,
 			"commandCount": 2,
-			"hookFileCount": 25,
+			"hookFileCount": 26,
 			"latestChange": {
 				"version": "v2.0.32",
 				"type": "Changed",
@@ -439,7 +439,7 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.35",
+			"packageVersion": "2.0.36",
 			"version": "v2.0.32",
 			"type": "Changed",
 			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",

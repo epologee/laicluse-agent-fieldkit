@@ -1,5 +1,5 @@
 #!/bin/bash
-# allow-comment: PreToolUse:Bash safety net that validates every commit body in the push range against validate_body and denies the push when one or more commits fall short. The companion to PostToolUse commit-body: PostToolUse stays silent during local iteration, push-body-gate is the loud final gate before commits leave the machine.
+# allow-comment: PreToolUse:Bash safety net that validates every commit body in the push range against validate_body (via the shared vb_validate_commit) and denies the push when one or more commits fall short. Layered with two earlier nets that share the same validator: PreToolUse commit-body blocks a malformed direct `git commit` before it lands, and PostToolUse commit-body catches a malformed body that any commit-graph writer (rebase, cherry-pick, -F, editor, amend) wrote without a direct `git commit` string. push-body-gate stays as the last gate before commits leave the machine, for the case where an earlier net was bypassed or never saw the commit.
 
 guard_push_body_gate() {
   local input="$1"
@@ -29,7 +29,7 @@ guard_push_body_gate() {
   me=$(git config user.email 2>/dev/null || true)
 
   local violations=()
-  local sha message subject tmpfile output rc shortstat file_count insertion_count
+  local sha subject line short_sha
   while IFS= read -r sha; do
     [[ -z "$sha" ]] && continue
 
@@ -38,40 +38,16 @@ guard_push_body_gate() {
     # allow-comment: commits swept in by a rebase are never demanded a body.
     wip_gate_commit_is_ours "$sha" "$me" || continue
 
-    message=$(git log -1 --pretty=format:%B "$sha" 2>/dev/null || true)
-    [[ -z "$message" ]] && continue
-
-    subject=$(printf '%s' "$message" | head -1)
-    if validate_body_classify_skip "$subject"; then
+    # allow-comment: vb_validate_commit is the shared per-commit body check
+    # allow-comment: (validate-body.sh); push-body-gate, the PostToolUse net, and
+    # allow-comment: the git-native pre-push hook all route through it so the
+    # allow-comment: verdict can never drift between layers.
+    if line=$(vb_validate_commit "$sha"); then
       continue
     fi
-
-    shortstat=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" _vb_delta_shortstat)
-    file_count=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" _vb_delta_files | grep -c . | tr -d ' ')
-    insertion_count=0
-    if [[ "$shortstat" =~ ([0-9]+)[[:space:]]+insertion ]]; then
-      insertion_count="${BASH_REMATCH[1]}"
-    fi
-    # allow-comment: trivial-ok travels as an inline env-var on the validator
-    # allow-comment: call rather than an exported global; no per-iteration
-    # allow-comment: cleanup needed because the scope ends with the $() subshell.
-    local trivial_ok=0
-    if [[ "$file_count" -le 1 && "$insertion_count" -le 5 ]]; then
-      trivial_ok=1
-    fi
-
-    tmpfile=$(mktemp /tmp/git-discipline-push-body-XXXXXX)
-    printf '%s' "$message" > "$tmpfile"
-    output=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" GIT_DISCIPLINE_TRIVIAL_OK="$trivial_ok" validate_body "$tmpfile" 2>&1)
-    rc=$?
-    rm -f "$tmpfile"
-
-    if [[ "$rc" -eq 1 ]]; then
-      local short_sha line
-      short_sha=$(git rev-parse --short "$sha" 2>/dev/null || printf '%s' "${sha:0:7}")
-      line=$(printf '%s' "$output" | head -1)
-      violations+=("${short_sha} \"${subject}\": ${line}")
-    fi
+    subject=$(git log -1 --pretty=format:%s "$sha" 2>/dev/null || true)
+    short_sha=$(git rev-parse --short "$sha" 2>/dev/null || printf '%s' "${sha:0:7}")
+    violations+=("${short_sha} \"${subject}\": ${line}")
   done <<< "$commits"
 
   [[ ${#violations[@]} -eq 0 ]] && return 0
