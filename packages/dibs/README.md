@@ -28,7 +28,8 @@ key.
   (`held-by-self`), or on taking over a stale lock whose holder pid is dead
   (`took-over-stale`). Exits non-zero and reports the holder when a live holder
   exists. A refused claim also suggests creating a separate git worktree on a
-  new branch and claiming that worktree path.
+  new branch (for example with `bonsai:bonsai`, or plain `git worktree` if you
+  do not have it) and claiming that worktree path.
 - **release** deletes the lock only if you are the holder. Releasing a lock held
   by another is refused; releasing an unheld directory is a no-op.
 - **check** reports `free`, or the holder with its liveness and staleness.

@@ -173,7 +173,7 @@ occ_holder_line() {
 }
 
 occ_refusal_suggestion() {
-  jq -r '.suggestion // "Create a separate git worktree on a new branch, then claim that worktree path."' 2>/dev/null
+  jq -r '.suggestion // "Create a separate git worktree on a new branch (for example with bonsai:bonsai, or plain git worktree if you do not have it), then claim that worktree path."' 2>/dev/null
 }
 
 occ_claim_output() {

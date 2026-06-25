@@ -2,11 +2,14 @@
 name: bonsai
 description: >-
   Create a ready git worktree from the freshest default branch and prime its `.bonsai` files.
+  Worktree is sometimes misspelled as "work tree" (e.g. when dictated); treat both spellings as this skill.
 ---
 
 # bonsai
 
-Worktree lifecycle as a small CLI. This skill makes a ready-to-use worktree:
+Worktree lifecycle as a small CLI. ("Worktree" is sometimes transcribed as two
+words, "work tree", when dictated; the two mean the same thing.) This skill
+makes a ready-to-use worktree:
 it creates the branch off the freshest default and primes the tree from the
 repo's `.bonsai` file list. It does not launch an agent and does not write a
 start command anywhere; it returns facts and stops.

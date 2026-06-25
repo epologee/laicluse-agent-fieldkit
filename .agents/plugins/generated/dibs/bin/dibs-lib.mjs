@@ -7,7 +7,8 @@ const MAX_CLAIM_ATTEMPTS = 3;
 const STABLE_READ_TRIES = 10;
 const STABLE_READ_SLEEP_MS = 15;
 export const BLOCKED_DIRECTORY_SUGGESTION = [
-  'Create a separate git worktree on a new branch,',
+  'Create a separate git worktree on a new branch',
+  '(for example with bonsai:bonsai, or plain git worktree if you do not have it),',
   'then claim that worktree path.',
 ].join(' ');
 

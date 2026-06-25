@@ -102,7 +102,7 @@
 		},
 		{
 			"name": "bonsai",
-			"version": "2.0.25",
+			"version": "2.0.26",
 			"category": "workflow",
 			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
 			"support": [
@@ -123,7 +123,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.21",
+			"version": "2.0.22",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -455,7 +455,7 @@
 		},
 		{
 			"plugin": "bonsai",
-			"packageVersion": "2.0.25",
+			"packageVersion": "2.0.26",
 			"version": "v2.0.21",
 			"type": "Fixed",
 			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",
@@ -471,7 +471,7 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.21",
+			"packageVersion": "2.0.22",
 			"version": "v2.0.20",
 			"type": "Changed",
 			"summary": "Occupancy starts at the first write, not session start.",
