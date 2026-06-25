@@ -1,0 +1,108 @@
+#!/bin/bash
+set -euo pipefail
+
+DATA_DIR="${LAICLUSE_HOME:-$HOME/.laicluse}/saysay"
+DICTIONARY="$DATA_DIR/phonetics.json"
+LEGACY_DICTIONARY="${XDG_DATA_HOME:-$HOME/.local/share}/saysay/phonetics.json"
+
+to_lower() {
+  echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+
+ensure_dictionary() {
+  # Migrate a pre-laicluse phonetics dictionary into the new root once.
+  if [ ! -f "$DICTIONARY" ] && [ -f "$LEGACY_DICTIONARY" ]; then
+    mkdir -p "$DATA_DIR"
+    mv "$LEGACY_DICTIONARY" "$DICTIONARY"
+  fi
+  if [ ! -f "$DICTIONARY" ]; then
+    mkdir -p "$DATA_DIR"
+    echo '{}' > "$DICTIONARY"
+  fi
+}
+
+usage() {
+  echo "Usage: say-phonetic <command> [args]"
+  echo ""
+  echo "Commands:"
+  echo "  add <word> <phonetic>   Add a phonetic mapping"
+  echo "  remove <word>           Remove a phonetic mapping"
+  echo "  list                    Show all mappings"
+  exit 1
+}
+
+cmd_add() {
+  local word
+  word=$(to_lower "$1")
+  local phonetic="$2"
+
+  if [ -z "$word" ] || [ -z "$phonetic" ]; then
+    echo "Error: word and phonetic value cannot be empty" >&2
+    exit 1
+  fi
+
+  ensure_dictionary
+
+  local tmp="${DICTIONARY}.tmp"
+  jq --arg w "$word" --arg p "$phonetic" '.[$w] = $p' "$DICTIONARY" > "$tmp"
+  mv "$tmp" "$DICTIONARY"
+  echo "Added: $word → $phonetic" >&2
+}
+
+cmd_remove() {
+  local word
+  word=$(to_lower "$1")
+  ensure_dictionary
+
+  if ! jq -e --arg w "$word" 'has($w)' "$DICTIONARY" > /dev/null 2>&1; then
+    echo "Error: '$word' not in dictionary" >&2
+    exit 1
+  fi
+
+  local tmp="${DICTIONARY}.tmp"
+  jq --arg w "$word" 'del(.[$w])' "$DICTIONARY" > "$tmp"
+  mv "$tmp" "$DICTIONARY"
+  echo "Removed: $word" >&2
+}
+
+cmd_list() {
+  ensure_dictionary
+
+  local count
+  count=$(jq 'length' "$DICTIONARY")
+
+  if [ "$count" -eq 0 ]; then
+    echo "Dictionary is empty" >&2
+    return
+  fi
+
+  jq -r 'to_entries | sort_by(.key)[] | "\(.key) → \(.value)"' "$DICTIONARY"
+}
+
+
+if [ $# -lt 1 ]; then
+  usage
+fi
+
+command="$1"
+shift
+
+case "$command" in
+  add)
+    if [ $# -lt 2 ]; then
+      echo "Usage: say-phonetic add <word> <phonetic>" >&2
+      exit 1
+    fi
+    cmd_add "$1" "$2"
+    ;;
+  remove)
+    if [ $# -lt 1 ]; then
+      echo "Usage: say-phonetic remove <word>" >&2
+      exit 1
+    fi
+    cmd_remove "$1"
+    ;;
+  list)    cmd_list ;;
+  *)       usage ;;
+esac

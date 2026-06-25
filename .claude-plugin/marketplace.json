@@ -91,6 +91,11 @@
       "name": "lifeline",
       "description": "Reach outside your own head when you are unsure: research what others did before you commit (inspire), and verify your own claims against external sources when challenged (ground). Two lifelines for the moment your own certainty runs out. Skills: inspire, ground.",
       "source": "./packages/lifeline"
+    },
+    {
+      "name": "saysay",
+      "description": "Speech mode for macOS: the agent speaks every response aloud through the `say` command, translating screen content into spoken language instead of reading it out verbatim. /saysay toggles it on, /saysay off exits. Ships a per-user phonetic dictionary plus serialized, ducked playback so parallel sessions speak one after another.",
+      "source": "./packages/saysay"
     }
   ]
 }

@@ -1,0 +1,225 @@
+#!/bin/bash
+set -euo pipefail
+
+DATA_DIR="${LAICLUSE_HOME:-$HOME/.laicluse}/saysay"
+DICTIONARY="$DATA_DIR/phonetics.json"
+LEGACY_DICTIONARY="${XDG_DATA_HOME:-$HOME/.local/share}/saysay/phonetics.json"
+LOCKFILE="/tmp/saysay.lock"
+DUCK_DIR="/tmp/saysay-duck"
+DUCK_LOCK="/tmp/saysay-duck.lock"
+CHIME="/System/Library/Sounds/Pop.aiff"
+DEFAULT_RATE=240
+
+# Migrate a pre-laicluse phonetics dictionary into the new root once.
+if [ ! -f "$DICTIONARY" ] && [ -f "$LEGACY_DICTIONARY" ]; then
+  mkdir -p "$DATA_DIR"
+  mv "$LEGACY_DICTIONARY" "$DICTIONARY"
+fi
+
+rate="$DEFAULT_RATE"
+no_context="${SAYSAY_NO_CONTEXT:-}"
+explicit_context=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -r)
+      rate="${2:?Error: -r requires a numeric value}"
+      shift 2
+      ;;
+    --context)
+      explicit_context="${2:?Error: --context requires a value}"
+      shift 2
+      ;;
+    --no-context)
+      no_context=1
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+dict_args=""
+if [ -f "$DICTIONARY" ]; then
+  dict_args="$DICTIONARY"
+fi
+
+input=$(cat)
+
+# Detect project context: --context flag > git fallback > directory name
+context=""
+if [ -n "$explicit_context" ]; then
+  context="$explicit_context"
+elif [ -z "$no_context" ]; then
+  remote=$(git remote get-url origin 2>/dev/null || true)
+  if [ -n "$remote" ]; then
+    clean=$(echo "$remote" | sed -E 's/\.git$//' | sed -E 's#.*[:/]([^/]+)/([^/]+)$#\1/\2#')
+    org=$(echo "$clean" | cut -d/ -f1)
+    repo=$(echo "$clean" | cut -d/ -f2)
+    branch=$(git branch --show-current 2>/dev/null || true)
+
+    if [ -n "$branch" ] && [ "$branch" != "main" ] && [ "$branch" != "master" ]; then
+      label=$(echo "$branch" | sed -E 's/[-_]take[0-9]+([-_]take[0-9]+)*$//' | tr -- '-_' '  ')
+    else
+      label="$repo"
+    fi
+
+    if [ "$repo" = "$org" ] && [ "$label" = "$repo" ]; then
+      context="$org"
+    else
+      context="$org $label"
+    fi
+  else
+    toplevel=$(git rev-parse --show-toplevel 2>/dev/null || true)
+    if [ -n "$toplevel" ]; then
+      context=$(basename "$toplevel")
+    else
+      context=$(basename "$(pwd)")
+    fi
+  fi
+  # Fallback: truncate to max 2 words
+  context=$(echo "$context" | awk '{print $1, $2}' | sed 's/ *$//')
+fi
+
+SAYSAY_TEXT="$input" SAYSAY_CONTEXT="$context" \
+perl -CSD - "$rate" "$LOCKFILE" "$DUCK_DIR" "$DUCK_LOCK" "$dict_args" "$CHIME" <<'PERL'
+use strict;
+use warnings;
+use Fcntl qw(:flock);
+use Encode qw(decode);
+use POSIX qw(setsid);
+use File::Path qw(make_path);
+
+my ($rate, $lockfile, $duck_dir, $duck_lock, $dict_path, $chime) = @ARGV;
+
+my $has_duck = !system("shortcuts list 2>/dev/null | grep -q 'Saysay Duck'");
+
+my %dict;
+if ($dict_path && -f $dict_path) {
+    require JSON::PP;
+    open(my $fh, "<:encoding(UTF-8)", $dict_path)
+        or die "Cannot read dictionary: $!";
+    my $json = do { local $/; <$fh> };
+    close($fh);
+    %dict = %{ JSON::PP->new->utf8(0)->decode($json) };
+}
+
+my $text = decode('UTF-8', $ENV{SAYSAY_TEXT});
+my $context = $ENV{SAYSAY_CONTEXT} // "";
+
+if ($context) {
+    $text = "$context, $text";
+}
+
+$text =~ s/_/ /g;
+for my $word (keys %dict) {
+    my $replacement = $dict{$word};
+    my $escaped = quotemeta($word);
+    $text =~ s/\b$escaped\b/$replacement/gi;
+}
+
+$text =~ s/[\x{e9}\x{e8}]/e/g;
+$text =~ s/[\x{c9}\x{c8}]/E/g;
+$text =~ s/[\x{e1}\x{e0}]/a/g;
+$text =~ s/[\x{c1}\x{c0}]/A/g;
+$text =~ s/[\x{f3}\x{f2}]/o/g;
+$text =~ s/[\x{d3}\x{d2}]/O/g;
+$text =~ s/[\x{fa}\x{f9}]/u/g;
+$text =~ s/[\x{da}\x{d9}]/U/g;
+$text =~ s/[\x{ed}\x{ec}]/i/g;
+$text =~ s/[\x{cd}\x{cc}]/I/g;
+
+my $trimmed = $text;
+$trimmed =~ s/^\s+|\s+$//g;
+exit 0 unless length($trimmed);
+
+# --- Duck helpers: PID-based retain count ---
+# Only the first active speaker ducks, only the last unducks.
+# Dead PIDs are cleaned up on each call, so crashes self-heal.
+
+sub cleanup_and_count {
+    make_path($duck_dir) unless -d $duck_dir;
+    opendir(my $dh, $duck_dir) or return 0;
+    my @files = grep { /^\d+$/ } readdir($dh);
+    closedir($dh);
+
+    my $active = 0;
+    for my $f (@files) {
+        if (kill(0, int($f))) {
+            $active++;
+        } else {
+            unlink("$duck_dir/$f");
+        }
+    }
+    return $active;
+}
+
+sub duck_register {
+    open(my $lk, ">", $duck_lock) or return 0;
+    flock($lk, LOCK_EX);
+
+    my $active = cleanup_and_count();
+
+    open(my $pf, ">", "$duck_dir/$$") or do { close($lk); return 0 };
+    close($pf);
+
+    close($lk);
+    return $active == 0;
+}
+
+sub duck_start {
+    system("shortcuts", "run", "Saysay Duck");
+}
+
+sub unduck_release {
+    open(my $lk, ">", $duck_lock) or return;
+    flock($lk, LOCK_EX);
+
+    unlink("$duck_dir/$$");
+    my $active = cleanup_and_count();
+
+    if ($active == 0) {
+        system("shortcuts", "run", "Saysay Unduck");
+    }
+
+    close($lk);
+}
+
+# --- Fork speaker: survives parent death ---
+
+my $pid = fork();
+die "Cannot fork: $!" unless defined $pid;
+
+if ($pid == 0) {
+    setsid();
+
+    my $should_duck = 0;
+    $should_duck = duck_register() if $has_duck;
+
+    open(my $lock, ">", $lockfile) or exit 1;
+    flock($lock, LOCK_EX);
+
+    my $audiofile = "/tmp/saysay-$$.aiff";
+    open(my $render, "|-", "say", "-r", $rate, "-o", $audiofile) or exit 1;
+    print $render $text;
+    close($render);
+
+    duck_start() if $should_duck;
+
+    system("afplay", $audiofile);
+    unlink($audiofile);
+
+    unduck_release() if $has_duck;
+
+    if ($chime && -f $chime) {
+        system("afplay", "-v", "0.5", $chime);
+    }
+
+    close($lock);
+
+    exit 0;
+}
+
+waitpid($pid, 0);
+PERL

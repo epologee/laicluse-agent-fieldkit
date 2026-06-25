@@ -30,11 +30,11 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 17,
-		"codexPackages": 16,
+		"sourcePackages": 18,
+		"codexPackages": 17,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 17,
-		"skillEntries": 69,
+		"changelogEntries": 18,
+		"skillEntries": 70,
 		"hookFiles": 54
 	},
 	"install": {
@@ -56,7 +56,8 @@
 			"claude plugins install rover@laicluse-agent-fieldkit",
 			"claude plugins install house-rules@laicluse-agent-fieldkit",
 			"claude plugins install whywhy@laicluse-agent-fieldkit",
-			"claude plugins install lifeline@laicluse-agent-fieldkit"
+			"claude plugins install lifeline@laicluse-agent-fieldkit",
+			"claude plugins install saysay@laicluse-agent-fieldkit"
 		],
 		"codex": [
 			"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
@@ -75,7 +76,8 @@
 			"codex plugin add rover@laicluse-agent-fieldkit",
 			"codex plugin add house-rules@laicluse-agent-fieldkit",
 			"codex plugin add whywhy@laicluse-agent-fieldkit",
-			"codex plugin add lifeline@laicluse-agent-fieldkit"
+			"codex plugin add lifeline@laicluse-agent-fieldkit",
+			"codex plugin add saysay@laicluse-agent-fieldkit"
 		]
 	},
 	"plugins": [
@@ -434,6 +436,27 @@
 				"type": "Added",
 				"summary": "inspire and ground now ship together from the lifeline plugin."
 			}
+		},
+		{
+			"name": "saysay",
+			"version": "2.0.1",
+			"category": "feedback",
+			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"sourcePath": "packages/saysay",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/saysay",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Added",
+				"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace."
+			}
 		}
 	],
 	"changelog": [
@@ -572,6 +595,14 @@
 			"type": "Added",
 			"summary": "inspire and ground now ship together from the lifeline plugin.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
+		},
+		{
+			"plugin": "saysay",
+			"packageVersion": "2.0.1",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		}
 	]
 }
