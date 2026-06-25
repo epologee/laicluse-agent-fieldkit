@@ -411,7 +411,7 @@ to the rule, so looking it up forces one exposure per cycle.
 | 9 | `solist` | No Co-Authored-By from AI tooling unless asked. |
 | 10 | `incognito` | No 'Generated with Claude Code' footer. |
 | 11 | `loep` | Review the staged diff before commit; tool output is not evidence. |
-| 12 | `bewijsstuk` | Commit check is evidence (test ran, endpoint hit), not gut feel. |
+| 12 | `bewijsstuk` | Commit check is evidence you observed the real result (the test ran and covers this change; the endpoint was hit; the on-screen output was looked at), not a green build, gut feel, or a screenshot that merely exists. For visual work the evidence is the on-screen render; an offscreen capture can differ from what ships, so confirming a file exists is not the check. |
 | 13 | `kralen` | Never squash merge; preserve history. |
 | 14 | `voorwaarts` | Amend rewrites public history when the commit is already pushed: forbidden in that case. On unpushed commits amend is fine, including gate-mandated rewrites that `push-body-gate` asks for; the prohibition kicks in once the SHAs are public. |
 | 15 | `steiger` | No internal AI-tooling or process vocabulary in subject/body (skill names, phase terms, "after the panel reviewed", "consensus reached"). |

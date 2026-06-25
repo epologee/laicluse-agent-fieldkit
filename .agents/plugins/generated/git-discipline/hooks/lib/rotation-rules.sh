@@ -42,7 +42,7 @@ DD_RULE_ESSENCE=(
   "no Co-Authored-By from AI tooling unless asked"
   "no 'Generated with Claude Code' footer"
   "review the staged diff before commit; tool output is not evidence"
-  "commit check is evidence (test ran, endpoint hit), not gut feel"
+  "commit check is evidence you observed the real result, not a green build, gut feel, or a screenshot that merely exists; for visual work look at the on-screen render, an offscreen capture can differ from what ships"
   "preserve history; never squash merge"
   "amend forbidden on pushed commits (rewrites public history); fine on unpushed, including gate-mandated fixes"
   "no AI-tooling/process vocab in subject/body (skill names, phase terms, 'after the panel reviewed')"
