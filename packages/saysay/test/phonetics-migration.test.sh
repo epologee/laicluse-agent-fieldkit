@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="${SAYSAY_PLUGIN_ROOT:-$(git rev-parse --show-toplevel)}"
-SAY_PHONETIC="$ROOT/packages/saysay/skills/saysay/say-phonetic"
+SAY_PHONETIC="$ROOT/packages/saysay/bin/say-phonetic"
 
 fail() {
   printf 'saysay migration test failed: %s\n' "$1" >&2

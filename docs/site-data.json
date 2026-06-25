@@ -439,7 +439,7 @@
 		},
 		{
 			"name": "saysay",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "feedback",
 			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
 			"support": [
@@ -450,7 +450,7 @@
 			"sourcePath": "packages/saysay",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/saysay",
 			"skillCount": 1,
-			"commandCount": 1,
+			"commandCount": 3,
 			"hookFileCount": 0,
 			"latestChange": {
 				"version": "v2.0.1",
@@ -573,6 +573,14 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
 		},
 		{
+			"plugin": "saysay",
+			"packageVersion": "2.0.3",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
+		},
+		{
 			"plugin": "whywhy",
 			"packageVersion": "2.0.3",
 			"version": "v2.0.1",
@@ -587,14 +595,6 @@
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
-		},
-		{
-			"plugin": "saysay",
-			"packageVersion": "2.0.2",
-			"version": "v2.0.1",
-			"type": "Added",
-			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
 			"plugin": "lifeline",

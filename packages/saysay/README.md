@@ -16,20 +16,10 @@ Exit speech mode.
 
 ## Requirements
 
-macOS. Speech mode needs the macOS `say` binary plus two scripts shipped with
-the plugin (`saysay` and `say-phonetic`). Node.js on `$PATH` is needed for the
-post-update broadcast check (`bin/check-broadcast`). The marketplace is
-symlink-free to keep cross-platform consumers working, so put the scripts on
-`PATH` with `cp -f`:
-
-```bash
-SRC=$(jq -r '.plugins["saysay@laicluse-agent-fieldkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
-cp -f "$SRC/skills/saysay/saysay" /usr/local/bin/saysay
-cp -f "$SRC/skills/saysay/say-phonetic" /usr/local/bin/say-phonetic
-```
-
-Re-run after each `claude plugins update saysay@laicluse-agent-fieldkit` so
-the installed copies match the updated plugin.
+macOS, for the `say` binary. Node.js on `$PATH` for the post-update broadcast
+check (`bin/check-broadcast`). The `saysay` and `say-phonetic` commands ship in
+the plugin's `bin/` directory, which Claude Code and Codex add to `$PATH`
+automatically, so there is no manual install step.
 
 Optional: a "Saysay Duck" / "Saysay Unduck" pair of macOS Shortcuts lets
 saysay lower other audio while it speaks. When the shortcuts are absent,
