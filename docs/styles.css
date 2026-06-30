@@ -375,6 +375,7 @@ h3 {
 
 .section {
   padding: clamp(4rem, 8vw, 7rem) clamp(1rem, 4vw, 3rem);
+  scroll-margin-top: 7rem;
 }
 
 .section-heading {
@@ -645,6 +646,17 @@ h3 {
   margin-top: 1rem;
   color: var(--ink-strong);
   font-weight: 720;
+}
+
+.plugin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.plugin-actions .source-link {
+  margin-top: 0;
 }
 
 .empty-state,

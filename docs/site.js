@@ -196,7 +196,10 @@
 						`
 						: ""
 				}
-				<a class="source-link" href="${escapeHtml(plugin.sourceUrl)}">Package source</a>
+				<div class="plugin-actions">
+					<a class="source-link" href="${escapeHtml(plugin.detailPath)}">Details</a>
+					<a class="source-link" href="${escapeHtml(plugin.sourceUrl)}">Package source</a>
+				</div>
 			</article>
 		`;
 	}
