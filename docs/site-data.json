@@ -34,7 +34,7 @@
 		"codexPackages": 17,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 18,
-		"skillEntries": 70,
+		"skillEntries": 71,
 		"hookFiles": 54
 	},
 	"install": {
@@ -125,7 +125,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.22",
+			"version": "2.0.23",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -135,8 +135,8 @@
 			"codex": true,
 			"sourcePath": "packages/dibs",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs",
-			"skillCount": 1,
-			"commandCount": 2,
+			"skillCount": 2,
+			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
 				"version": "v2.0.20",
@@ -494,7 +494,7 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.22",
+			"packageVersion": "2.0.23",
 			"version": "v2.0.20",
 			"type": "Changed",
 			"summary": "Occupancy starts at the first write, not session start.",

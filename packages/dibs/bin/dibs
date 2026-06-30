@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { claim, release, check, formatHolder } from './dibs-lib.mjs';
+import { claim, release, releaseAll, check, formatHolder } from './dibs-lib.mjs';
 
 const USAGE = `usage: dibs <command> <dir> [options]
 
 commands:
   claim <dir>     take exclusive occupancy of a directory (refused if a live holder exists)
   release <dir>   release a directory you hold
+  release-all     release every lock this session holds, across all directories
+                  (selected by --pid / --session / --owner with --agent; no <dir>)
   check <dir>     report whether a directory is free or who holds it
 
 options:
@@ -55,7 +57,7 @@ function parse(args) {
   });
 }
 
-if (!['claim', 'release', 'check'].includes(command)) {
+if (!['claim', 'release', 'release-all', 'check'].includes(command)) {
   die(`unknown command: ${command}`);
 }
 
@@ -69,6 +71,25 @@ try {
 }
 wantJson = values.json;
 
+function emit(result, human, exitCode = 0) {
+  if (wantJson) console.log(JSON.stringify(result, null, 2));
+  else console.log(human);
+  process.exit(exitCode);
+}
+
+if (command === 'release-all') {
+  const sweepPid = values.pid !== undefined ? Number(values.pid) : undefined;
+  if (sweepPid !== undefined && (!Number.isInteger(sweepPid) || sweepPid <= 0)) die(`invalid --pid ${JSON.stringify(values.pid)}`);
+  try {
+    const result = releaseAll({ pid: sweepPid, session: values.session, owner: values.owner, agent: values.agent });
+    emit(result, result.count === 0
+      ? 'no locks held by this session; nothing to release'
+      : `released ${result.count} lock${result.count === 1 ? '' : 's'}:\n${result.released.map((r) => `  ${r.realpath}`).join('\n')}`);
+  } catch (err) {
+    die(err.message);
+  }
+}
+
 const dir = positionals[0];
 if (!dir) die(`${command} needs a directory path`);
 
@@ -77,12 +98,6 @@ if (!Number.isInteger(pid) || pid <= 0) die(`invalid --pid ${JSON.stringify(valu
 const maxAgeHours = values['max-age-hours'] !== undefined ? Number(values['max-age-hours']) : undefined;
 if (maxAgeHours !== undefined && (Number.isNaN(maxAgeHours) || maxAgeHours < 0)) {
   die(`invalid --max-age-hours ${JSON.stringify(values['max-age-hours'])}`);
-}
-
-function emit(result, human, exitCode = 0) {
-  if (wantJson) console.log(JSON.stringify(result, null, 2));
-  else console.log(human);
-  process.exit(exitCode);
 }
 
 function claimRefusalMessage(result) {

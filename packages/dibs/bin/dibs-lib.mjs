@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync, readFileSync, realpathSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, readdirSync, realpathSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir, hostname } from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
@@ -210,6 +210,33 @@ export function release({ dir, pid, nonce }) {
     return { ok: true, state: 'released', path, holder: existing };
   }
   return { ok: false, state: 'held-by-other', path, holder: existing };
+}
+
+// allow-comment: a lock identifies as the caller's when it lives on this host and matches any one stable session key. host-gated because pid/session ids carry no meaning across hosts.
+function recordMatchesSelector(record, { pid, session, owner, agent }) {
+  if (record.hostname !== hostname()) return false;
+  if (pid != null && record.pid === pid) return true;
+  if (session != null && record.session === session) return true;
+  if (owner != null && agent != null && record.owner === owner && record.agent === agent) return true;
+  return false;
+}
+
+export function releaseAll({ pid, session, owner, agent }) {
+  const selector = { pid, session, owner, agent };
+  const hasSelector = pid != null || session != null || (owner != null && agent != null);
+  if (!hasSelector) throw new Error('release-all needs a --pid, --session, or --owner with --agent to identify the locks to release');
+  const dir = locksDir();
+  const released = [];
+  if (!existsSync(dir)) return { ok: true, state: 'released-all', released, count: 0 };
+  for (const entry of readdirSync(dir)) {
+    if (!entry.endsWith('.lock')) continue;
+    const path = join(dir, entry);
+    const record = readRecordStable(path);
+    if (!record || !recordMatchesSelector(record, selector)) continue;
+    rmSync(path, { force: true });
+    released.push({ path, realpath: record.realpath, holder: record });
+  }
+  return { ok: true, state: 'released-all', released, count: released.length };
 }
 
 export function check({ dir, maxAgeHours }) {

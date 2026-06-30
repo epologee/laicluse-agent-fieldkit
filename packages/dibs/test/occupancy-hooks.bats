@@ -202,6 +202,20 @@ run_hook() {
   echo "$output" | grep -q '"state": "free"'
 }
 
+@test "SessionEnd sweeps every directory this session locked, not only cwd" {
+  local dir2="$BATS_TEST_TMPDIR/work2"
+  mkdir -p "$dir2"
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+  dibs claim "$dir2" --pid $$ --agent claude --session sess-1 >/dev/null
+  run_hook SessionEnd ""
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "free"'
+  run dibs check "$dir2" --json
+  echo "$output" | grep -q '"state": "free"'
+}
+
 @test "SessionEnd does not disturb a dir held by another agent" {
   sleep 60 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null

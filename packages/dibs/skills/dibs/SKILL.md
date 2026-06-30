@@ -42,9 +42,10 @@ DIBS="${DIBS_BIN:-$ROOT/bin/dibs}"
 ## Use the lock
 
 ```bash
-node "$DIBS" claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
-node "$DIBS" release <dir> [--pid <n>] [--json]
-node "$DIBS" check   <dir> [--max-age-hours <n>] [--json]
+node "$DIBS" claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
+node "$DIBS" release     <dir> [--pid <n>] [--json]
+node "$DIBS" release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
+node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
 ```
 
 - **claim** takes exclusive occupancy. It exits 0 when it claims a free
@@ -58,6 +59,12 @@ node "$DIBS" check   <dir> [--max-age-hours <n>] [--json]
 - **release** deletes the lock only if you are the holder; releasing a lock held
   by someone else is refused and exits non-zero, releasing an unheld directory
   is a no-op.
+- **release-all** releases every lock whose holder identifies as this session
+  (same host, matching `--pid` / `--session` / `--owner`+`--agent`) in one sweep,
+  across all directories. It takes no `<dir>` and needs at least one selector. A
+  session holds more than one lock when it edits files in several git roots, so
+  this is how the host's session-end and the `undibs` skill free all of them at
+  once; locks held by a *different* live agent are never touched.
 - **check** prints `free` or the holder plus its liveness and staleness.
 
 `release` is an explicit recovery/operator action, not normal end-of-task

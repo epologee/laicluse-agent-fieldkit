@@ -2,6 +2,8 @@
 # allow-comment: load-bearing contract. dibs occupancy enforcement: claim the working directory only at the first mutating file edit (PreToolUse), hard-deny that edit when a different live agent session already holds it, and release at SessionEnd (Claude only; Codex has no session-end event and relies on dibs pid-liveness self-heal). Read-only sessions never take occupancy and never get steered aside. No lock logic lives here; every verb shells out to this plugin's own dibs CLI. The decision is driven off `dibs claim --json` state, and the gate fails open on anything that is not a positive cross-session refusal, so a broken or missing lock never blocks an agent. Opt out per session with DIBS_OCCUPANCY=off.
 
 OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# allow-comment: load-bearing. Share one holder-pid walk with the undibs skill so claim and release agree on the recorded pid.
+. "$OCC_DIR/bin/holder-pid.sh"
 
 occ_event()   { jq -r '.hook_event_name // empty' <<< "$1" 2>/dev/null; }
 occ_tool()    { jq -r '.tool_name // empty' <<< "$1" 2>/dev/null; }
@@ -141,32 +143,8 @@ occ_legacy_codex_reclaim() {
   [ "$(occ_event "$input")" = "PreToolUse" ] || return 1
 }
 
-# allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. DIBS_HOLDER_PID overrides; else walk to the NEAREST claude/codex ancestor and stop there. Nearest, not topmost: a codex launched inside a Claude session (intervision, codex exec) sits below the Claude process, and topmost would climb past codex to the Claude pid that already holds the lock, so dibs would see held-by-self and wrongly allow. The nearest agent ancestor is this session's own long-lived process, stable across every PreToolUse and SessionEnd. Fall back to the start pid.
-occ_holder_pid() {
-  local start="${1:-$PPID}"
-  if [ -n "${DIBS_HOLDER_PID:-}" ] && [ "${DIBS_HOLDER_PID}" -gt 0 ] 2>/dev/null; then
-    printf '%s\n' "$DIBS_HOLDER_PID"
-    return 0
-  fi
-  local pid="$start" hops=0 comm parent match=""
-  while [ -n "$pid" ] && [ "$pid" -gt 1 ] 2>/dev/null && [ "$hops" -lt 30 ]; do
-    comm=$(ps -o comm= -p "$pid" 2>/dev/null)
-    case "$comm" in
-      *[Cc]laude*|*[Cc]odex*) match="$pid"; break ;;
-    esac
-    parent=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
-    [ -z "$parent" ] && break
-    pid="$parent"
-    hops=$((hops + 1))
-  done
-  if [ -n "$match" ]; then
-    printf '%s\n' "$match"
-  elif [ "$start" -gt 0 ] 2>/dev/null; then
-    printf '%s\n' "$start"
-  else
-    printf '%s\n' "$PPID"
-  fi
-}
+# allow-comment: load-bearing WHY. Record the long-lived agent process, never the ephemeral hook shell. The walk lives in bin/holder-pid.sh (shared with the undibs skill); occ_holder_pid keeps the hook-local name and contract. Nearest, not topmost: a codex nested in a Claude session must resolve to the codex, not climb past it to the Claude pid that already holds the lock.
+occ_holder_pid() { dibs_holder_pid "$@"; }
 
 occ_holder_line() {
   jq -r 'if .holder then "held by \(.holder.agent) (pid \(.holder.pid)) on \(.holder.hostname) since \(.holder.acquiredAt)" else "another live agent holds this directory" end' 2>/dev/null
@@ -224,14 +202,18 @@ occ_gate() {
   done <<< "$dirs"
 }
 
+# allow-comment: load-bearing. A session can claim more than one directory (occ_gate_dirs keys per git root of each edited file), so a single-dir release at SessionEnd would leak every non-cwd lock until pid-liveness self-heal. Sweep all of this session's locks by holder pid, plus owner/session when known.
 occ_release() {
-  local input="$1" dibs dir pid
+  local input="$1" dibs pid owner sid
   dibs="$(occ_dibs_bin)" || return 0
   command -v node >/dev/null 2>&1 || return 0
-  dir="$(occ_cwd "$input")"
-  [ -n "$dir" ] || return 0
   pid="$(occ_holder_pid "${OCC_PPID:-$PPID}")"
-  node "$dibs" release "$dir" --pid "$pid" >/dev/null 2>&1 || true
+  owner="$(occ_owner "$input")"
+  sid="$(occ_session "$input")"
+  set -- release-all --pid "$pid"
+  [ -n "$sid" ] && set -- "$@" --session "$sid"
+  [ -n "$owner" ] && set -- "$@" --owner "$owner" --agent "$(occ_agent_label)"
+  node "$dibs" "$@" >/dev/null 2>&1 || true
 }
 
 occ_dispatch() {

@@ -14,14 +14,17 @@ the directory it hands out; the lock logic lives in exactly one place.
 ## CLI
 
 ```
-dibs claim   <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
-dibs release <dir> [--pid <n>] [--nonce <hex>] [--json]
-dibs check   <dir> [--max-age-hours <n>] [--json]
+dibs claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
+dibs release     <dir> [--pid <n>] [--nonce <hex>] [--json]
+dibs release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
+dibs check       <dir> [--max-age-hours <n>] [--json]
 ```
 
-All three verbs require the directory to exist; the lock is keyed by its
-realpath, so a missing path is a clear error rather than a silently divergent
-key.
+The directory-keyed verbs (`claim`, `release`, `check`) require the directory to
+exist; the lock is keyed by its realpath, so a missing path is a clear error
+rather than a silently divergent key. `release-all` is the exception: it operates
+on the lock store directly, reading each lock's recorded realpath, so it still
+frees a worktree that has since been pruned.
 
 - **claim** takes exclusive occupancy of a directory keyed by its realpath.
   Exits 0 on a fresh claim, on an idempotent re-claim by the same holder
@@ -32,6 +35,13 @@ key.
   do not have it) and claiming that worktree path.
 - **release** deletes the lock only if you are the holder. Releasing a lock held
   by another is refused; releasing an unheld directory is a no-op.
+- **release-all** releases every lock whose holder identifies as the caller's
+  session in one sweep (same host, matching any of `--pid`, `--session`, or
+  `--owner` with `--agent`), across all directories. It takes no `<dir>` and
+  requires at least one selector so it can never blindly clear the whole store.
+  A session that edits files in several git roots holds several locks; this is
+  how SessionEnd and the `undibs` skill free all of them at once. Locks belonging
+  to a different live agent are never touched.
 - **check** reports `free`, or the holder with its liveness and staleness.
 
 `release` is for explicit recovery or operator-directed teardown. It is not
@@ -114,10 +124,12 @@ plugin's own CLI, so there is no second lock path.
   never self-locks the agent out. A legacy ownerless Codex resume is reclaimed
   at the first write. A free directory, a self-healed dead holder, and any
   non-refusal dibs result all pass (fail-open).
-- **SessionEnd** (Claude only) releases the directory. Codex has no session-end
-  event, so a Codex lock clears through pid-liveness self-heal on the next
-  claim, or through owner-based reclaim on a Codex resume, which is expected
-  rather than a leak.
+- **SessionEnd** (Claude only) releases every directory the session locked, not
+  just the cwd: it sweeps with `release-all` keyed by the session's holder pid,
+  so a session that edited several git roots leaves nothing locked behind. Codex
+  has no session-end event, so a Codex lock clears through pid-liveness self-heal
+  on the next claim, or through owner-based reclaim on a Codex resume, which is
+  expected rather than a leak.
 
 Shell (`Bash`) mutations are intentionally not gated; the git-native commit hook
 remains the backstop for those and for agents under bypassPermissions. Opt out
@@ -126,8 +138,8 @@ claim-at-handout is unaffected and complementary.
 
 ## Library
 
-`bin/dibs-lib.mjs` exports `claim`, `release`, `check`, and `formatHolder` as
-pure node ES modules with no third-party imports. Consumers in the same
+`bin/dibs-lib.mjs` exports `claim`, `release`, `releaseAll`, `check`, and
+`formatHolder` as pure node ES modules with no third-party imports. Consumers in the same
 marketplace import it directly so there is a single lock implementation and no
 parallel path:
 
