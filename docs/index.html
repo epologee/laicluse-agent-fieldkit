@@ -4,16 +4,14 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>l'Aicluse Agent Fieldkit</title>
-		<meta
-			name="description"
-			content="A public Claude Code and Codex plugin marketplace for agent guardrails, workflow discipline, peer review, autonomous work, feedback repair, and changelogs."
-		>
-		<link rel="canonical" href="https://laicluse.com/">
+		<meta name="description" content="A public Claude Code and Codex plugin marketplace for agent guardrails, workflow discipline, peer review, autonomous work, feedback repair, and changelogs.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/">
+		<meta http-equiv="refresh" content="0; url=/agent-fieldkit/">
 
 		<meta property="og:type" content="website">
 		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
 		<meta property="og:locale" content="en_US">
-		<meta property="og:url" content="https://laicluse.com/">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/">
 		<meta property="og:title" content="l'Aicluse Agent Fieldkit">
 		<meta property="og:description" content="A public Claude Code and Codex plugin marketplace for agent guardrails, workflow discipline, peer review, autonomous work, feedback repair, and changelogs.">
 		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
@@ -21,176 +19,24 @@
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
-		<meta property="og:image:alt" content="l'Aicluse Agent Fieldkit: guardrails for coding agents that touch real repositories.">
+		<meta property="og:image:alt" content="l&#39;Aicluse Agent Fieldkit: guardrails for coding agents that touch real repositories.">
 
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="l'Aicluse Agent Fieldkit">
 		<meta name="twitter:description" content="Guardrails for coding agents that touch real repositories. A public Claude Code and Codex plugin marketplace.">
 		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
-		<meta name="twitter:image:alt" content="l'Aicluse Agent Fieldkit share card">
+		<meta name="twitter:image:alt" content="l&#39;Aicluse Agent Fieldkit share card">
 
-		<link rel="stylesheet" href="styles.css">
+		<script>
+			(() => {
+				const target = new URL("/agent-fieldkit/", window.location.origin);
+				target.search = window.location.search;
+				target.hash = window.location.hash;
+				window.location.replace(target.href);
+			})();
+		</script>
 	</head>
 	<body>
-		<a class="skip-link" href="#content">Skip to content</a>
-
-		<header class="site-header" aria-label="Primary">
-			<a class="brand" href="#top" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-mark" aria-hidden="true">AF</span>
-				<span>l'Aicluse Agent Fieldkit</span>
-			</a>
-			<nav class="site-nav" aria-label="Sections">
-				<a href="#catalog">Catalog</a>
-				<a href="#install">Install</a>
-				<a href="#changelog">Changelog</a>
-				<a href="https://github.com/epologee/laicluse-agent-fieldkit">GitHub</a>
-			</nav>
-		</header>
-
-		<main id="content">
-			<section id="top" class="hero">
-				<div class="hero-grid">
-					<div class="hero-copy">
-						<p class="eyebrow">Claude Code + Codex plugin marketplace</p>
-						<h1>Guardrails for coding agents that touch real repositories.</h1>
-						<p class="lede">
-							Install opinionated plugins for git discipline, worktree safety,
-							occupancy locks, peer review, autonomous missions, naming doctrine,
-							and feedback repair.
-						</p>
-						<div class="hero-actions" aria-label="Primary actions">
-							<a class="button primary" href="#install">Install</a>
-							<a class="button secondary" href="#catalog">Browse plugins</a>
-						</div>
-					</div>
-
-					<aside class="hero-console" aria-label="Repository snapshot">
-						<div class="console-top">
-							<span></span>
-							<span></span>
-							<span></span>
-							<strong>fieldkit status</strong>
-						</div>
-						<div id="hero-stats" class="hero-stats" aria-live="polite">
-							<div class="skeleton-line"></div>
-							<div class="skeleton-line short"></div>
-						</div>
-						<div class="terminal-command">
-							<span>$</span>
-							<code>codex plugin add git-discipline@laicluse-agent-fieldkit</code>
-						</div>
-						<div id="hero-change" class="hero-change"></div>
-					</aside>
-				</div>
-			</section>
-
-			<section class="section principles-section" aria-labelledby="principles-title">
-				<div class="section-heading">
-					<p class="eyebrow">Why it exists</p>
-					<h2 id="principles-title">Built for repositories that move under agent hands.</h2>
-				</div>
-				<div class="principles-grid">
-					<article>
-						<span class="principle-number">01</span>
-						<h3>Installable plugins</h3>
-						<p>A marketplace of installable agent plugins, not a general AI manifesto.</p>
-					</article>
-					<article>
-						<span class="principle-number">02</span>
-						<h3>Explicit support</h3>
-						<p>Each package states whether it supports Claude Code, Codex, or one runtime only.</p>
-					</article>
-					<article>
-						<span class="principle-number">03</span>
-						<h3>Guardrails first</h3>
-						<p>The strongest plugins prevent avoidable repository damage before speed turns expensive.</p>
-					</article>
-					<article>
-						<span class="principle-number">04</span>
-						<h3>Visible change</h3>
-						<p>The changelog is first-class because this repository is meant to keep moving.</p>
-					</article>
-				</div>
-			</section>
-
-			<section id="catalog" class="section catalog-section" aria-labelledby="catalog-title">
-				<div class="section-heading split-heading">
-					<div>
-						<p class="eyebrow">Plugin catalog</p>
-						<h2 id="catalog-title">Every package, current support, latest note.</h2>
-					</div>
-					<div id="catalog-summary" class="catalog-summary"></div>
-				</div>
-
-				<div class="catalog-toolbar" aria-label="Catalog controls">
-					<label class="search-field">
-						<span>Search</span>
-						<input id="catalog-search" type="search" autocomplete="off" placeholder="plugin, workflow, review">
-					</label>
-					<div id="support-filters" class="segmented" aria-label="Agent support filter"></div>
-					<div id="category-filters" class="segmented wide" aria-label="Category filter"></div>
-				</div>
-
-				<div id="plugin-grid" class="plugin-grid" aria-live="polite"></div>
-				<p id="empty-state" class="empty-state" hidden>No plugins match those filters.</p>
-				<noscript>
-					<p class="no-script">
-						The catalog data lives in <code>docs/site-data.json</code>. Enable JavaScript
-						to use filters on this page.
-					</p>
-				</noscript>
-			</section>
-
-			<section id="install" class="section install-section" aria-labelledby="install-title">
-				<div class="section-heading split-heading">
-					<div>
-						<p class="eyebrow">Install</p>
-						<h2 id="install-title">Add the marketplace once. Install only what you need.</h2>
-					</div>
-					<p>
-						Most packages ship to both Claude Code and Codex. Runtime-specific
-						adapters are generated from the package sources; autonomous remains
-						Claude Code-only because its keep-alive behavior is host-specific.
-					</p>
-				</div>
-				<div class="install-grid">
-					<article class="install-block">
-						<div class="block-heading">
-							<h3>Claude Code</h3>
-							<button class="copy-button" type="button" data-copy-target="claude-install">Copy</button>
-						</div>
-						<pre><code id="claude-install">Loading install commands...</code></pre>
-					</article>
-					<article class="install-block">
-						<div class="block-heading">
-							<h3>Codex</h3>
-							<button class="copy-button" type="button" data-copy-target="codex-install">Copy</button>
-						</div>
-						<pre><code id="codex-install">Loading install commands...</code></pre>
-					</article>
-				</div>
-			</section>
-
-			<section id="changelog" class="section changelog-section" aria-labelledby="changelog-title">
-				<div class="section-heading split-heading">
-					<div>
-						<p class="eyebrow">Changelog</p>
-						<h2 id="changelog-title">Follow the moving parts without reading every package.</h2>
-					</div>
-					<p>
-						This feed is generated from the top section of each package changelog.
-						The full notes remain in the package directories.
-					</p>
-				</div>
-				<div id="change-feed" class="change-feed" aria-live="polite"></div>
-			</section>
-		</main>
-
-		<footer class="site-footer">
-			<span>l'Aicluse Agent Fieldkit</span>
-			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
-		</footer>
-
-		<script src="site.js"></script>
+		<p><a href="/agent-fieldkit/">Continue to l'Aicluse Agent Fieldkit.</a></p>
 	</body>
 </html>

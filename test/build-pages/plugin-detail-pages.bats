@@ -81,6 +81,15 @@ MD
 <meta property="og:image:secure_url" content="https://example.test/assets/og-image.png?v=dev">
 <meta name="twitter:image" content="https://example.test/assets/og-image.png?v=dev">
 HTML
+  cat > "$REPO/docs/agent-fieldkit/index.html" <<'HTML'
+<link rel="canonical" href="https://example.test/old/">
+<meta property="og:url" content="https://example.test/old/">
+<meta property="og:image" content="https://example.test/assets/og-image.png?v=dev">
+<meta property="og:image:secure_url" content="https://example.test/assets/og-image.png?v=dev">
+<meta name="twitter:image" content="https://example.test/assets/og-image.png?v=dev">
+<link rel="stylesheet" href="styles.css">
+<script src="site.js"></script>
+HTML
   cat > "$REPO/docs/agent-fieldkit/removed/index.html" <<'HTML'
 stale plugin page
 HTML
@@ -88,6 +97,7 @@ HTML
 }
 
 @test "build-pages writes one detail page per current plugin" {
+  [ -f "$REPO/docs/agent-fieldkit/index.html" ]
   [ -f "$REPO/docs/agent-fieldkit/dibs/index.html" ]
   [ -f "$REPO/docs/agent-fieldkit/clipboard/index.html" ]
 }
@@ -133,6 +143,13 @@ NODE
   grep -q '<link rel="canonical" href="https://laicluse.com/agent-fieldkit/dibs/">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dibs/">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<meta property="og:title" content="dibs · l'\''Aicluse Agent Fieldkit">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+}
+
+@test "detail pages link back to the Fieldkit landing" {
+  grep -q '<link rel="stylesheet" href="../../styles.css">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -q '<a class="brand" href="../" aria-label="l'\''Aicluse Agent Fieldkit home">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -q '<a href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -q '<a class="back-link" href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
 }
 
 @test "site data points catalog cards at generated detail pages" {

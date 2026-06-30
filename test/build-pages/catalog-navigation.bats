@@ -48,7 +48,7 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as playwright:
 	browser = playwright.chromium.launch()
 	page = browser.new_page(viewport={"width": 390, "height": 1000})
-	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#catalog")
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/agent-fieldkit/#catalog")
 	page.wait_for_timeout(250)
 	result = page.evaluate("""() => {
 const headerBottom = document.querySelector('.site-header').getBoundingClientRect().bottom;
@@ -70,9 +70,9 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as playwright:
 	browser = playwright.chromium.launch()
 	page = browser.new_page(viewport={"width": 1440, "height": 1000})
-	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/")
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/agent-fieldkit/")
 	page.wait_for_selector('.plugin-grid .plugin-card')
-	count = page.locator('article.plugin-card a[href="agent-fieldkit/dibs/"]', has_text='Details').count()
+	count = page.locator('article.plugin-card a[href="/agent-fieldkit/dibs/"]', has_text='Details').count()
 	browser.close()
 	if count != 1:
 		raise SystemExit(f"expected one dibs Details link, got {count}")
@@ -88,12 +88,34 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as playwright:
 	browser = playwright.chromium.launch()
 	page = browser.new_page(viewport={"width": 1440, "height": 1000})
-	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#changelog")
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/agent-fieldkit/#changelog")
 	page.wait_for_selector('.change-item')
-	count = page.locator('article.change-item a[href="agent-fieldkit/dibs/"]', has_text='dibs').count()
+	count = page.locator('article.change-item a[href="/agent-fieldkit/dibs/"]', has_text='dibs').count()
 	browser.close()
 	if count != 1:
 		raise SystemExit(f"expected one dibs changelog title detail link, got {count}")
+PY
+  [ "$status" -eq 0 ]
+}
+
+@test "root redirects browser visits to the Fieldkit landing" {
+  run python3 - <<'PY'
+import os
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as playwright:
+	browser = playwright.chromium.launch()
+	page = browser.new_page(viewport={"width": 1440, "height": 1000})
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#changelog")
+	page.wait_for_url("**/agent-fieldkit/#changelog")
+	result = page.evaluate("""() => ({
+pathname: window.location.pathname,
+hash: window.location.hash,
+hasChangelog: Boolean(document.querySelector('#changelog-title')),
+})""")
+	browser.close()
+	if result["pathname"] != "/agent-fieldkit/" or result["hash"] != "#changelog" or not result["hasChangelog"]:
+		raise SystemExit(result)
 PY
   [ "$status" -eq 0 ]
 }

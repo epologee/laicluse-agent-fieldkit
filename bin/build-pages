@@ -8,6 +8,15 @@ const { execFileSync } = require("child_process");
 
 const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
 const PAGES_URL = "https://laicluse.com";
+const FIELDKIT_PATH = "agent-fieldkit/";
+const FIELDKIT_URL = `${PAGES_URL}/${FIELDKIT_PATH}`;
+const SITE_TITLE = "l'Aicluse Agent Fieldkit";
+const SITE_DESCRIPTION =
+	"A public Claude Code and Codex plugin marketplace for agent guardrails, workflow discipline, peer review, autonomous work, feedback repair, and changelogs.";
+const SITE_TWITTER_DESCRIPTION =
+	"Guardrails for coding agents that touch real repositories. A public Claude Code and Codex plugin marketplace.";
+const SITE_IMAGE_ALT = "l'Aicluse Agent Fieldkit: guardrails for coding agents that touch real repositories.";
+const SITE_TWITTER_IMAGE_ALT = "l'Aicluse Agent Fieldkit share card";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
 // allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
@@ -649,14 +658,14 @@ function buildPluginDetailPage(data, plugin, markdown, hash) {
 		<a class="skip-link" href="#content">Skip to content</a>
 
 		<header class="site-header" aria-label="Primary">
-			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
 				<span class="brand-mark" aria-hidden="true">AF</span>
 				<span>l'Aicluse Agent Fieldkit</span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
-				<a href="../../#catalog">Catalog</a>
-				<a href="../../#install">Install</a>
-				<a href="../../#changelog">Changelog</a>
+				<a href="../#catalog">Catalog</a>
+				<a href="../#install">Install</a>
+				<a href="../#changelog">Changelog</a>
 				<a href="${attributeEscape(plugin.sourceUrl)}">GitHub</a>
 			</nav>
 		</header>
@@ -664,7 +673,7 @@ function buildPluginDetailPage(data, plugin, markdown, hash) {
 		<main id="content" class="detail-page">
 			<section class="detail-hero">
 				<div class="detail-hero-inner">
-					<a class="back-link" href="../../#catalog">Catalog</a>
+					<a class="back-link" href="../#catalog">Catalog</a>
 					<p class="eyebrow">${htmlEscape(categoryLabel(data, plugin.category))}</p>
 					<h1>${htmlEscape(title)}</h1>
 					<p class="lede">${htmlEscape(plugin.summary)}</p>
@@ -704,7 +713,14 @@ ${readmeHtml}
 
 function renderPluginDetailPages(repoRoot, data, hash) {
 	const detailRoot = path.join(repoRoot, "docs", "agent-fieldkit");
-	fs.rmSync(detailRoot, { recursive: true, force: true });
+	const pluginNames = new Set(data.plugins.map((plugin) => plugin.name));
+	fs.mkdirSync(detailRoot, { recursive: true });
+
+	for (const entry of fs.readdirSync(detailRoot, { withFileTypes: true })) {
+		if (entry.isDirectory() && !pluginNames.has(entry.name)) {
+			fs.rmSync(path.join(detailRoot, entry.name), { recursive: true, force: true });
+		}
+	}
 
 	for (const plugin of data.plugins) {
 		const readmePath = path.join(repoRoot, plugin.sourcePath, "README.md");
@@ -852,14 +868,8 @@ function renderOgImage(repoRoot, svg) {
 	}
 }
 
-// Keep the canonical/social URLs tied to PAGES_URL and point the image meta at
-// the freshly hashed asset so social platforms refetch the card after it changes.
-function updateOgMeta(repoRoot, hash) {
-	const indexPath = path.join(repoRoot, "docs", "index.html");
-	const html = fs.readFileSync(indexPath, "utf8");
-	const pageUrl = `${PAGES_URL}/`;
-	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
-	const updated = html
+function replaceHeadUrls(html, pageUrl, imageUrl) {
+	return html
 		.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl}">`)
 		.replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${pageUrl}">`)
 		.replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${imageUrl}">`)
@@ -868,7 +878,70 @@ function updateOgMeta(repoRoot, hash) {
 			`<meta property="og:image:secure_url" content="${imageUrl}">`,
 		)
 		.replace(/<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${imageUrl}">`);
+}
+
+// Keep the canonical/social URLs tied to PAGES_URL and point the image meta at
+// the freshly hashed asset so social platforms refetch the card after it changes.
+function updateFieldkitMeta(repoRoot, hash) {
+	const indexPath = path.join(repoRoot, "docs", "agent-fieldkit", "index.html");
+	const html = fs.readFileSync(indexPath, "utf8");
+	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+	const updated = replaceHeadUrls(html, FIELDKIT_URL, imageUrl)
+		.replace(/<link rel="stylesheet" href="styles\.css">/, '<link rel="stylesheet" href="../styles.css">')
+		.replace(/<script src="site\.js"><\/script>/, '<script src="../site.js"></script>');
 	if (updated !== html) fs.writeFileSync(indexPath, updated);
+}
+
+function buildRootRedirect(hash) {
+	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+
+	return `<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>${htmlEscape(SITE_TITLE)}</title>
+		<meta name="description" content="${attributeEscape(SITE_DESCRIPTION)}">
+		<link rel="canonical" href="${FIELDKIT_URL}">
+		<meta http-equiv="refresh" content="0; url=/agent-fieldkit/">
+
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="${htmlEscape(SITE_TITLE)}">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="${FIELDKIT_URL}">
+		<meta property="og:title" content="${htmlEscape(SITE_TITLE)}">
+		<meta property="og:description" content="${attributeEscape(SITE_DESCRIPTION)}">
+		<meta property="og:image" content="${imageUrl}">
+		<meta property="og:image:secure_url" content="${imageUrl}">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:image:alt" content="${attributeEscape(SITE_IMAGE_ALT)}">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="${htmlEscape(SITE_TITLE)}">
+		<meta name="twitter:description" content="${attributeEscape(SITE_TWITTER_DESCRIPTION)}">
+		<meta name="twitter:image" content="${imageUrl}">
+		<meta name="twitter:image:alt" content="${attributeEscape(SITE_TWITTER_IMAGE_ALT)}">
+
+		<script>
+			(() => {
+				const target = new URL("/agent-fieldkit/", window.location.origin);
+				target.search = window.location.search;
+				target.hash = window.location.hash;
+				window.location.replace(target.href);
+			})();
+		</script>
+	</head>
+	<body>
+		<p><a href="/agent-fieldkit/">Continue to l'Aicluse Agent Fieldkit.</a></p>
+	</body>
+</html>
+`;
+}
+
+function writeRootRedirect(repoRoot, hash) {
+	fs.writeFileSync(path.join(repoRoot, "docs", "index.html"), buildRootRedirect(hash));
 }
 
 function main() {
@@ -880,7 +953,8 @@ function main() {
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
-	updateOgMeta(repoRoot, hash);
+	updateFieldkitMeta(repoRoot, hash);
+	writeRootRedirect(repoRoot, hash);
 	renderPluginDetailPages(repoRoot, data, hash);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
 }
