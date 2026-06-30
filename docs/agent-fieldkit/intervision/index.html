@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>intervision · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/intervision/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/intervision/">
+		<meta property="og:title" content="intervision · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="intervision · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/intervision">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Review and language</p>
+					<h1>intervision</h1>
+					<p class="lede">Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.10</span>
+						<span>1 skill</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Peer consultation for coding agents. Intervision is the practice of equals reviewing each other's work, the opposite of supervision from above. This plugin brings another coding agent in as that peer: Claude hands work to Codex, Codex hands work to Claude, and the two reads are compared before anything lands. The signal is the gap between two independent agents, the spots where you and the peer disagree.</p>
+<h2 id="commands">Commands</h2>
+<h3 id="intervision-second-opinion"><code>/intervision:second-opinion</code></h3>
+<p>Hands the recent work to the other agent and talks it through. Claude uses <code>codex exec</code> on the cheap coding model advertised by <code>codex debug models</code> first, preferring Codex Spark and then mini, and escalates to the configured Codex default only when the cheap pass is uncertain, misses a concrete concern, or the work is high-risk. Codex uses <code>claude -p</code>. Three shapes, picked by what just happened:</p>
+<ul>
+<li><strong>Work just done (a diff):</strong> the peer reviews the actual change set.</li>
+<li><strong>A design just discussed (no code yet):</strong> the peer reflects on the plan without touching the tree.</li>
+<li><strong>Back and forth:</strong> continue the exchange to push a point, defend yours, or ask the peer to reconsider.</li>
+</ul>
+<p>The exact agent-specific invocations live in the suffixed skill sources.</p>
+<p>The peer's findings come home through three honest fates: fix, skip on cost versus value, or reject as hollow. The exchange and any remaining disagreement are surfaced to you.</p>
+<h2 id="requirements">Requirements</h2>
+<p>The peer CLI must be installed and logged in: Claude needs <code>codex</code>; Codex needs <code>claude</code>. Reviews run against your own account and quota, so a large diff is a real billed call. The skill preflights for the CLI and stops with a plain message when no peer is available.</p>
+<p>Claude-side Codex model selection lives in <code>bin/codex-fast-coding-model</code>. <code>INTERVISION_CODEX_MODEL</code> can override the catalog choice for one run.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">claude plugins install intervision@laicluse-agent-fieldkit
+codex plugin add intervision@laicluse-agent-fieldkit</code></pre>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install intervision@laicluse-agent-fieldkit
+codex plugin add intervision@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/intervision">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

@@ -560,6 +560,14 @@ h3 {
   background: rgba(255, 255, 255, 0.065);
 }
 
+.plugin-card h3 a {
+  text-decoration: none;
+}
+
+.plugin-card h3 a:hover {
+  color: var(--green);
+}
+
 .plugin-head,
 .change-head,
 .block-heading {
@@ -637,6 +645,17 @@ h3 {
   margin-top: 1rem;
   color: var(--ink-strong);
   font-weight: 720;
+}
+
+.plugin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.plugin-actions .source-link {
+  margin-top: 0;
 }
 
 .empty-state,
@@ -754,6 +773,194 @@ pre {
   color: var(--ink);
 }
 
+.detail-page {
+  background: var(--paper);
+  color: var(--paper-ink);
+  overflow-x: hidden;
+}
+
+.detail-hero {
+  border-bottom: 1px solid var(--paper-line);
+  background: #ffffff;
+}
+
+.detail-hero-inner {
+  width: min(1180px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: clamp(3rem, 6vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
+}
+
+.back-link {
+  display: inline-flex;
+  margin-bottom: 2rem;
+  color: #0f8058;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.back-link::before {
+  content: "←";
+  margin-right: 0.45rem;
+}
+
+.detail-hero h1 {
+  max-width: 13ch;
+  color: var(--paper-ink);
+}
+
+.detail-hero .lede {
+  max-width: 780px;
+  color: var(--paper-muted);
+}
+
+.detail-meta {
+  margin-top: 1.5rem;
+}
+
+.detail-meta span {
+  border-color: var(--paper-line);
+  color: var(--paper-ink);
+}
+
+.detail-meta .support-pill.both {
+  border-color: rgba(15, 128, 88, 0.4);
+  color: #0f8058;
+}
+
+.detail-meta .support-pill.claude {
+  border-color: rgba(171, 109, 9, 0.4);
+  color: #895704;
+}
+
+.detail-content-section {
+  display: grid;
+  width: min(1180px, calc(100vw - 2rem));
+  margin: 0 auto;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.34fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  padding: clamp(3rem, 6vw, 5rem) 0;
+}
+
+.readme-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.readme-content h2,
+.readme-content h3,
+.detail-sidebar h2 {
+  color: var(--paper-ink);
+}
+
+.readme-content h2 {
+  max-width: none;
+  margin-top: 2.8rem;
+  border-top: 1px solid var(--paper-line);
+  padding-top: 2rem;
+  font-size: clamp(1.7rem, 3vw, 2.7rem);
+}
+
+.readme-content h2:first-child {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.readme-content h3 {
+  margin-top: 2rem;
+  font-size: 1.35rem;
+}
+
+.readme-content p,
+.readme-content li {
+  color: var(--paper-muted);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.readme-content a,
+.detail-sidebar a {
+  color: #0f8058;
+  font-weight: 720;
+}
+
+.readme-content ul,
+.readme-content ol {
+  padding-left: 1.4rem;
+}
+
+.readme-content li + li {
+  margin-top: 0.4rem;
+}
+
+.readme-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 1.3rem 0;
+}
+
+.readme-content th,
+.readme-content td {
+  border: 1px solid var(--paper-line);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.readme-content th {
+  background: #ffffff;
+  color: var(--paper-ink);
+}
+
+.readme-content code:not(pre code) {
+  border: 1px solid var(--paper-line);
+  border-radius: 5px;
+  background: #ffffff;
+  color: var(--paper-ink);
+  padding: 0.05rem 0.28rem;
+  font-size: 0.88em;
+}
+
+.readme-content pre,
+.sidebar-block pre {
+  max-width: 100%;
+}
+
+.sidebar-block pre code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.detail-sidebar {
+  align-self: start;
+  position: sticky;
+  top: 5rem;
+}
+
+.sidebar-block {
+  border-top: 1px solid var(--paper-line);
+  padding: 1.2rem 0;
+}
+
+.sidebar-block:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.sidebar-block h2 {
+  max-width: none;
+  font-size: 1rem;
+}
+
+.sidebar-block a {
+  display: block;
+  margin-top: 0.6rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -783,6 +990,14 @@ pre {
   .plugin-grid,
   .change-feed {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-content-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detail-sidebar {
+    position: static;
   }
 }
 
@@ -849,4 +1064,5 @@ pre {
   .site-footer {
     flex-direction: column;
   }
+
 }

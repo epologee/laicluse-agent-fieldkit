@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>how-plugins-work · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/how-plugins-work/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/how-plugins-work/">
+		<meta property="og:title" content="how-plugins-work · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="how-plugins-work · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/how-plugins-work">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>how-plugins-work</h1>
+					<p class="lede">Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.28</span>
+						<span>3 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Reference for Claude Code and Codex plugin naming, skill resolution, cross-agent skill sync, and the <code>plugin:skill</code> invocation pattern.</p>
+<h2 id="commands">Commands</h2>
+<h3 id="how-plugins-work"><code>/how-plugins-work</code></h3>
+<p>Loads the reference: how slash-command names map to plugins, how sub-skills resolve, when the <code>plugin:skill</code> form is required, how shared skills can be packaged for multiple agents, and where plugin caches fit.</p>
+<h3 id="test-before-push"><code>/test-before-push</code></h3>
+<p>Canonical procedure for rolling multi-agent marketplace changes out to Claude Code and Codex locally before pushing to GitHub.</p>
+<h3 id="restart-claude-agents-claude-code"><code>/restart-claude-agents</code> (Claude Code)</h3>
+<p>Restarts running Claude Code background agents so a fresh process loads updated plugins, preserving each agent's conversation, permissions, and goal. The companion to <code>/test-before-push</code>: where that tests plugin changes before pushing, this rolls them into agents already running the old version. Lists the running background agents first, restarts the idle ones by default, takes agent ids to target specific ones, and never touches interactive sessions.</p>
+<h2 id="auto-trigger">Auto-trigger</h2>
+<p>Activates when diagnosing:</p>
+<ul>
+<li>&quot;Unknown command&quot; errors after a fresh install</li>
+<li>Slash-command autocomplete misses</li>
+<li>Confusion between plugin name, skill name, and command name</li>
+<li>Sub-skills that work in isolation but not when invoked from another skill</li>
+<li>Cross-agent marketplace or manifest drift between shared skills and agent-specific adapters</li>
+<li>Accidental exposure of agent-specific skills to a client that cannot run them</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Install:</p>
+<pre><code class="language-bash">claude plugins install how-plugins-work@laicluse-agent-fieldkit
+codex plugin add how-plugins-work@laicluse-agent-fieldkit</code></pre>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install how-plugins-work@laicluse-agent-fieldkit
+codex plugin add how-plugins-work@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/how-plugins-work">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

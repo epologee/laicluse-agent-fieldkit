@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>bonsai · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/bonsai/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/bonsai/">
+		<meta property="og:title" content="bonsai · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="bonsai · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/bonsai">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Repository discipline</p>
+					<h1>bonsai</h1>
+					<p class="lede">Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.26</span>
+						<span>3 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Worktree lifecycle as a small, cross-platform CLI. Bonsai owns one thing well: creating, priming, and tearing down git worktrees, git-natively, with a safety gate so work is never thrown away by accident.</p>
+<p>It is deliberately distinct from raw <code>git worktree</code>: bonsai resolves the freshest default branch, follows the <code>&lt;root&gt;/worktrees/&lt;dir&gt;</code> convention with a self-ignoring <code>.gitignore</code>, primes a tree from a <code>.bonsai</code> file list, and guards teardown. It emits facts (<code>--json</code>), never a start command or clipboard payload; whatever launches an agent in the worktree composes its own briefing.</p>
+<h2 id="cli">CLI</h2>
+<pre><code>bonsai create &lt;branch&gt; --repo &lt;root&gt; [--base &lt;ref&gt;] [--json]
+bonsai setup  &lt;worktree&gt; --repo &lt;root&gt; [--no-install] [--json]
+bonsai teardown &lt;worktree|branch&gt; --repo &lt;root&gt; [--force] [--dry-run] [--json]</code></pre>
+<ul>
+<li><strong>create</strong> — resolve the freshest default, make the worktree + branch (slashes in the branch flatten to dashes in the dir), refuse an existing branch, and print <code>{ worktree, branch, base, baseSha, port }</code>. The port is a deterministic dev-server hint in 3100-3999.</li>
+<li><strong>setup</strong> — copy the <code>.bonsai</code>-listed files from the canonical checkout (<code>--repo</code>) and install dependencies per directory by the manager each lockfile names. Install is best-effort; failures warn rather than block.</li>
+<li><strong>teardown</strong> — remove a worktree only when it is integrated, or clean with nothing ahead of the default. Otherwise it is kept with a reason. Warns on orphaned unpushed commits and on a diverged default. <code>--dry-run</code> classifies without removing; <code>--force</code> overrides the gate.</li>
+</ul>
+<h2 id="skills">Skills</h2>
+<ul>
+<li><code>bonsai</code> — make a ready worktree (create + setup).</li>
+<li><code>setup</code> — prime an existing worktree.</li>
+<li><code>prune</code> — tear down behind the safety gate.</li>
+</ul>
+<h2 id="files">Files</h2>
+<ul>
+<li><code>bin/bonsai</code> — CLI dispatcher.</li>
+<li><code>bin/bonsai-lib.mjs</code> — pure functions (base resolution, port, copy, install detection, teardown classification).</li>
+<li><code>test/*.bats</code> — CLI contract tests.</li>
+</ul>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install bonsai@laicluse-agent-fieldkit
+codex plugin add bonsai@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/bonsai">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

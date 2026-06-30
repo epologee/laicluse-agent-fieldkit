@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>anger-management · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/anger-management/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/anger-management/">
+		<meta property="og:title" content="anger-management · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="anger-management · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/anger-management">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>anger-management</h1>
+					<p class="lede">Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.15</span>
+						<span>15 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Cuss at your coding agent now, fix the actual problem later.</p>
+<p>When the agent does something that sets you off, you do not want a lecture and you do not want to drop everything to fix it. So you cuss: <code>/fuck</code>, <code>/fucking</code>, <code>/fucked</code>, <code>/shit</code>, <code>/crap</code>, <code>/wtf</code>, <code>/bullshit</code>. These swear/cuss words each capture a single cheap line about what happened and get out of your way. Later, cooled off, <code>/anger-management:repair</code> looks at the pile, decides whether there is one concrete recurring thing worth fixing, scores its own confidence, chooses the mitigation layer and scope, and only applies or routes a fix when confidence is high. If there is nothing clear, it leaves the trail open. That restraint is the point.</p>
+<p>If you still have enough mental capacity to steer in the moment, use the lighter safeword lane instead: <code>/safeword</code>, <code>/pineapple</code>, <code>/pineapplejuice</code>, <code>/pinapplejuice</code>, <code>/flugelhorn</code>, or <code>/banana</code>. Those do <strong>not</strong> go into the delayed pile. They mean: &quot;pause the current work; I see a concrete thing going wrong, fix it now.&quot; The whole plugin is intentionally not solemn: sometimes the irritation is real, sometimes it is played up because swearing at a robot is funny. The command split is what matters.</p>
+<p>The ladder is deliberately simple: the <strong>safeword lane</strong> interrupts work now, the <strong>cuss lane</strong> logs the escalated friction for delayed analysis, and the <strong>repair lane</strong> reviews high-confidence proposals on a cooled-down pass.</p>
+<h2 id="the-idea-in-one-breath">The idea, in one breath</h2>
+<p>Two things at once, 80% serious and 20% dry: it makes working with the agent better, and it gives you somewhere to put the heat without pretending the heat fixes anything.</p>
+<p>The split between a cheap in-the-moment capture and a later, separate fix pass is how teams already do it (Stripe wired &quot;bad day&quot; buttons into their tooling, then a separate team mined the pile). It is also what the research says: letting it out does not discharge anger, it rehearses it (Bushman 2002), so the cuss stays a two-second capture you walk away from, never a rant you marinate in.</p>
+<h2 id="commands">Commands</h2>
+<table>
+<thead>
+<tr><th>Command</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>/fuck</code> <code>/fucking</code> <code>/fucked</code> <code>/shit</code> <code>/crap</code> <code>/wtf</code> <code>/bullshit</code></td><td>Capture one cheap friction line and move on. No apology, no fix, no scope change.</td></tr>
+<tr><td><code>/safeword</code> <code>/pineapple</code> <code>/pineapplejuice</code> <code>/pinapplejuice</code> <code>/flugelhorn</code> <code>/banana</code></td><td>Interrupt the current work and fix one visible friction point now. No delayed capture.</td></tr>
+<tr><td><code>/anger-management</code></td><td>Quick read-back of the pile and its recurring clusters.</td></tr>
+<tr><td><code>/anger-management:repair</code></td><td>The cooled-down fix pass: judge go/no-go, then apply or route a real recurring problem at its owner source.</td></tr>
+</tbody>
+</table>
+<p>The vocabulary avoids slurs and identity-targeted abuse.</p>
+<h2 id="how-it-works">How it works</h2>
+<ol>
+<li><strong>Cuss (instant, global).</strong> A cuss appends one line to a single pile shared across every session and repo: <code>${LAICLUSE_HOME:-~/.laicluse}/anger-management/friction.jsonl</code> (<code>ts, word, cwd, git, note</code>). The note is fed on stdin via a quoted heredoc, so it is never interpreted by the shell even if it echoes something hostile.</li>
+<li><strong>Safeword (instant, local to the current problem).</strong> A safeword command is not a log entry. It interrupts the current task, asks the agent to identify the concrete failure with evidence, and fixes that now. It may be a one-off.</li>
+<li><strong>Cool down (you do not have to remember).</strong> A capture schedules a single background investigation: 22 minutes 22 seconds later (a wink, and long enough for the heat to pass) a separate headless agent (<code>claude -p --model sonnet</code>, or <code>codex exec --model &lt;fast-coding-model&gt; -s read-only</code> when only Codex is installed) reads the open captures, the repair history, and the recent transcripts, and writes a diagnosis. If you are still in that session, a check-in cron may surface it between turns; otherwise it shows up at your next <code>/anger-management:repair</code>. Either way, ignoring it just leaves the captures open.</li>
+<li><strong>Repair (on your terms).</strong> <code>/anger-management:repair</code> opens with a blunt verdict: <em>nothing</em> (change nothing, and that is fine), <em>not-enough-signal</em> (leave it open to accumulate), or <em>fix</em> (one concrete recurring thing plus the specific change). Every verdict carries a confidence score, mitigation level, and target scope. The threshold for a fix is <code>0.80</code>, so weak guesses stay as breadcrumbs for a future pass instead of becoming config churn. A high-confidence fix then follows the owner source: hooks in hooks, skills in skill source, plugin metadata in plugin metadata, generated adapters through the generator, and instruction files only as the last resort.</li>
+</ol>
+<p>Because the pile is global and every repair reads the whole open set, deferring makes the diagnosis better: cuss in one session, again two hours later in another, and they land in the same pile and get weighed together.</p>
+<h2 id="why-repair-never-just-edits-claude-md-on-a-hunch">Why &quot;repair&quot; never just edits CLAUDE.md on a hunch</h2>
+<p>You mostly cuss when a behaviour comes back <em>despite</em> earlier self-improvements. So a cuss is also a signal that a previous fix added noise or swung too far. If the verdict is not clearly actionable and we change config anyway, that is noise-reflex busywork that fools everyone. So the default is to change nothing unless the pattern is concrete, recurring, and above the confidence threshold. Below that line, the right action is to keep the captures open so the next pass has more evidence.</p>
+<h2 id="the-thinking-behind-it-research-spine">The thinking behind it (research spine)</h2>
+<ul>
+<li><strong>The delayed pass separates fixable workflow friction from the extra noise of the moment.</strong> The background for that split, stated as a fact about brains and never as a verdict about you: emotions are built, not piped in raw (Anil Seth's &quot;controlled hallucination&quot;; Lisa Feldman Barrett's constructed emotion).</li>
+<li><strong>Signal anger vs pattern anger.</strong> Some anger is real, present, and points at a fixable thing (act on it). Some is an old pattern re-igniting, out of proportion to the trigger (sit with it). Repair's whole job is to separate the two: honour the signal by fixing the recurring problem, and leave the pattern to you. (Roughly the Emotion-Focused Therapy distinction between adaptive and maladaptive anger; it rhymes with, but is not the same as, the Japanese okoru/ikari split of immediate vs deep anger.)</li>
+<li><strong>Catharsis is a myth</strong> (Bushman 2002): blowing off steam amplifies anger, so capture stays cheap and repair de-escalates instead of inviting more heat.</li>
+<li><strong>It &quot;gets you&quot; by mirroring, not profiling.</strong> It only ever reflects your own logged lines back (&quot;you hit this three times&quot;); it builds no profile of you. State is stored locally; the optional background investigation uses the configured runner, so that step does send your captures and the relevant transcripts to that model.</li>
+</ul>
+<h2 id="files">Files</h2>
+<ul>
+<li><code>bin/anger-log</code> captures a line. <code>bin/anger-schedule</code> single-flight launches the background investigation. <code>bin/anger-resolve</code> records a routed fix so its captures close.</li>
+<li><code>ANGER_SCHEDULE_CODEX_MODEL</code> overrides the Codex fallback model; by default <code>bin/codex-fast-coding-model</code> reads <code>codex debug models</code>, prefers Codex Spark or an ultra-fast coding model, then falls back to mini so background diagnosis does not pick the expensive Codex session default.</li>
+<li>The cuss skills are generated from <code>capture-skill.template.md</code> by <code>bin/sync-capture-skills</code> (repo root); edit the template, not the generated files.</li>
+<li>The safeword skills are generated from <code>safeword-skill.template.md</code> by <code>bin/sync-safeword-skills</code> (repo root); they intentionally do not call <code>anger-log</code>.</li>
+</ul>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install anger-management@laicluse-agent-fieldkit
+codex plugin add anger-management@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/anger-management">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>clipboard · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/clipboard/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/clipboard/">
+		<meta property="og:title" content="clipboard · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="clipboard · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/clipboard">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>clipboard</h1>
+					<p class="lede">Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.10</span>
+						<span>1 skill</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Copy the core content of the last assistant answer to the macOS clipboard. Plain text by default, Slack-flavored rich text on request.</p>
+<h2 id="commands">Commands</h2>
+<h3 id="clipboard"><code>/clipboard</code></h3>
+<p>Copies the relevant content of the last answer to the clipboard as plain text via the <code>clipboard-copy</code> helper (which wraps <code>pbcopy</code>). The skill picks the core content (code block, summary, answer body) rather than the full response wrapper.</p>
+<h3 id="clipboard-slack"><code>/clipboard slack</code></h3>
+<p>Copies as Slack rich text via <code>clipboard-copy --html</code> (which wraps <code>pbcopy-html</code>), preserving bold, italic, code spans, and code blocks when pasted into Slack.</p>
+<h2 id="requirements">Requirements</h2>
+<p>macOS, with Node.js on <code>$PATH</code> (the <code>clipboard-copy</code> helper and the update-broadcast check are Node scripts). Plain text mode uses the built-in <code>pbcopy</code> and works out of the box; the skill calls the <code>clipboard-copy</code> helper that ships inside <code>bin/</code> of the active plugin install, so no PATH-level install step is needed. Claude resolves that root through <code>${CLAUDE_PLUGIN_ROOT}</code>; Codex resolves it through <code>codex plugin list --json</code>.</p>
+<p>Rich text mode (<code>/clipboard slack</code>) drives <code>pbcopy-html</code>, a Swift script shipped with the plugin. Copy it onto your <code>$PATH</code> if you want to invoke <code>pbcopy-html</code> directly from a shell; <code>clipboard-copy --html</code> already resolves it relative to its own location. The <code>jq</code> lookup below is a shell convenience for finding the active install from your terminal (where <code>${CLAUDE_PLUGIN_ROOT}</code> is not set); the skill itself never uses it, and the copy is repeated after each plugin update per the note below. The marketplace is symlink-free to keep Windows consumers working, so install with <code>cp -f</code>:</p>
+<pre><code class="language-bash">SRC=$(jq -r '.plugins[&quot;clipboard@laicluse-agent-fieldkit&quot;][0].installPath // empty' ~/.claude/plugins/installed_plugins.json)
+[ -n &quot;$SRC&quot; ] || { echo &quot;clipboard@laicluse-agent-fieldkit is not installed&quot;; exit 1; }
+cp -f &quot;$SRC/skills/clipboard/pbcopy-html.swift&quot; /usr/local/bin/pbcopy-html</code></pre>
+<p>The script runs via its <code>#!/usr/bin/env swift</code> shebang; no compile step is needed.</p>
+<p>Re-run after each <code>claude plugins update clipboard@laicluse-agent-fieldkit</code> so the installed copy matches the updated plugin.</p>
+<h2 id="consuming-from-another-plugin">Consuming from another plugin</h2>
+<p>A skill in a different plugin cannot use <code>${CLAUDE_PLUGIN_ROOT}</code> to find this plugin's helper (that variable points at its own root). The canonical resolution idiom for cross-plugin consumers is one lookup against the harness's install index, with a graceful skip when clipboard is absent:</p>
+<pre><code class="language-bash">IP=$(jq -r '.plugins[&quot;clipboard@laicluse-agent-fieldkit&quot;][0].installPath // empty' ~/.claude/plugins/installed_plugins.json 2&gt;/dev/null)
+if [ -n &quot;$IP&quot; ] &amp;&amp; [ -x &quot;$IP/bin/clipboard-copy&quot; ]; then
+  printf 'content' | &quot;$IP/bin/clipboard-copy&quot;
+fi</code></pre>
+<p>Copy this idiom rather than inventing a variant; it is the one place the install key lives outside this plugin.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">claude plugins install clipboard@laicluse-agent-fieldkit
+codex plugin add clipboard@laicluse-agent-fieldkit</code></pre>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install clipboard@laicluse-agent-fieldkit
+codex plugin add clipboard@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/clipboard">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/clipboard/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

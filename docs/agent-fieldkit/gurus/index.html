@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>gurus · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Runs opinionated review panels for software, decisions, and prose from multiple perspectives.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/gurus/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/gurus/">
+		<meta property="og:title" content="gurus · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Runs opinionated review panels for software, decisions, and prose from multiple perspectives.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="gurus · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Runs opinionated review panels for software, decisions, and prose from multiple perspectives.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/gurus">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Review and language</p>
+					<h1>gurus</h1>
+					<p class="lede">Runs opinionated review panels for software, decisions, and prose from multiple perspectives.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.6</span>
+						<span>4 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Opinionated panels that challenge work from multiple perspectives. Three panels live under this plugin: <code>software</code> for code review, <code>council</code> for critical thinking on an idea or decision, and <code>writers</code> for prose review. An orchestrator skill routes between them.</p>
+<h2 id="sub-skills">Sub-skills</h2>
+<table>
+<thead>
+<tr><th>Skill</th><th>Use for</th><th>Panel</th></tr>
+</thead>
+<tbody>
+<tr><td><code>gurus:software</code></td><td>Code review</td><td>Eight engineering personas (Beck, Fowler, Uncle Bob, DHH, Metz, Evans, Hickey, Ousterhout). Consensus across 6 of 8 yields an action plan.</td></tr>
+<tr><td><code>gurus:council</code></td><td>A decision or idea</td><td>Five adversarial lenses (pre-mortem, first-principles, opportunity-finder, stranger, action) plus anonymised peer review plus chairman synthesis.</td></tr>
+<tr><td><code>gurus:writers</code></td><td>Prose review (essay, script, manuscript, narrative copy)</td><td>Six writers (Didion, Saunders, Rovelli, Watts, Gladwell, Urban). Consensus across 4 of 6 yields an action plan of edits, cuts, and rewrites.</td></tr>
+<tr><td><code>gurus:gurus</code></td><td>Orchestrator: you are not sure which panel fits</td><td>Reads the context (diff present, abstract question, or prose under discussion), proposes a default, lets you override, then dispatches. Not itself a review; only a router.</td></tr>
+</tbody>
+</table>
+<h2 id="commands">Commands</h2>
+<h3 id="gurus"><code>/gurus</code></h3>
+<p>Entry orchestrator. Routes to <code>gurus:software</code> when a diff or code scope is in context, to <code>gurus:writers</code> when prose files (<code>.md</code>, <code>.txt</code>, body-prose <code>.html</code>) or a pasted paragraph are under discussion, to <code>gurus:council</code> when the question reads like a decision or idea. Propose the default in one line, accept a one-word override (<code>software</code>, <code>council</code>, or <code>writers</code>), then dispatch. Direct invocation of <code>/gurus:software</code>, <code>/gurus:council</code>, or <code>/gurus:writers</code> skips the routing step.</p>
+<h3 id="gurus-software"><code>/gurus:software</code></h3>
+<p>Runs the software panel against the full codebase by default; pass an explicit scope (file, directory, or commit range) to narrow the review. Each guru returns a short critique, and consensus across 6 of 8 produces an action plan. The value sits in the tension between perspectives: agreement across fundamentally different styles is a strong signal.</p>
+<h3 id="gurus-council"><code>/gurus:council</code></h3>
+<p>Runs five advisors against a brief. Every advisor writes a lens-specific review (pre-mortem assumes the idea fails, first-principles strips assumptions, opportunity-finder seeks the adjacent bigger win, stranger answers with zero context, action demands a concrete next step). Responses are anonymised, peers blind-review each other, and a chairman synthesises one verdict plus one concrete next step. Pattern based on Ole Lehmann's &quot;board of advisors&quot; skill, itself inspired by parallel LLM-critique patterns that Andrej Karpathy (among others) has advocated. Claude runs all voices through <code>gurus:sonnet-max</code>; Codex uses native subagents when available and otherwise marks a single-session fallback.</p>
+<p>One invocation runs eleven advisor jobs (five lenses, five peer reviews, one chairman). In Claude those are <code>gurus:sonnet-max</code> agents at <code>effort: max</code>; in Codex they are native subagents when available. The two review phases run in parallel where the runtime supports it, so typical wall time is 2 to 4 minutes there; token cost is substantial. See <code>skills/council/SKILL.md</code> for the full panel, lens briefings, and prompt templates. See <code>skills/software/SKILL.md</code> for the eight-guru software panel.</p>
+<h3 id="gurus-writers"><code>/gurus:writers</code></h3>
+<p>Runs the writers panel against a piece of prose: a markdown draft, a script, a manuscript chapter, narrative HTML editorial, voiceover copy. Each writer reads the entire piece and returns a short critique grounded in their own craft, and consensus across 4 of 6 produces an action plan of edits, cuts, and rewrites. Writers quote the prose they are reacting to so the action plan is editable rather than abstract. The value sits in the tension between crafts: a sentence that survives Didion's restraint, Saunders's warmth, Rovelli's precision, Gladwell's hook instinct, Urban's accessibility, and Watts's depth has earned its place. See <code>skills/writers/SKILL.md</code> for the full panel.</p>
+<h2 id="when-to-use-which">When to use which</h2>
+<ul>
+<li><strong>Before merging a non-trivial PR</strong>: <code>gurus:software</code>.</li>
+<li><strong>When refactoring touches conceptual boundaries</strong>: <code>gurus:software</code>.</li>
+<li><strong>When &quot;moet ik X of Y?&quot; is the actual question</strong>: <code>gurus:council</code>.</li>
+<li><strong>When Claude's previous answer felt sycophantic</strong>: <code>gurus:council</code>.</li>
+<li><strong>Before publishing an essay, script, or manuscript chapter</strong>: <code>gurus:writers</code>.</li>
+<li><strong>When voice, pacing, or opening feels off in a piece of prose</strong>: <code>gurus:writers</code>.</li>
+<li><strong>When you are not sure</strong>: <code>/gurus</code> and let the orchestrator decide.</li>
+</ul>
+<h2 id="agent-model">Agent model</h2>
+<p>Claude receives <code>gurus:sonnet-max</code>, a generic plugin-shipped subagent pinned to Sonnet at maximum effort (<code>model: sonnet</code>, <code>effort: max</code> in frontmatter). Every guru and advisor dispatches through that subagent so every voice runs on the same engine ceiling. The definition lives in <code>agents/sonnet-max.md</code>.</p>
+<p>Codex receives Codex-specific skill bodies. They use native Codex subagents when the current session exposes them and prefer the least token-hungry reviewer model that can handle the scoped work; the current session model keeps routing and final synthesis. Otherwise they run the same panel protocol as a structured single-session review and mark that as a fallback rather than pretending independent agents were spawned. The generated Codex package intentionally omits <code>agents/sonnet-max.md</code>; that file is Claude runtime only.</p>
+<h2 id="installation">Installation</h2>
+<p>Claude Code:</p>
+<pre><code class="language-bash">claude plugins install gurus@laicluse-agent-fieldkit</code></pre>
+<p>Codex:</p>
+<pre><code class="language-bash">codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install gurus@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/gurus">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

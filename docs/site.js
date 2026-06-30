@@ -177,7 +177,7 @@
 				<header class="plugin-head">
 					<div>
 						<p class="plugin-category">${escapeHtml(categoryLabel(plugin.category))}</p>
-						<h3>${escapeHtml(plugin.name)}</h3>
+						<h3><a href="${escapeHtml(plugin.detailPath)}">${escapeHtml(plugin.name)}</a></h3>
 					</div>
 					<span class="version-pill">${escapeHtml(plugin.version)}</span>
 				</header>
@@ -196,7 +196,10 @@
 						`
 						: ""
 				}
-				<a class="source-link" href="${escapeHtml(plugin.sourceUrl)}">Package source</a>
+				<div class="plugin-actions">
+					<a class="source-link" href="${escapeHtml(plugin.detailPath)}">Details</a>
+					<a class="source-link" href="${escapeHtml(plugin.sourceUrl)}">Package source</a>
+				</div>
 			</article>
 		`;
 	}

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>whywhy · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/whywhy/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/whywhy/">
+		<meta property="og:title" content="whywhy · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="whywhy · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/whywhy">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Review and language</p>
+					<h1>whywhy</h1>
+					<p class="lede">Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.3</span>
+						<span>1 skill</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Drill N layers deep into a question or goal (default 10). Claude autonomously asks and answers &quot;why?&quot; itself, building a chain of reasoning, then analyzes the chain for a better direction toward the goal.</p>
+<p>The classic five-whys exercise, but autonomous and slightly deeper. Useful when the surface-level answer feels too convenient.</p>
+<h2 id="commands">Commands</h2>
+<h3 id="whywhy-n-question-goal-or-statement"><code>/whywhy [n] &lt;question, goal, or statement&gt;</code></h3>
+<p>Generates an <code>n</code>-deep &quot;why?&quot; chain (default 10), then analyzes the chain for:</p>
+<ul>
+<li>assumptions that broke down</li>
+<li>layers where the reasoning forked</li>
+<li>a better-framed goal at one of the deeper layers</li>
+</ul>
+<p>Argument can be a question, a stated goal, or a claim to interrogate.</p>
+<h2 id="auto-trigger">Auto-trigger</h2>
+<p>Activates when the user types <code>/whywhy</code> with content, and is model-invocable: it activates whenever a task is about drilling into the root cause of a decision, goal, or problem. Does not auto-fire on free conversation.</p>
+<h2 id="requirements">Requirements</h2>
+<p>Node.js on <code>$PATH</code> for the post-update broadcast check (<code>bin/check-broadcast</code>). The skill itself is plain Markdown and needs nothing beyond a reader.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">claude plugins install whywhy@laicluse-agent-fieldkit
+codex plugin add whywhy@laicluse-agent-fieldkit</code></pre>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install whywhy@laicluse-agent-fieldkit
+codex plugin add whywhy@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/whywhy">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

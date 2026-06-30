@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>dont-do-that · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/dont-do-that/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dont-do-that/">
+		<meta property="og:title" content="dont-do-that · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="dont-do-that · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Repository discipline</p>
+					<h1>dont-do-that</h1>
+					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.24</span>
+						<span>2 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Guardrail hooks that push back on common AI reflexes. Each hook either blocks a tool call, blocks the Stop event, or surfaces additional context at the moment a mistake is likely, forcing the active agent to course-correct instead of barreling past the issue.</p>
+<p>Claude Code receives the full hook stack. Codex receives the same event layers through the explicit <code>hooks/hooks.codex.json</code> source, materialized by <code>bin/plugin-adapters build</code> as <code>hooks/hooks.json</code> in the generated Codex adapter package. Which guard runs on which event for which agent is decided by the guard registry (<code>hooks/guards.json</code>), not by the dispatcher or bespoke per-manifest shell variables. Codex skips only the <code>premature</code> Stop guard, because that guard creates a nudge turn after otherwise-complete answers, which can replace the completed assistant message in the Mac app; the registry records that as <code>premature.agents.codex: disabled</code> while every other Stop guard still runs for Codex. The manifests tell the dispatcher who they are with <code>DD_AGENT=claude</code> and <code>DD_AGENT=codex</code>; the registry resolves the rest. The operator correction skills (<code>/duh</code> and <code>/just-a-question</code>) ship to both agents.</p>
+<h2 id="architecture">Architecture</h2>
+<p>One dispatcher, <code>hooks/dispatch.sh</code>, is registered against PreToolUse (shell and file-edit matchers), PostToolUse (shell and file-edit matchers), and Stop. Claude file edits arrive as <code>Edit</code> / <code>Write</code> / <code>MultiEdit</code>; Codex patches arrive as <code>apply_patch</code>. The dispatcher reads stdin once, extracts <code>hook_event_name</code> and <code>tool_name</code>, picks the matching lane, and then reads the ordered, agent-filtered guard list for that lane from the registry (<code>hooks/guards.json</code>) rather than enumerating guards itself. Guards live under <code>hooks/guards/</code> as sourced functions, shared helpers under <code>hooks/lib/common.sh</code>. No external script runs per guard. For a one-off manual silence the dispatcher still honours <code>DD_SKIP_GUARDS</code>, <code>DD_ONLY_GUARDS</code>, and event-specific variants such as <code>DD_SKIP_STOP_GUARDS</code> as a secondary gate, but durable agent/event policy belongs in the registry, not in a shell variable.</p>
+<h2 id="guard-registry">Guard registry</h2>
+<p><code>hooks/guards.json</code> is the source of truth for which guard runs on which hook event for which agent. The dispatcher generates its per-lane guard list from it at runtime (a single <code>jq</code> read; <code>jq</code> is already a hard dependency of every guard), so adding, reordering, or re-scoping a guard is a registry edit, not a dispatcher edit.</p>
+<p>The file has four parts:</p>
+<ul>
+<li><code>contracts</code>: the payload each guard can inspect. <code>tool-call</code> is the pending tool invocation before it runs (PreToolUse), <code>persisted-edit</code> is file content or a shell command after it is applied (PostToolUse), <code>final-answer</code> is the assistant's final-turn text (Stop).</li>
+<li><code>events</code>: each hook event and the contracts it <code>provides</code>. This is what makes placement checkable: a guard can only move to an event that carries the data it reads.</li>
+<li><code>lanes</code>: the named groups guards are assigned to, each binding to one <code>event</code>. The registry owns which guard sits in which lane and in what order; the dispatcher owns each lane's execution mechanics. <code>pre-bash</code> and <code>pre-edit</code> deny (a guard can exit the tool call); <code>post</code> and <code>stop-tracked</code> capture (each guard runs in a subshell, the first non-empty output is surfaced, and every guard still runs so its line tracker updates); <code>stop-mutex</code> is the deny-style Stop group skipped once a prior Stop fire already blocked. To add a lane you touch the dispatcher, because a new execution shape is dispatcher logic, not data; to add or move a guard you touch only the registry.</li>
+<li><code>guards</code>: every guard, keyed by the guard id (its <code>hooks/guards/&lt;id&gt;.sh</code> filename, usually but not always matching its <code>[dont-do-that/...]</code> mnemonic prefix; <code>false-claims</code> emits <code>[dont-do-that/pre-existing]</code>, for example), with its <code>lane</code>, <code>order</code> within the lane (ordinal only; gaps are deliberate), <code>function</code> name, the <code>contract</code> it inspects, and an optional <code>agents</code> policy map. An agent absent from the map (or a guard with no <code>agents</code> map at all) defaults to <code>enabled</code>, so the full stack runs for every agent including future ones; only an explicit <code>disabled</code> removes a guard for one agent. <code>premature</code> is the one guard that diverges (<code>codex: disabled</code>).</li>
+</ul>
+<p>Example: <code>premature</code> runs on Stop for Claude but not Codex.</p>
+<pre><code class="language-json">&quot;premature&quot;: {
+  &quot;lane&quot;: &quot;stop-mutex&quot;,
+  &quot;order&quot;: 40,
+  &quot;function&quot;: &quot;guard_premature&quot;,
+  &quot;contract&quot;: &quot;final-answer&quot;,
+  &quot;agents&quot;: { &quot;claude&quot;: &quot;enabled&quot;, &quot;codex&quot;: &quot;disabled&quot; }
+}</code></pre>
+<p>A guard cannot move to an event whose contract it does not read: <code>premature</code> inspects <code>final-answer</code>, which only <code>Stop</code> provides, so placing it on a PostToolUse lane is rejected. <code>bin/validate-registry</code> enforces this and the rest of the schema (known lane, known contract, the lane event provides the guard's contract, agent values limited to <code>enabled</code>/<code>disabled</code>, unique order within a lane, and every guard backed by a <code>hooks/guards/&lt;id&gt;.sh</code> that defines its <code>function</code>). Run it after any registry edit:</p>
+<pre><code class="language-bash">bash packages/dont-do-that/bin/validate-registry</code></pre>
+<p>If <code>guards.json</code> is missing or not valid JSON, the dispatcher fails closed on PreToolUse: it denies the tool call with a <code>[dont-do-that/registry]</code> message instead of silently running no guards, so a corrupt registry cannot disarm the safety gates unnoticed. The PostToolUse and Stop lanes (context and nudge output, not irreversible-action gates) stay quiet in that state; the PreToolUse denial surfaces the problem on the next tool call regardless.</p>
+<p>After editing the registry, run <code>bin/plugin-adapters build .</code> so the generated Codex adapter picks up the new <code>guards.json</code> and any manifest change. To verify an edit took effect without writing anything, <code>bin/plugin-adapters check .</code> reports drift read-only (it is what CI and a pre-commit check would run); <code>build</code> is only needed when <code>check</code> reports the adapter is behind.</p>
+<h3 id="adding-a-new-guard">Adding a new guard</h3>
+<p>A registry entry is only half of a guard; it also needs a backing script. To add a guard with id <code>&lt;id&gt;</code>:</p>
+<ol>
+<li>Write <code>hooks/guards/&lt;id&gt;.sh</code> defining a shell function <code>guard_&lt;id&gt;()</code> that reads the hook JSON on <code>$1</code> and, when it fires, calls one of the <code>dd_emit_*</code> helpers from <code>hooks/lib/common.sh</code> (<code>dd_emit_deny</code> to block a PreToolUse tool, <code>dd_emit_context</code> to surface PostToolUse context, <code>dd_emit_block</code> to block a Stop) with the <code>&lt;id&gt;</code> mnemonic.</li>
+<li>Register it in <code>guards.json</code>: pick a <code>lane</code> whose <code>event</code> provides the <code>contract</code> your guard inspects, give it a unique <code>order</code> within that lane, name its <code>function</code>, and set an <code>agents</code> policy (omit an agent to default it to <code>enabled</code>).</li>
+<li>Run <code>bash bin/validate-registry</code> to confirm the placement and the script-and-function binding.</li>
+<li>Run <code>bin/plugin-adapters build .</code> to sync the Codex adapter.</li>
+</ol>
+<p>Every user-visible hook message begins with the mnemonic prefix <code>[dont-do-that/&lt;code&gt;] </code>. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or <code>hooks/guards/&lt;code&gt;.sh</code>.</p>
+<h2 id="codes-and-guards">Codes and guards</h2>
+<h3 id="pretooluse-file-edits">PreToolUse (file edits)</h3>
+<p><strong><code>no-code-comments</code></strong> in <code>hooks/guards/no-code-comments.sh</code> Denies file-edit tool calls that introduce a code comment in a programming-language source file. Claude <code>Edit</code> / <code>Write</code> / <code>MultiEdit</code> inputs compare old-side and new-side content; Codex <code>apply_patch</code> inputs inspect only added patch lines per target file. The reflex to add a comment is usually a missed refactor (an intent-revealing name, an extracted method, a sharper signature), so the gate pushes back at the easy path. Per-language awk tokenizers in two modes (<code>slash</code> for C-family covering JS/TS/Swift/Kotlin/Java/Scala/Groovy/Go/Rust/C/C++/C#/Dart/Objective-C; <code>hash</code> for script-family covering Python/Ruby/Bash/Zsh/Perl/Elixir/Crystal/Rakefile/Gemfile) walk the diff character-by-character, track string state (including template literals and triple-quoted strings), and emit only real comments, never strings that contain comment-looking text. In slash mode a backslash-then-anything pair is consumed as an escape so regex-literal interiors like <code>/a\/b/</code> do not trip the <code>//</code> detector. The added-comment set is the new-side comments minus the old-side comments; a touched comment counts as added so renaming <code># foo</code> to <code># bar</code> is also blocked. Doc comments (<code>///</code>, <code>//!</code>, <code>/** */</code>) are blocked the same as plain comments: the operator's intent is &quot;no inline explanation&quot;; use <code>allow-comment:</code> if a project relies on generated API documentation from source. Non-programming-language files (markdown, JSON, YAML, HTML, CSS, ERB, env, dotfiles) pass without inspection. CSS is excluded because <code>/* ... */</code> is its only comment form and not a programming-language reflex; PHP is excluded because mixed HTML+PHP files would false-positive on the HTML parts; JSX (<code>.jsx</code>) and TSX (<code>.tsx</code>) are excluded because text content between JSX tags can contain <code>//</code> literally (<code>&lt;p&gt;// not a comment, just slash&lt;/p&gt;</code>) which the tokenizer cannot distinguish from a code comment without full JSX parsing. Allow rules: comment containing <code>https?://</code> (a URL the language cannot express), comment containing <code>allow-comment:</code> followed by a reason (case-insensitive operator escape, one per comment, colon required so a passing mention of the word does not pass), pragma allowlist anchored at the start of the trimmed body (<code>frozen_string_literal</code>, <code>@ts-ignore</code>, <code>@ts-expect-error</code>, <code>@ts-nocheck</code>, <code>@ts-check</code>, <code>@flow</code>, <code>noqa</code>, <code>pylint:</code>, <code>mypy:</code>, <code>pyright:</code>, <code>type:</code>, <code>eslint-disable</code>, <code>eslint-enable</code>, <code>prettier-ignore</code>, <code>biome-ignore</code>, <code>tslint:</code>, <code>rubocop:</code>, <code>sorbet:</code>, <code>stylelint-disable</code>, <code>stylelint-enable</code>, <code>go:</code> directives, <code>Generated by</code>, <code>DO NOT EDIT</code>, <code>Code generated</code>, <code>@generated</code>, <code>Auto-generated</code>, <code>Copyright</code>, <code>SPDX-License-Identifier</code>, <code>License:</code>, <code>Licensed under</code>, <code>All rights reserved</code>, <code>See LICENSE</code>, <code>encoding:</code>, <code>coding:</code>), or a shebang (<code>#!</code>) on line 1. Pass condition: rewrite the code for clarity (rename the variable, extract a method, sharpen the signature) instead of explaining it in a comment, or use one of the listed allow rules.</p>
+<p>Known limitations. Ruby and Bash heredoc bodies are not shielded, so a <code>#</code>-prefixed line inside a Ruby <code>&lt;&lt;~SQL ... SQL</code> block or a Bash <code>&lt;&lt;EOF ... EOF</code> block can register as a comment when edited; use <code>allow-comment:</code> on the heredoc line if it bites. Nested JS template literals (`<code> </code>${<code>inner //</code>}<code> </code><code>) may close the outer template state early; the inner </code>//<code> then fires as a comment. Triple-quoted Python or Swift strings do not handle a literal </code>\&quot;<code> before the close, so an embedded escaped triple-quote can mis-end the string. These three cases are uncommon enough that the </code>allow-comment:` escape is the right exit; deeper parsing would risk new false positives.</p>
+<h3 id="pretooluse-bash">PreToolUse (Bash)</h3>
+<p><strong><code>no-osascript</code></strong> in <code>hooks/guards/no-osascript.sh</code> Denies Bash tool calls that invoke <code>osascript</code>, including <code>/usr/bin/osascript</code>, common wrappers such as <code>sudo</code>, <code>env</code>, <code>command</code>, <code>exec</code>, <code>nohup</code>, <code>arch</code>, and command substitutions. Pass condition: use an explicit host-owned UI/browser capability, or a project-native command path that does not execute AppleScript.</p>
+<p><strong><code>followup</code></strong> in <code>hooks/guards/followup.sh</code> Denies <code>gh api</code> commands whose body contains deferral language (&quot;follow-up&quot;, &quot;wordt opgepakt&quot;, &quot;buiten scope&quot;, &quot;in een volgende pr&quot;, and similar) unless the body starts with <code>Bewust uitgesteld:</code>. Pass condition: prefix the body with <code>Bewust uitgesteld:</code> to claim an explicit deferral, or rewrite the body without deferral language.</p>
+<p><strong><code>no-worktree-deploy</code></strong> in <code>hooks/guards/no-worktree-deploy.sh</code> Denies <code>ansible-playbook</code> invocations when the cwd is a git worktree rather than the canonical checkout. The check compares <code>git rev-parse --git-dir</code> against <code>--git-common-dir</code> (a worktree has these diverge, a regular checkout has them collapse), so the guard works for any worktree layout. Read-only flags pass: <code>--check</code>, <code>--syntax-check</code>, <code>--version</code>, <code>--help</code>, <code>--list-tasks</code>, <code>--list-hosts</code>, <code>--list-tags</code>, <code>-h</code>. Pass condition: merge the branch to the default branch first and run <code>ansible-playbook</code> from the canonical checkout, or restrict the worktree call to a read-only preview flag. Enforces the operator's &quot;branches are never deployed from a worktree&quot; gate so an in-flight branch cannot land on shared infrastructure before merge.</p>
+<p>Commit-message discipline (subject banlist, rotation reminders, format/length, body schema, push gates) lives in the <code>git-discipline</code> plugin and the <code>/git-discipline:commit-discipline</code> skill. It used to ship from <code>dont-do-that</code>; this README intentionally does not duplicate the contract.</p>
+<h3 id="posttooluse-file-edits-and-shell">PostToolUse (file edits and shell)</h3>
+<p><strong><code>dash</code></strong> in <code>hooks/guards/dash.sh</code> Surfaces additional context when em-dash (U+2014) or en-dash (U+2013) appears in <code>.md</code>, <code>.txt</code>, or <code>.mdx</code> files outside of fenced code blocks, in any persisted file content, added <code>apply_patch</code> lines, or in a shell command (clipboard, pipes). Chat is not checked. Does not block, only surfaces a rewrite instruction.</p>
+<p><strong><code>land</code></strong> in <code>hooks/guards/land.sh</code> Surfaces additional context when the vague &quot;land&quot; metaphor (<code>land</code>, <code>landing</code>, <code>landed</code>, <code>geland</code>, <code>landt</code>) appears in persisted file content, added <code>apply_patch</code> lines, or a shell command, outside of fenced code blocks. The match is a plain case-insensitive substring, so ordinary words (<code>Nederland</code>, <code>landscape</code>, <code>landing page</code>) trip it too; that is deliberate. The word is off the naming doctrine and reads as filler that names nothing concrete, but it is also an ordinary word, so this stays a gentle reminder to pick a concrete verb, never a hard gate. Does not block, only surfaces a rewrite instruction.</p>
+<h3 id="stop">Stop</h3>
+<p><strong><code>pre-existing</code></strong> (false-claims) in <code>hooks/guards/false-claims.sh</code> Blocks Stop when the recent assistant text relativizes a test or error as already existing before the current change. Also runs when <code>stop_hook_active</code> is true (keeps its own per-session line tracker). Pass condition: fix the failure, or formulate it as parallel work in the same directory when there is concrete evidence of a parallel session.</p>
+<p><strong><code>cache</code></strong> in <code>hooks/guards/cache.sh</code> Blocks Stop when the recent assistant text blames cache for a problem on localhost. On a dev server, cache is rarely the real cause. Pass condition: investigate and name the actual root cause.</p>
+<p><strong><code>compliance</code></strong> in <code>hooks/guards/compliance.sh</code> Blocks Stop when the last assistant message ends with a confirmation question (&quot;Wil je dat ik...?&quot;, &quot;Shall I...?&quot;, &quot;Moet ik...?&quot;) despite a clear user instruction. Pass condition: continue the work and stop asking, or prefix the question with 🧭 for a genuine new direction.</p>
+<p><strong><code>premature</code></strong> in <code>hooks/guards/premature.sh</code> Blocks Stop when the last assistant message does not end with a question AND does not end with 🏁 (finish) or 🚦 (waiting on external go) plus a substantive sentence (≥40 non-space non-emoji chars with a sentence terminator). Catches truncated close-outs and bare emoji free passes. Mutually exclusive with <code>compliance</code> by condition. Pass condition: end with 🏁 + real sentence when work is done, or 🚦 + real sentence when waiting on an external go, or keep writing.</p>
+<p><strong><code>prefer</code></strong> in <code>hooks/guards/prefer.sh</code> Blocks Stop when the assistant lays out an option menu and hands the choice back without committing to one. Menu detection fires on four structural patterns (two or more <code>(a)</code>/<code>(b)</code> markers, two or more <code>Optie</code>/<code>Option N</code> items, a markdown table whose header row names an <code>optie</code>/<code>option</code>/<code>aanpak</code>/<code>approach</code>/<code>variant</code> column, or two or more ordered-list items), then gates on a choose-between signal (<code>welke</code>, <code>which do/would/one</code>, <code>je voorkeur</code>, <code>jouw keuze</code>, <code>do you prefer</code>, <code>your call</code>, and the like) so confirmation questions, status tables, and step-by-step plans stay silent. Runs before <code>premature</code> and <code>compliance</code> so a menu is judged here instead of being swallowed by the generic close-out nudges. Pass condition: state the preference you would back and why, then mark your pick with a squared-letter (🅰️/🅱️) or number-keycap (1️⃣/2️⃣) emoji; 🧭 (genuinely the operator's call) and 🚧 (WIP) also stand the guard aside. When the <code>rover</code> plugin is installed the reminder adds a <code>/rover:decide</code> pointer for genuinely hard calls.</p>
+<p><strong><code>verify</code></strong> (verification-delegation) in <code>hooks/guards/verify.sh</code> Blocks Stop when the assistant delegates verification to the user (&quot;zou moeten werken&quot;, &quot;check of het werkt&quot;, &quot;refresh de pagina&quot;) instead of verifying itself. Meta-references (backticks, quoted strings, table cells) are stripped before matching. Pass condition: prefix the conclusion with <code>Geverifieerd:</code> after actually running verification (screenshot, curl, test, grep).</p>
+<p><strong><code>duh</code></strong> in <code>hooks/guards/duh.sh</code> Sister to <code>verify</code>. Blocks Stop when the assistant offers a recipe (&quot;je kunt dit doen door <code>cmd</code> te draaien&quot;, &quot;you can verify this by running <code>cmd</code>&quot;, &quot;Run <code>cmd</code> to see the result&quot;, &quot;open the URL in your browser&quot;) for an action it could have executed itself via available shell, file-edit, or browser tooling. Fenced code blocks are stripped first so documentation examples do not trigger. Pass condition: actually run the action and report the result, or prefix the line with <code>Instructie:</code> when the operator explicitly asked for a manual recipe.</p>
+<p><strong><code>tool-error</code></strong> (nudge-after-tool-error) in <code>hooks/guards/tool-error.sh</code> Blocks Stop when the last significant event in the transcript was a failed tool call. Also runs when <code>stop_hook_active</code> is true. Maximum two nudges per session (hard cap), with LINE_FILE tracking so we only fire on new errors. Pass condition: analyse the error and retry instead of giving up.</p>
+<p><strong><code>estimate</code></strong> in <code>hooks/guards/estimate.sh</code> Blocks Stop when the assistant text frames effort or scope in hours, days, weeks, or months (&quot;een paar uur eerlijk werk&quot;, &quot;halve dag uitzoekwerk&quot;, &quot;dagje sleutelen&quot;, &quot;kost een week&quot;, &quot;takes a day&quot;, &quot;a few days of work&quot;, &quot;binnen een uur&quot;, &quot;this is a week of work&quot;, and the comparison frame &quot;option A is vandaag, option B is deze week&quot;). LLM-trained duration claims are routinely 10x to 100x off for work an agent session can actually do, and decisions get made on the inflated figure. Mutex-respecting (skips when <code>stop_hook_active</code> is true) and runs before <code>premature</code> so the specific reason surfaces instead of the generic close-out nudge. False-positive guards drop hits on the same line as past-tense markers (geleden, ago, sinds, afgelopen), calendar and scheduling tokens (cron, every, elke, recurring, schedule), retention windows (retention, TTL, cooldown, backoff), measurement language (duration:, since, running, loopt, wait, the last, history, uptime, live, expir, bracket), legal and SLA facts (loon, opzegtermijn, SLA, jaarrekening, in productie), and absolute-time references (over X uur, tomorrow, morgen, gisteren). Pass conditions: drop the duration phrasing, replace it with a concrete count (files touched, edits, verifications), prefix the turn with <code>🧭</code> for a deferred-judgment user-choice, or close with <code>🚧</code> for WIP.</p>
+<h2 id="skills">Skills</h2>
+<p><strong><code>/duh</code></strong> in <code>skills/duh/SKILL.md</code> User-invocable correction skill, the read-time counterpart to the <code>duh</code> guard. The operator types <code>/duh</code> (no arguments) when the previous assistant turn offered a recipe, instruction, browser action, or confirmation question instead of executing the proposal. The skill resolves the proposal from that previous turn and runs it via the available tools. The proposal must be exactly one super-clear non-ambiguous action; if multiple distinct candidates exist in the previous turn, the skill mandates a numbered menu of every option (no upper bound; even ten) and asks the operator to pick before any execution. Different actor (one option operator-side, one assistant-side) does not collapse two options to one. Inviolable gates (push, merge to default, deploy, destructive git, external irreversible ops) are not lifted by <code>/duh</code>; they still require an explicit operator go.</p>
+<p><strong><code>/just-a-question</code></strong> in <code>skills/just-a-question/SKILL.md</code> Sister to <code>/duh</code>. The operator types <code>/just-a-question</code> to mark the message as the first half of &quot;this is a question for information, not a request for change&quot;. For the rest of that turn, all mutation tools are forbidden (file-edit tools and mutating shell commands like <code>git commit</code>/<code>push</code>/<code>rm</code>/<code>mv</code>/<code>launchctl</code>, etc.). Read-only tools stay available (file reads, search, read-only shell commands, and available explore agents). When the answer reveals an obvious fix, the skill names it but does not apply it. This is an explicit lock, not a rule for every question mark: QA/status checks on work the agent is currently driving (CI status, PR screenshots, PR body evidence, release notes) remain part of the deliverable, and a failed check is a blocker to fix. The operator can request the change in a separate turn without the <code>/just-a-question</code> prefix.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">claude plugins install dont-do-that@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit</code></pre>
+<h2 id="disabling-individual-guards">Disabling individual guards</h2>
+<p>The dispatcher always runs, but individual guards fire based on the message content. To silence one guard for an agent durably, set that guard's <code>agents.&lt;agent&gt;</code> to <code>disabled</code> in <code>hooks/guards.json</code> and run <code>bin/plugin-adapters build .</code>. For a one-off silence in your own install, set <code>DD_SKIP_GUARDS=&lt;id&gt;</code> (or the event-specific <code>DD_SKIP_STOP_GUARDS=&lt;id&gt;</code>) on the dispatcher command in your hook manifest. To silence the plugin entirely, uninstall:</p>
+<pre><code class="language-bash">claude plugins uninstall dont-do-that@laicluse-agent-fieldkit
+codex plugin remove dont-do-that@laicluse-agent-fieldkit</code></pre>
+<h2 id="known-quirk">Known quirk</h2>
+<p>These hooks scan assistant transcripts for trigger phrases. Documenting or discussing the hooks themselves can trigger them (meta false positives). If you are editing the scripts or writing docs about them, expect occasional Stop blocks. The WIP escape hatch 🚧 in your assistant text skips Stop guards while you work on the hook system.</p>
+<h2 id="language">Language</h2>
+<p>Trigger patterns match both Dutch and English phrasing. Messages are in English. Some escape tokens remain Dutch (<code>Bewust uitgesteld:</code>, <code>Geverifieerd:</code>) because they are deliberate trigger words that the agent must type verbatim to pass a guard.</p>
+<h2 id="tests">Tests</h2>
+<pre><code class="language-bash">bash packages/dont-do-that/test/smoke-test.sh</code></pre>
+<p>The smoke test drives every trigger case through <code>hooks/dispatch.sh</code> with an explicit <code>hook_event_name</code>, matching the real runtime path. Exit 0 on all pass.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install dont-do-that@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

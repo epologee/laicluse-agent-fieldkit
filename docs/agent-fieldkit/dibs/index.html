@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>dibs · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/dibs/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dibs/">
+		<meta property="og:title" content="dibs · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="dibs · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Repository discipline</p>
+					<h1>dibs</h1>
+					<p class="lede">Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.23</span>
+						<span>2 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>A single-occupancy lock for a working directory. Two coding agents, often cross-vendor (a Claude and a Codex), can start working in the same directory at the same time and overwrite each other. dibs lets one agent take exclusive occupancy before mutation and makes the next mutating agent step aside. Any tool or agent can take the lock and any other can observe it, regardless of vendor or platform.</p>
+<p>It is deliberately not a git tool: it locks any working directory or resource, not only git worktrees. <code>bonsai</code> creates worktrees and consumes dibs to claim the directory it hands out; the lock logic lives in exactly one place.</p>
+<h2 id="cli">CLI</h2>
+<pre><code>dibs claim       &lt;dir&gt; [--pid &lt;n&gt;] [--agent &lt;name&gt;] [--session &lt;id&gt;] [--owner &lt;id&gt;] [--max-age-hours &lt;n&gt;] [--json]
+dibs release     &lt;dir&gt; [--pid &lt;n&gt;] [--nonce &lt;hex&gt;] [--json]
+dibs release-all [--pid &lt;n&gt;] [--session &lt;id&gt;] [--owner &lt;id&gt; --agent &lt;name&gt;] [--json]
+dibs check       &lt;dir&gt; [--max-age-hours &lt;n&gt;] [--json]</code></pre>
+<p>The directory-keyed verbs (<code>claim</code>, <code>release</code>, <code>check</code>) require the directory to exist; the lock is keyed by its realpath, so a missing path is a clear error rather than a silently divergent key. <code>release-all</code> is the exception: it operates on the lock store directly, reading each lock's recorded realpath, so it still frees a worktree that has since been pruned.</p>
+<ul>
+<li><strong>claim</strong> takes exclusive occupancy of a directory keyed by its realpath. Exits 0 on a fresh claim, on an idempotent re-claim by the same holder (<code>held-by-self</code>), or on taking over a stale lock whose holder pid is dead (<code>took-over-stale</code>). Exits non-zero and reports the holder when a live holder exists. A refused claim also suggests creating a separate git worktree on a new branch (for example with <code>bonsai:bonsai</code>, or plain <code>git worktree</code> if you do not have it) and claiming that worktree path.</li>
+<li><strong>release</strong> deletes the lock only if you are the holder. Releasing a lock held by another is refused; releasing an unheld directory is a no-op.</li>
+<li><strong>release-all</strong> releases every lock whose holder identifies as the caller's session in one sweep (same host, matching any of <code>--pid</code>, <code>--session</code>, or <code>--owner</code> with <code>--agent</code>), across all directories. It takes no <code>&lt;dir&gt;</code> and requires at least one selector so it can never blindly clear the whole store. A session that edits files in several git roots holds several locks; this is how SessionEnd and the <code>undibs</code> skill free all of them at once. Locks belonging to a different live agent are never touched.</li>
+<li><strong>check</strong> reports <code>free</code>, or the holder with its liveness and staleness.</li>
+</ul>
+<p><code>release</code> is for explicit recovery or operator-directed teardown. It is not normal end-of-task cleanup for a coding agent that claimed occupancy through the hook. That lock should stay held until the host session ends (Claude), or until pid-liveness/owner reclaim clears it on the next claim (Codex). A green test suite, clean worktree, commit, or final answer is not a release condition.</p>
+<p><code>--pid</code> is the holder pid whose liveness defines the lock; default is the calling process's parent pid. Record the long-lived agent or session process, not the ephemeral <code>dibs</code> invocation.</p>
+<p><code>--owner</code> is a stable owner key for the human/tool surface that survives a process or thread resume. A later claim by the same <code>agent</code> and <code>owner</code> rewrites the lock to the new pid/host instead of self-locking. The occupancy hook sets it from <code>DIBS_OWNER</code>, then for Codex from <code>CMUX_TAB_ID</code>, <code>CMUX_WORKSPACE_ID</code>, <code>CODEX_THREAD_ID</code>, or finally the hook session id.</p>
+<h2 id="how-it-works">How it works</h2>
+<p>A lock is a file written with an atomic exclusive create (<code>open(O_CREAT|O_EXCL)</code>, the node <code>wx</code> flag) at <code>${LAICLUSE_HOME:-$HOME/.laicluse}/locks/&lt;sha256-of-realpath&gt;.lock</code>. The record is JSON: realpath, holder pid, agent, session, owner, hostname, nonce, acquired-at.</p>
+<p>To acquire, dibs tries the atomic create. On collision it reads the record and checks liveness with <code>process.kill(pid, 0)</code> on the same host. A dead holder (or a foreign-host lock past the optional age cap) is broken and taken over; a live holder is respected and reported. Release deletes the file only for the holder.</p>
+<p>This is the portable, dependency-free primitive. <code>flock(1)</code> is not shipped on macOS, the <code>flock(2)</code> syscall needs a native binding and a session-lived holder process, and both are host-only. Atomic exclusive create is present everywhere node runs (macOS, Linux, Windows), gives the same mutual exclusion with zero dependencies, and self-heals through pid-liveness.</p>
+<h2 id="scope-and-non-goals">Scope and non-goals</h2>
+<ul>
+<li><strong>Single machine.</strong> Atomic-create semantics and pid-liveness are host-local. Directories shared over NFS or another network filesystem are out of scope for v1; cross-machine arbitration is a lease-broker problem, not this lock's.</li>
+<li><strong>pid recycling.</strong> A recycled pid can read as a live holder. The acquired-at timestamp and <code>--max-age-hours</code> cap bound the residual risk; v1 accepts it rather than probing process start-time natively. When set, <code>--max-age-hours</code> deliberately overrides liveness: a lock older than the cap is broken even if its pid still reads alive, which is the recycling mitigation. Left unset (the default), pid-liveness is authoritative and a live holder is never broken. The recorded <code>nonce</code> identifies a specific claim for logs and observability and is not consulted for liveness; <code>release --nonce &lt;hex&gt;</code> optionally binds a release to one specific claim so a recycled pid cannot release a lock it did not take.</li>
+<li><strong>Same-user liveness.</strong> <code>process.kill(pid, 0)</code> reports a process owned by another user or living in another namespace as alive (<code>EPERM</code>), so dibs never breaks a lock it cannot positively prove dead; such a lock clears only through the <code>--max-age-hours</code> cap. Within one user on one machine, the agent case, liveness is exact.</li>
+<li><strong>Occupancy, not git.</strong> dibs prevents concurrent occupancy. It is not a git lock and does not replace git's own <code>index.lock</code>.</li>
+</ul>
+<h2 id="enforcement-hooks">Enforcement hooks</h2>
+<p>The lock only helps if it is acquired before mutation. dibs ships <code>hooks/occupancy.sh</code>, a vendor-neutral hook that enforces single occupancy for mutating file edits, not only the worktrees <code>bonsai</code> hands out. It is registered for both agents (<code>hooks/hooks.json</code> for Claude, <code>hooks/hooks.codex.json</code> for Codex, materialized into the generated Codex adapter) and shells out to this plugin's own CLI, so there is no second lock path.</p>
+<ul>
+<li><strong>SessionStart</strong> does not claim the working directory. A read-only question in a directory another live agent holds stays quiet and does not occupy the directory.</li>
+<li><strong>PreToolUse</strong> (file edits: <code>Edit</code> / <code>Write</code> / <code>MultiEdit</code> / <code>apply_patch</code>) claims the directory before the mutation and hard-denies (exit 2) when a <em>different</em> live session holds it, reporting the holder and how to recover. The recovery text points the blocked agent at a separate git worktree on a new branch, so the safe next move is visible at the denial point. The agent's own session is recognised by the lock's stable owner id first and the hook session id second, so a drifted worker pid or resumed Codex thread never self-locks the agent out. A legacy ownerless Codex resume is reclaimed at the first write. A free directory, a self-healed dead holder, and any non-refusal dibs result all pass (fail-open).</li>
+<li><strong>SessionEnd</strong> (Claude only) releases every directory the session locked, not just the cwd: it sweeps with <code>release-all</code> keyed by the session's holder pid, so a session that edited several git roots leaves nothing locked behind. Codex has no session-end event, so a Codex lock clears through pid-liveness self-heal on the next claim, or through owner-based reclaim on a Codex resume, which is expected rather than a leak.</li>
+</ul>
+<p>Shell (<code>Bash</code>) mutations are intentionally not gated; the git-native commit hook remains the backstop for those and for agents under bypassPermissions. Opt out of enforcement for a session with <code>DIBS_OCCUPANCY=off</code>. <code>bonsai</code>'s claim-at-handout is unaffected and complementary.</p>
+<h2 id="library">Library</h2>
+<p><code>bin/dibs-lib.mjs</code> exports <code>claim</code>, <code>release</code>, <code>releaseAll</code>, <code>check</code>, and <code>formatHolder</code> as pure node ES modules with no third-party imports. Consumers in the same marketplace import it directly so there is a single lock implementation and no parallel path:</p>
+<pre><code class="language-js">import { claim } from '../../dibs/bin/dibs-lib.mjs';
+
+const result = claim({ dir, pid: process.ppid, agent: 'my-tool' });
+if (!result.ok) console.warn(`held by ${result.holder.agent}`);</code></pre>
+<p>An embedder that hands out a directory on behalf of a long-lived caller (as <code>bonsai</code> does) records that caller's pid, not its own short-lived process. <code>bonsai</code> reads <code>DIBS_HOLDER_PID</code>, <code>DIBS_AGENT</code>, and <code>DIBS_SESSION</code> to label the holder, <code>DIBS_OWNER</code> to preserve identity across resumes, and <code>DIBS_LIB</code> to point at an alternate lib path. The CLI honours <code>DIBS_BIN</code> for a fixed binary path.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install dibs@laicluse-agent-fieldkit
+codex plugin add dibs@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

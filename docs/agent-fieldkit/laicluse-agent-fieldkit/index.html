@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>laicluse-agent-fieldkit · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Marketplace utilities, including a changelog reader for installed Fieldkit plugins.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/laicluse-agent-fieldkit/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/laicluse-agent-fieldkit/">
+		<meta property="og:title" content="laicluse-agent-fieldkit · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Marketplace utilities, including a changelog reader for installed Fieldkit plugins.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="laicluse-agent-fieldkit · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Marketplace utilities, including a changelog reader for installed Fieldkit plugins.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>laicluse-agent-fieldkit</h1>
+					<p class="lede">Marketplace utilities, including a changelog reader for installed Fieldkit plugins.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.4</span>
+						<span>1 skill</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. This plugin ships <code>/whats-new</code> for Claude Code and Codex, using each agent's own installed-plugin index.</p>
+<h2 id="commands">Commands</h2>
+<h3 id="whats-new-plugin-name"><code>/whats-new [plugin-name]</code></h3>
+<p>With a plugin name (e.g. <code>git-discipline</code>): reprints the latest CHANGELOG section of that installed plugin without touching its broadcast sentinel, so the regular post-update broadcast still fires exactly once.</p>
+<p>Without arguments: prints the latest marketplace-wide news from <code>MARKETPLACE-CHANGELOG.md</code> plus an index of installed plugins that ship a per-plugin CHANGELOG.</p>
+<p>Use <code>/laicluse-agent-fieldkit:whats-new</code> only when a namespaced form is needed.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
+codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit</code></pre>
+<p>This command covers plugins installed from <code>@laicluse-agent-fieldkit</code>. Existing installs under the previous marketplace identity need to be removed and reinstalled from Fieldkit.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
+codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit">Package source</a>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/README.md">README source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>
