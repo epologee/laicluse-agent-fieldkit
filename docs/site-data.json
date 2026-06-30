@@ -481,6 +481,7 @@
 		{
 			"plugin": "git-discipline",
 			"packageVersion": "2.0.37",
+			"detailPath": "agent-fieldkit/git-discipline/",
 			"version": "v2.0.32",
 			"type": "Changed",
 			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",
@@ -489,6 +490,7 @@
 		{
 			"plugin": "how-plugins-work",
 			"packageVersion": "2.0.28",
+			"detailPath": "agent-fieldkit/how-plugins-work/",
 			"version": "v2.0.17",
 			"type": "Changed",
 			"summary": "Agent-specific skill sources may now be single-sided.",
@@ -497,6 +499,7 @@
 		{
 			"plugin": "bonsai",
 			"packageVersion": "2.0.26",
+			"detailPath": "agent-fieldkit/bonsai/",
 			"version": "v2.0.21",
 			"type": "Fixed",
 			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",
@@ -505,6 +508,7 @@
 		{
 			"plugin": "dont-do-that",
 			"packageVersion": "2.0.24",
+			"detailPath": "agent-fieldkit/dont-do-that/",
 			"version": "v2.0.18",
 			"type": "Added",
 			"summary": "New PreToolUse:Bash guard no-osascript.",
@@ -513,6 +517,7 @@
 		{
 			"plugin": "dibs",
 			"packageVersion": "2.0.23",
+			"detailPath": "agent-fieldkit/dibs/",
 			"version": "v2.0.20",
 			"type": "Changed",
 			"summary": "Occupancy starts at the first write, not session start.",
@@ -521,6 +526,7 @@
 		{
 			"plugin": "anger-management",
 			"packageVersion": "2.0.15",
+			"detailPath": "agent-fieldkit/anger-management/",
 			"version": "v2.0.15",
 			"type": "Changed",
 			"summary": "Codex-only background diagnosis resolves the cheap model dynamically.",
@@ -529,6 +535,7 @@
 		{
 			"plugin": "rover",
 			"packageVersion": "2.0.13",
+			"detailPath": "agent-fieldkit/rover/",
 			"version": "v2.0.9",
 			"type": "Fixed",
 			"summary": "rover is multi-agent again.",
@@ -537,6 +544,7 @@
 		{
 			"plugin": "autonomous",
 			"packageVersion": "2.0.10",
+			"detailPath": "agent-fieldkit/autonomous/",
 			"version": "v2.0.1",
 			"type": "Breaking",
 			"summary": "autonomous is no longer advertised to Codex.",
@@ -545,6 +553,7 @@
 		{
 			"plugin": "clipboard",
 			"packageVersion": "2.0.10",
+			"detailPath": "agent-fieldkit/clipboard/",
 			"version": "v2.0.8",
 			"type": "Fixed",
 			"summary": "Codex now gets its own /clipboard helper-resolution instructions.",
@@ -553,6 +562,7 @@
 		{
 			"plugin": "intervision",
 			"packageVersion": "2.0.10",
+			"detailPath": "agent-fieldkit/intervision/",
 			"version": "v2.0.10",
 			"type": "Changed",
 			"summary": "Claude-to-Codex second opinions resolve the cheap model dynamically.",
@@ -561,6 +571,7 @@
 		{
 			"plugin": "self-improvement",
 			"packageVersion": "2.0.7",
+			"detailPath": "agent-fieldkit/self-improvement/",
 			"version": "v2.0.0",
 			"type": "Changed",
 			"summary": "First l'Aicluse release.",
@@ -569,6 +580,7 @@
 		{
 			"plugin": "gurus",
 			"packageVersion": "2.0.6",
+			"detailPath": "agent-fieldkit/gurus/",
 			"version": "v2.0.1",
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
@@ -577,6 +589,7 @@
 		{
 			"plugin": "house-rules",
 			"packageVersion": "2.0.4",
+			"detailPath": "agent-fieldkit/house-rules/",
 			"version": "v2.0.1",
 			"type": "Breaking",
 			"summary": "naming-is-hard has moved into house-rules.",
@@ -585,6 +598,7 @@
 		{
 			"plugin": "laicluse-agent-fieldkit",
 			"packageVersion": "2.0.4",
+			"detailPath": "agent-fieldkit/laicluse-agent-fieldkit/",
 			"version": "v2.0.3",
 			"type": "Added",
 			"summary": "$whats-new now works in Codex.",
@@ -593,6 +607,7 @@
 		{
 			"plugin": "saysay",
 			"packageVersion": "2.0.3",
+			"detailPath": "agent-fieldkit/saysay/",
 			"version": "v2.0.1",
 			"type": "Added",
 			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
@@ -601,6 +616,7 @@
 		{
 			"plugin": "whywhy",
 			"packageVersion": "2.0.3",
+			"detailPath": "agent-fieldkit/whywhy/",
 			"version": "v2.0.1",
 			"type": "Added",
 			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
@@ -609,6 +625,7 @@
 		{
 			"plugin": "drydry",
 			"packageVersion": "2.0.2",
+			"detailPath": "agent-fieldkit/drydry/",
 			"version": "v2.0.0",
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
@@ -617,6 +634,7 @@
 		{
 			"plugin": "lifeline",
 			"packageVersion": "2.0.1",
+			"detailPath": "agent-fieldkit/lifeline/",
 			"version": "v1.0.0",
 			"type": "Added",
 			"summary": "inspire and ground now ship together from the lifeline plugin.",

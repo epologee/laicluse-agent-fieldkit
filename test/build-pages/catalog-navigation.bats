@@ -79,3 +79,21 @@ with sync_playwright() as playwright:
 PY
   [ "$status" -eq 0 ]
 }
+
+@test "changelog plugin titles link to plugin detail pages" {
+  run python3 - <<'PY'
+import os
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as playwright:
+	browser = playwright.chromium.launch()
+	page = browser.new_page(viewport={"width": 1440, "height": 1000})
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#changelog")
+	page.wait_for_selector('.change-item')
+	count = page.locator('article.change-item a[href="agent-fieldkit/dibs/"]', has_text='dibs').count()
+	browser.close()
+	if count != 1:
+		raise SystemExit(f"expected one dibs changelog title detail link, got {count}")
+PY
+  [ "$status" -eq 0 ]
+}

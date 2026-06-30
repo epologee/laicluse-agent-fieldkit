@@ -750,6 +750,14 @@ pre {
   font-size: 0.78rem;
 }
 
+.change-head .change-plugin-link {
+  margin-top: 0;
+  color: inherit;
+  font-weight: inherit;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
 .change-item > p {
   color: var(--paper-muted);
 }

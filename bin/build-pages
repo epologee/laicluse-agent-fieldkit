@@ -540,6 +540,7 @@ function build(repoRoot) {
 		.map((plugin) => ({
 			plugin: plugin.name,
 			packageVersion: plugin.version,
+			detailPath: plugin.detailPath,
 			...plugin.latestChange,
 			sourceUrl: `${REPO_URL}/blob/main/${plugin.sourcePath}/CHANGELOG.md`,
 		}))

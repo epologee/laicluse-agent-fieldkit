@@ -228,7 +228,7 @@
 					<article class="change-item">
 						<div class="change-head">
 							<div>
-								<p>${escapeHtml(change.plugin)}</p>
+								<p><a class="change-plugin-link" href="${escapeHtml(change.detailPath)}">${escapeHtml(change.plugin)}</a></p>
 								<h3>${escapeHtml(change.packageVersion)}</h3>
 							</div>
 							<span class="change-type ${badgeClass}">${escapeHtml(change.type)}</span>
