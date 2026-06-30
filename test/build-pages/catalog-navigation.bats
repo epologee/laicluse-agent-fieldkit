@@ -46,18 +46,18 @@ import os
 from playwright.sync_api import sync_playwright
 
 with sync_playwright() as playwright:
-    browser = playwright.chromium.launch()
-    page = browser.new_page(viewport={"width": 390, "height": 1000})
-    page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#catalog")
-    page.wait_for_timeout(250)
-    result = page.evaluate("""() => {
-      const headerBottom = document.querySelector('.site-header').getBoundingClientRect().bottom;
-      const titleTop = document.querySelector('#catalog-title').getBoundingClientRect().top;
-      return { headerBottom, titleTop, clearsHeader: titleTop >= headerBottom + 8 };
-    }""")
-    browser.close()
-    if not result["clearsHeader"]:
-        raise SystemExit(f"catalog title top {result['titleTop']} is under header bottom {result['headerBottom']}")
+	browser = playwright.chromium.launch()
+	page = browser.new_page(viewport={"width": 390, "height": 1000})
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#catalog")
+	page.wait_for_timeout(250)
+	result = page.evaluate("""() => {
+const headerBottom = document.querySelector('.site-header').getBoundingClientRect().bottom;
+const titleTop = document.querySelector('#catalog-title').getBoundingClientRect().top;
+return { headerBottom, titleTop, clearsHeader: titleTop >= headerBottom + 8 };
+}""")
+	browser.close()
+	if not result["clearsHeader"]:
+		raise SystemExit(f"catalog title top {result['titleTop']} is under header bottom {result['headerBottom']}")
 PY
   [ "$status" -eq 0 ]
 }
@@ -68,14 +68,14 @@ import os
 from playwright.sync_api import sync_playwright
 
 with sync_playwright() as playwright:
-    browser = playwright.chromium.launch()
-    page = browser.new_page(viewport={"width": 1440, "height": 1000})
-    page.goto(f"http://127.0.0.1:{os.environ['PORT']}/")
-    page.wait_for_selector('.plugin-grid .plugin-card')
-    count = page.locator('article.plugin-card a[href="agent-fieldkit/dibs/"]', has_text='Details').count()
-    browser.close()
-    if count != 1:
-        raise SystemExit(f"expected one dibs Details link, got {count}")
+	browser = playwright.chromium.launch()
+	page = browser.new_page(viewport={"width": 1440, "height": 1000})
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/")
+	page.wait_for_selector('.plugin-grid .plugin-card')
+	count = page.locator('article.plugin-card a[href="agent-fieldkit/dibs/"]', has_text='Details').count()
+	browser.close()
+	if count != 1:
+		raise SystemExit(f"expected one dibs Details link, got {count}")
 PY
   [ "$status" -eq 0 ]
 }
