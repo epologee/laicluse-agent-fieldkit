@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>autonomous · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/autonomous/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/autonomous/">
+		<meta property="og:title" content="autonomous · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="autonomous · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/autonomous">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Autonomous work</p>
+					<h1>autonomous</h1>
+					<p class="lede">Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill claude">Claude only</span>
+						<span>2.0.10</span>
+						<span>3 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>The layer that keeps an autonomous mission running across turns. It owns the persistence workarounds an interactive session needs to stay alive (a cron heartbeat with exponential backoff, auto-stop after sustained idleness, and wake/restore after a session restart) and decides by itself whether any of that machinery is needed.</p>
+<p>The decision is a capability probe, not a caller flag. The <code>rover</code> plugin's decision framework calls this layer once at dispatch and asks a single question: am I in a persistent process, or an interactive session that pauses between turns? The probe answers from the runtime.</p>
+<h2 id="why-this-is-its-own-plugin">Why this is its own plugin</h2>
+<p>A cron heartbeat is a workaround for one fact: an interactive TUI session is not a persistent process. It runs a turn, then waits for the operator, and an autonomous loop in that session stops between turns unless something re-enters the conversation. A detached process (an Agent SDK run, a conveyor line) has the opposite shape: it keeps executing until the mission completes, so a heartbeat there is dead weight.</p>
+<p>Splitting the keep-alive machinery out of the decision framework means the caller no longer has to know any of this. It invokes <code>rover</code>, the rover invokes <code>autonomous:keepalive</code>, and the autonomy layer probes its own runtime and acts.</p>
+<h2 id="skills">Skills</h2>
+<p>All skills here are internal and Claude Code-only: the <code>rover</code> plugin loads them, the operator does not invoke them directly. Codex does not currently receive this plugin because it has no compatible cron heartbeat API or wake path for these skills.</p>
+<ul>
+<li><strong><code>keepalive</code></strong>: the startup probe and front door. Checks whether <code>CronCreate</code> is available in this process. Available means an interactive session, so it schedules a cron heartbeat through <code>cron</code> and returns the job id. Absent means a persistent process, so it schedules nothing and reports back that the mission should just drive to completion.</li>
+<li><strong><code>cron</code></strong>: the cadence machine. CronCreate, CronDelete, exponential backoff when the field goes quiet, auto-stop after sustained idleness, and cron restoration after a session restart.</li>
+<li><strong><code>wake</code></strong>: bring a stalled mission back online. Reads the loop file, relights the cron, summarises where the traverse left off, and fires the next iteration. Reached via <code>rover:rover</code> with a loop-file path.</li>
+</ul>
+<h2 id="the-probe-and-its-one-assumption">The probe and its one assumption</h2>
+<p>The probe is correct only when need and availability coincide: a host that runs a mission as a persistent process must withhold <code>CronCreate</code> (for example by adding the cron tools to its disallowed-tools list), and a host whose sessions go idle must expose it. When a persistent host still exposes the cron tools the probe over-detects interactive and schedules a heartbeat. On the normal path that is dead weight: a process that runs to completion never goes idle, so the cron never fires and is torn down with the session. Only an abnormal exit can leave it as an orphan, which the <code>wake</code> restore path reaps on the next relight. See <code>skills/keepalive/SKILL.md</code> for the full contract.</p>
+<h2 id="companion-plugin">Companion plugin</h2>
+<p>The decision framework lives in <code>rover</code> (invoked as <code>/rover:...</code>). Install both together; <code>rover</code> additionally depends on <code>gurus</code> for its INSPECT panel review:</p>
+<pre><code class="language-bash">claude plugins install autonomous@laicluse-agent-fieldkit rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install autonomous@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/autonomous">Package source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

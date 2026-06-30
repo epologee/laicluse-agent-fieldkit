@@ -144,6 +144,261 @@ function briefChange(value) {
 	return `${cleaned.slice(0, 257).replace(/\s+\S*$/, "")}...`;
 }
 
+function htmlEscape(value) {
+	return String(value)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+function attributeEscape(value) {
+	return htmlEscape(value).replace(/'/g, "&#39;");
+}
+
+function slugifyHeading(value) {
+	return cleanInline(value)
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
+function renderInlineMarkdown(value) {
+	const codeSpans = [];
+	let withCodeSpans = "";
+	for (let index = 0; index < value.length; index += 1) {
+		if (value[index] !== "`") {
+			withCodeSpans += value[index];
+			continue;
+		}
+
+		let tickEnd = index;
+		while (value[tickEnd] === "`") tickEnd += 1;
+		const fence = value.slice(index, tickEnd);
+		const closeIndex = value.indexOf(fence, tickEnd);
+		if (closeIndex === -1) {
+			withCodeSpans += fence;
+			index = tickEnd - 1;
+			continue;
+		}
+
+		let code = value.slice(tickEnd, closeIndex);
+		if (/^ .*\S.* $/.test(code)) code = code.slice(1, -1);
+		const token = `\u0000CODE${codeSpans.length}\u0000`;
+		codeSpans.push(`<code>${htmlEscape(code)}</code>`);
+		withCodeSpans += token;
+		index = closeIndex + fence.length - 1;
+	}
+
+	const rendered = htmlEscape(withCodeSpans)
+		.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, url) => {
+			return `<a href="${attributeEscape(url)}">${label}</a>`;
+		})
+		.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+		.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+	return codeSpans.reduce((result, html, index) => result.replace(`\u0000CODE${index}\u0000`, html), rendered);
+}
+
+function isTableSeparator(line) {
+	return line
+		.trim()
+		.replace(/^\||\|$/g, "")
+		.split("|")
+		.every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
+}
+
+function parseTableRow(line) {
+	const trimmed = line.trim().replace(/^\||\|$/g, "");
+	const cells = [];
+	let cell = "";
+	let escaped = false;
+	let inCodeSpan = false;
+	let inHtmlCode = false;
+
+	for (let index = 0; index < trimmed.length; index += 1) {
+		const char = trimmed[index];
+		const rest = trimmed.slice(index);
+
+		if (escaped) {
+			cell += char;
+			escaped = false;
+			continue;
+		}
+
+		if (char === "\\") {
+			cell += char;
+			escaped = true;
+			continue;
+		}
+
+		if (!inCodeSpan && rest.toLowerCase().startsWith("<code>")) {
+			inHtmlCode = true;
+			cell += rest.slice(0, 6);
+			index += 5;
+			continue;
+		}
+
+		if (inHtmlCode && rest.toLowerCase().startsWith("</code>")) {
+			inHtmlCode = false;
+			cell += rest.slice(0, 7);
+			index += 6;
+			continue;
+		}
+
+		if (!inHtmlCode && char === "`") {
+			inCodeSpan = !inCodeSpan;
+			cell += char;
+			continue;
+		}
+
+		if (char === "|" && !inCodeSpan && !inHtmlCode) {
+			cells.push(cell.trim());
+			cell = "";
+			continue;
+		}
+
+		cell += char;
+	}
+
+	cells.push(cell.trim());
+	return cells;
+}
+
+function renderTable(rows) {
+	if (rows.length < 2 || !isTableSeparator(rows[1])) {
+		return rows.map((line) => `<p>${renderInlineMarkdown(line.trim())}</p>`).join("\n");
+	}
+
+	const headings = parseTableRow(rows[0]);
+	const bodyRows = rows.slice(2).map(parseTableRow);
+	return [
+		"<table>",
+		"<thead>",
+		`<tr>${headings.map((cell) => `<th>${renderInlineMarkdown(cell)}</th>`).join("")}</tr>`,
+		"</thead>",
+		"<tbody>",
+		...bodyRows.map((row) => `<tr>${row.map((cell) => `<td>${renderInlineMarkdown(cell)}</td>`).join("")}</tr>`),
+		"</tbody>",
+		"</table>",
+	].join("\n");
+}
+
+function renderMarkdown(markdown) {
+	const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+	const html = [];
+	let paragraph = [];
+	let list = null;
+	let tableRows = null;
+	let codeBlock = null;
+
+	const flushParagraph = () => {
+		if (paragraph.length === 0) return;
+		html.push(`<p>${renderInlineMarkdown(paragraph.join(" "))}</p>`);
+		paragraph = [];
+	};
+	const flushList = () => {
+		if (!list) return;
+		html.push(`<${list.type}>`);
+		for (const item of list.items) html.push(`<li>${renderInlineMarkdown(item)}</li>`);
+		html.push(`</${list.type}>`);
+		list = null;
+	};
+	const flushTable = () => {
+		if (!tableRows) return;
+		html.push(renderTable(tableRows));
+		tableRows = null;
+	};
+	const flushFlow = () => {
+		flushParagraph();
+		flushList();
+		flushTable();
+	};
+
+	for (const line of lines) {
+		const fence = line.match(/^```([A-Za-z0-9_-]*)\s*$/);
+		if (fence) {
+			if (codeBlock) {
+				const className = codeBlock.language ? ` class="language-${attributeEscape(codeBlock.language)}"` : "";
+				html.push(`<pre><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`);
+				codeBlock = null;
+			} else {
+				flushFlow();
+				codeBlock = { language: fence[1], lines: [] };
+			}
+			continue;
+		}
+
+		if (codeBlock) {
+			codeBlock.lines.push(line);
+			continue;
+		}
+
+		if (line.trim() === "") {
+			flushFlow();
+			continue;
+		}
+
+		if (/^\|.*\|$/.test(line.trim())) {
+			flushParagraph();
+			flushList();
+			if (!tableRows) tableRows = [];
+			tableRows.push(line);
+			continue;
+		}
+
+		const heading = line.match(/^(#{1,6})\s+(.+?)\s*#*$/);
+		if (heading) {
+			flushFlow();
+			const level = heading[1].length;
+			const text = renderInlineMarkdown(heading[2]);
+			const id = level === 1 ? "" : ` id="${attributeEscape(slugifyHeading(heading[2]))}"`;
+			html.push(`<h${level}${id}>${text}</h${level}>`);
+			continue;
+		}
+
+		const unorderedItem = line.match(/^\s*[-*]\s+(.+)/);
+		const orderedItem = line.match(/^\s*\d+\.\s+(.+)/);
+		if (unorderedItem || orderedItem) {
+			flushParagraph();
+			flushTable();
+			const type = orderedItem ? "ol" : "ul";
+			if (!list || list.type !== type) {
+				flushList();
+				list = { type, items: [] };
+			}
+			list.items.push((unorderedItem || orderedItem)[1].trim());
+			continue;
+		}
+
+		if (list && /^\s{2,}\S/.test(line)) {
+			list.items[list.items.length - 1] = `${list.items[list.items.length - 1]} ${line.trim()}`;
+			continue;
+		}
+
+		flushList();
+		flushTable();
+		paragraph.push(line.trim());
+	}
+
+	if (codeBlock) {
+		const className = codeBlock.language ? ` class="language-${attributeEscape(codeBlock.language)}"` : "";
+		html.push(`<pre><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`);
+	}
+	flushFlow();
+
+	return html.join("\n");
+}
+
+function markdownTitle(markdown, fallback) {
+	const match = markdown.match(/^#\s+(.+?)\s*#*\s*$/m);
+	return match ? cleanInline(match[1]) : fallback;
+}
+
+function markdownWithoutFirstTitle(markdown) {
+	return markdown.replace(/^#\s+.+?\s*#*\s*(?:\r?\n)+/, "");
+}
+
 function listDirs(dir) {
 	if (!fs.existsSync(dir)) return [];
 	return fs
@@ -261,6 +516,7 @@ function build(repoRoot) {
 		const latestChange = parseLatestChange(path.join(pluginDir, "CHANGELOG.md"));
 		const support = ["Claude Code"];
 		if (codexNames.has(entry.name)) support.push("Codex");
+		const detailPath = `agent-fieldkit/${entry.name}/`;
 
 		return {
 			name: entry.name,
@@ -269,6 +525,7 @@ function build(repoRoot) {
 			summary: (copy[entry.name] || {}).summary || firstSentence(manifest.description || entry.description || ""),
 			support,
 			codex: codexNames.has(entry.name),
+			detailPath,
 			sourcePath,
 			sourceUrl: `${REPO_URL}/tree/main/${sourcePath}`,
 			skillCount: countSkillDirs(pluginDir),
@@ -283,6 +540,7 @@ function build(repoRoot) {
 		.map((plugin) => ({
 			plugin: plugin.name,
 			packageVersion: plugin.version,
+			detailPath: plugin.detailPath,
 			...plugin.latestChange,
 			sourceUrl: `${REPO_URL}/blob/main/${plugin.sourcePath}/CHANGELOG.md`,
 		}))
@@ -290,7 +548,7 @@ function build(repoRoot) {
 
 	return {
 		generatedBy: "bin/build-pages",
-		source: "packages/*/.claude-plugin/plugin.json, packages/*/CHANGELOG.md, .agents/plugins/marketplace.json",
+		source: "packages/*/.claude-plugin/plugin.json, packages/*/README.md, packages/*/CHANGELOG.md, .agents/plugins/marketplace.json",
 		repository: REPO_URL,
 		marketplace: {
 			name: claudeMarketplace.name,
@@ -339,6 +597,122 @@ function categoryCounts(data) {
 			count: data.plugins.filter((plugin) => plugin.category === category.id).length,
 		}))
 		.filter((entry) => entry.count > 0);
+}
+
+function categoryLabel(data, id) {
+	const category = data.categories.find((item) => item.id === id);
+	return category ? category.label : id;
+}
+
+function buildPluginDetailPage(data, plugin, markdown, hash) {
+	const title = markdownTitle(markdown, plugin.name);
+	const readmeHtml = renderMarkdown(markdownWithoutFirstTitle(markdown));
+	const pageUrl = `${PAGES_URL}/${plugin.detailPath}`;
+	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+	const codexInstall = plugin.codex ? `codex plugin add ${plugin.name}@laicluse-agent-fieldkit` : "";
+	const installCommands = [
+		`claude plugins install ${plugin.name}@laicluse-agent-fieldkit`,
+		codexInstall,
+	]
+		.filter(Boolean)
+		.join("\n");
+
+	return `<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>${htmlEscape(title)} · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="${attributeEscape(plugin.summary)}">
+		<link rel="canonical" href="${pageUrl}">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="${pageUrl}">
+		<meta property="og:title" content="${attributeEscape(title)} · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="${attributeEscape(plugin.summary)}">
+		<meta property="og:image" content="${imageUrl}">
+		<meta property="og:image:secure_url" content="${imageUrl}">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="${attributeEscape(title)} · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="${attributeEscape(plugin.summary)}">
+		<meta name="twitter:image" content="${imageUrl}">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="${attributeEscape(plugin.sourceUrl)}">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">${htmlEscape(categoryLabel(data, plugin.category))}</p>
+					<h1>${htmlEscape(title)}</h1>
+					<p class="lede">${htmlEscape(plugin.summary)}</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill ${plugin.codex ? "both" : "claude"}">${plugin.codex ? "Claude + Codex" : "Claude only"}</span>
+						<span>${htmlEscape(plugin.version)}</span>
+						<span>${plugin.skillCount} ${plugin.skillCount === 1 ? "skill" : "skills"}</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+${readmeHtml}
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>${htmlEscape(installCommands)}</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="${attributeEscape(plugin.sourceUrl)}">Package source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>
+`;
+}
+
+function renderPluginDetailPages(repoRoot, data, hash) {
+	const detailRoot = path.join(repoRoot, "docs", "agent-fieldkit");
+	fs.rmSync(detailRoot, { recursive: true, force: true });
+
+	for (const plugin of data.plugins) {
+		const readmePath = path.join(repoRoot, plugin.sourcePath, "README.md");
+		const markdown = fs.readFileSync(readmePath, "utf8");
+		const pluginDir = path.join(detailRoot, plugin.name);
+		fs.mkdirSync(pluginDir, { recursive: true });
+		fs.writeFileSync(path.join(pluginDir, "index.html"), buildPluginDetailPage(data, plugin, markdown, hash));
+	}
 }
 
 // Build the share card as an SVG string. The plugin count, per-category counts,
@@ -507,6 +881,7 @@ function main() {
 
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
 	updateOgMeta(repoRoot, hash);
+	renderPluginDetailPages(repoRoot, data, hash);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
 }
 

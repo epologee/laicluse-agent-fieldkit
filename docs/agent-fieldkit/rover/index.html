@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>rover · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/rover/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/rover/">
+		<meta property="og:title" content="rover · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="rover · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+
+		<link rel="stylesheet" href="../../styles.css">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-mark" aria-hidden="true">AF</span>
+				<span>l'Aicluse Agent Fieldkit</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../../#catalog">Catalog</a>
+				<a href="../../#install">Install</a>
+				<a href="../../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/rover">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../../#catalog">Catalog</a>
+					<p class="eyebrow">Autonomous work</p>
+					<h1>rover</h1>
+					<p class="lede">Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.13</span>
+						<span>8 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Dispatch a rover at a task. You stay back, the rover works in the field. The distance means it decides locally rather than round-tripping every question, so the plugin carries a <code>decide</code> framework, a contrarian <code>pride</code> check, a subtraction-biased <code>trim</code> pass, and an evidence-discipline <code>verify</code> pass. The rover only reports done when the mission is solid.</p>
+<p>This is the decision framework half of the old <code>autonomous</code> plugin. The keep-it-running half (cron heartbeat, wake/restore, goal loops, persistent runners) is now a host-owned continuation concern. Rover records a loop file and tells the active agent to arrange whatever continuation mechanism that runtime supports; it does not hard-code one implementation.</p>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li><strong><code>gurus@laicluse-agent-fieldkit</code></strong> (same marketplace): the rover invokes <code>gurus:gurus</code> once per mission at INSPECT for opinionated panel review; the orchestrator routes to <code>gurus:software</code>, <code>gurus:council</code>, <code>gurus:writers</code>, or any future panel.</li>
+</ul>
+<p>Install together:</p>
+<pre><code class="language-bash">claude plugins install rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit
+codex plugin add rover@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
+<p>Claude Code sessions that need a cron heartbeat can additionally install <code>autonomous@laicluse-agent-fieldkit</code>; that plugin is one implementation of the continuation contract, not a rover dependency.</p>
+<p>No other hard dependencies. Optional integrations (notifier, reviewbot, commit-splitter) are user-named at invocation and only used when installed.</p>
+<h2 id="user-invocable-skills">User-invocable skills</h2>
+<h3 id="rover-rover-loop-file-path-free-form-text"><code>/rover:rover [loop-file-path | free-form text]</code></h3>
+<p>Entry point. Accepts a loop file path to resume or free-form mission text (a description, a pasted issue body, a GitHub URL). Writes <code>.autonomous/&lt;NAME&gt;.md</code> (the loop file), records the host continuation mechanism if one is available, and runs the first SURVEY iteration. The rover does not fetch remote content on its own; paste an issue body or PR diff into the invocation if it is part of the mission.</p>
+<h3 id="rover-stop-loop-file-path"><code>/rover:stop [loop-file-path]</code></h3>
+<p>Cleanly stop a running mission. Cancels or marks the host continuation mechanism when one was recorded, writes a final log entry, and transmits a mission-report communiqué.</p>
+<h3 id="rover-pride-git-range-uncommitted"><code>/rover:pride [git-range | uncommitted]</code></h3>
+<p>Spawns a contrarian agent that reviews a rover artefact for what the user would notice but the rover missed. Hard gate inside the rover on every artefact (code, docs, prose, research briefs, media, communiqués), not just pushes. Also invocable directly.</p>
+<h3 id="rover-trim-git-range-uncommitted"><code>/rover:trim [git-range | uncommitted]</code></h3>
+<p>The subtraction pass: what got added that does not earn its weight? Hard gate in INSPECT, the inverse of pride.</p>
+<h3 id="rover-verify-propose-loop-file-loop-file-free-text"><code>/rover:verify [--propose &lt;loop-file&gt; | &lt;loop-file&gt; | free text]</code></h3>
+<p>Evidence discipline. With <code>--propose</code>, writes Done criteria at the end of SURVEY. Default mode ticks each criterion with evidence at the end of INSPECT.</p>
+<h3 id="rover-decide-free-text"><code>/rover:decide [free text]</code></h3>
+<p>Choice framework for a fork in the field, or for any moment an operator is stuck between options.</p>
+<h3 id="rover-prepare-target-repo-mission-brief"><code>/rover:prepare [target repo + mission brief]</code></h3>
+<p>Lay a rover loop file in another repo's <code>.autonomous/</code> now, so the operator can pick it up later from inside that repo.</p>
+<h3 id="rover-rover-help"><code>/rover:rover-help</code></h3>
+<p>The rover briefing.</p>
+<h2 id="phase-machine">Phase machine</h2>
+<pre><code>SURVEY -&gt; DRIVE -&gt; INSPECT -&gt; STOW -&gt; STANDBY</code></pre>
+<p>The loop is autonomous. It does not ask questions mid-phase. When it hits a choice it invokes <code>decide</code>. Before any artefact leaves the rover (push, PR, handoff communiqué, research brief, generated doc, media, or any other deliverable) it invokes <code>pride</code>. Pushes themselves are never autonomous: the user must say &quot;push&quot; or equivalent.</p>
+<h2 id="loop-file">Loop file</h2>
+<p>Lives in <code>.autonomous/&lt;NAME&gt;.md</code> at the git root. Holds context, plan, Done criteria, decision audit trail, and a timestamped log. Tail it to watch progress. The format is unchanged from the old <code>autonomous</code> plugin, so existing loop files still wake.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<pre><code>claude plugins install rover@laicluse-agent-fieldkit
+codex plugin add rover@laicluse-agent-fieldkit</code></pre>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/rover">Package source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>
