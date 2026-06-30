@@ -8,7 +8,7 @@ commands:
   claim <dir>     take exclusive occupancy of a directory (refused if a live holder exists)
   release <dir>   release a directory you hold
   release-all     release every lock this session holds, across all directories
-                  (selected by --pid / --session / --owner with --agent; no <dir>)
+  release-all     selectors: --pid / --session / --owner with --agent; no <dir>
   check <dir>     report whether a directory is free or who holds it
 
 options:

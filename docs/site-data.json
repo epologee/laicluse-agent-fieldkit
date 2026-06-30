@@ -127,7 +127,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.23",
+			"version": "2.0.24",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -506,6 +506,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
 		},
 		{
+			"plugin": "dibs",
+			"packageVersion": "2.0.24",
+			"detailPath": "agent-fieldkit/dibs/",
+			"version": "v2.0.20",
+			"type": "Changed",
+			"summary": "Occupancy starts at the first write, not session start.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
+		},
+		{
 			"plugin": "dont-do-that",
 			"packageVersion": "2.0.24",
 			"detailPath": "agent-fieldkit/dont-do-that/",
@@ -513,15 +522,6 @@
 			"type": "Added",
 			"summary": "New PreToolUse:Bash guard no-osascript.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
-		},
-		{
-			"plugin": "dibs",
-			"packageVersion": "2.0.23",
-			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.20",
-			"type": "Changed",
-			"summary": "Occupancy starts at the first write, not session start.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "anger-management",
