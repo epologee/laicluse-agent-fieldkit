@@ -56,6 +56,16 @@ dibs claim <dir>
 |---------|---------|
 | `dibs check` | Reports status |
 
+## Parser cases
+
+| Prompt input | What the session writes | Expected hits |
+|--------------|-------------------------|---------------|
+| Plate audit | Pattern `plate-outside-formatter`: run `rg -n '\\(plate\\|kenteken)\\b' Sources/` | One regex cell |
+
+## Code spans
+
+Nested JS template literals (`` `${`inner //`}` ``) may close the outer template state early.
+
 - Claims a directory.
 - Reports the current holder.
 MD
@@ -90,6 +100,32 @@ HTML
   grep -q '<a href="https://example.test/dibs">external reference</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<table>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q 'Reports status' "$REPO/docs/agent-fieldkit/dibs/index.html"
+}
+
+@test "README tables keep escaped pipes inside code spans in the same cell" {
+  run node - <<'NODE' "$REPO/docs/agent-fieldkit/dibs/index.html"
+const fs = require("fs");
+const html = fs.readFileSync(process.argv[2], "utf8");
+const table = html.match(/<h2 id="parser-cases">Parser cases<\/h2>\n(<table>[\s\S]*?<\/table>)/);
+if (!table) throw new Error("parser cases table not found");
+const rows = [...table[1].matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map((match) => match[1]);
+const bodyRow = rows[rows.length - 1];
+const bodyCells = [...bodyRow.matchAll(/<td>/g)].length;
+if (bodyCells !== 3) throw new Error(`expected 3 body cells, got ${bodyCells}`);
+if (!bodyRow.includes("\\\\|kenteken")) throw new Error("escaped pipe moved out of regex cell");
+NODE
+  [ "$status" -eq 0 ]
+}
+
+@test "README rendering supports variable-length backtick code spans" {
+  run node - <<'NODE' "$REPO/docs/agent-fieldkit/dibs/index.html"
+const fs = require("fs");
+const html = fs.readFileSync(process.argv[2], "utf8");
+if (!html.includes("<code>`${`inner //`}`</code>")) {
+  throw new Error("variable-length backtick code span did not render as one code element");
+}
+NODE
+  [ "$status" -eq 0 ]
 }
 
 @test "detail pages expose canonical deep-link metadata" {

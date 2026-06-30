@@ -165,11 +165,30 @@ function slugifyHeading(value) {
 
 function renderInlineMarkdown(value) {
 	const codeSpans = [];
-	const withCodeSpans = value.replace(/`([^`]+)`/g, (_, code) => {
+	let withCodeSpans = "";
+	for (let index = 0; index < value.length; index += 1) {
+		if (value[index] !== "`") {
+			withCodeSpans += value[index];
+			continue;
+		}
+
+		let tickEnd = index;
+		while (value[tickEnd] === "`") tickEnd += 1;
+		const fence = value.slice(index, tickEnd);
+		const closeIndex = value.indexOf(fence, tickEnd);
+		if (closeIndex === -1) {
+			withCodeSpans += fence;
+			index = tickEnd - 1;
+			continue;
+		}
+
+		let code = value.slice(tickEnd, closeIndex);
+		if (/^ .*\S.* $/.test(code)) code = code.slice(1, -1);
 		const token = `\u0000CODE${codeSpans.length}\u0000`;
 		codeSpans.push(`<code>${htmlEscape(code)}</code>`);
-		return token;
-	});
+		withCodeSpans += token;
+		index = closeIndex + fence.length - 1;
+	}
 
 	const rendered = htmlEscape(withCodeSpans)
 		.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, url) => {
@@ -190,11 +209,60 @@ function isTableSeparator(line) {
 }
 
 function parseTableRow(line) {
-	return line
-		.trim()
-		.replace(/^\||\|$/g, "")
-		.split("|")
-		.map((cell) => cell.trim());
+	const trimmed = line.trim().replace(/^\||\|$/g, "");
+	const cells = [];
+	let cell = "";
+	let escaped = false;
+	let inCodeSpan = false;
+	let inHtmlCode = false;
+
+	for (let index = 0; index < trimmed.length; index += 1) {
+		const char = trimmed[index];
+		const rest = trimmed.slice(index);
+
+		if (escaped) {
+			cell += char;
+			escaped = false;
+			continue;
+		}
+
+		if (char === "\\") {
+			cell += char;
+			escaped = true;
+			continue;
+		}
+
+		if (!inCodeSpan && rest.toLowerCase().startsWith("<code>")) {
+			inHtmlCode = true;
+			cell += rest.slice(0, 6);
+			index += 5;
+			continue;
+		}
+
+		if (inHtmlCode && rest.toLowerCase().startsWith("</code>")) {
+			inHtmlCode = false;
+			cell += rest.slice(0, 7);
+			index += 6;
+			continue;
+		}
+
+		if (!inHtmlCode && char === "`") {
+			inCodeSpan = !inCodeSpan;
+			cell += char;
+			continue;
+		}
+
+		if (char === "|" && !inCodeSpan && !inHtmlCode) {
+			cells.push(cell.trim());
+			cell = "";
+			continue;
+		}
+
+		cell += char;
+	}
+
+	cells.push(cell.trim());
+	return cells;
 }
 
 function renderTable(rows) {
@@ -458,7 +526,6 @@ function build(repoRoot) {
 			support,
 			codex: codexNames.has(entry.name),
 			detailPath,
-			detailUrl: `${PAGES_URL}/${detailPath}`,
 			sourcePath,
 			sourceUrl: `${REPO_URL}/tree/main/${sourcePath}`,
 			skillCount: countSkillDirs(pluginDir),
@@ -620,7 +687,6 @@ ${readmeHtml}
 					<div class="sidebar-block">
 						<h2>Source</h2>
 						<a href="${attributeEscape(plugin.sourceUrl)}">Package source</a>
-						<a href="${attributeEscape(`${REPO_URL}/blob/main/${plugin.sourcePath}/README.md`)}">README source</a>
 					</div>
 				</aside>
 			</section>
@@ -641,9 +707,7 @@ function renderPluginDetailPages(repoRoot, data, hash) {
 
 	for (const plugin of data.plugins) {
 		const readmePath = path.join(repoRoot, plugin.sourcePath, "README.md");
-		const markdown = fs.existsSync(readmePath)
-			? fs.readFileSync(readmePath, "utf8")
-			: `# ${plugin.name}\n\n${plugin.summary}\n`;
+		const markdown = fs.readFileSync(readmePath, "utf8");
 		const pluginDir = path.join(detailRoot, plugin.name);
 		fs.mkdirSync(pluginDir, { recursive: true });
 		fs.writeFileSync(path.join(pluginDir, "index.html"), buildPluginDetailPage(data, plugin, markdown, hash));

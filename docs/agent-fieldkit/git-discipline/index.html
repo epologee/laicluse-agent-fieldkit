@@ -162,7 +162,7 @@ Resolves: https://example.org/backlog/issues/1234</code></pre>
 <ul>
 <li><code>git commit --no-verify</code> (git-native layer only, logged to <code>${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log</code> via the <code>post-commit</code> hook; see the <code>--no-verify</code> section of <code>/git-discipline:commit-discipline</code> for the layer split and the operator-only PreToolUse off-switch)</li>
 <li><code>GIT_DISCIPLINE_ALLOW_AI_COAUTHOR=1</code> to allow a single <code>@anthropic.com</code> <code>Co-Authored-By:</code> trailer</li>
-<li><code>GIT_DISCIPLINE_ALLOW_CONJUNCTION=1</code> or the magic-comment <code># allow-conjunction: &lt;reason&gt;</code> in the body to permit a subject that contains <code> and </code>, <code> + </code>, or <code> &amp; </code> when the joined form is genuinely atomic</li>
+<li><code>GIT_DISCIPLINE_ALLOW_CONJUNCTION=1</code> or the magic-comment <code># allow-conjunction: &lt;reason&gt;</code> in the body to permit a subject that contains <code>and</code>, <code>+</code>, or <code>&amp;</code> when the joined form is genuinely atomic</li>
 <li><code>GIT_DISCIPLINE_ALLOW_WIP_PUSH=1</code> or the magic-comment <code># allow-wip-push</code> to push a range that contains <code>Slice: wip</code> commits (logged to <code>${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-wip-pushes.log</code>). Note: <code># allow-wip-push</code> only works when Claude issues the push (the PreToolUse:Bash guard reads the bash command string). For terminal-issued <code>git push</code>, only <code>GIT_DISCIPLINE_ALLOW_WIP_PUSH=1</code> works.</li>
 <li><code>GIT_DISCIPLINE_TRIVIAL_OK=1</code> to skip body-validation for a single trivial commit (set automatically by the PreToolUse guard for diffs of &lt;= 1 file and &lt;= 5 insertions)</li>
 </ul>
@@ -196,7 +196,6 @@ codex plugin add git-discipline@laicluse-agent-fieldkit</code></pre>
 					<div class="sidebar-block">
 						<h2>Source</h2>
 						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/git-discipline">Package source</a>
-						<a href="https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/README.md">README source</a>
 					</div>
 				</aside>
 			</section>

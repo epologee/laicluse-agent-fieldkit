@@ -20,6 +20,11 @@ JSON
   cat > "$REPO/packages/demo/.claude-plugin/plugin.json" <<'JSON'
 { "name": "demo", "description": "demo plugin", "version": "2.0.1" }
 JSON
+  cat > "$REPO/packages/demo/README.md" <<'MD'
+# demo
+
+Demo plugin.
+MD
   cat > "$REPO/docs/index.html" <<'HTML'
 <link rel="canonical" href="https://example.test/old/">
 <meta property="og:url" content="https://example.test/old/">

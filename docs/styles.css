@@ -647,17 +647,6 @@ h3 {
   font-weight: 720;
 }
 
-.plugin-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-top: 1rem;
-}
-
-.plugin-actions .source-link {
-  margin-top: 0;
-}
-
 .empty-state,
 .no-script,
 .error-state {
