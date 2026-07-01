@@ -41,6 +41,10 @@
 		return `/${String(path || "").replace(/^\/+/, "")}`;
 	}
 
+	function appHref(app) {
+		return app.pagePath ? siteHref(app.pagePath) : app.homepageUrl;
+	}
+
 	function supportLabel(plugin) {
 		return plugin.codex ? "Claude + Codex" : "Claude only";
 	}
@@ -239,6 +243,54 @@
 			.join("");
 	}
 
+	function renderApps(data) {
+		const container = $("#app-breakout");
+		if (!container) return;
+		const apps = data.apps || [];
+		container.innerHTML = apps
+			.map((app, index) => {
+				const brewId = `app-brew-${index}`;
+				return `
+					<article class="app-card">
+						<div class="app-card-body">
+							<p class="app-category">${escapeHtml(app.category)}</p>
+							<h3>${escapeHtml(app.name)}</h3>
+							<p class="app-tagline">${escapeHtml(app.tagline)}</p>
+							<ul class="app-features">
+								${app.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}
+							</ul>
+							<p class="app-requirement">${escapeHtml(app.requirement)}</p>
+						</div>
+						<div class="app-card-actions">
+							<div class="app-install">
+								<div class="block-heading">
+									<span class="mini-label">install</span>
+									<button class="copy-button" type="button" data-copy-target="${brewId}">Copy</button>
+								</div>
+								<pre><code id="${brewId}">${escapeHtml(app.brew)}</code></pre>
+							</div>
+							<div class="app-buttons">
+								<a class="button primary" href="${escapeHtml(appHref(app))}">Vocalist page</a>
+								<a class="button secondary" href="${escapeHtml(app.repoUrl)}">Source</a>
+							</div>
+						</div>
+					</article>
+				`;
+			})
+			.join("");
+		container.querySelectorAll("[data-copy-target]").forEach((button) => {
+			button.addEventListener("click", async () => {
+				const target = document.getElementById(button.dataset.copyTarget);
+				if (!target || !navigator.clipboard) return;
+				await navigator.clipboard.writeText(target.textContent);
+				button.textContent = "Copied";
+				window.setTimeout(() => {
+					button.textContent = "Copy";
+				}, 1400);
+			});
+		});
+	}
+
 	function renderError(error) {
 		$("#hero-stats").innerHTML = "<p>Catalog data could not be loaded.</p>";
 		$("#plugin-grid").innerHTML = `
@@ -264,6 +316,7 @@
 			renderSummaries(data);
 			renderControls(data);
 			renderCatalog();
+			renderApps(data);
 			renderInstall(data);
 			renderChangelog(data);
 		})

@@ -125,7 +125,7 @@ PY
   [ "$status" -eq 0 ]
 }
 
-@test "root redirects browser visits to the Fieldkit landing" {
+@test "root renders the l'Aicluse gateway" {
   run python3 - <<'PY'
 import os
 from playwright.sync_api import sync_playwright
@@ -133,15 +133,18 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as playwright:
 	browser = playwright.chromium.launch()
 	page = browser.new_page(viewport={"width": 1440, "height": 1000})
-	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/#changelog")
-	page.wait_for_url("**/agent-fieldkit/#changelog")
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/")
+	page.wait_for_selector('.home-product-grid')
 	result = page.evaluate("""() => ({
 pathname: window.location.pathname,
-hash: window.location.hash,
-hasChangelog: Boolean(document.querySelector('#changelog-title')),
+title: document.querySelector('h1')?.textContent,
+vocalistLinks: document.querySelectorAll('a[href="/vocalist/"]').length,
+fieldkitLinks: document.querySelectorAll('a[href="/agent-fieldkit/"]').length,
+linkedinLinks: document.querySelectorAll('a[href="https://www.linkedin.com/in/lecluse"]').length,
+redirects: Boolean(document.querySelector('meta[http-equiv="refresh"]')),
 })""")
 	browser.close()
-	if result["pathname"] != "/agent-fieldkit/" or result["hash"] != "#changelog" or not result["hasChangelog"]:
+	if result["pathname"] != "/" or result["title"] != "l'Aicluse" or result["vocalistLinks"] < 1 or result["fieldkitLinks"] < 1 or result["linkedinLinks"] < 1 or result["redirects"]:
 		raise SystemExit(result)
 PY
   [ "$status" -eq 0 ]

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Vocalist</title>
+		<meta
+			name="description"
+			content="A Mac menu-bar app for speaking prompts to Codex or Claude Code."
+		>
+		<link rel="canonical" href="https://laicluse.com/vocalist/">
+
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/vocalist/">
+		<meta property="og:title" content="Vocalist">
+		<meta property="og:description" content="A Mac menu-bar app for speaking prompts to Codex or Claude Code.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:image:alt" content="Vocalist: a local voice interface for coding-agent terminals.">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="Vocalist">
+		<meta name="twitter:description" content="A Mac menu-bar app for speaking prompts to Codex or Claude Code.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
+		<meta name="twitter:image:alt" content="Vocalist app page">
+
+		<link rel="stylesheet" href="../styles.css?v=f87699b124">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../" aria-label="l'Aicluse Apps">
+				<span class="brand-title">l'Aicluse Apps</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="#install">Install</a>
+				<a href="#commands">Voice commands</a>
+				<a href="#privacy">Privacy</a>
+				<a href="#byot">B.Y.O.T.</a>
+				<a href="../agent-fieldkit/">Agent Fieldkit</a>
+			</nav>
+		</header>
+
+		<main id="content">
+			<section id="top" class="hero vocalist-hero">
+				<div class="hero-grid vocalist-hero-grid">
+					<div class="hero-copy">
+						<p class="eyebrow">Free macOS app</p>
+						<h1>Vocalist</h1>
+						<p class="lede">Talk instead of typing. Vocalist shows what it heard in a floating bubble; say "over" to send it to the Codex or Claude Code terminal that is active in CMUX. Speech-to-text runs locally on your Mac.</p>
+						<div class="hero-actions" aria-label="Primary actions">
+							<a class="button primary" href="#install">Install with Homebrew</a>
+							<a class="button secondary" href="https://github.com/epologee/vocalist/releases/latest">Download directly</a>
+						</div>
+					</div>
+
+					<aside class="vocalist-panel" aria-label="Vocalist preview">
+						<img class="vocalist-icon" src="../assets/vocalist-icon.svg" width="128" height="128" alt="">
+						<div class="vocalist-bubble">
+							<span>Prompt preview</span>
+							<p>🎙️ Refactor the release checklist and summarize what changed <span class="vocalist-command-token">[over]</span></p>
+						</div>
+						<div class="terminal-command">
+							<span>to</span>
+							<code>CMUX -> active Codex or Claude Code terminal</code>
+						</div>
+					</aside>
+				</div>
+			</section>
+
+			<section id="install" class="section install-section" aria-labelledby="install-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Get Vocalist</p>
+						<h2 id="install-title">Install, connect, run.</h2>
+					</div>
+					<p>macOS Tahoe (26) or newer, Apple Silicon. Vocalist is a Mac menu-bar app plus a coding-agent plugin. Homebrew installs the app, the CLI, and the bundled plugin marketplace; the second command connects that plugin to your agent. Start it from your agent session or from a terminal.</p>
+				</div>
+				<div class="install-grid install-grid-three">
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>1. Mac app</h3>
+						</div>
+						<p>The menu-bar app listens, shows the floating bubble, and sends the final prompt into CMUX.</p>
+						<pre><code>brew install --cask laicluse/tap/vocalist</code></pre>
+						<div class="app-buttons">
+							<a class="button secondary" href="https://github.com/epologee/vocalist/releases/latest">Download directly</a>
+						</div>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>2. Agent plugin</h3>
+						</div>
+						<p>The plugin adds <code>/vocalist:hands-free</code> for Claude Code, <code>$vocalist:hands-free</code> for Codex, and the <code>transcribed-turn</code> rule that explains the 🎙️ marker.</p>
+						<pre><code>vocalist plugin install</code></pre>
+						<p>Run it after installing or upgrading Vocalist so your agent sees the bundled marketplace.</p>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>3. Run Vocalist</h3>
+						</div>
+						<p>Open Vocalist from your coding agent once the plugin is connected, or start the app directly from a terminal.</p>
+						<ul class="install-command-list">
+							<li><span>Claude Code</span><code>/vocalist:hands-free</code></li>
+							<li><span>Codex</span><code>$vocalist:hands-free</code></li>
+							<li><span>Terminal</span><code>vocalist</code></li>
+						</ul>
+					</article>
+				</div>
+			</section>
+
+			<section class="section vocalist-detail-section" aria-labelledby="details-title">
+				<div class="section-heading">
+					<p class="eyebrow">What it does</p>
+					<h2 id="details-title">Voice input for the coding-agent terminal you are already using.</h2>
+				</div>
+				<div class="vocalist-detail-grid">
+					<article class="vocalist-detail-card">
+						<h3>Made for agent prompts</h3>
+						<p>Vocalist is not a dictate-anywhere tool. It is for coding-agent prompts, corrections, and follow-ups while you work elsewhere.</p>
+					</article>
+					<article class="vocalist-detail-card">
+						<h3>Agent plugin included</h3>
+						<p>The bundled plugin starts Vocalist from your agent session and teaches the agent that 🎙️ means speech-to-text, so it should read the turn for intent.</p>
+					</article>
+					<article class="vocalist-detail-card">
+						<h3>Codex and Claude Code</h3>
+						<p>It sends your prompt to the active CMUX terminal running Codex or Claude Code, even when your frontmost app is a browser.</p>
+					</article>
+					<article class="vocalist-detail-card">
+						<h3>Preview before send</h3>
+						<p>The floating bubble shows the transcribed prompt before it is sent, so you can catch a misheard word first.</p>
+					</article>
+				</div>
+				<article class="vocalist-duplex-card">
+					<div>
+						<p class="eyebrow">Optional audio loop</p>
+						<h3>Want full-duplex hands-free prompting?</h3>
+					</div>
+					<p>Combine Vocalist with a speech skill like <a href="/agent-fieldkit/saysay/">saysay</a> so the agent can talk back while you keep speaking prompts. Use headphones: Vocalist does not have echo cancellation yet.</p>
+				</article>
+			</section>
+
+			<section id="commands" class="section vocalist-commands-section" aria-labelledby="commands-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Voice commands</p>
+						<h2 id="commands-title">The last words decide what happens next.</h2>
+					</div>
+					<p>Voice commands are spoken at the end of a turn. If you say the same word in the middle of a sentence, it stays text.</p>
+				</div>
+				<div class="vocalist-command-grid">
+					<article class="vocalist-command-card">
+						<h3>Mapped words, not fixed words</h3>
+						<p>In settings, choose which words submit the prompt, clear the pending turn, interrupt the agent, or move between agent terminals.</p>
+					</article>
+					<article class="vocalist-command-card">
+						<h3>Multilingual on purpose</h3>
+						<p>A single prompt can mix languages. Vocalist keeps the spoken text intact and only treats your configured final words as commands.</p>
+					</article>
+					<article class="vocalist-command-card">
+						<h3>Final-word matching</h3>
+						<p>Command words only fire at the end of a turn. The same word in the middle of a sentence stays part of the prompt.</p>
+					</article>
+				</div>
+				<article class="vocalist-command-examples" aria-label="Example voice command mappings">
+					<div>
+						<p class="eyebrow">Example mappings</p>
+						<h3>Turn spoken endings into keys.</h3>
+						<p>These words are just examples. In settings, map the phrases that feel natural to the keys or actions you want Vocalist to send.</p>
+					</div>
+					<ul>
+						<li><code>over</code><span>Return</span><em>send the prompt</em></li>
+						<li><code>scratch that</code><span>Escape</span><em>clear or cancel the pending turn</em></li>
+					</ul>
+				</article>
+				<article id="transcribed-turn" class="vocalist-mic-note">
+					<div>
+						<p class="eyebrow">Transcribed intent</p>
+						<h3>The microphone marker tells the agent to read generously.</h3>
+						<p>The leading <strong>🎙️</strong> is not decoration. It tells the coding agent that the text came from speech, so it should allow for obvious transcription slips instead of treating every odd word as deliberate.</p>
+					</div>
+					<blockquote>🎙️ Fix the relase checlist thing and run the tast that covers it <span class="vocalist-command-token">[over]</span></blockquote>
+				</article>
+				<div class="vocalist-routing-panel">
+					<div>
+						<p class="eyebrow">CMUX</p>
+						<h3>Works with CMUX today.</h3>
+						<p>Vocalist asks CMUX which terminal is active, checks that it is running Codex or Claude Code rather than a bare shell, and then types the prompt there.</p>
+						<p>Other tmux-style apps would need an adapter that can report the active terminal, identify the running agent, and accept text plus key input. That path is not implemented yet.</p>
+					</div>
+					<div class="vocalist-layer-map" aria-label="Vocalist layers: Capture, Segment, Transcribe, Shape, Deliver">
+					<article class="vocalist-layer">
+						<header>
+							<h3>Capture</h3>
+							<p>listen while you work</p>
+						</header>
+						<ul>
+							<li>Microphone</li>
+							<li>Live audio</li>
+							<li>Floating bubble</li>
+						</ul>
+					</article>
+					<article class="vocalist-layer">
+						<header>
+							<h3>Segment</h3>
+							<p>find the turn</p>
+						</header>
+						<ul>
+							<li>Speech starts</li>
+							<li>Natural pause</li>
+							<li>End of turn</li>
+						</ul>
+					</article>
+					<article class="vocalist-layer">
+						<header>
+							<h3>Transcribe</h3>
+							<p>turn speech into text</p>
+						</header>
+						<ul>
+							<li>Local Parakeet STT</li>
+							<li>Confirmed words</li>
+							<li>Preview updates</li>
+						</ul>
+					</article>
+					<article class="vocalist-layer">
+						<header>
+							<h3>Shape</h3>
+							<p>keep the prompt usable</p>
+						</header>
+						<ul>
+							<li>Clean text</li>
+							<li>Slash commands</li>
+							<li>Dollar commands</li>
+							<li>Final word checked</li>
+						</ul>
+					</article>
+					<article class="vocalist-layer">
+						<header>
+							<h3>Deliver</h3>
+							<p>send only when ready</p>
+						</header>
+						<ul>
+							<li>Active CMUX pane</li>
+							<li>Codex or Claude Code</li>
+							<li>Type prompt</li>
+							<li>Press Enter</li>
+							<li>Keep if no agent</li>
+						</ul>
+					</article>
+					</div>
+				</div>
+			</section>
+
+			<section id="privacy" class="section principles-section" aria-labelledby="privacy-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Privacy</p>
+						<h2 id="privacy-title">Speech recognition stays local. Submitted text goes to the agent you are using.</h2>
+					</div>
+					<ul class="vocalist-privacy-list">
+						<li>Local Parakeet speech-to-text runs on the Mac.</li>
+						<li>Speech-to-text has no cloud, no API keys, and no server-side account.</li>
+						<li>Submitted text is handed to the active coding-agent terminal; that agent's own provider policy still applies.</li>
+					</ul>
+				</div>
+			</section>
+
+			<section id="byot" class="section vocalist-byot-section" aria-labelledby="byot-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">B.Y.O.T.</p>
+						<h2 id="byot-title">Bring your own tokens.</h2>
+					</div>
+					<p>So, you're not a Mac user with CMUX? Why not build the version your stack needs? This is the current Vocalist-shaped prompt to hand to a coding agent.</p>
+				</div>
+				<pre class="vocalist-byot-prompt"><code>Build a local voice-to-agent app like laicluse.com/vocalist for your own platform and terminal stack.
+
+The current Vocalist design is a local macOS menu-bar app in Swift 6.2 for macOS Tahoe (26) and newer. It is built around a hands-free prompting loop for coding agents in CMUX: the operator speaks, a floating bubble previews the pending turn, and the final text is delivered only when the turn is ready.
+
+Audio is captured with AVFoundation, converted to 16 kHz mono Float samples through FluidAudio, and processed locally with FluidAudio 0.15.4. Speech recognition uses NVIDIA Parakeet TDT v3 through FluidAudio's Core ML model path, loaded with AsrModels.downloadAndLoad(version: .v3). Vocalist creates an AsrManager and transcribes bounded utterances locally; it does not depend on cloud speech APIs or token-by-token streaming ASR.
+
+The realtime feel comes from segmentation. FluidAudio's Silero-based VadManager processes 256 ms chunks. Vocalist keeps a short pre-roll, starts an utterance when VAD reports speech, closes it when VAD reports speech end, ignores very short utterances, and sends only that bounded utterance to Parakeet. The bubble holds the pending turn so the operator can pause, edit, clear, cancel, or submit instead of sending half-formed transcripts into a terminal.
+
+The command layer above ASR matters as much as the recognizer. Voice commands are configurable trailing phrases, not fixed vocabulary. TurnComposer strips a matched final phrase and maps it to actions such as Return, Escape, discard pending text, custom key sequences, or next/previous terminal navigation. If delivery fails, the pending turn remains retryable. ArtifactCleaner removes common ASR boundary artifacts: duplicate overlap between segments, split words, near-duplicate word boundaries, and extra whitespace. Pronunciation mappings repair known alias mistakes before delivery.
+
+For agent-specific commands, Vocalist builds a dynamic InvocationCatalog. It discovers local Codex and Claude skills, project-level skills from the active terminal process directories, enabled plugin skills, plugin command files, and Claude built-in slash commands. Spoken forms such as &quot;slash status&quot; or &quot;dollar conveyor order status&quot; can become real invocations like /status or $conveyor:order-status without custom ASR vocabulary.
+
+Delivery is CMUX-specific in this implementation. Vocalist reads cmux top --all --processes --json, follows the active terminal surface, derives active project directories from process IDs, checks that the focused terminal is running Codex or Claude Code rather than a bare shell, and reads the screen before submit so it does not press Return into an interactive menu. Submitted agent turns are prefixed with 🎙️ so the receiving agent knows the text came from speech-to-text and should be read for intent. For inspiration on the companion plugin and transcribed-turn skill language, see https://laicluse.com/vocalist/#transcribed-turn.
+
+The shipping setup has two pieces: the Mac app plus a small coding-agent plugin. The plugin gives Claude Code /vocalist:hands-free, Codex $vocalist:hands-free, and a transcribed-turn instruction that explains the 🎙️ marker. If you rebuild this for Linux, Windows, tmux, wezterm, or another agent stack, keep the same separation: local STT app, configurable trailing command mapper, dynamic agent-command catalog, target-surface adapter, and an explicit marker/instruction protocol for transcribed turns.
+
+Optional tiny credit: if this prompt helps and you feel generous, add a small note somewhere in your README, help screen, or credits: &quot;This prompt was originally borrowed from laicluse.com/vocalist/.&quot;</code></pre>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>Vocalist</span>
+			<a href="https://laicluse.com/vocalist/">laicluse.com/vocalist</a>
+		</footer>
+	</body>
+</html>

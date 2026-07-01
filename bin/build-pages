@@ -10,6 +10,9 @@ const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
 const PAGES_URL = "https://laicluse.com";
 const FIELDKIT_PATH = "agent-fieldkit/";
 const FIELDKIT_URL = `${PAGES_URL}/${FIELDKIT_PATH}`;
+const VOCALIST_PATH = "vocalist/";
+const VOCALIST_URL = `${PAGES_URL}/${VOCALIST_PATH}`;
+const SAYSAY_PATH = "agent-fieldkit/saysay/";
 const SITE_TITLE = "l'Aicluse Agent Fieldkit";
 const SITE_DESCRIPTION =
 	"A public Claude Code and Codex plugin marketplace for agent guardrails, workflow discipline, peer review, autonomous work, feedback repair, and changelogs.";
@@ -17,6 +20,10 @@ const SITE_TWITTER_DESCRIPTION =
 	"Guardrails for coding agents that touch real repositories. A public Claude Code and Codex plugin marketplace.";
 const SITE_IMAGE_ALT = "l'Aicluse Agent Fieldkit: guardrails for coding agents that touch real repositories.";
 const SITE_TWITTER_IMAGE_ALT = "l'Aicluse Agent Fieldkit share card";
+const ROOT_TITLE = "l'Aicluse";
+const ROOT_DESCRIPTION = "Local-first, human-in-the-loop apps and coding-agent plugins for working alongside AI.";
+const ROOT_IMAGE_ALT = "l'Aicluse: apps and coding-agent plugins for working alongside AI.";
+const LINKEDIN_URL = "https://www.linkedin.com/in/lecluse";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
 // allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
@@ -98,6 +105,81 @@ const copy = {
 	},
 };
 
+const apps = [
+	{
+		name: "Vocalist",
+		category: "Free macOS app",
+		tagline: "A Mac menu-bar app for speaking prompts to Codex or Claude Code.",
+		pagePath: VOCALIST_PATH,
+		homepageUrl: VOCALIST_URL,
+		brew: "brew install --cask laicluse/tap/vocalist",
+		pluginInstall: "vocalist plugin install",
+		runCommands: [
+			{ label: "Claude Code", command: "/vocalist:hands-free" },
+			{ label: "Codex", command: "$vocalist:hands-free" },
+			{ label: "Terminal", command: "vocalist" },
+		],
+		dmgUrl: "https://github.com/epologee/vocalist/releases/latest",
+		requirement: "macOS Tahoe (26) or newer, Apple Silicon",
+		features: [
+			"Prompt Codex and Claude Code by voice without touching the keyboard.",
+			"Preview each turn in a floating speech bubble before it reaches the agent.",
+			"Send the prompt to the active CMUX terminal, even while another Mac app is frontmost.",
+		],
+		privacy: [
+			"Local Parakeet speech-to-text runs on the Mac.",
+			"Speech-to-text has no cloud, no API keys, and no server-side account.",
+			"Submitted text is handed to the active coding-agent terminal; that agent's own provider policy still applies.",
+		],
+	},
+];
+
+const vocalistLayers = [
+	{
+		name: "Capture",
+		summary: "listen while you work",
+		steps: ["Microphone", "Live audio", "Floating bubble"],
+	},
+	{
+		name: "Segment",
+		summary: "find the turn",
+		steps: ["Speech starts", "Natural pause", "End of turn"],
+	},
+	{
+		name: "Transcribe",
+		summary: "turn speech into text",
+		steps: ["Local Parakeet STT", "Confirmed words", "Preview updates"],
+	},
+	{
+		name: "Shape",
+		summary: "keep the prompt usable",
+		steps: ["Clean text", "Slash commands", "Dollar commands", "Final word checked"],
+	},
+	{
+		name: "Deliver",
+		summary: "send only when ready",
+		steps: ["Active CMUX pane", "Codex or Claude Code", "Type prompt", "Press Enter", "Keep if no agent"],
+	},
+];
+
+const vocalistByotPrompt = `Build a local voice-to-agent app like laicluse.com/vocalist for your own platform and terminal stack.
+
+The current Vocalist design is a local macOS menu-bar app in Swift 6.2 for macOS Tahoe (26) and newer. It is built around a hands-free prompting loop for coding agents in CMUX: the operator speaks, a floating bubble previews the pending turn, and the final text is delivered only when the turn is ready.
+
+Audio is captured with AVFoundation, converted to 16 kHz mono Float samples through FluidAudio, and processed locally with FluidAudio 0.15.4. Speech recognition uses NVIDIA Parakeet TDT v3 through FluidAudio's Core ML model path, loaded with AsrModels.downloadAndLoad(version: .v3). Vocalist creates an AsrManager and transcribes bounded utterances locally; it does not depend on cloud speech APIs or token-by-token streaming ASR.
+
+The realtime feel comes from segmentation. FluidAudio's Silero-based VadManager processes 256 ms chunks. Vocalist keeps a short pre-roll, starts an utterance when VAD reports speech, closes it when VAD reports speech end, ignores very short utterances, and sends only that bounded utterance to Parakeet. The bubble holds the pending turn so the operator can pause, edit, clear, cancel, or submit instead of sending half-formed transcripts into a terminal.
+
+The command layer above ASR matters as much as the recognizer. Voice commands are configurable trailing phrases, not fixed vocabulary. TurnComposer strips a matched final phrase and maps it to actions such as Return, Escape, discard pending text, custom key sequences, or next/previous terminal navigation. If delivery fails, the pending turn remains retryable. ArtifactCleaner removes common ASR boundary artifacts: duplicate overlap between segments, split words, near-duplicate word boundaries, and extra whitespace. Pronunciation mappings repair known alias mistakes before delivery.
+
+For agent-specific commands, Vocalist builds a dynamic InvocationCatalog. It discovers local Codex and Claude skills, project-level skills from the active terminal process directories, enabled plugin skills, plugin command files, and Claude built-in slash commands. Spoken forms such as "slash status" or "dollar conveyor order status" can become real invocations like /status or $conveyor:order-status without custom ASR vocabulary.
+
+Delivery is CMUX-specific in this implementation. Vocalist reads cmux top --all --processes --json, follows the active terminal surface, derives active project directories from process IDs, checks that the focused terminal is running Codex or Claude Code rather than a bare shell, and reads the screen before submit so it does not press Return into an interactive menu. Submitted agent turns are prefixed with 🎙️ so the receiving agent knows the text came from speech-to-text and should be read for intent. For inspiration on the companion plugin and transcribed-turn skill language, see https://laicluse.com/vocalist/#transcribed-turn.
+
+The shipping setup has two pieces: the Mac app plus a small coding-agent plugin. The plugin gives Claude Code /vocalist:hands-free, Codex $vocalist:hands-free, and a transcribed-turn instruction that explains the 🎙️ marker. If you rebuild this for Linux, Windows, tmux, wezterm, or another agent stack, keep the same separation: local STT app, configurable trailing command mapper, dynamic agent-command catalog, target-surface adapter, and an explicit marker/instruction protocol for transcribed turns.
+
+Optional tiny credit: if this prompt helps and you feel generous, add a small note somewhere in your README, help screen, or credits: "This prompt was originally borrowed from laicluse.com/vocalist/."`;
+
 const categories = [
 	{
 		id: "workflow",
@@ -160,6 +242,26 @@ function htmlEscape(value) {
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;");
+}
+
+function renderList(items, indent = "") {
+	return items.map((item) => `${indent}<li>${htmlEscape(item)}</li>`).join("\n");
+}
+
+function renderLayerDiagram(layers) {
+	return layers
+		.map(
+			(layer) => `					<article class="vocalist-layer">
+						<header>
+							<h3>${htmlEscape(layer.name)}</h3>
+							<p>${htmlEscape(layer.summary)}</p>
+						</header>
+						<ul>
+${renderList(layer.steps, "\t\t\t\t\t\t\t")}
+						</ul>
+					</article>`,
+		)
+		.join("\n");
 }
 
 function attributeEscape(value) {
@@ -625,6 +727,7 @@ function build(repoRoot) {
 				"Agent skills marketplace for Claude Code and Codex",
 		},
 		categories,
+		apps,
 		counts: {
 			sourcePackages: plugins.length,
 			codexPackages: plugins.filter((plugin) => plugin.codex).length,
@@ -801,6 +904,253 @@ function renderPluginDetailPages(repoRoot, data, hash, assetVersions) {
 		fs.mkdirSync(pluginDir, { recursive: true });
 		fs.writeFileSync(path.join(pluginDir, "index.html"), buildPluginDetailPage(data, plugin, markdown, hash, assetVersions));
 	}
+}
+
+function buildVocalistPage(app, hash, assetVersions) {
+	const pageUrl = VOCALIST_URL;
+	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+
+	return `<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>${htmlEscape(app.name)}</title>
+		<meta
+			name="description"
+			content="${attributeEscape(app.tagline)}"
+		>
+		<link rel="canonical" href="${pageUrl}">
+
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="${pageUrl}">
+		<meta property="og:title" content="${htmlEscape(app.name)}">
+		<meta property="og:description" content="${attributeEscape(app.tagline)}">
+		<meta property="og:image" content="${imageUrl}">
+		<meta property="og:image:secure_url" content="${imageUrl}">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:image:alt" content="Vocalist: a local voice interface for coding-agent terminals.">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="${htmlEscape(app.name)}">
+		<meta name="twitter:description" content="${attributeEscape(app.tagline)}">
+		<meta name="twitter:image" content="${imageUrl}">
+		<meta name="twitter:image:alt" content="Vocalist app page">
+
+		<link rel="stylesheet" href="../styles.css?v=${assetVersions["styles.css"]}">
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../" aria-label="l'Aicluse Apps">
+				<span class="brand-title">l'Aicluse Apps</span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="#install">Install</a>
+				<a href="#commands">Voice commands</a>
+				<a href="#privacy">Privacy</a>
+				<a href="#byot">B.Y.O.T.</a>
+				<a href="../agent-fieldkit/">Agent Fieldkit</a>
+			</nav>
+		</header>
+
+		<main id="content">
+			<section id="top" class="hero vocalist-hero">
+				<div class="hero-grid vocalist-hero-grid">
+					<div class="hero-copy">
+						<p class="eyebrow">${htmlEscape(app.category)}</p>
+						<h1>${htmlEscape(app.name)}</h1>
+						<p class="lede">Talk instead of typing. Vocalist shows what it heard in a floating bubble; say "over" to send it to the Codex or Claude Code terminal that is active in CMUX. Speech-to-text runs locally on your Mac.</p>
+						<div class="hero-actions" aria-label="Primary actions">
+							<a class="button primary" href="#install">Install with Homebrew</a>
+							<a class="button secondary" href="${attributeEscape(app.dmgUrl)}">Download directly</a>
+						</div>
+					</div>
+
+					<aside class="vocalist-panel" aria-label="Vocalist preview">
+						<img class="vocalist-icon" src="../assets/vocalist-icon.svg" width="128" height="128" alt="">
+						<div class="vocalist-bubble">
+							<span>Prompt preview</span>
+							<p>🎙️ Refactor the release checklist and summarize what changed <span class="vocalist-command-token">[over]</span></p>
+						</div>
+						<div class="terminal-command">
+							<span>to</span>
+							<code>CMUX -> active Codex or Claude Code terminal</code>
+						</div>
+					</aside>
+				</div>
+			</section>
+
+			<section id="install" class="section install-section" aria-labelledby="install-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Get Vocalist</p>
+						<h2 id="install-title">Install, connect, run.</h2>
+					</div>
+					<p>${htmlEscape(app.requirement)}. Vocalist is a Mac menu-bar app plus a coding-agent plugin. Homebrew installs the app, the CLI, and the bundled plugin marketplace; the second command connects that plugin to your agent. Start it from your agent session or from a terminal.</p>
+				</div>
+				<div class="install-grid install-grid-three">
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>1. Mac app</h3>
+						</div>
+						<p>The menu-bar app listens, shows the floating bubble, and sends the final prompt into CMUX.</p>
+						<pre><code>${htmlEscape(app.brew)}</code></pre>
+						<div class="app-buttons">
+							<a class="button secondary" href="${attributeEscape(app.dmgUrl)}">Download directly</a>
+						</div>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>2. Agent plugin</h3>
+						</div>
+						<p>The plugin adds <code>/vocalist:hands-free</code> for Claude Code, <code>$vocalist:hands-free</code> for Codex, and the <code>transcribed-turn</code> rule that explains the 🎙️ marker.</p>
+						<pre><code>${htmlEscape(app.pluginInstall)}</code></pre>
+						<p>Run it after installing or upgrading Vocalist so your agent sees the bundled marketplace.</p>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>3. Run Vocalist</h3>
+						</div>
+						<p>Open Vocalist from your coding agent once the plugin is connected, or start the app directly from a terminal.</p>
+						<ul class="install-command-list">
+${app.runCommands.map((item) => `							<li><span>${htmlEscape(item.label)}</span><code>${htmlEscape(item.command)}</code></li>`).join("\n")}
+						</ul>
+					</article>
+				</div>
+			</section>
+
+			<section class="section vocalist-detail-section" aria-labelledby="details-title">
+				<div class="section-heading">
+					<p class="eyebrow">What it does</p>
+					<h2 id="details-title">Voice input for the coding-agent terminal you are already using.</h2>
+				</div>
+				<div class="vocalist-detail-grid">
+					<article class="vocalist-detail-card">
+						<h3>Made for agent prompts</h3>
+						<p>Vocalist is not a dictate-anywhere tool. It is for coding-agent prompts, corrections, and follow-ups while you work elsewhere.</p>
+					</article>
+					<article class="vocalist-detail-card">
+						<h3>Agent plugin included</h3>
+						<p>The bundled plugin starts Vocalist from your agent session and teaches the agent that 🎙️ means speech-to-text, so it should read the turn for intent.</p>
+					</article>
+					<article class="vocalist-detail-card">
+						<h3>Codex and Claude Code</h3>
+						<p>It sends your prompt to the active CMUX terminal running Codex or Claude Code, even when your frontmost app is a browser.</p>
+					</article>
+					<article class="vocalist-detail-card">
+						<h3>Preview before send</h3>
+						<p>The floating bubble shows the transcribed prompt before it is sent, so you can catch a misheard word first.</p>
+					</article>
+				</div>
+				<article class="vocalist-duplex-card">
+					<div>
+						<p class="eyebrow">Optional audio loop</p>
+						<h3>Want full-duplex hands-free prompting?</h3>
+					</div>
+					<p>Combine Vocalist with a speech skill like <a href="/${htmlEscape(SAYSAY_PATH)}">saysay</a> so the agent can talk back while you keep speaking prompts. Use headphones: Vocalist does not have echo cancellation yet.</p>
+				</article>
+			</section>
+
+			<section id="commands" class="section vocalist-commands-section" aria-labelledby="commands-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Voice commands</p>
+						<h2 id="commands-title">The last words decide what happens next.</h2>
+					</div>
+					<p>Voice commands are spoken at the end of a turn. If you say the same word in the middle of a sentence, it stays text.</p>
+				</div>
+				<div class="vocalist-command-grid">
+					<article class="vocalist-command-card">
+						<h3>Mapped words, not fixed words</h3>
+						<p>In settings, choose which words submit the prompt, clear the pending turn, interrupt the agent, or move between agent terminals.</p>
+					</article>
+					<article class="vocalist-command-card">
+						<h3>Multilingual on purpose</h3>
+						<p>A single prompt can mix languages. Vocalist keeps the spoken text intact and only treats your configured final words as commands.</p>
+					</article>
+					<article class="vocalist-command-card">
+						<h3>Final-word matching</h3>
+						<p>Command words only fire at the end of a turn. The same word in the middle of a sentence stays part of the prompt.</p>
+					</article>
+				</div>
+				<article class="vocalist-command-examples" aria-label="Example voice command mappings">
+					<div>
+						<p class="eyebrow">Example mappings</p>
+						<h3>Turn spoken endings into keys.</h3>
+						<p>These words are just examples. In settings, map the phrases that feel natural to the keys or actions you want Vocalist to send.</p>
+					</div>
+					<ul>
+						<li><code>over</code><span>Return</span><em>send the prompt</em></li>
+						<li><code>scratch that</code><span>Escape</span><em>clear or cancel the pending turn</em></li>
+					</ul>
+				</article>
+				<article id="transcribed-turn" class="vocalist-mic-note">
+					<div>
+						<p class="eyebrow">Transcribed intent</p>
+						<h3>The microphone marker tells the agent to read generously.</h3>
+						<p>The leading <strong>🎙️</strong> is not decoration. It tells the coding agent that the text came from speech, so it should allow for obvious transcription slips instead of treating every odd word as deliberate.</p>
+					</div>
+					<blockquote>🎙️ Fix the relase checlist thing and run the tast that covers it <span class="vocalist-command-token">[over]</span></blockquote>
+				</article>
+				<div class="vocalist-routing-panel">
+					<div>
+						<p class="eyebrow">CMUX</p>
+						<h3>Works with CMUX today.</h3>
+						<p>Vocalist asks CMUX which terminal is active, checks that it is running Codex or Claude Code rather than a bare shell, and then types the prompt there.</p>
+						<p>Other tmux-style apps would need an adapter that can report the active terminal, identify the running agent, and accept text plus key input. That path is not implemented yet.</p>
+					</div>
+					<div class="vocalist-layer-map" aria-label="Vocalist layers: Capture, Segment, Transcribe, Shape, Deliver">
+${renderLayerDiagram(vocalistLayers)}
+					</div>
+				</div>
+			</section>
+
+			<section id="privacy" class="section principles-section" aria-labelledby="privacy-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Privacy</p>
+						<h2 id="privacy-title">Speech recognition stays local. Submitted text goes to the agent you are using.</h2>
+					</div>
+					<ul class="vocalist-privacy-list">
+${renderList(app.privacy, "\t\t\t\t\t\t")}
+					</ul>
+				</div>
+			</section>
+
+			<section id="byot" class="section vocalist-byot-section" aria-labelledby="byot-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">B.Y.O.T.</p>
+						<h2 id="byot-title">Bring your own tokens.</h2>
+					</div>
+					<p>So, you're not a Mac user with CMUX? Why not build the version your stack needs? This is the current Vocalist-shaped prompt to hand to a coding agent.</p>
+				</div>
+				<pre class="vocalist-byot-prompt"><code>${htmlEscape(vocalistByotPrompt)}</code></pre>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>Vocalist</span>
+			<a href="https://laicluse.com/vocalist/">laicluse.com/vocalist</a>
+		</footer>
+	</body>
+</html>
+`;
+}
+
+function renderVocalistPage(repoRoot, data, hash, assetVersions) {
+	const app = data.apps.find((item) => item.name === "Vocalist");
+	if (!app) return;
+	const outputPath = path.join(repoRoot, "docs", VOCALIST_PATH, "index.html");
+	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+	fs.writeFileSync(outputPath, buildVocalistPage(app, hash, assetVersions));
+	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 }
 
 // Build the share card as an SVG string. The plugin count, per-category counts,
@@ -988,7 +1338,7 @@ function writeSharedAssets(repoRoot) {
 	}
 }
 
-function buildRootRedirect(hash) {
+function buildRootPage(hash, assetVersions) {
 	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
 
 	return `<!doctype html>
@@ -996,48 +1346,94 @@ function buildRootRedirect(hash) {
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>${htmlEscape(SITE_TITLE)}</title>
-		<meta name="description" content="${attributeEscape(SITE_DESCRIPTION)}">
-		<link rel="canonical" href="${FIELDKIT_URL}">
-		<meta http-equiv="refresh" content="0; url=/agent-fieldkit/">
+		<title>${htmlEscape(ROOT_TITLE)}</title>
+		<meta name="description" content="${attributeEscape(ROOT_DESCRIPTION)}">
+		<link rel="canonical" href="${PAGES_URL}/">
 
 		<meta property="og:type" content="website">
-		<meta property="og:site_name" content="${htmlEscape(SITE_TITLE)}">
+		<meta property="og:site_name" content="${htmlEscape(ROOT_TITLE)}">
 		<meta property="og:locale" content="en_US">
-		<meta property="og:url" content="${FIELDKIT_URL}">
-		<meta property="og:title" content="${htmlEscape(SITE_TITLE)}">
-		<meta property="og:description" content="${attributeEscape(SITE_DESCRIPTION)}">
+		<meta property="og:url" content="${PAGES_URL}/">
+		<meta property="og:title" content="${htmlEscape(ROOT_TITLE)}">
+		<meta property="og:description" content="${attributeEscape(ROOT_DESCRIPTION)}">
 		<meta property="og:image" content="${imageUrl}">
 		<meta property="og:image:secure_url" content="${imageUrl}">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
-		<meta property="og:image:alt" content="${attributeEscape(SITE_IMAGE_ALT)}">
+		<meta property="og:image:alt" content="${attributeEscape(ROOT_IMAGE_ALT)}">
 
 		<meta name="twitter:card" content="summary_large_image">
-		<meta name="twitter:title" content="${htmlEscape(SITE_TITLE)}">
-		<meta name="twitter:description" content="${attributeEscape(SITE_TWITTER_DESCRIPTION)}">
+		<meta name="twitter:title" content="${htmlEscape(ROOT_TITLE)}">
+		<meta name="twitter:description" content="${attributeEscape(ROOT_DESCRIPTION)}">
 		<meta name="twitter:image" content="${imageUrl}">
-		<meta name="twitter:image:alt" content="${attributeEscape(SITE_TWITTER_IMAGE_ALT)}">
+		<meta name="twitter:image:alt" content="${attributeEscape(ROOT_IMAGE_ALT)}">
 
-		<script>
-			(() => {
-				const target = new URL("/agent-fieldkit/", window.location.origin);
-				target.search = window.location.search;
-				target.hash = window.location.hash;
-				window.location.replace(target.href);
-			})();
-		</script>
+		<link rel="stylesheet" href="styles.css?v=${assetVersions["styles.css"]}">
 	</head>
-	<body>
-		<p><a href="/agent-fieldkit/">Continue to l'Aicluse Agent Fieldkit.</a></p>
+	<body class="home-page">
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="/" aria-label="l'Aicluse home">
+				<span class="brand-title">l'Aicluse</span>
+			</a>
+			<nav class="site-nav" aria-label="Contact">
+				<a href="${attributeEscape(LINKEDIN_URL)}">LinkedIn</a>
+			</nav>
+		</header>
+
+		<main id="content" class="home-main">
+			<section class="home-hero" aria-labelledby="home-title">
+				<div class="home-hero-inner">
+					<p class="eyebrow">Coding agent plugins + apps</p>
+					<h1 id="home-title">l'Aicluse</h1>
+					<p class="lede">Local-first, human-in-the-loop tools for working alongside AI.</p>
+				</div>
+			</section>
+
+			<section class="home-products-section" aria-label="l'Aicluse products">
+				<div class="home-products-inner">
+					<div class="home-product-grid" aria-label="l'Aicluse products">
+						<article class="home-product-card" id="plugins">
+							<div class="home-card-top">
+								<div>
+									<p class="eyebrow">Coding agent plugins</p>
+									<h2>Agent Fieldkit</h2>
+								</div>
+								<div class="home-command-mark" aria-hidden="true">$</div>
+							</div>
+							<p>A plugin marketplace for shaping coding-agent behavior: workflow discipline, review, autonomy, and repair.</p>
+							<a class="home-card-link" href="/agent-fieldkit/">Browse plugins</a>
+						</article>
+
+						<article class="home-product-card" id="apps">
+							<div class="home-card-top">
+								<div>
+									<p class="eyebrow">App</p>
+									<h2>Vocalist</h2>
+								</div>
+								<img class="home-product-icon" src="assets/vocalist-icon.svg" width="76" height="76" alt="">
+							</div>
+							<p>A Mac menu-bar app for hands-free prompting: talk to Codex or Claude Code instead of typing.</p>
+							<a class="home-card-link" href="/vocalist/">See Vocalist</a>
+						</article>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="site-footer home-footer">
+			<span>l'Aicluse</span>
+			<a href="${attributeEscape(LINKEDIN_URL)}">linkedin.com/in/lecluse</a>
+		</footer>
 	</body>
 </html>
 `;
 }
 
-function writeRootRedirect(repoRoot, hash) {
-	fs.writeFileSync(path.join(repoRoot, "docs", "index.html"), buildRootRedirect(hash));
+function writeRootPage(repoRoot, hash, assetVersions) {
+	fs.writeFileSync(path.join(repoRoot, "docs", "index.html"), buildRootPage(hash, assetVersions));
 }
 
 function main() {
@@ -1052,8 +1448,9 @@ function main() {
 	writeSharedAssets(repoRoot);
 	const assetVersions = sharedAssetVersions(repoRoot);
 	updateFieldkitMeta(repoRoot, hash, assetVersions);
-	writeRootRedirect(repoRoot, hash);
+	writeRootPage(repoRoot, hash, assetVersions);
 	renderPluginDetailPages(repoRoot, data, hash, assetVersions);
+	renderVocalistPage(repoRoot, data, hash, assetVersions);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
 }
 

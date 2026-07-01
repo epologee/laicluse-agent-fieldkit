@@ -1,0 +1,39 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12201a"/>
+      <stop offset="1" stop-color="#070b09"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4ee49a"/>
+      <stop offset="1" stop-color="#28b673"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect x="100" y="90" width="824" height="824" rx="185" ry="185" fill="url(#tile)"/>
+  <rect x="100" y="90" width="824" height="824" rx="185" ry="185" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
+  <g filter="url(#soft)">
+    <path fill="url(#bubble)" d="
+      M 330 250
+      h 364
+      a 120 120 0 0 1 120 120
+      v 196
+      a 120 120 0 0 1 -120 120
+      h -210
+      l -118 118
+      v -118
+      h -36
+      a 120 120 0 0 1 -120 -120
+      v -196
+      a 120 120 0 0 1 120 -120
+      z"/>
+  </g>
+  <g fill="#0a1410">
+    <rect x="378" y="430" width="40" height="76" rx="20"/>
+    <rect x="454" y="386" width="40" height="164" rx="20"/>
+    <rect x="530" y="356" width="40" height="224" rx="20"/>
+    <rect x="606" y="404" width="40" height="128" rx="20"/>
+  </g>
+</svg>

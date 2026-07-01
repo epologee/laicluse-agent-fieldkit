@@ -68,35 +68,19 @@ HTML
   grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/agent-fieldkit/index.html"
 }
 
-@test "the root page redirects to Fieldkit with the same share card metadata" {
-  grep -q '<meta http-equiv="refresh" content="0; url=/agent-fieldkit/">' "$REPO/docs/index.html"
-  grep -q 'window.location.replace(target.href);' "$REPO/docs/index.html"
-  grep -q '<link rel="canonical" href="https://laicluse.com/agent-fieldkit/">' "$REPO/docs/index.html"
-  grep -q '<meta property="og:url" content="https://laicluse.com/agent-fieldkit/">' "$REPO/docs/index.html"
-  run node - <<'NODE' "$REPO/docs/index.html" "$REPO/docs/agent-fieldkit/index.html"
-const fs = require("fs");
-const [rootPath, fieldkitPath] = process.argv.slice(2);
-const root = fs.readFileSync(rootPath, "utf8");
-const fieldkit = fs.readFileSync(fieldkitPath, "utf8");
-const content = (html, pattern) => {
-	const match = html.match(pattern);
-	if (!match) throw new Error(`missing ${pattern}`);
-	return match[1];
-};
-const fields = [
-	/property="og:title" content="([^"]+)"/,
-	/property="og:description" content="([^"]+)"/,
-	/property="og:image" content="([^"]+)"/,
-	/name="twitter:title" content="([^"]+)"/,
-	/name="twitter:description" content="([^"]+)"/,
-	/name="twitter:image" content="([^"]+)"/,
-];
-for (const field of fields) {
-	const rootValue = content(root, field);
-	const fieldkitValue = content(fieldkit, field);
-	if (rootValue !== fieldkitValue) throw new Error(`${field} differs`);
-}
-NODE
+@test "the root page is the l'Aicluse gateway instead of a redirect" {
+  run grep -E 'http-equiv="refresh"|window\\.location|location\\.href' "$REPO/docs/index.html"
+  [ "$status" -ne 0 ]
+  grep -q '<title>l'"'"'Aicluse</title>' "$REPO/docs/index.html"
+  grep -q '<link rel="canonical" href="https://laicluse.com/">' "$REPO/docs/index.html"
+  grep -q '<meta property="og:url" content="https://laicluse.com/">' "$REPO/docs/index.html"
+  grep -q 'Local-first, human-in-the-loop tools for working alongside AI' "$REPO/docs/index.html"
+  grep -q 'href="/vocalist/"' "$REPO/docs/index.html"
+  grep -q 'href="/agent-fieldkit/"' "$REPO/docs/index.html"
+  grep -q 'https://www.linkedin.com/in/lecluse' "$REPO/docs/index.html"
+  grep -q 'assets/vocalist-icon.svg' "$REPO/docs/index.html"
+  grep -q '<link rel="stylesheet" href="styles.css' "$REPO/docs/index.html"
+  run node -e 'const root=require("fs").readFileSync(process.argv[1],"utf8");if((root.match(/<h1\b/g)||[]).length!==1)throw new Error("expected one h1");const fieldkit=root.indexOf("<h2>Agent Fieldkit</h2>");const vocalist=root.indexOf("<h2>Vocalist</h2>");if(fieldkit<0)throw new Error("missing Agent Fieldkit h2");if(vocalist<0)throw new Error("missing Vocalist h2");if(fieldkit>vocalist)throw new Error("expected Agent Fieldkit before Vocalist");' "$REPO/docs/index.html"
   [ "$status" -eq 0 ]
 }
 

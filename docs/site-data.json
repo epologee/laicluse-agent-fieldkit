@@ -29,6 +29,43 @@
 			"description": "The small loops that turn irritation, confusion, and repeated friction into maintainable fixes."
 		}
 	],
+	"apps": [
+		{
+			"name": "Vocalist",
+			"category": "Free macOS app",
+			"tagline": "A Mac menu-bar app for speaking prompts to Codex or Claude Code.",
+			"pagePath": "vocalist/",
+			"homepageUrl": "https://laicluse.com/vocalist/",
+			"brew": "brew install --cask laicluse/tap/vocalist",
+			"pluginInstall": "vocalist plugin install",
+			"runCommands": [
+				{
+					"label": "Claude Code",
+					"command": "/vocalist:hands-free"
+				},
+				{
+					"label": "Codex",
+					"command": "$vocalist:hands-free"
+				},
+				{
+					"label": "Terminal",
+					"command": "vocalist"
+				}
+			],
+			"dmgUrl": "https://github.com/epologee/vocalist/releases/latest",
+			"requirement": "macOS Tahoe (26) or newer, Apple Silicon",
+			"features": [
+				"Prompt Codex and Claude Code by voice without touching the keyboard.",
+				"Preview each turn in a floating speech bubble before it reaches the agent.",
+				"Send the prompt to the active CMUX terminal, even while another Mac app is frontmost."
+			],
+			"privacy": [
+				"Local Parakeet speech-to-text runs on the Mac.",
+				"Speech-to-text has no cloud, no API keys, and no server-side account.",
+				"Submitted text is handed to the active coding-agent terminal; that agent's own provider policy still applies."
+			]
+		}
+	],
 	"counts": {
 		"sourcePackages": 18,
 		"codexPackages": 17,
