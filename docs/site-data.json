@@ -127,7 +127,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.26",
+			"version": "2.0.27",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -142,9 +142,9 @@
 			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.25",
-				"type": "Changed",
-				"summary": "Subdirectories in one git worktree now contend for the same dibs lock."
+				"version": "v2.0.27",
+				"type": "Added",
+				"summary": "Exclude list: directories dibs never locks."
 			}
 		},
 		{
@@ -507,11 +507,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.26",
+			"packageVersion": "2.0.27",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.25",
-			"type": "Changed",
-			"summary": "Subdirectories in one git worktree now contend for the same dibs lock.",
+			"version": "v2.0.27",
+			"type": "Added",
+			"summary": "Exclude list: directories dibs never locks.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{

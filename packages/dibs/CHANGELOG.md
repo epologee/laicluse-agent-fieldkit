@@ -4,6 +4,18 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.27]
+
+### Added
+
+- **Exclude list: directories dibs never locks.** `claim` and `check` on an
+  excluded directory (or any path inside it) return state `excluded` and write no
+  lock, so the occupancy hook passes the edit through. The list is built-in
+  defaults (`/tmp` and the agent-config homes `~/.claude`, `~/.codex`,
+  `~/.config/opencode`) plus a config file at
+  `${LAICLUSE_HOME:-$HOME/.laicluse}/dibs/excludes`.
+  Manage it with `dibs exclude [list | add <dir> | remove <dir>]`.
+
 ## [v2.0.25]
 
 ### Changed

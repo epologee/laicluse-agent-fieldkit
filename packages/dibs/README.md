@@ -28,6 +28,9 @@ dibs claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <i
 dibs release     <dir> [--pid <n>] [--nonce <hex>] [--json]
 dibs release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
 dibs check       <dir> [--max-age-hours <n>] [--json]
+dibs exclude     [list] [--json]
+dibs exclude add    <dir> [--json]
+dibs exclude remove <dir> [--json]
 ```
 
 The directory-keyed verbs (`claim`, `release`, `check`) require the directory to
@@ -55,7 +58,10 @@ realpath, so it still frees a worktree that has since been pruned.
   A session that edits files in several git roots holds several locks; this is
   how SessionEnd and the `undibs` skill free all of them at once. Locks belonging
   to a different live agent are never touched.
-- **check** reports `free`, or the holder with its liveness and staleness.
+- **check** reports `free`, or the holder with its liveness and staleness, or
+  `excluded` when the directory is on the exclude list.
+- **exclude** lists the directories dibs never locks, then `exclude add <dir>`
+  and `exclude remove <dir>` manage the configured entries. See *Excludes* below.
 
 `release` is for explicit recovery or operator-directed teardown. It is not
 normal end-of-task cleanup for a coding agent that claimed occupancy through the
@@ -150,6 +156,32 @@ Shell (`Bash`) mutations are intentionally not gated; the git-native commit hook
 remains the backstop for those and for agents under bypassPermissions. Opt out
 of enforcement for a session with `DIBS_OCCUPANCY=off`. `bonsai`'s
 claim-at-handout is unaffected and complementary.
+
+## Excludes
+
+Some directories should never take an occupancy lock: the agent-config homes,
+where two sessions each editing their own runtime config must not steer each
+other aside and the git-native commit hook is the backstop. dibs keeps a
+per-machine exclude list. `claim` and `check` on an excluded directory (or any
+path inside it) return state `excluded` and write no lock, so the occupancy hook
+passes the edit through untouched. Exclusion lives in the CLI, not the hook, so
+there is a single decision point.
+
+The list is the union of built-in defaults and a plain-text config file at
+`${LAICLUSE_HOME:-$HOME/.laicluse}/dibs/excludes` (one path per line, `#`
+comments and blank lines ignored, a leading `~` expands to `$HOME`). Every
+install ships with `/tmp` (transient scratch) and the agent-config homes
+(`~/.claude`, `~/.codex`, `~/.config/opencode`) excluded by default; those cannot
+be removed. Manage the rest with the CLI:
+
+```bash
+dibs exclude                 # list built-in defaults and configured entries
+dibs exclude add ~/project   # never lock this directory again
+dibs exclude remove ~/project
+```
+
+Matching is by resolved realpath: an excluded git worktree root also excludes
+every file inside it, the same scope `claim` would otherwise lock.
 
 ## Library
 

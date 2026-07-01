@@ -48,6 +48,7 @@ node "$DIBS" claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--
 node "$DIBS" release     <dir> [--pid <n>] [--json]
 node "$DIBS" release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
 node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
+node "$DIBS" exclude     [list | add <dir> | remove <dir>] [--json]
 ```
 
 - **claim** takes exclusive occupancy of the nearest git worktree root when the
@@ -69,7 +70,22 @@ node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
   this is how the host's session-end and the `undibs` skill free all of them at
   once; locks held by a *different* live agent are never touched.
 - **check** prints `free` or the holder plus its liveness and staleness for the
-  same resolved target that `claim` would use.
+  same resolved target that `claim` would use, or `excluded` when the directory
+  is on the exclude list.
+- **exclude** manages the per-machine list of directories dibs never locks.
+  `exclude` (or `exclude list`) prints the built-in defaults and the configured
+  entries; `exclude add <dir>` and `exclude remove <dir>` edit the config file.
+  When the operator asks to stop locking a directory ("doe geen dibs op ~/foo"),
+  run `exclude add` on it rather than disabling enforcement wholesale.
+
+The exclude list is the union of built-in defaults (`/tmp` plus the agent-config
+homes `~/.claude`, `~/.codex`, `~/.config/opencode`, always excluded and not
+removable) and a plain-text file at `${LAICLUSE_HOME:-$HOME/.laicluse}/dibs/excludes` (one
+path per line, `#` comments and blank lines ignored, leading `~` expands to
+`$HOME`). `claim` and `check` on an excluded directory or any path inside it
+return state `excluded` and write no lock, so the occupancy hook lets the edit
+through without a second lock path. Matching is by resolved realpath: excluding a
+git worktree root excludes every file inside it.
 
 `release` is an explicit recovery/operator action, not normal end-of-task
 cleanup. After a coding agent claims occupancy through the hook, keep the lock

@@ -12,13 +12,120 @@ export const BLOCKED_DIRECTORY_SUGGESTION = [
   'then claim that worktree path.',
 ].join(' ');
 
+function agentHomeDir() {
+  return process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
+}
+
 function locksDir() {
-  const agentHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
-  return join(agentHome, 'locks');
+  return join(agentHomeDir(), 'locks');
 }
 
 function ensureLocksDir() {
   mkdirSync(locksDir(), { recursive: true });
+}
+
+// allow-comment: load-bearing default. Locked out of dibs everywhere: the agent-config homes, where two sessions editing their own runtime config must not steer each other aside (the git-native backstop covers those repos), plus /tmp, transient scratch that no agent should ever contend over. Additions live in the excludes file; these ship with every install.
+export const DEFAULT_EXCLUDES = ['/tmp', '~/.claude', '~/.codex', '~/.config/opencode'];
+
+function excludesFile() {
+  return join(agentHomeDir(), 'dibs', 'excludes');
+}
+
+function expandTilde(p) {
+  if (p === '~') return homedir();
+  if (p.startsWith('~/')) return join(homedir(), p.slice(2));
+  return p;
+}
+
+function canonicalizeExclude(entry) {
+  const abs = expandTilde(String(entry).trim());
+  if (!abs) return null;
+  try {
+    return existsSync(abs) ? realpathSync(abs) : abs;
+  } catch {
+    return abs;
+  }
+}
+
+function readExcludeEntries() {
+  const file = excludesFile();
+  if (!existsSync(file)) return [];
+  return readFileSync(file, 'utf8')
+    .split('\n')
+    .map((line) => line.replace(/#.*$/, '').trim())
+    .filter((line) => line.length > 0);
+}
+
+function loadExcludes() {
+  const out = [];
+  const seen = new Set();
+  for (const entry of [...DEFAULT_EXCLUDES, ...readExcludeEntries()]) {
+    const canon = canonicalizeExclude(entry);
+    if (canon && !seen.has(canon)) {
+      seen.add(canon);
+      out.push(canon);
+    }
+  }
+  return out;
+}
+
+function isExcluded(realpath) {
+  for (const excluded of loadExcludes()) {
+    if (realpath === excluded || realpath.startsWith(`${excluded}/`)) return true;
+  }
+  return false;
+}
+
+function isDefaultExclude(canon) {
+  return DEFAULT_EXCLUDES.some((entry) => canonicalizeExclude(entry) === canon);
+}
+
+export function listExcludes() {
+  return {
+    ok: true,
+    defaults: DEFAULT_EXCLUDES,
+    file: excludesFile(),
+    configured: readExcludeEntries(),
+    effective: loadExcludes(),
+  };
+}
+
+export function addExclude(path) {
+  const entry = String(path).trim();
+  if (!entry) throw new Error('exclude add needs a path');
+  const file = excludesFile();
+  const canon = canonicalizeExclude(entry);
+  if (isDefaultExclude(canon)) return { ok: true, state: 'already-default', path: entry, file };
+  if (readExcludeEntries().some((e) => canonicalizeExclude(e) === canon)) {
+    return { ok: true, state: 'already-present', path: entry, file };
+  }
+  mkdirSync(dirname(file), { recursive: true });
+  const current = existsSync(file) ? readFileSync(file, 'utf8') : '';
+  const separator = current.length && !current.endsWith('\n') ? '\n' : '';
+  writeFileSync(file, `${current}${separator}${entry}\n`);
+  return { ok: true, state: 'added', path: entry, file };
+}
+
+export function removeExclude(path) {
+  const entry = String(path).trim();
+  const file = excludesFile();
+  const canon = canonicalizeExclude(entry);
+  if (existsSync(file)) {
+    let removed = false;
+    const kept = readFileSync(file, 'utf8').split('\n').filter((line) => {
+      const stripped = line.replace(/#.*$/, '').trim();
+      if (stripped && canonicalizeExclude(stripped) === canon) {
+        removed = true;
+        return false;
+      }
+      return true;
+    });
+    if (removed) {
+      writeFileSync(file, kept.join('\n'));
+      return { ok: true, state: 'removed', path: entry, file };
+    }
+  }
+  return { ok: true, state: isDefaultExclude(canon) ? 'is-default' : 'not-present', path: entry, file };
 }
 
 function canonicalDir(dir) {
@@ -173,6 +280,7 @@ function inspectExisting(path, incoming, maxAgeHours, legacyCodexResumeEnabled) 
 
 export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCodexResume: legacyCodexResumeEnabled }) {
   const realpath = occupancyRoot(dir);
+  if (isExcluded(realpath)) return { ok: true, state: 'excluded', path: null, realpath };
   const path = lockPathForRealpath(realpath);
   ensureLocksDir();
   const record = buildRecord({ realpath, pid, agent, session, owner });
@@ -256,6 +364,7 @@ export function releaseAll({ pid, session, owner, agent }) {
 
 export function check({ dir, maxAgeHours }) {
   const realpath = occupancyRoot(dir);
+  if (isExcluded(realpath)) return { state: 'excluded', path: null, realpath };
   const path = lockPathForRealpath(realpath);
   const existing = readRecordStable(path);
   if (!existing) {

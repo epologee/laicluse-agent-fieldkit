@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { claim, release, releaseAll, check, formatHolder } from './dibs-lib.mjs';
+import { claim, release, releaseAll, check, formatHolder, listExcludes, addExclude, removeExclude } from './dibs-lib.mjs';
 
 const USAGE = `usage: dibs <command> <dir> [options]
 
@@ -10,6 +10,9 @@ commands:
   release-all     release every lock this session holds, across all directories
   release-all     selectors: --pid / --session / --owner with --agent; no <dir>
   check <dir>     report whether a directory is free or who holds it
+  exclude         list directories dibs never locks (built-in defaults + configured)
+  exclude add <dir>     never lock <dir> (persists to the excludes file)
+  exclude remove <dir>  drop <dir> from the excludes file
 
 options:
   --pid <n>            pid whose liveness defines the lock; pass your long-lived
@@ -57,7 +60,7 @@ function parse(args) {
   });
 }
 
-if (!['claim', 'release', 'release-all', 'check'].includes(command)) {
+if (!['claim', 'release', 'release-all', 'check', 'exclude'].includes(command)) {
   die(`unknown command: ${command}`);
 }
 
@@ -85,6 +88,48 @@ if (command === 'release-all') {
     emit(result, result.count === 0
       ? 'no locks held by this session; nothing to release'
       : `released ${result.count} lock${result.count === 1 ? '' : 's'}:\n${result.released.map((r) => `  ${r.realpath}`).join('\n')}`);
+  } catch (err) {
+    die(err.message);
+  }
+}
+
+function formatExcludeList(info) {
+  const lines = ['built-in defaults (always excluded):'];
+  for (const entry of info.defaults) lines.push(`  ${entry}`);
+  lines.push(`configured (${info.file}):`);
+  if (info.configured.length === 0) lines.push('  (none)');
+  else for (const entry of info.configured) lines.push(`  ${entry}`);
+  return lines.join('\n');
+}
+
+function formatExcludeChange(result) {
+  switch (result.state) {
+    case 'added': return `added ${result.path}; dibs will not lock it (${result.file})`;
+    case 'already-present': return `${result.path} is already in the excludes file`;
+    case 'already-default': return `${result.path} is a built-in default; already excluded`;
+    case 'removed': return `removed ${result.path} from ${result.file}`;
+    case 'not-present': return `${result.path} was not configured; nothing to remove`;
+    case 'is-default': return `${result.path} is a built-in default and cannot be removed`;
+    default: return result.state;
+  }
+}
+
+if (command === 'exclude') {
+  const sub = positionals[0];
+  try {
+    if (!sub || sub === 'list') {
+      emit(listExcludes(), formatExcludeList(listExcludes()));
+    } else if (sub === 'add') {
+      if (!positionals[1]) die('exclude add needs a directory path');
+      const result = addExclude(positionals[1]);
+      emit(result, formatExcludeChange(result));
+    } else if (sub === 'remove' || sub === 'rm') {
+      if (!positionals[1]) die('exclude remove needs a directory path');
+      const result = removeExclude(positionals[1]);
+      emit(result, formatExcludeChange(result));
+    } else {
+      die(`unknown exclude subcommand: ${sub} (use list, add, remove)`);
+    }
   } catch (err) {
     die(err.message);
   }
@@ -118,7 +163,8 @@ try {
       maxAgeHours,
       legacyCodexResume: values['legacy-codex-resume'],
     });
-    if (result.state === 'claimed') emit(result, `claimed ${result.holder.realpath} (pid ${pid}${values.agent ? `, agent ${values.agent}` : ''})`);
+    if (result.state === 'excluded') emit(result, `excluded ${result.realpath}; dibs does not lock this directory`);
+    else if (result.state === 'claimed') emit(result, `claimed ${result.holder.realpath} (pid ${pid}${values.agent ? `, agent ${values.agent}` : ''})`);
     else if (result.state === 'held-by-self') emit(result, `already held by you (pid ${pid})`);
     else if (result.state === 'reclaimed-by-owner') emit(result, `reclaimed ${result.holder.realpath} for owner ${result.holder.owner} (pid ${pid})`);
     else if (result.state === 'took-over-stale') emit(result, `took over stale lock on ${result.holder.realpath} (previous ${result.brokeStale.reason}); now held (pid ${pid})`);
@@ -130,7 +176,8 @@ try {
     else emit(result, `refused: ${formatHolder(result.holder)}`, 1);
   } else {
     const result = check({ dir, maxAgeHours });
-    if (result.state === 'free') emit(result, `free: ${result.realpath}`);
+    if (result.state === 'excluded') emit(result, `excluded: ${result.realpath}; dibs does not lock this directory`);
+    else if (result.state === 'free') emit(result, `free: ${result.realpath}`);
     else if (result.state === 'corrupt') emit(result, `corrupt lock for ${result.realpath}; the next claimer will break it`);
     else {
       const liveness = result.sameHost ? (result.alive ? 'alive' : 'dead') : 'foreign-host';
