@@ -4,6 +4,20 @@ Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. This
 plugin ships `/whats-new` for Claude Code and Codex, using each agent's own
 installed-plugin index.
 
+Install it when you want the marketplace itself to announce what changed,
+without installing a separate utility per plugin.
+
+## Installation
+
+```bash
+claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
+codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit
+```
+
+This command covers plugins installed from `@laicluse-agent-fieldkit`.
+Existing installs under the previous marketplace identity need to be removed
+and reinstalled from Fieldkit.
+
 ## Commands
 
 ### `/whats-new [plugin-name]`
@@ -17,14 +31,3 @@ Without arguments: prints the latest marketplace-wide news from
 per-plugin CHANGELOG.
 
 Use `/laicluse-agent-fieldkit:whats-new` only when a namespaced form is needed.
-
-## Installation
-
-```bash
-claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
-codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit
-```
-
-This command covers plugins installed from `@laicluse-agent-fieldkit`.
-Existing installs under the previous marketplace identity need to be removed
-and reinstalled from Fieldkit.

@@ -5,6 +5,18 @@ panels live under this plugin: `software` for code review, `council` for
 critical thinking on an idea or decision, and `writers` for prose review. An
 orchestrator skill routes between them.
 
+Use `gurus` when one agent answer is not enough: code needs adversarial review,
+an idea needs pressure, or prose needs craft feedback from more than one angle.
+The panels are opinionated by design; they should produce concrete edits,
+risks, or decisions rather than polite agreement.
+
+## Installation
+
+```bash
+claude plugins install gurus@laicluse-agent-fieldkit
+codex plugin add gurus@laicluse-agent-fieldkit
+```
+
 ## Sub-skills
 
 | Skill | Use for | Panel |
@@ -58,17 +70,3 @@ and final synthesis. Otherwise they run the same panel protocol as a structured
 single-session review and mark that as a fallback rather than pretending
 independent agents were spawned. The generated Codex package intentionally omits
 `agents/sonnet-max.md`; that file is Claude runtime only.
-
-## Installation
-
-Claude Code:
-
-```bash
-claude plugins install gurus@laicluse-agent-fieldkit
-```
-
-Codex:
-
-```bash
-codex plugin add gurus@laicluse-agent-fieldkit
-```

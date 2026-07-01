@@ -52,7 +52,7 @@
 					<p class="lede">Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.25</span>
+						<span>2.0.26</span>
 						<span>2 skills</span>
 					</div>
 				</div>
@@ -62,6 +62,20 @@
 				<article class="readme-content">
 <p>A single-occupancy lock for a git worktree or standalone working directory. Two coding agents, often cross-vendor (a Claude and a Codex), can start working in the same repository at the same time and overwrite each other. dibs lets one agent take exclusive occupancy before mutation and makes the next mutating agent step aside. Any tool or agent can take the lock and any other can observe it, regardless of vendor or platform.</p>
 <p>It is deliberately not a git lock: it does not touch the index and still locks standalone non-git directories. When a requested path lives inside a git worktree, dibs locks that worktree root so two subdirectories in the same checkout cannot be occupied independently. <code>bonsai</code> creates worktrees and consumes dibs to claim the directory it hands out; the lock logic lives in exactly one place.</p>
+<h2 id="installation">Installation</h2>
+<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-180df742cd-claude">claude plugins install dibs@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-180df742cd-codex">codex plugin add dibs@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
 <h2 id="cli">CLI</h2>
 <pre><code>dibs claim       &lt;dir&gt; [--pid &lt;n&gt;] [--agent &lt;name&gt;] [--session &lt;id&gt;] [--owner &lt;id&gt;] [--max-age-hours &lt;n&gt;] [--json]
 dibs release     &lt;dir&gt; [--pid &lt;n&gt;] [--nonce &lt;hex&gt;] [--json]

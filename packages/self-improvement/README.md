@@ -3,6 +3,19 @@
 Routes feedback about agent behavior to the strongest durable target: hooks,
 skills, project code, or instruction files.
 
+Use it when the operator says a behavior should change permanently, not only
+for the current answer. The skill keeps the fix close to the source of the
+behavior: hook when it must be enforced, skill when it is a workflow, project
+code when the project owns the behavior, and instruction text only when the
+rule really belongs there.
+
+## Installation
+
+```bash
+claude plugins install self-improvement@laicluse-agent-fieldkit
+codex plugin add self-improvement@laicluse-agent-fieldkit
+```
+
 ## Command
 
 ### `/self-improvement`
@@ -19,10 +32,3 @@ Activates when the user:
 - says "remember this" or "onthou dit"
 - asks to create or improve skills, hooks, plugins, or instruction files
 - asks to consolidate or trim instructions
-
-## Install
-
-```bash
-claude plugins install self-improvement@laicluse-agent-fieldkit
-codex plugin add self-improvement@laicluse-agent-fieldkit
-```

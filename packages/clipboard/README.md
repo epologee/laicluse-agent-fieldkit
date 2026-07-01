@@ -1,6 +1,18 @@
 # clipboard
 
-Copy the core content of the last assistant answer to the macOS clipboard. Plain text by default, Slack-flavored rich text on request.
+Copy the core content of the last assistant answer to the macOS clipboard.
+Plain text is the default; Slack-flavored rich text is available on request.
+
+Use it when the answer itself is the artefact you need to paste elsewhere: a
+summary, command block, code snippet, Slack update, or short handoff. The skill
+tries to copy the useful body, not the chat wrapper around it.
+
+## Installation
+
+```bash
+claude plugins install clipboard@laicluse-agent-fieldkit
+codex plugin add clipboard@laicluse-agent-fieldkit
+```
 
 ## Commands
 
@@ -49,10 +61,3 @@ fi
 
 Copy this idiom rather than inventing a variant; it is the one place the
 install key lives outside this plugin.
-
-## Installation
-
-```bash
-claude plugins install clipboard@laicluse-agent-fieldkit
-codex plugin add clipboard@laicluse-agent-fieldkit
-```

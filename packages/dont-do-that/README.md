@@ -10,6 +10,13 @@ habits that repeatedly cause harm: unapproved remote setup, deploys from
 worktrees, unexplained code comments, stale verification handoffs, option menus
 that dodge a decision, PR template filler, and other patterns listed below.
 
+## Installation
+
+```bash
+claude plugins install dont-do-that@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit
+```
+
 ## What it installs
 
 - PreToolUse guards that can deny risky shell commands or file edits before
@@ -372,13 +379,6 @@ it. This is an explicit lock for the current turn, not a blanket rule for every
 question mark. QA and status checks on work the agent is currently driving still
 belong to the deliverable; if such a check fails, the broken or stale artifact
 is a blocker to fix.
-
-## Installation
-
-```bash
-claude plugins install dont-do-that@laicluse-agent-fieldkit
-codex plugin add dont-do-that@laicluse-agent-fieldkit
-```
 
 ## Configuration
 

@@ -12,14 +12,13 @@ runners) is now a host-owned continuation concern. Rover records a loop file
 and tells the active agent to arrange whatever continuation mechanism that
 runtime supports; it does not hard-code one implementation.
 
-## Dependencies
+Use `rover` for long-running or high-stakes work where the agent needs a field
+loop instead of a single conversational answer: survey the task, drive the work,
+inspect the result, apply pride/trim/verify gates, and return a mission report.
 
-- **`gurus@laicluse-agent-fieldkit`** (same marketplace): the rover invokes
-  `gurus:gurus` once per mission at INSPECT for opinionated panel review; the
-  orchestrator routes to `gurus:software`, `gurus:council`, `gurus:writers`,
-  or any future panel.
+## Installation
 
-Install together:
+Install `gurus` alongside `rover`; rover uses it for the INSPECT panel review.
 
 ```bash
 claude plugins install rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit
@@ -30,6 +29,13 @@ codex plugin add gurus@laicluse-agent-fieldkit
 Claude Code sessions that need a cron heartbeat can additionally install
 `autonomous@laicluse-agent-fieldkit`; that plugin is one implementation of the
 continuation contract, not a rover dependency.
+
+## Dependencies
+
+- **`gurus@laicluse-agent-fieldkit`** (same marketplace): the rover invokes
+  `gurus:gurus` once per mission at INSPECT for opinionated panel review; the
+  orchestrator routes to `gurus:software`, `gurus:council`, `gurus:writers`,
+  or any future panel.
 
 No other hard dependencies. Optional integrations (notifier, reviewbot,
 commit-splitter) are user-named at invocation and only used when installed.

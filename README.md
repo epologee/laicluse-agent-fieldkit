@@ -7,6 +7,33 @@ The GitHub Pages source for a public overview of the repository and changelog
 lives in [docs/index.html](docs/index.html). Publish GitHub Pages from the
 `main` branch's `/docs` folder to serve it as a project page.
 
+## Installation
+
+Add the marketplace once:
+
+```bash
+claude plugins marketplace add epologee/laicluse-agent-fieldkit
+codex plugin marketplace add epologee/laicluse-agent-fieldkit
+```
+
+Then install the package you need:
+
+```bash
+claude plugins install dont-do-that@laicluse-agent-fieldkit
+codex plugin add dont-do-that@laicluse-agent-fieldkit
+```
+
+Each package README has its own install block. The generated Fieldkit website
+also exposes per-package install commands and a marketplace-wide install view.
+Most packages ship to both Claude Code and Codex. Runtime-specific adapters are
+generated from the package sources; `autonomous` remains Claude Code-only
+because its keep-alive behavior is host-specific.
+
+Coming from the retired `leclause` marketplace? Its plugins moved here; see the
+[migration guide](https://github.com/epologee/leclause-skills/blob/main/docs/migration.md).
+
+## Packages
+
 The marketplace currently ships:
 
 - `how-plugins-work`: reference material for plugin names, skill names,
@@ -24,6 +51,9 @@ The marketplace currently ships:
 - `intervision`: bring another coding agent in as a peer to review work just
   done or just discussed. Claude hands work to Codex; Codex hands work to
   Claude.
+- `lifeline`: external grounding and inspiration skills. `inspire` researches
+  the outside world before a decision; `ground` checks a doubted claim against
+  sources instead of repeating model confidence.
 - `anger-management`: curse at your coding agent now, fix the real problem
   later. Capture commands log friction to a global pile; a delayed background
   investigation diagnoses the pattern and `repair` routes the fix.
@@ -40,6 +70,8 @@ The marketplace currently ships:
   backoff, wake) is needed; persistent processes run without it.
 - `clipboard`: copy the core content of the last answer to the macOS
   clipboard. Plain text by default, `/clipboard slack` for rich text.
+- `saysay`: macOS speech mode for agents. Responses are spoken aloud while the
+  normal text answer is still written.
 - `gurus`: opinionated review panels for code, decisions, and prose. The
   orchestrator routes to the software, council, or writers panel.
 - `rover`: dispatch a rover at a task and stay back while it decides in the
@@ -49,58 +81,6 @@ The marketplace currently ships:
   `naming-is-hard`.
 - `whywhy`: drills a configurable why-chain into a question or goal, then
   reads the chain for assumptions, forks, and better framing.
-
-## Installation
-
-Claude Code:
-
-```bash
-claude plugins marketplace add epologee/laicluse-agent-fieldkit
-claude plugins install how-plugins-work@laicluse-agent-fieldkit
-claude plugins install bonsai@laicluse-agent-fieldkit
-claude plugins install dibs@laicluse-agent-fieldkit
-claude plugins install self-improvement@laicluse-agent-fieldkit
-claude plugins install git-discipline@laicluse-agent-fieldkit
-claude plugins install dont-do-that@laicluse-agent-fieldkit
-claude plugins install intervision@laicluse-agent-fieldkit
-claude plugins install anger-management@laicluse-agent-fieldkit
-claude plugins install drydry@laicluse-agent-fieldkit
-claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit
-claude plugins install autonomous@laicluse-agent-fieldkit
-claude plugins install clipboard@laicluse-agent-fieldkit
-claude plugins install gurus@laicluse-agent-fieldkit
-claude plugins install rover@laicluse-agent-fieldkit
-claude plugins install house-rules@laicluse-agent-fieldkit
-claude plugins install whywhy@laicluse-agent-fieldkit
-```
-
-Codex:
-
-```bash
-codex plugin marketplace add epologee/laicluse-agent-fieldkit
-codex plugin add how-plugins-work@laicluse-agent-fieldkit
-codex plugin add bonsai@laicluse-agent-fieldkit
-codex plugin add dibs@laicluse-agent-fieldkit
-codex plugin add self-improvement@laicluse-agent-fieldkit
-codex plugin add git-discipline@laicluse-agent-fieldkit
-codex plugin add dont-do-that@laicluse-agent-fieldkit
-codex plugin add intervision@laicluse-agent-fieldkit
-codex plugin add anger-management@laicluse-agent-fieldkit
-codex plugin add drydry@laicluse-agent-fieldkit
-codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit
-codex plugin add clipboard@laicluse-agent-fieldkit
-codex plugin add gurus@laicluse-agent-fieldkit
-codex plugin add rover@laicluse-agent-fieldkit
-codex plugin add house-rules@laicluse-agent-fieldkit
-codex plugin add whywhy@laicluse-agent-fieldkit
-```
-
-Most packages ship to both Claude Code and Codex. Runtime-specific adapters are
-generated from the package sources; `autonomous` remains Claude Code-only
-because its keep-alive behavior is host-specific.
-
-Coming from the retired `leclause` marketplace? Its plugins moved here; see the
-[migration guide](https://github.com/epologee/leclause-skills/blob/main/docs/migration.md).
 
 ## Development
 

@@ -1,8 +1,21 @@
 # whywhy
 
-Drill N layers deep into a question or goal (default 10). Claude autonomously asks and answers "why?" itself, building a chain of reasoning, then analyzes the chain for a better direction toward the goal.
+Drill N layers deep into a question or goal (default 10). The agent
+autonomously asks and answers "why?" itself, builds a chain of reasoning, then
+analyzes the chain for a better direction toward the goal.
 
 The classic five-whys exercise, but autonomous and slightly deeper. Useful when the surface-level answer feels too convenient.
+
+Use it when the current framing feels wrong, not when you need factual lookup.
+The output is a reframing aid: it exposes assumptions, weak links, and deeper
+goals so the next action can be chosen with less self-justification.
+
+## Installation
+
+```bash
+claude plugins install whywhy@laicluse-agent-fieldkit
+codex plugin add whywhy@laicluse-agent-fieldkit
+```
 
 ## Commands
 
@@ -26,10 +39,3 @@ goal, or problem. Does not auto-fire on free conversation.
 
 Node.js on `$PATH` for the post-update broadcast check (`bin/check-broadcast`).
 The skill itself is plain Markdown and needs nothing beyond a reader.
-
-## Installation
-
-```bash
-claude plugins install whywhy@laicluse-agent-fieldkit
-codex plugin add whywhy@laicluse-agent-fieldkit
-```

@@ -4,17 +4,14 @@ Find and converge parallel paths in any artefact: code in any language, prose, d
 
 The plugin's value: "is dit een dubbeling?" becomes a discipline with a runbook, not a vibe-check.
 
-## Install
+Use `drydry` when duplication is suspected but not obvious from identical text:
+parallel code paths, repeated prose claims, design-system drift, or two
+workflows that solve the same job through different routes.
 
-Claude Code:
+## Installation
 
 ```bash
 claude plugins install drydry@laicluse-agent-fieldkit
-```
-
-Codex:
-
-```bash
 codex plugin add drydry@laicluse-agent-fieldkit
 ```
 

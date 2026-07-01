@@ -83,7 +83,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.28",
+			"version": "2.0.29",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -105,7 +105,7 @@
 		},
 		{
 			"name": "bonsai",
-			"version": "2.0.26",
+			"version": "2.0.27",
 			"category": "workflow",
 			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
 			"support": [
@@ -127,7 +127,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.25",
+			"version": "2.0.26",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -149,7 +149,7 @@
 		},
 		{
 			"name": "self-improvement",
-			"version": "2.0.7",
+			"version": "2.0.8",
 			"category": "feedback",
 			"summary": "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
 			"support": [
@@ -171,7 +171,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.37",
+			"version": "2.0.38",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -193,7 +193,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.25",
+			"version": "2.0.26",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -215,7 +215,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.10",
+			"version": "2.0.11",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -237,7 +237,7 @@
 		},
 		{
 			"name": "anger-management",
-			"version": "2.0.15",
+			"version": "2.0.16",
 			"category": "feedback",
 			"summary": "Captures friction cheaply in the moment, then routes recurring problems to a cooled-down repair pass.",
 			"support": [
@@ -259,7 +259,7 @@
 		},
 		{
 			"name": "drydry",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "review",
 			"summary": "Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.",
 			"support": [
@@ -281,7 +281,7 @@
 		},
 		{
 			"name": "laicluse-agent-fieldkit",
-			"version": "2.0.4",
+			"version": "2.0.5",
 			"category": "feedback",
 			"summary": "Marketplace utilities, including a changelog reader for installed Fieldkit plugins.",
 			"support": [
@@ -303,7 +303,7 @@
 		},
 		{
 			"name": "autonomous",
-			"version": "2.0.10",
+			"version": "2.0.11",
 			"category": "autonomy",
 			"summary": "Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.",
 			"support": [
@@ -324,7 +324,7 @@
 		},
 		{
 			"name": "clipboard",
-			"version": "2.0.10",
+			"version": "2.0.11",
 			"category": "feedback",
 			"summary": "Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.",
 			"support": [
@@ -346,7 +346,7 @@
 		},
 		{
 			"name": "gurus",
-			"version": "2.0.6",
+			"version": "2.0.7",
 			"category": "review",
 			"summary": "Runs opinionated review panels for software, decisions, and prose from multiple perspectives.",
 			"support": [
@@ -368,7 +368,7 @@
 		},
 		{
 			"name": "rover",
-			"version": "2.0.13",
+			"version": "2.0.14",
 			"category": "autonomy",
 			"summary": "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
 			"support": [
@@ -390,7 +390,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.4",
+			"version": "2.0.5",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -412,7 +412,7 @@
 		},
 		{
 			"name": "whywhy",
-			"version": "2.0.3",
+			"version": "2.0.4",
 			"category": "review",
 			"summary": "Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.",
 			"support": [
@@ -434,7 +434,7 @@
 		},
 		{
 			"name": "lifeline",
-			"version": "2.0.1",
+			"version": "2.0.2",
 			"category": "review",
 			"summary": "Two lifelines for when your own certainty runs out: research what others did before committing, and verify your own claims against external sources when challenged.",
 			"support": [
@@ -456,7 +456,7 @@
 		},
 		{
 			"name": "saysay",
-			"version": "2.0.3",
+			"version": "2.0.4",
 			"category": "feedback",
 			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
 			"support": [
@@ -480,7 +480,7 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.37",
+			"packageVersion": "2.0.38",
 			"detailPath": "agent-fieldkit/git-discipline/",
 			"version": "v2.0.32",
 			"type": "Changed",
@@ -489,7 +489,7 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.28",
+			"packageVersion": "2.0.29",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
 			"version": "v2.0.17",
 			"type": "Changed",
@@ -498,7 +498,7 @@
 		},
 		{
 			"plugin": "bonsai",
-			"packageVersion": "2.0.26",
+			"packageVersion": "2.0.27",
 			"detailPath": "agent-fieldkit/bonsai/",
 			"version": "v2.0.21",
 			"type": "Fixed",
@@ -507,7 +507,7 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.25",
+			"packageVersion": "2.0.26",
 			"detailPath": "agent-fieldkit/dibs/",
 			"version": "v2.0.25",
 			"type": "Changed",
@@ -516,7 +516,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.25",
+			"packageVersion": "2.0.26",
 			"detailPath": "agent-fieldkit/dont-do-that/",
 			"version": "v2.0.18",
 			"type": "Added",
@@ -525,7 +525,7 @@
 		},
 		{
 			"plugin": "anger-management",
-			"packageVersion": "2.0.15",
+			"packageVersion": "2.0.16",
 			"detailPath": "agent-fieldkit/anger-management/",
 			"version": "v2.0.15",
 			"type": "Changed",
@@ -534,7 +534,7 @@
 		},
 		{
 			"plugin": "rover",
-			"packageVersion": "2.0.13",
+			"packageVersion": "2.0.14",
 			"detailPath": "agent-fieldkit/rover/",
 			"version": "v2.0.9",
 			"type": "Fixed",
@@ -543,7 +543,7 @@
 		},
 		{
 			"plugin": "autonomous",
-			"packageVersion": "2.0.10",
+			"packageVersion": "2.0.11",
 			"detailPath": "agent-fieldkit/autonomous/",
 			"version": "v2.0.1",
 			"type": "Breaking",
@@ -552,7 +552,7 @@
 		},
 		{
 			"plugin": "clipboard",
-			"packageVersion": "2.0.10",
+			"packageVersion": "2.0.11",
 			"detailPath": "agent-fieldkit/clipboard/",
 			"version": "v2.0.8",
 			"type": "Fixed",
@@ -561,7 +561,7 @@
 		},
 		{
 			"plugin": "intervision",
-			"packageVersion": "2.0.10",
+			"packageVersion": "2.0.11",
 			"detailPath": "agent-fieldkit/intervision/",
 			"version": "v2.0.10",
 			"type": "Changed",
@@ -570,7 +570,7 @@
 		},
 		{
 			"plugin": "self-improvement",
-			"packageVersion": "2.0.7",
+			"packageVersion": "2.0.8",
 			"detailPath": "agent-fieldkit/self-improvement/",
 			"version": "v2.0.0",
 			"type": "Changed",
@@ -579,7 +579,7 @@
 		},
 		{
 			"plugin": "gurus",
-			"packageVersion": "2.0.6",
+			"packageVersion": "2.0.7",
 			"detailPath": "agent-fieldkit/gurus/",
 			"version": "v2.0.1",
 			"type": "Fixed",
@@ -588,7 +588,7 @@
 		},
 		{
 			"plugin": "house-rules",
-			"packageVersion": "2.0.4",
+			"packageVersion": "2.0.5",
 			"detailPath": "agent-fieldkit/house-rules/",
 			"version": "v2.0.1",
 			"type": "Breaking",
@@ -597,7 +597,7 @@
 		},
 		{
 			"plugin": "laicluse-agent-fieldkit",
-			"packageVersion": "2.0.4",
+			"packageVersion": "2.0.5",
 			"detailPath": "agent-fieldkit/laicluse-agent-fieldkit/",
 			"version": "v2.0.3",
 			"type": "Added",
@@ -606,7 +606,7 @@
 		},
 		{
 			"plugin": "saysay",
-			"packageVersion": "2.0.3",
+			"packageVersion": "2.0.4",
 			"detailPath": "agent-fieldkit/saysay/",
 			"version": "v2.0.1",
 			"type": "Added",
@@ -615,7 +615,7 @@
 		},
 		{
 			"plugin": "whywhy",
-			"packageVersion": "2.0.3",
+			"packageVersion": "2.0.4",
 			"detailPath": "agent-fieldkit/whywhy/",
 			"version": "v2.0.1",
 			"type": "Added",
@@ -624,7 +624,7 @@
 		},
 		{
 			"plugin": "drydry",
-			"packageVersion": "2.0.2",
+			"packageVersion": "2.0.3",
 			"detailPath": "agent-fieldkit/drydry/",
 			"version": "v2.0.0",
 			"type": "Breaking",
@@ -633,7 +633,7 @@
 		},
 		{
 			"plugin": "lifeline",
-			"packageVersion": "2.0.1",
+			"packageVersion": "2.0.2",
 			"detailPath": "agent-fieldkit/lifeline/",
 			"version": "v1.0.0",
 			"type": "Added",

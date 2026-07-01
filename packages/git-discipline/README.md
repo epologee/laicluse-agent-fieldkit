@@ -3,7 +3,32 @@
 Git workflow skills plus commit and push hooks for agent sessions and direct
 CLI commits.
 
-## What
+Use it when commits and pushes need the same discipline regardless of whether
+they come from Claude Code, Codex, or a direct terminal. The plugin gives the
+agent workflow skills for common git moves and installs hook backstops so
+message schema, wip commits, and push policy do not depend on memory.
+
+## Installation
+
+```bash
+claude plugins install git-discipline@laicluse-agent-fieldkit
+codex plugin add git-discipline@laicluse-agent-fieldkit
+```
+
+In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex, the
+generated adapter ships the workflow skills and omits the Claude-only
+PreToolUse toggle/status skills. To catch commits made outside Claude Code, or
+from Codex, install the git-native hooks into each repo:
+
+```bash
+/git-discipline:install-hooks
+```
+
+Use `--dry-run` to preview, `--force` to overwrite existing hooks. Re-run
+after each plugin update or Codex reinstall so the installed hooks point at
+the current plugin version.
+
+## What it does
 
 `git-discipline` has two parts:
 
@@ -131,26 +156,6 @@ sourced from `skills/commit-discipline/git-hooks/`):
 
 Both layers source the same `hooks/lib/validate-body.sh`, so behavior never
 diverges between Claude-driven and CLI-driven commits.
-
-## Install
-
-```bash
-claude plugins install git-discipline@laicluse-agent-fieldkit
-codex plugin add git-discipline@laicluse-agent-fieldkit
-```
-
-In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex, the
-generated adapter ships the workflow skills and omits the Claude-only
-PreToolUse toggle/status skills. To catch commits made outside Claude Code, or
-from Codex, install the git-native hooks into each repo:
-
-```bash
-/git-discipline:install-hooks
-```
-
-Use `--dry-run` to preview, `--force` to overwrite existing hooks. Re-run
-after each plugin update or Codex reinstall so the installed hooks point at
-the current plugin version.
 
 ## Example commit message
 

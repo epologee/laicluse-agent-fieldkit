@@ -5,6 +5,17 @@ Robert C. Martin, and Martin Fowler. These are chosen conventions among
 defensible options, not universal law: house rules, not received wisdom. Adopt
 them, adapt them, or argue with them.
 
+Use it when the agent needs a shared craft baseline before naming, coding,
+refactoring, testing, or reviewing. These skills are deliberately written as
+doctrine: they should steer judgment, not replace project-specific evidence.
+
+## Installation
+
+```bash
+claude plugins install house-rules@laicluse-agent-fieldkit
+codex plugin add house-rules@laicluse-agent-fieldkit
+```
+
 ## Skills
 
 ### `/naming-is-hard`
@@ -27,10 +38,3 @@ adapters) for published agent tooling. Model-invocable.
 TDD workflow (Red-Green-Refactor), specs-specify-not-verify, Cucumber/Gherkin
 conventions, scar-tissue and absence-pinning smells, flaky-test discipline, and
 test-suite health. Model-invocable.
-
-## Installation
-
-```bash
-claude plugins install house-rules@laicluse-agent-fieldkit
-codex plugin add house-rules@laicluse-agent-fieldkit
-```

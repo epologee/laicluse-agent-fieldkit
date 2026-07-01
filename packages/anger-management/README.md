@@ -22,6 +22,22 @@ The ladder is deliberately simple: the **safeword lane** interrupts work now, th
 **cuss lane** logs the escalated friction for delayed analysis, and the **repair lane**
 reviews high-confidence proposals on a cooled-down pass.
 
+## Installation
+
+```bash
+claude plugins install anger-management@laicluse-agent-fieldkit
+codex plugin add anger-management@laicluse-agent-fieldkit
+```
+
+## When to use which lane
+
+- Use a **cuss command** when the agent behavior was frustrating but the current
+  work should continue. It logs one line for later analysis.
+- Use a **safeword command** when the current work must pause because one
+  concrete problem is visible and fixable now.
+- Use **`/anger-management:repair`** when you want the cooled-down review to
+  decide whether the open captures justify a durable fix.
+
 ## The idea, in one breath
 
 Two things at once, 80% serious and 20% dry: it makes working with the agent better,

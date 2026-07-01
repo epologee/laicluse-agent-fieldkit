@@ -11,6 +11,22 @@ decision framework calls this layer once at dispatch and asks a single
 question: am I in a persistent process, or an interactive session that pauses
 between turns? The probe answers from the runtime.
 
+## Installation
+
+`autonomous` is Claude Code-only. Install it with `rover` and `gurus` when a
+Claude Code session needs a cron heartbeat for rover missions:
+
+```bash
+claude plugins install autonomous@laicluse-agent-fieldkit rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit
+```
+
+## Agent support
+
+Codex does not currently receive this plugin because it has no compatible cron
+heartbeat API or wake path for these skills. The decision framework lives in
+`rover` (invoked as `/rover:...`); `autonomous` is one host-specific
+continuation implementation that `rover` can call when available.
+
 ## Why this is its own plugin
 
 A cron heartbeat is a workaround for one fact: an interactive TUI session is
@@ -26,10 +42,8 @@ caller no longer has to know any of this. It invokes `rover`, the rover invokes
 
 ## Skills
 
-All skills here are internal and Claude Code-only: the `rover` plugin loads
-them, the operator does not invoke them directly. Codex does not currently
-receive this plugin because it has no compatible cron heartbeat API or wake
-path for these skills.
+All skills here are internal: the `rover` plugin loads them, and the operator
+does not invoke them directly.
 
 - **`keepalive`**: the startup probe and front door. Checks whether `CronCreate`
   is available in this process. Available means an interactive session, so it
@@ -54,12 +68,3 @@ dead weight: a process that runs to completion never goes idle, so the cron
 never fires and is torn down with the session. Only an abnormal exit can leave
 it as an orphan, which the `wake` restore path reaps on the next relight. See
 `skills/keepalive/SKILL.md` for the full contract.
-
-## Companion plugin
-
-The decision framework lives in `rover` (invoked as `/rover:...`). Install both
-together; `rover` additionally depends on `gurus` for its INSPECT panel review:
-
-```bash
-claude plugins install autonomous@laicluse-agent-fieldkit rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit
-```

@@ -3,6 +3,17 @@
 Reference for Claude Code and Codex plugin naming, skill resolution,
 cross-agent skill sync, and the `plugin:skill` invocation pattern.
 
+Use it when plugin behavior is confusing: a slash command is missing, a skill
+resolves in one agent but not another, generated adapters drift, or a
+marketplace change needs to be tested in both runtimes before publication.
+
+## Installation
+
+```bash
+claude plugins install how-plugins-work@laicluse-agent-fieldkit
+codex plugin add how-plugins-work@laicluse-agent-fieldkit
+```
+
 ## Commands
 
 ### `/how-plugins-work`
@@ -36,12 +47,3 @@ Activates when diagnosing:
 - Cross-agent marketplace or manifest drift between shared skills and
   agent-specific adapters
 - Accidental exposure of agent-specific skills to a client that cannot run them
-
-## Installation
-
-Install:
-
-```bash
-claude plugins install how-plugins-work@laicluse-agent-fieldkit
-codex plugin add how-plugins-work@laicluse-agent-fieldkit
-```

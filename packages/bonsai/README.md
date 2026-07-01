@@ -10,6 +10,18 @@ self-ignoring `.gitignore`, primes a tree from a `.bonsai` file list, and
 guards teardown. It emits facts (`--json`), never a start command or clipboard
 payload; whatever launches an agent in the worktree composes its own briefing.
 
+Use `bonsai` when an agent needs isolated workspace state without inventing a
+repo-specific worktree ritual. It is especially useful before starting parallel
+agent work, handing a mission to another runtime, or cleaning up old worktrees
+without losing unmerged commits.
+
+## Installation
+
+```bash
+claude plugins install bonsai@laicluse-agent-fieldkit
+codex plugin add bonsai@laicluse-agent-fieldkit
+```
+
 ## CLI
 
 ```

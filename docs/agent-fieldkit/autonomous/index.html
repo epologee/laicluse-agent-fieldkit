@@ -52,7 +52,7 @@
 					<p class="lede">Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill claude">Claude only</span>
-						<span>2.0.10</span>
+						<span>2.0.11</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -62,11 +62,16 @@
 				<article class="readme-content">
 <p>The layer that keeps an autonomous mission running across turns. It owns the persistence workarounds an interactive session needs to stay alive (a cron heartbeat with exponential backoff, auto-stop after sustained idleness, and wake/restore after a session restart) and decides by itself whether any of that machinery is needed.</p>
 <p>The decision is a capability probe, not a caller flag. The <code>rover</code> plugin's decision framework calls this layer once at dispatch and asks a single question: am I in a persistent process, or an interactive session that pauses between turns? The probe answers from the runtime.</p>
+<h2 id="installation">Installation</h2>
+<p><code>autonomous</code> is Claude Code-only. Install it with <code>rover</code> and <code>gurus</code> when a Claude Code session needs a cron heartbeat for rover missions:</p>
+<pre><code class="language-bash">claude plugins install autonomous@laicluse-agent-fieldkit rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
+<h2 id="agent-support">Agent support</h2>
+<p>Codex does not currently receive this plugin because it has no compatible cron heartbeat API or wake path for these skills. The decision framework lives in <code>rover</code> (invoked as <code>/rover:...</code>); <code>autonomous</code> is one host-specific continuation implementation that <code>rover</code> can call when available.</p>
 <h2 id="why-this-is-its-own-plugin">Why this is its own plugin</h2>
 <p>A cron heartbeat is a workaround for one fact: an interactive TUI session is not a persistent process. It runs a turn, then waits for the operator, and an autonomous loop in that session stops between turns unless something re-enters the conversation. A detached process (an Agent SDK run, a conveyor line) has the opposite shape: it keeps executing until the mission completes, so a heartbeat there is dead weight.</p>
 <p>Splitting the keep-alive machinery out of the decision framework means the caller no longer has to know any of this. It invokes <code>rover</code>, the rover invokes <code>autonomous:keepalive</code>, and the autonomy layer probes its own runtime and acts.</p>
 <h2 id="skills">Skills</h2>
-<p>All skills here are internal and Claude Code-only: the <code>rover</code> plugin loads them, the operator does not invoke them directly. Codex does not currently receive this plugin because it has no compatible cron heartbeat API or wake path for these skills.</p>
+<p>All skills here are internal: the <code>rover</code> plugin loads them, and the operator does not invoke them directly.</p>
 <ul>
 <li><strong><code>keepalive</code></strong>: the startup probe and front door. Checks whether <code>CronCreate</code> is available in this process. Available means an interactive session, so it schedules a cron heartbeat through <code>cron</code> and returns the job id. Absent means a persistent process, so it schedules nothing and reports back that the mission should just drive to completion.</li>
 <li><strong><code>cron</code></strong>: the cadence machine. CronCreate, CronDelete, exponential backoff when the field goes quiet, auto-stop after sustained idleness, and cron restoration after a session restart.</li>
@@ -74,9 +79,6 @@
 </ul>
 <h2 id="the-probe-and-its-one-assumption">The probe and its one assumption</h2>
 <p>The probe is correct only when need and availability coincide: a host that runs a mission as a persistent process must withhold <code>CronCreate</code> (for example by adding the cron tools to its disallowed-tools list), and a host whose sessions go idle must expose it. When a persistent host still exposes the cron tools the probe over-detects interactive and schedules a heartbeat. On the normal path that is dead weight: a process that runs to completion never goes idle, so the cron never fires and is torn down with the session. Only an abnormal exit can leave it as an orphan, which the <code>wake</code> restore path reaps on the next relight. See <code>skills/keepalive/SKILL.md</code> for the full contract.</p>
-<h2 id="companion-plugin">Companion plugin</h2>
-<p>The decision framework lives in <code>rover</code> (invoked as <code>/rover:...</code>). Install both together; <code>rover</code> additionally depends on <code>gurus</code> for its INSPECT panel review:</p>
-<pre><code class="language-bash">claude plugins install autonomous@laicluse-agent-fieldkit rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
 				</article>
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">

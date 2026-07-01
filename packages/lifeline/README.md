@@ -4,6 +4,17 @@ Two ways to reach outside your own head when your own certainty runs out, the
 way a game-show contestant phones a friend. Both skills consult external
 reality instead of trusting the model's first answer; they differ only in when.
 
+Use `inspire` before choosing a direction, when the useful question is "what
+exists and what can we learn from it?". Use `ground` after a claim is in doubt,
+when the useful question is "is this specific thing actually true?".
+
+## Installation
+
+```bash
+claude plugins install lifeline@laicluse-agent-fieldkit
+codex plugin add lifeline@laicluse-agent-fieldkit
+```
+
 ## Skills
 
 ### `/inspire`
@@ -22,10 +33,3 @@ processes, so it re-checks a specific claim with code search, file reads, and
 the web rather than re-asserting from model weights. Triggers on `/ground`, on
 skepticism signals like "dat klopt niet", and on necessity claims that justify
 complexity.
-
-## Installation
-
-```bash
-claude plugins install lifeline@laicluse-agent-fieldkit
-codex plugin add lifeline@laicluse-agent-fieldkit
-```

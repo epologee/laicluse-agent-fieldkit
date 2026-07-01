@@ -52,7 +52,7 @@
 					<p class="lede">Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.37</span>
+						<span>2.0.38</span>
 						<span>13 skills</span>
 					</div>
 				</div>
@@ -61,7 +61,25 @@
 			<section class="detail-content-section">
 				<article class="readme-content">
 <p>Git workflow skills plus commit and push hooks for agent sessions and direct CLI commits.</p>
-<h2 id="what">What</h2>
+<p>Use it when commits and pushes need the same discipline regardless of whether they come from Claude Code, Codex, or a direct terminal. The plugin gives the agent workflow skills for common git moves and installs hook backstops so message schema, wip commits, and push policy do not depend on memory.</p>
+<h2 id="installation">Installation</h2>
+<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-eadea20a09-claude">claude plugins install git-discipline@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-eadea20a09-codex">codex plugin add git-discipline@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
+<p>In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex, the generated adapter ships the workflow skills and omits the Claude-only PreToolUse toggle/status skills. To catch commits made outside Claude Code, or from Codex, install the git-native hooks into each repo:</p>
+<pre><code class="language-bash">/git-discipline:install-hooks</code></pre>
+<p>Use <code>--dry-run</code> to preview, <code>--force</code> to overwrite existing hooks. Re-run after each plugin update or Codex reinstall so the installed hooks point at the current plugin version.</p>
+<h2 id="what-it-does">What it does</h2>
 <p><code>git-discipline</code> has two parts:</p>
 <ol>
 <li><strong>Git workflow skills.</strong> Commands for grouped commits, precise commits from a dirty tree, rebasing on the latest default branch, merging to default, resolving push policy, and installing hooks.</li>
@@ -136,23 +154,6 @@
 </tbody>
 </table>
 <p>Both layers source the same <code>hooks/lib/validate-body.sh</code>, so behavior never diverges between Claude-driven and CLI-driven commits.</p>
-<h2 id="install">Install</h2>
-<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
-	<div class="agent-command-switch-head">
-		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
-<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
-<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
-</div>
-		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
-	</div>
-	<div class="agent-command-panels">
-<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-eadea20a09-claude">claude plugins install git-discipline@laicluse-agent-fieldkit</code></pre>
-<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-eadea20a09-codex">codex plugin add git-discipline@laicluse-agent-fieldkit</code></pre>
-	</div>
-</div>
-<p>In Claude Code, the PreToolUse:Bash hooks register automatically. In Codex, the generated adapter ships the workflow skills and omits the Claude-only PreToolUse toggle/status skills. To catch commits made outside Claude Code, or from Codex, install the git-native hooks into each repo:</p>
-<pre><code class="language-bash">/git-discipline:install-hooks</code></pre>
-<p>Use <code>--dry-run</code> to preview, <code>--force</code> to overwrite existing hooks. Re-run after each plugin update or Codex reinstall so the installed hooks point at the current plugin version.</p>
 <h2 id="example-commit-message">Example commit message</h2>
 <pre><code>Drop invalid meter reading on transaction events
 

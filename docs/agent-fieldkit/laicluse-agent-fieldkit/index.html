@@ -52,7 +52,7 @@
 					<p class="lede">Marketplace utilities, including a changelog reader for installed Fieldkit plugins.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.4</span>
+						<span>2.0.5</span>
 						<span>1 skill</span>
 					</div>
 				</div>
@@ -61,11 +61,7 @@
 			<section class="detail-content-section">
 				<article class="readme-content">
 <p>Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. This plugin ships <code>/whats-new</code> for Claude Code and Codex, using each agent's own installed-plugin index.</p>
-<h2 id="commands">Commands</h2>
-<h3 id="whats-new-plugin-name"><code>/whats-new [plugin-name]</code></h3>
-<p>With a plugin name (e.g. <code>git-discipline</code>): reprints the latest CHANGELOG section of that installed plugin without touching its broadcast sentinel, so the regular post-update broadcast still fires exactly once.</p>
-<p>Without arguments: prints the latest marketplace-wide news from <code>MARKETPLACE-CHANGELOG.md</code> plus an index of installed plugins that ship a per-plugin CHANGELOG.</p>
-<p>Use <code>/laicluse-agent-fieldkit:whats-new</code> only when a namespaced form is needed.</p>
+<p>Install it when you want the marketplace itself to announce what changed, without installing a separate utility per plugin.</p>
 <h2 id="installation">Installation</h2>
 <div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
 	<div class="agent-command-switch-head">
@@ -81,6 +77,11 @@
 	</div>
 </div>
 <p>This command covers plugins installed from <code>@laicluse-agent-fieldkit</code>. Existing installs under the previous marketplace identity need to be removed and reinstalled from Fieldkit.</p>
+<h2 id="commands">Commands</h2>
+<h3 id="whats-new-plugin-name"><code>/whats-new [plugin-name]</code></h3>
+<p>With a plugin name (e.g. <code>git-discipline</code>): reprints the latest CHANGELOG section of that installed plugin without touching its broadcast sentinel, so the regular post-update broadcast still fires exactly once.</p>
+<p>Without arguments: prints the latest marketplace-wide news from <code>MARKETPLACE-CHANGELOG.md</code> plus an index of installed plugins that ship a per-plugin CHANGELOG.</p>
+<p>Use <code>/laicluse-agent-fieldkit:whats-new</code> only when a namespaced form is needed.</p>
 				</article>
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">

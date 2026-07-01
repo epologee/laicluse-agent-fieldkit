@@ -14,6 +14,13 @@ checkout cannot be occupied independently. `bonsai` creates worktrees and
 consumes dibs to claim the directory it hands out; the lock logic lives in
 exactly one place.
 
+## Installation
+
+```bash
+claude plugins install dibs@laicluse-agent-fieldkit
+codex plugin add dibs@laicluse-agent-fieldkit
+```
+
 ## CLI
 
 ```

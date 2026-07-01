@@ -52,7 +52,7 @@
 					<p class="lede">Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.3</span>
+						<span>2.0.4</span>
 						<span>1 skill</span>
 					</div>
 				</div>
@@ -60,21 +60,9 @@
 
 			<section class="detail-content-section">
 				<article class="readme-content">
-<p>Drill N layers deep into a question or goal (default 10). Claude autonomously asks and answers &quot;why?&quot; itself, building a chain of reasoning, then analyzes the chain for a better direction toward the goal.</p>
+<p>Drill N layers deep into a question or goal (default 10). The agent autonomously asks and answers &quot;why?&quot; itself, builds a chain of reasoning, then analyzes the chain for a better direction toward the goal.</p>
 <p>The classic five-whys exercise, but autonomous and slightly deeper. Useful when the surface-level answer feels too convenient.</p>
-<h2 id="commands">Commands</h2>
-<h3 id="whywhy-n-question-goal-or-statement"><code>/whywhy [n] &lt;question, goal, or statement&gt;</code></h3>
-<p>Generates an <code>n</code>-deep &quot;why?&quot; chain (default 10), then analyzes the chain for:</p>
-<ul>
-<li>assumptions that broke down</li>
-<li>layers where the reasoning forked</li>
-<li>a better-framed goal at one of the deeper layers</li>
-</ul>
-<p>Argument can be a question, a stated goal, or a claim to interrogate.</p>
-<h2 id="auto-trigger">Auto-trigger</h2>
-<p>Activates when the user types <code>/whywhy</code> with content, and is model-invocable: it activates whenever a task is about drilling into the root cause of a decision, goal, or problem. Does not auto-fire on free conversation.</p>
-<h2 id="requirements">Requirements</h2>
-<p>Node.js on <code>$PATH</code> for the post-update broadcast check (<code>bin/check-broadcast</code>). The skill itself is plain Markdown and needs nothing beyond a reader.</p>
+<p>Use it when the current framing feels wrong, not when you need factual lookup. The output is a reframing aid: it exposes assumptions, weak links, and deeper goals so the next action can be chosen with less self-justification.</p>
 <h2 id="installation">Installation</h2>
 <div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
 	<div class="agent-command-switch-head">
@@ -89,6 +77,19 @@
 <pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-09147147cc-codex">codex plugin add whywhy@laicluse-agent-fieldkit</code></pre>
 	</div>
 </div>
+<h2 id="commands">Commands</h2>
+<h3 id="whywhy-n-question-goal-or-statement"><code>/whywhy [n] &lt;question, goal, or statement&gt;</code></h3>
+<p>Generates an <code>n</code>-deep &quot;why?&quot; chain (default 10), then analyzes the chain for:</p>
+<ul>
+<li>assumptions that broke down</li>
+<li>layers where the reasoning forked</li>
+<li>a better-framed goal at one of the deeper layers</li>
+</ul>
+<p>Argument can be a question, a stated goal, or a claim to interrogate.</p>
+<h2 id="auto-trigger">Auto-trigger</h2>
+<p>Activates when the user types <code>/whywhy</code> with content, and is model-invocable: it activates whenever a task is about drilling into the root cause of a decision, goal, or problem. Does not auto-fire on free conversation.</p>
+<h2 id="requirements">Requirements</h2>
+<p>Node.js on <code>$PATH</code> for the post-update broadcast check (<code>bin/check-broadcast</code>). The skill itself is plain Markdown and needs nothing beyond a reader.</p>
 				</article>
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">

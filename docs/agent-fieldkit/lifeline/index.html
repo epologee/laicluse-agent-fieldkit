@@ -52,7 +52,7 @@
 					<p class="lede">Two lifelines for when your own certainty runs out: research what others did before committing, and verify your own claims against external sources when challenged.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.1</span>
+						<span>2.0.2</span>
 						<span>2 skills</span>
 					</div>
 				</div>
@@ -61,11 +61,7 @@
 			<section class="detail-content-section">
 				<article class="readme-content">
 <p>Two ways to reach outside your own head when your own certainty runs out, the way a game-show contestant phones a friend. Both skills consult external reality instead of trusting the model's first answer; they differ only in when.</p>
-<h2 id="skills">Skills</h2>
-<h3 id="inspire"><code>/inspire</code></h3>
-<p>Online research that answers &quot;how do others do this?&quot;, &quot;what already exists?&quot;, &quot;what can we learn from published experience?&quot; before you commit to a path. Forward-looking and divergent: it widens the option space and ranks by quality of the end result, not ease of implementation. Triggers on <code>/inspire [topic]</code>, on unfamiliar territory, and on phrases like &quot;hoe doen anderen dit?&quot;.</p>
-<h3 id="ground"><code>/ground</code></h3>
-<p>Verify your own recent output against external sources when a claim is doubted. Backward-looking and convergent: generation and verification are separate processes, so it re-checks a specific claim with code search, file reads, and the web rather than re-asserting from model weights. Triggers on <code>/ground</code>, on skepticism signals like &quot;dat klopt niet&quot;, and on necessity claims that justify complexity.</p>
+<p>Use <code>inspire</code> before choosing a direction, when the useful question is &quot;what exists and what can we learn from it?&quot;. Use <code>ground</code> after a claim is in doubt, when the useful question is &quot;is this specific thing actually true?&quot;.</p>
 <h2 id="installation">Installation</h2>
 <div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
 	<div class="agent-command-switch-head">
@@ -80,6 +76,11 @@
 <pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-6746f11b48-codex">codex plugin add lifeline@laicluse-agent-fieldkit</code></pre>
 	</div>
 </div>
+<h2 id="skills">Skills</h2>
+<h3 id="inspire"><code>/inspire</code></h3>
+<p>Online research that answers &quot;how do others do this?&quot;, &quot;what already exists?&quot;, &quot;what can we learn from published experience?&quot; before you commit to a path. Forward-looking and divergent: it widens the option space and ranks by quality of the end result, not ease of implementation. Triggers on <code>/inspire [topic]</code>, on unfamiliar territory, and on phrases like &quot;hoe doen anderen dit?&quot;.</p>
+<h3 id="ground"><code>/ground</code></h3>
+<p>Verify your own recent output against external sources when a claim is doubted. Backward-looking and convergent: generation and verification are separate processes, so it re-checks a specific claim with code search, file reads, and the web rather than re-asserting from model weights. Triggers on <code>/ground</code>, on skepticism signals like &quot;dat klopt niet&quot;, and on necessity claims that justify complexity.</p>
 				</article>
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">

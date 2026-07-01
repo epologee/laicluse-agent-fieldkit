@@ -52,7 +52,7 @@
 					<p class="lede">Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.7</span>
+						<span>2.0.8</span>
 						<span>1 skill</span>
 					</div>
 				</div>
@@ -61,18 +61,8 @@
 			<section class="detail-content-section">
 				<article class="readme-content">
 <p>Routes feedback about agent behavior to the strongest durable target: hooks, skills, project code, or instruction files.</p>
-<h2 id="command">Command</h2>
-<h3 id="self-improvement"><code>/self-improvement</code></h3>
-<p>Reads recent feedback from the conversation, classifies the issue by enforcement strength and scope, then applies the change in the right source. It may add, edit, shorten, merge, or remove instructions.</p>
-<h2 id="auto-trigger">Auto-trigger</h2>
-<p>Activates when the user:</p>
-<ul>
-<li>gives feedback on agent behavior (&quot;don't do that&quot;, &quot;do this instead&quot;)</li>
-<li>says &quot;remember this&quot; or &quot;onthou dit&quot;</li>
-<li>asks to create or improve skills, hooks, plugins, or instruction files</li>
-<li>asks to consolidate or trim instructions</li>
-</ul>
-<h2 id="install">Install</h2>
+<p>Use it when the operator says a behavior should change permanently, not only for the current answer. The skill keeps the fix close to the source of the behavior: hook when it must be enforced, skill when it is a workflow, project code when the project owns the behavior, and instruction text only when the rule really belongs there.</p>
+<h2 id="installation">Installation</h2>
 <div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
 	<div class="agent-command-switch-head">
 		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
@@ -86,6 +76,17 @@
 <pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-37c3de28ae-codex">codex plugin add self-improvement@laicluse-agent-fieldkit</code></pre>
 	</div>
 </div>
+<h2 id="command">Command</h2>
+<h3 id="self-improvement"><code>/self-improvement</code></h3>
+<p>Reads recent feedback from the conversation, classifies the issue by enforcement strength and scope, then applies the change in the right source. It may add, edit, shorten, merge, or remove instructions.</p>
+<h2 id="auto-trigger">Auto-trigger</h2>
+<p>Activates when the user:</p>
+<ul>
+<li>gives feedback on agent behavior (&quot;don't do that&quot;, &quot;do this instead&quot;)</li>
+<li>says &quot;remember this&quot; or &quot;onthou dit&quot;</li>
+<li>asks to create or improve skills, hooks, plugins, or instruction files</li>
+<li>asks to consolidate or trim instructions</li>
+</ul>
 				</article>
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">

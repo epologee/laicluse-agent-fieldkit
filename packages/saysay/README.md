@@ -4,6 +4,17 @@ Speech mode via the macOS `say` command. Once enabled, the agent speaks every
 response aloud, translating screen content into spoken language instead of
 reading it out verbatim.
 
+Use it for hands-busy or eyes-away sessions where the agent should keep the
+operator informed audibly while still writing the normal text answer. It is a
+local macOS feature; no speech output leaves the machine.
+
+## Installation
+
+```bash
+claude plugins install saysay@laicluse-agent-fieldkit
+codex plugin add saysay@laicluse-agent-fieldkit
+```
+
 ## Commands
 
 ### `/saysay`
@@ -37,10 +48,4 @@ into the new root automatically on first use.
 say-phonetic add "kbd" "keyboard"
 say-phonetic remove "kbd"
 say-phonetic list
-```
-
-## Installation
-
-```bash
-/plugin install saysay@laicluse-agent-fieldkit
 ```
