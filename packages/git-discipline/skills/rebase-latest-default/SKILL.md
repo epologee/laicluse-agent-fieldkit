@@ -122,6 +122,12 @@ When a rebase stops on conflicts:
 4. Repeat if the rebase stops on further commits.
 5. If a conflict is genuinely ambiguous (both sides made intentional, incompatible changes to the same logic), stop and describe the conflict to the user instead of guessing.
 
+### Generated files: regenerate, don't hand-merge
+
+A conflict in a generated file (a schema dump like Rails' `db/schema.rb`, a lockfile, codegen output) is not resolved by editing the markers; hand-stitching produces something the generator would never emit. Clear the markers only to unblock (take either side), then rerun whatever produces the file and stage that output. Pick the right tool per file: you already know which command regenerates each kind.
+
+If the generator needs the fully merged inputs (which only exist once the rebase finishes), unblock the conflicting commit with a placeholder, let the rebase complete, regenerate once against the final tree, and fold the result into the commit it belongs to.
+
 ## Step 5: After Rebase
 
 Report the result: how many commits ahead of `$TARGET`, and whether conflicts were resolved (and if so, which files). Then proceed to Step 6 for the push decision.
