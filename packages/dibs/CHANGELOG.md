@@ -4,6 +4,15 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.25]
+
+### Changed
+
+- **Subdirectories in one git worktree now contend for the same dibs lock.**
+  `claim`, `check`, and `release` resolve paths inside git to the nearest
+  worktree root before choosing the lock file, while standalone non-git
+  directories keep their existing realpath-keyed behavior.
+
 ## [v2.0.20]
 
 ### Changed

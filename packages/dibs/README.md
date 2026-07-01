@@ -1,15 +1,18 @@
 # dibs
 
-A single-occupancy lock for a working directory. Two coding agents, often
-cross-vendor (a Claude and a Codex), can start working in the same directory at
-the same time and overwrite each other. dibs lets one agent take exclusive
-occupancy before mutation and makes the next mutating agent step aside. Any
-tool or agent can take the lock and any other can observe it, regardless of
-vendor or platform.
+A single-occupancy lock for a git worktree or standalone working directory. Two
+coding agents, often cross-vendor (a Claude and a Codex), can start working in
+the same repository at the same time and overwrite each other. dibs lets one
+agent take exclusive occupancy before mutation and makes the next mutating
+agent step aside. Any tool or agent can take the lock and any other can observe
+it, regardless of vendor or platform.
 
-It is deliberately not a git tool: it locks any working directory or resource,
-not only git worktrees. `bonsai` creates worktrees and consumes dibs to claim
-the directory it hands out; the lock logic lives in exactly one place.
+It is deliberately not a git lock: it does not touch the index and still locks
+standalone non-git directories. When a requested path lives inside a git
+worktree, dibs locks that worktree root so two subdirectories in the same
+checkout cannot be occupied independently. `bonsai` creates worktrees and
+consumes dibs to claim the directory it hands out; the lock logic lives in
+exactly one place.
 
 ## CLI
 
@@ -21,12 +24,15 @@ dibs check       <dir> [--max-age-hours <n>] [--json]
 ```
 
 The directory-keyed verbs (`claim`, `release`, `check`) require the directory to
-exist; the lock is keyed by its realpath, so a missing path is a clear error
-rather than a silently divergent key. `release-all` is the exception: it operates
-on the lock store directly, reading each lock's recorded realpath, so it still
-frees a worktree that has since been pruned.
+exist. If the path is inside a git worktree, dibs walks upward to the nearest
+`.git` marker and keys the lock by that worktree root's realpath. Outside git,
+the requested directory's realpath remains the key. A missing path is therefore
+a clear error rather than a silently divergent key. `release-all` is the
+exception: it operates on the lock store directly, reading each lock's recorded
+realpath, so it still frees a worktree that has since been pruned.
 
-- **claim** takes exclusive occupancy of a directory keyed by its realpath.
+- **claim** takes exclusive occupancy of the resolved lock target: the nearest
+  git worktree root when one exists, otherwise the requested directory realpath.
   Exits 0 on a fresh claim, on an idempotent re-claim by the same holder
   (`held-by-self`), or on taking over a stale lock whose holder pid is dead
   (`took-over-stale`). Exits non-zero and reports the holder when a live holder
@@ -64,9 +70,10 @@ from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
 
 A lock is a file written with an atomic exclusive create (`open(O_CREAT|O_EXCL)`,
 the node `wx` flag) at
-`${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`. The record
-is JSON: realpath, holder pid, agent, session, owner, hostname, nonce,
-acquired-at.
+`${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`. The
+realpath is the resolved occupancy root: a git worktree root when the requested
+directory is inside one, otherwise the requested directory itself. The record is
+JSON: realpath, holder pid, agent, session, owner, hostname, nonce, acquired-at.
 
 To acquire, dibs tries the atomic create. On collision it reads the record and
 checks liveness with `process.kill(pid, 0)` on the same host. A dead holder
@@ -99,8 +106,9 @@ dependencies, and self-heals through pid-liveness.
   breaks a lock it cannot positively prove dead; such a lock clears only through
   the `--max-age-hours` cap. Within one user on one machine, the agent case,
   liveness is exact.
-- **Occupancy, not git.** dibs prevents concurrent occupancy. It is not a git
-  lock and does not replace git's own `index.lock`.
+- **Occupancy, not git.** dibs prevents concurrent occupancy. It uses git
+  worktree boundaries only to pick a sane default scope; it is not a git lock
+  and does not replace git's own `index.lock`.
 
 ## Enforcement hooks
 

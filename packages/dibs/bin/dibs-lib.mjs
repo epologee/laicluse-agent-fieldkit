@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, realpathSync, rmSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { homedir, hostname } from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
 
@@ -27,8 +27,23 @@ function canonicalDir(dir) {
   return realpathSync(dir);
 }
 
+function gitWorktreeRoot(realpath) {
+  let candidate = realpath;
+  while (true) {
+    if (existsSync(join(candidate, '.git'))) return candidate;
+    const parent = dirname(candidate);
+    if (parent === candidate) return null;
+    candidate = parent;
+  }
+}
+
+function occupancyRoot(dir) {
+  const realpath = canonicalDir(dir);
+  return gitWorktreeRoot(realpath) || realpath;
+}
+
 function lockPathFor(dir) {
-  return lockPathForRealpath(canonicalDir(dir));
+  return lockPathForRealpath(occupancyRoot(dir));
 }
 
 function lockPathForRealpath(realpath) {
@@ -157,7 +172,7 @@ function inspectExisting(path, incoming, maxAgeHours, legacyCodexResumeEnabled) 
 }
 
 export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCodexResume: legacyCodexResumeEnabled }) {
-  const realpath = canonicalDir(dir);
+  const realpath = occupancyRoot(dir);
   const path = lockPathForRealpath(realpath);
   ensureLocksDir();
   const record = buildRecord({ realpath, pid, agent, session, owner });
@@ -199,7 +214,7 @@ export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCode
 }
 
 export function release({ dir, pid, nonce }) {
-  const path = lockPathForRealpath(canonicalDir(dir));
+  const path = lockPathForRealpath(occupancyRoot(dir));
   const existing = readRecordStable(path);
   if (!existing) return { ok: true, state: 'not-held', path };
   const mine = existing.hostname === hostname()
@@ -240,7 +255,7 @@ export function releaseAll({ pid, session, owner, agent }) {
 }
 
 export function check({ dir, maxAgeHours }) {
-  const realpath = canonicalDir(dir);
+  const realpath = occupancyRoot(dir);
   const path = lockPathForRealpath(realpath);
   const existing = readRecordStable(path);
   if (!existing) {

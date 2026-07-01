@@ -8,14 +8,17 @@ description: >-
 # dibs
 
 Calling dibs on a directory: a small, vendor-neutral, cross-platform lock so
-only one coding agent mutates a working directory at a time. A Claude and a
-Codex contend for the same lock through the same on-disk artifact, so neither
-needs to know about the other's hooks.
+only one coding agent mutates a git worktree or standalone working directory at
+a time. A Claude and a Codex contend for the same lock through the same on-disk
+artifact, so neither needs to know about the other's hooks.
 
 The lock is a file created with an atomic exclusive create
 (`open(O_CREAT|O_EXCL)`, the node `wx` flag) at a deterministic path keyed by
-the target directory's realpath: `${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`.
-The record holds the realpath, holder pid, agent, session id, stable owner id,
+the resolved occupancy root realpath:
+`${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`. When the
+target directory is inside a git worktree, the occupancy root is the nearest
+ancestor with a `.git` marker; outside git, it is the target directory itself.
+The record holds that realpath, holder pid, agent, session id, stable owner id,
 hostname, a nonce, and an acquired-at timestamp. Liveness is pid-based
 (`process.kill(pid, 0)` on the same host), not a heartbeat: a lock whose holder
 process is gone is taken over by the next claimer, while a live holder is
@@ -48,14 +51,15 @@ node "$DIBS" release-all [--pid <n>] [--session <id>] [--owner <id> --agent <nam
 node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
 ```
 
-- **claim** takes exclusive occupancy. It exits 0 when it claims a free
-  directory, re-claims one you already hold (`held-by-self`), reclaims one with
-  the same stable owner (`reclaimed-by-owner`), or takes over a stale lock whose
-  holder is dead (`took-over-stale`). It exits non-zero and names the holder
-  (`refused: held by <agent> (pid <pid>) since <acquired-at>`) when a live holder
-  exists. A refusal suggests creating a separate git worktree on a new branch
-  (for example with `bonsai:bonsai`, or plain `git worktree` if you do not have
-  it) and claiming that worktree path.
+- **claim** takes exclusive occupancy of the nearest git worktree root when the
+  directory lives inside git, otherwise the directory itself. It exits 0 when it
+  claims a free target, re-claims one you already hold (`held-by-self`),
+  reclaims one with the same stable owner (`reclaimed-by-owner`), or takes over
+  a stale lock whose holder is dead (`took-over-stale`). It exits non-zero and
+  names the holder (`refused: held by <agent> (pid <pid>) since <acquired-at>`)
+  when a live holder exists. A refusal suggests creating a separate git worktree
+  on a new branch (for example with `bonsai:bonsai`, or plain `git worktree` if
+  you do not have it) and claiming that worktree path.
 - **release** deletes the lock only if you are the holder; releasing a lock held
   by someone else is refused and exits non-zero, releasing an unheld directory
   is a no-op.
@@ -65,7 +69,8 @@ node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
   session holds more than one lock when it edits files in several git roots, so
   this is how the host's session-end and the `undibs` skill free all of them at
   once; locks held by a *different* live agent are never touched.
-- **check** prints `free` or the holder plus its liveness and staleness.
+- **check** prints `free` or the holder plus its liveness and staleness for the
+  same resolved target that `claim` would use.
 
 `release` is an explicit recovery/operator action, not normal end-of-task
 cleanup. After a coding agent claims occupancy through the hook, keep the lock
@@ -112,5 +117,6 @@ acquisition points are:
   alive (`EPERM`), so dibs never breaks a lock it cannot prove dead; that lock
   clears only via `--max-age-hours`. Within one user on one machine, the agent
   case, liveness is exact.
-- **Occupancy, not git.** This prevents two agents occupying a directory; it is
-  not a git lock and does not replace git's own `index.lock`.
+- **Occupancy, not git.** This prevents two agents occupying a worktree or
+  standalone directory; it uses git boundaries only to choose the default scope
+  and does not replace git's own `index.lock`.
