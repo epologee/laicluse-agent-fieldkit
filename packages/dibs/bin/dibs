@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { claim, release, releaseAll, check, formatHolder, listExcludes, addExclude, removeExclude } from './dibs-lib.mjs';
+import { claim, release, releaseAll, check, formatHolder, listExcludes, excludeDir, includeDir } from './dibs-lib.mjs';
 
 const USAGE = `usage: dibs <command> <dir> [options]
 
@@ -10,9 +10,9 @@ commands:
   release-all     release every lock this session holds, across all directories
   release-all     selectors: --pid / --session / --owner with --agent; no <dir>
   check <dir>     report whether a directory is free or who holds it
-  exclude         list directories dibs never locks (built-in defaults + configured)
-  exclude add <dir>     never lock <dir> (persists to the excludes file)
-  exclude remove <dir>  drop <dir> from the excludes file
+  exclude <dir>   never lock <dir> (persists to the excludes file)
+  include <dir>   lock <dir> again (drops it from the excludes file)
+  excludes        list directories dibs never locks (built-in defaults + configured)
 
 options:
   --pid <n>            pid whose liveness defines the lock; pass your long-lived
@@ -60,7 +60,7 @@ function parse(args) {
   });
 }
 
-if (!['claim', 'release', 'release-all', 'check', 'exclude'].includes(command)) {
+if (!['claim', 'release', 'release-all', 'check', 'exclude', 'include', 'excludes'].includes(command)) {
   die(`unknown command: ${command}`);
 }
 
@@ -104,32 +104,25 @@ function formatExcludeList(info) {
 
 function formatExcludeChange(result) {
   switch (result.state) {
-    case 'added': return `added ${result.path}; dibs will not lock it (${result.file})`;
-    case 'already-present': return `${result.path} is already in the excludes file`;
+    case 'excluded': return `excluded ${result.path}; dibs will not lock it (${result.file})`;
+    case 'already-excluded': return `${result.path} is already excluded`;
     case 'already-default': return `${result.path} is a built-in default; already excluded`;
-    case 'removed': return `removed ${result.path} from ${result.file}`;
-    case 'not-present': return `${result.path} was not configured; nothing to remove`;
-    case 'is-default': return `${result.path} is a built-in default and cannot be removed`;
+    case 'included': return `included ${result.path}; dibs will lock it again (dropped from ${result.file})`;
+    case 'not-excluded': return `${result.path} was not excluded; nothing to change`;
+    case 'is-default': return `${result.path} is a built-in default and cannot be included`;
     default: return result.state;
   }
 }
 
-if (command === 'exclude') {
-  const sub = positionals[0];
+if (command === 'excludes') {
+  emit(listExcludes(), formatExcludeList(listExcludes()));
+}
+
+if (command === 'exclude' || command === 'include') {
+  if (!positionals[0]) die(`${command} needs a directory path`);
   try {
-    if (!sub || sub === 'list') {
-      emit(listExcludes(), formatExcludeList(listExcludes()));
-    } else if (sub === 'add') {
-      if (!positionals[1]) die('exclude add needs a directory path');
-      const result = addExclude(positionals[1]);
-      emit(result, formatExcludeChange(result));
-    } else if (sub === 'remove' || sub === 'rm') {
-      if (!positionals[1]) die('exclude remove needs a directory path');
-      const result = removeExclude(positionals[1]);
-      emit(result, formatExcludeChange(result));
-    } else {
-      die(`unknown exclude subcommand: ${sub} (use list, add, remove)`);
-    }
+    const result = command === 'exclude' ? excludeDir(positionals[0]) : includeDir(positionals[0]);
+    emit(result, formatExcludeChange(result));
   } catch (err) {
     die(err.message);
   }

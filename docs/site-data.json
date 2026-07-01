@@ -127,7 +127,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.27",
+			"version": "2.0.28",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -142,9 +142,9 @@
 			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.27",
-				"type": "Added",
-				"summary": "Exclude list: directories dibs never locks."
+				"version": "v2.0.28",
+				"type": "Changed",
+				"summary": "Exclude management is now the imperative pair exclude / include."
 			}
 		},
 		{
@@ -497,6 +497,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{
+			"plugin": "dibs",
+			"packageVersion": "2.0.28",
+			"detailPath": "agent-fieldkit/dibs/",
+			"version": "v2.0.28",
+			"type": "Changed",
+			"summary": "Exclude management is now the imperative pair exclude / include.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
+		},
+		{
 			"plugin": "bonsai",
 			"packageVersion": "2.0.27",
 			"detailPath": "agent-fieldkit/bonsai/",
@@ -504,15 +513,6 @@
 			"type": "Fixed",
 			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
-		},
-		{
-			"plugin": "dibs",
-			"packageVersion": "2.0.27",
-			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.27",
-			"type": "Added",
-			"summary": "Exclude list: directories dibs never locks.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "dont-do-that",

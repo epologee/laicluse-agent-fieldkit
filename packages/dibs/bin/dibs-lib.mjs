@@ -90,24 +90,25 @@ export function listExcludes() {
   };
 }
 
-export function addExclude(path) {
+export function excludeDir(path) {
   const entry = String(path).trim();
-  if (!entry) throw new Error('exclude add needs a path');
+  if (!entry) throw new Error('exclude needs a directory path');
   const file = excludesFile();
   const canon = canonicalizeExclude(entry);
   if (isDefaultExclude(canon)) return { ok: true, state: 'already-default', path: entry, file };
   if (readExcludeEntries().some((e) => canonicalizeExclude(e) === canon)) {
-    return { ok: true, state: 'already-present', path: entry, file };
+    return { ok: true, state: 'already-excluded', path: entry, file };
   }
   mkdirSync(dirname(file), { recursive: true });
   const current = existsSync(file) ? readFileSync(file, 'utf8') : '';
   const separator = current.length && !current.endsWith('\n') ? '\n' : '';
   writeFileSync(file, `${current}${separator}${entry}\n`);
-  return { ok: true, state: 'added', path: entry, file };
+  return { ok: true, state: 'excluded', path: entry, file };
 }
 
-export function removeExclude(path) {
+export function includeDir(path) {
   const entry = String(path).trim();
+  if (!entry) throw new Error('include needs a directory path');
   const file = excludesFile();
   const canon = canonicalizeExclude(entry);
   if (existsSync(file)) {
@@ -122,10 +123,10 @@ export function removeExclude(path) {
     });
     if (removed) {
       writeFileSync(file, kept.join('\n'));
-      return { ok: true, state: 'removed', path: entry, file };
+      return { ok: true, state: 'included', path: entry, file };
     }
   }
-  return { ok: true, state: isDefaultExclude(canon) ? 'is-default' : 'not-present', path: entry, file };
+  return { ok: true, state: isDefaultExclude(canon) ? 'is-default' : 'not-excluded', path: entry, file };
 }
 
 function canonicalDir(dir) {

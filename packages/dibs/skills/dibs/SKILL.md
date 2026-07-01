@@ -49,7 +49,9 @@ node "$DIBS" claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--
 node "$DIBS" release     <dir> [--pid <n>] [--json]
 node "$DIBS" release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
 node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
-node "$DIBS" exclude     [list | add <dir> | remove <dir>] [--json]
+node "$DIBS" exclude     <dir> [--json]   # never lock <dir>
+node "$DIBS" include     <dir> [--json]   # the inverse: lock <dir> again
+node "$DIBS" excludes    [--json]         # list defaults + configured
 ```
 
 - **claim** takes exclusive occupancy of the nearest git worktree root when the
@@ -73,11 +75,12 @@ node "$DIBS" exclude     [list | add <dir> | remove <dir>] [--json]
 - **check** prints `free` or the holder plus its liveness and staleness for the
   same resolved target that `claim` would use, or `excluded` when the directory
   is on the exclude list.
-- **exclude** manages the per-machine list of directories dibs never locks.
-  `exclude` (or `exclude list`) prints the built-in defaults and the configured
-  entries; `exclude add <dir>` and `exclude remove <dir>` edit the config file.
-  When the operator asks to stop locking a directory ("doe geen dibs op ~/foo"),
-  run `exclude add` on it rather than disabling enforcement wholesale.
+- **exclude / include** are an imperative pair, mirroring **claim / release**:
+  `exclude <dir>` adds a directory to the per-machine never-lock list, `include
+  <dir>` is the inverse and drops it again. `excludes` prints the built-in
+  defaults plus the configured entries. When the operator asks to stop locking a
+  directory ("doe geen dibs op ~/foo"), run `exclude` on it rather than disabling
+  enforcement wholesale.
 
 The exclude list is the union of built-in defaults (`/tmp` plus the agent-config
 homes `~/.claude`, `~/.codex`, `~/.config/opencode`, always excluded and not

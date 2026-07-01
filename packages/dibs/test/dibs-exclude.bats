@@ -1,7 +1,8 @@
 #!/usr/bin/env bats
 # Contract tests for the dibs exclude list: directories on the list are never
 # locked (claim/check report 'excluded' and no lock file is written), the list
-# is managed with 'dibs exclude add|remove|list', and the agent-config homes are
+# is managed with the imperative pair 'dibs exclude <dir>' / 'dibs include <dir>'
+# and listed with 'dibs excludes', and the agent-config homes plus /tmp are
 # built-in defaults every install ships with.
 
 setup() {
@@ -15,8 +16,8 @@ setup() {
 
 dibs() { "$NODE_BIN" "$DIBS" "$@"; }
 
-@test "exclude list shows /tmp and the agent-config homes as built-in defaults" {
-  run dibs exclude list
+@test "excludes lists /tmp and the agent-config homes as built-in defaults" {
+  run dibs excludes
   [ "$status" -eq 0 ]
   echo "$output" | grep -q "/tmp"
   echo "$output" | grep -q "\.claude"
@@ -33,8 +34,8 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"state": "excluded"'
 }
 
-@test "a configured excluded dir is not claimed and writes no lock file" {
-  dibs exclude add "$DIR"
+@test "an excluded dir is not claimed and writes no lock file" {
+  dibs exclude "$DIR"
   run dibs claim "$DIR" --pid $$ --agent claude --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"state": "excluded"'
@@ -42,14 +43,14 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
 }
 
 @test "check on an excluded dir reports excluded" {
-  dibs exclude add "$DIR"
+  dibs exclude "$DIR"
   run dibs check "$DIR" --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"state": "excluded"'
 }
 
 @test "two live sessions both pass on an excluded dir (no refusal)" {
-  dibs exclude add "$DIR"
+  dibs exclude "$DIR"
   sleep 120 & local other=$!
   dibs claim "$DIR" --pid $$ --agent claude --json
   run dibs claim "$DIR" --pid "$other" --agent codex --json
@@ -58,46 +59,46 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"state": "excluded"'
 }
 
-@test "exclude add persists to the excludes file and is idempotent" {
-  run dibs exclude add "$DIR"
+@test "exclude persists to the excludes file and is idempotent" {
+  run dibs exclude "$DIR"
   [ "$status" -eq 0 ]
-  echo "$output" | grep -qi "added"
+  echo "$output" | grep -qi "excluded"
   [ -f "$LAICLUSE_HOME/dibs/excludes" ]
   grep -q "work" "$LAICLUSE_HOME/dibs/excludes"
 
-  run dibs exclude add "$DIR"
+  run dibs exclude "$DIR"
   [ "$status" -eq 0 ]
   echo "$output" | grep -qi "already"
   [ "$(grep -c "work" "$LAICLUSE_HOME/dibs/excludes")" -eq 1 ]
 }
 
-@test "exclude remove clears a configured entry and re-enables locking" {
-  dibs exclude add "$DIR"
-  run dibs exclude remove "$DIR"
+@test "include clears a configured entry and re-enables locking" {
+  dibs exclude "$DIR"
+  run dibs include "$DIR"
   [ "$status" -eq 0 ]
-  echo "$output" | grep -qi "removed"
+  echo "$output" | grep -qi "included"
 
   run dibs claim "$DIR" --pid $$ --agent claude --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"state": "claimed"'
 }
 
-@test "a built-in default cannot be removed and is reported as such" {
-  run dibs exclude remove "~/.claude"
+@test "a built-in default cannot be included and is reported as such" {
+  run dibs include "~/.claude"
   [ "$status" -eq 0 ]
   echo "$output" | grep -qi "default"
 }
 
-@test "removing an unconfigured non-default path is a clear no-op" {
-  run dibs exclude remove "$DIR"
+@test "including a dir that was not excluded is a clear no-op" {
+  run dibs include "$DIR"
   [ "$status" -eq 0 ]
-  echo "$output" | grep -qi "nothing to remove"
+  echo "$output" | grep -qi "not excluded"
 }
 
 @test "a file inside an excluded git worktree is also excluded (worktree root)" {
   git init -q "$DIR"
   mkdir -p "$DIR/nested"
-  dibs exclude add "$DIR"
+  dibs exclude "$DIR"
   run dibs claim "$DIR/nested" --pid $$ --agent claude --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"state": "excluded"'

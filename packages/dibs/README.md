@@ -28,9 +28,9 @@ dibs claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <i
 dibs release     <dir> [--pid <n>] [--nonce <hex>] [--json]
 dibs release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
 dibs check       <dir> [--max-age-hours <n>] [--json]
-dibs exclude     [list] [--json]
-dibs exclude add    <dir> [--json]
-dibs exclude remove <dir> [--json]
+dibs exclude     <dir> [--json]
+dibs include     <dir> [--json]
+dibs excludes    [--json]
 ```
 
 The directory-keyed verbs (`claim`, `release`, `check`) require the directory to
@@ -60,8 +60,9 @@ realpath, so it still frees a worktree that has since been pruned.
   to a different live agent are never touched.
 - **check** reports `free`, or the holder with its liveness and staleness, or
   `excluded` when the directory is on the exclude list.
-- **exclude** lists the directories dibs never locks, then `exclude add <dir>`
-  and `exclude remove <dir>` manage the configured entries. See *Excludes* below.
+- **exclude** never locks `<dir>` again; **include** is its inverse and starts
+  locking it again; **excludes** lists the built-in defaults plus the configured
+  entries. See *Excludes* below.
 
 `release` is for explicit recovery or operator-directed teardown. It is not
 normal end-of-task cleanup for a coding agent that claimed occupancy through the
@@ -172,12 +173,12 @@ The list is the union of built-in defaults and a plain-text config file at
 comments and blank lines ignored, a leading `~` expands to `$HOME`). Every
 install ships with `/tmp` (transient scratch) and the agent-config homes
 (`~/.claude`, `~/.codex`, `~/.config/opencode`) excluded by default; those cannot
-be removed. Manage the rest with the CLI:
+be included back. Manage the rest with the imperative pair `exclude`/`include`:
 
 ```bash
-dibs exclude                 # list built-in defaults and configured entries
-dibs exclude add ~/project   # never lock this directory again
-dibs exclude remove ~/project
+dibs excludes            # list built-in defaults and configured entries
+dibs exclude ~/project   # never lock this directory again
+dibs include ~/project   # lock it again (the inverse of exclude)
 ```
 
 Matching is by resolved realpath: an excluded git worktree root also excludes

@@ -4,6 +4,15 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.28]
+
+### Changed
+
+- **Exclude management is now the imperative pair `exclude` / `include`.**
+  `dibs exclude <dir>` and `dibs include <dir>` mirror `claim` / `release`;
+  `dibs excludes` lists the entries. Replaces the `exclude add|remove|list`
+  subcommands from v2.0.27.
+
 ## [v2.0.27]
 
 ### Added
