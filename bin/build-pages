@@ -445,6 +445,27 @@ function markdownWithoutFirstTitle(markdown) {
 	return markdown.replace(/^#\s+.+?\s*#*\s*(?:\r?\n)+/, "");
 }
 
+function markdownWithoutInstallSections(markdown) {
+	const kept = [];
+	let dropping = false;
+
+	for (const line of markdown.split("\n")) {
+		const heading = line.match(/^(#{1,6})\s+(.+?)\s*$/);
+		if (heading) {
+			const level = heading[1].length;
+			const title = heading[2].replace(/[`*_]/g, "").trim().toLowerCase();
+			if (level === 2 && /^(install|installation)$/.test(title)) {
+				dropping = true;
+				continue;
+			}
+			if (dropping && level <= 2) dropping = false;
+		}
+		if (!dropping) kept.push(line);
+	}
+
+	return kept.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
 function listDirs(dir) {
 	if (!fs.existsSync(dir)) return [];
 	return fs
@@ -664,7 +685,7 @@ function sharedAssetVersions(repoRoot) {
 
 function buildPluginDetailPage(data, plugin, markdown, hash, assetVersions) {
 	const title = markdownTitle(markdown, plugin.name);
-	const readmeHtml = renderMarkdown(markdownWithoutFirstTitle(markdown));
+	const readmeHtml = renderMarkdown(markdownWithoutInstallSections(markdownWithoutFirstTitle(markdown)));
 	const pageUrl = `${PAGES_URL}/${plugin.detailPath}`;
 	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
 	const installCommands = {
@@ -711,8 +732,7 @@ function buildPluginDetailPage(data, plugin, markdown, hash, assetVersions) {
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-mark" aria-hidden="true">AF</span>
-				<span>l'Aicluse Agent Fieldkit</span>
+				<span class="brand-title">l'Aicluse Agent Fieldkit</span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="../#catalog">Catalog</a>

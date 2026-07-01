@@ -45,7 +45,7 @@ over from an earlier `~/.local/share/saysay/phonetics.json` install is migrated
 into the new root automatically on first use.
 
 ```bash
-say-phonetic add "kbd" "keyboard"
-say-phonetic remove "kbd"
+say-phonetic add "laicluse" "lay-clue-zee"
+say-phonetic remove "laicluse"
 say-phonetic list
 ```

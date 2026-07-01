@@ -170,17 +170,23 @@ NODE
   grep -Eq '<link rel="stylesheet" href="../../styles\.css\?v=[0-9a-f]{10}">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -Eq '<script src="../../agent-command-switch\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a class="brand" href="../" aria-label="l'\''Aicluse Agent Fieldkit home">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -q '<span class="brand-title">l'\''Aicluse Agent Fieldkit</span>' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  ! grep -q 'brand-mark' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a class="back-link" href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
 }
 
-@test "detail install sidebar renders the shared agent command switch" {
+@test "detail page renders one sidebar install command switch" {
   run node - <<'NODE' "$REPO/docs/agent-fieldkit/dibs/index.html"
 const fs = require("fs");
 const html = fs.readFileSync(process.argv[2], "utf8");
-if (!html.includes('class="agent-command-switch"')) throw new Error("missing command switch");
-if (!html.includes('data-agent-option="claude"')) throw new Error("missing Claude option");
-if (!html.includes('data-agent-option="codex"')) throw new Error("missing Codex option");
+const allSwitches = (html.match(/class="agent-command-switch"/g) || []).length;
+const sidebar = html.match(/<aside class="detail-sidebar"[\s\S]*?<\/aside>/);
+if (!sidebar) throw new Error("detail sidebar not found");
+const sidebarSwitches = (sidebar[0].match(/class="agent-command-switch"/g) || []).length;
+if (allSwitches !== 1) throw new Error(`expected one install command switch, got ${allSwitches}`);
+if (sidebarSwitches !== 1) throw new Error("sidebar does not own the install switch");
+if (html.includes('<h2 id="installation">Installation</h2>')) throw new Error("README installation section still renders in the body");
 if (!html.includes('claude plugins install dibs@laicluse-agent-fieldkit')) throw new Error("missing Claude command");
 if (!html.includes('codex plugin add dibs@laicluse-agent-fieldkit')) throw new Error("missing Codex command");
 if (html.includes('claude plugins install dibs@laicluse-agent-fieldkit\ncodex plugin add dibs@laicluse-agent-fieldkit')) {
@@ -194,10 +200,10 @@ NODE
   run node - <<'NODE' "$REPO/docs/agent-fieldkit/dibs/index.html"
 const fs = require("fs");
 const html = fs.readFileSync(process.argv[2], "utf8");
-const installSection = html.match(/<h2 id="installation">Installation<\/h2>\n([\s\S]*?)<h2 id="commands">Commands<\/h2>/);
-if (!installSection) throw new Error("README installation section not found");
-if (!installSection[1].includes('class="agent-command-switch"')) throw new Error("README install fence did not render as command switch");
-if (installSection[1].includes('class="language-bash"')) throw new Error("README install fence still renders as raw bash");
+const sidebar = html.match(/<aside class="detail-sidebar"[\s\S]*?<\/aside>/);
+if (!sidebar) throw new Error("detail sidebar not found");
+if (!sidebar[0].includes('class="agent-command-switch"')) throw new Error("sidebar install did not render as command switch");
+if (html.includes('<h2 id="installation">Installation</h2>')) throw new Error("README install section should be suppressed on detail pages");
 NODE
   [ "$status" -eq 0 ]
 }
@@ -206,11 +212,10 @@ NODE
   run node - <<'NODE' "$REPO/docs/agent-fieldkit/clipboard/index.html"
 const fs = require("fs");
 const html = fs.readFileSync(process.argv[2], "utf8");
-const section = html.match(/<h2 id="install">Install<\/h2>\n([\s\S]*?)<\/article>/);
-if (!section) throw new Error("clipboard install section not found");
-const switchCount = (section[1].match(/class="agent-command-switch"/g) || []).length;
+if (html.includes('<h2 id="install">Install</h2>')) throw new Error("clipboard README install section should be suppressed");
+const switchCount = (html.match(/class="agent-command-switch"/g) || []).length;
 if (switchCount !== 1) throw new Error(`expected one merged switch, got ${switchCount}`);
-if (section[1].includes("Claude Code:") || section[1].includes("Codex:")) throw new Error("agent labels leaked as duplicate headings");
+if (html.includes("Claude Code:") || html.includes("Codex:")) throw new Error("agent labels leaked as duplicate headings");
 NODE
   [ "$status" -eq 0 ]
 }

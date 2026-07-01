@@ -24,7 +24,7 @@
 		<meta name="twitter:description" content="Copies the useful part of the last answer to the macOS clipboard as plain text or Slack-rich text.">
 		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
 
-		<link rel="stylesheet" href="../../styles.css?v=8ef0627b26">
+		<link rel="stylesheet" href="../../styles.css?v=378681553a">
 		<script src="../../agent-command-switch.js?v=6932faf140"></script>
 	</head>
 	<body>
@@ -32,8 +32,7 @@
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-mark" aria-hidden="true">AF</span>
-				<span>l'Aicluse Agent Fieldkit</span>
+				<span class="brand-title">l'Aicluse Agent Fieldkit</span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="../#catalog">Catalog</a>
@@ -62,20 +61,6 @@
 				<article class="readme-content">
 <p>Copy the core content of the last assistant answer to the macOS clipboard. Plain text is the default; Slack-flavored rich text is available on request.</p>
 <p>Use it when the answer itself is the artefact you need to paste elsewhere: a summary, command block, code snippet, Slack update, or short handoff. The skill tries to copy the useful body, not the chat wrapper around it.</p>
-<h2 id="installation">Installation</h2>
-<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
-	<div class="agent-command-switch-head">
-		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
-<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
-<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
-</div>
-		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
-	</div>
-	<div class="agent-command-panels">
-<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-85addc05eb-claude">claude plugins install clipboard@laicluse-agent-fieldkit</code></pre>
-<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-85addc05eb-codex">codex plugin add clipboard@laicluse-agent-fieldkit</code></pre>
-	</div>
-</div>
 <h2 id="commands">Commands</h2>
 <h3 id="clipboard"><code>/clipboard</code></h3>
 <p>Copies the relevant content of the last answer to the clipboard as plain text via the <code>clipboard-copy</code> helper (which wraps <code>pbcopy</code>). The skill picks the core content (code block, summary, answer body) rather than the full response wrapper.</p>

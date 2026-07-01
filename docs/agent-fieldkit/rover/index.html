@@ -24,7 +24,7 @@
 		<meta name="twitter:description" content="Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.">
 		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
 
-		<link rel="stylesheet" href="../../styles.css?v=8ef0627b26">
+		<link rel="stylesheet" href="../../styles.css?v=378681553a">
 		<script src="../../agent-command-switch.js?v=6932faf140"></script>
 	</head>
 	<body>
@@ -32,8 +32,7 @@
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-mark" aria-hidden="true">AF</span>
-				<span>l'Aicluse Agent Fieldkit</span>
+				<span class="brand-title">l'Aicluse Agent Fieldkit</span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="../#catalog">Catalog</a>
@@ -63,23 +62,6 @@
 <p>Dispatch a rover at a task. You stay back, the rover works in the field. The distance means it decides locally rather than round-tripping every question, so the plugin carries a <code>decide</code> framework, a contrarian <code>pride</code> check, a subtraction-biased <code>trim</code> pass, and an evidence-discipline <code>verify</code> pass. The rover only reports done when the mission is solid.</p>
 <p>This is the decision framework half of the old <code>autonomous</code> plugin. The keep-it-running half (cron heartbeat, wake/restore, goal loops, persistent runners) is now a host-owned continuation concern. Rover records a loop file and tells the active agent to arrange whatever continuation mechanism that runtime supports; it does not hard-code one implementation.</p>
 <p>Use <code>rover</code> for long-running or high-stakes work where the agent needs a field loop instead of a single conversational answer: survey the task, drive the work, inspect the result, apply pride/trim/verify gates, and return a mission report.</p>
-<h2 id="installation">Installation</h2>
-<p>Install <code>gurus</code> alongside <code>rover</code>; rover uses it for the INSPECT panel review.</p>
-<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
-	<div class="agent-command-switch-head">
-		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
-<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
-<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
-</div>
-		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
-	</div>
-	<div class="agent-command-panels">
-<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-6e80f5fb0e-claude">claude plugins install rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
-<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-6e80f5fb0e-codex">codex plugin add rover@laicluse-agent-fieldkit
-codex plugin add gurus@laicluse-agent-fieldkit</code></pre>
-	</div>
-</div>
-<p>Claude Code sessions that need a cron heartbeat can additionally install <code>autonomous@laicluse-agent-fieldkit</code>; that plugin is one implementation of the continuation contract, not a rover dependency.</p>
 <h2 id="dependencies">Dependencies</h2>
 <ul>
 <li><strong><code>gurus@laicluse-agent-fieldkit</code></strong> (same marketplace): the rover invokes <code>gurus:gurus</code> once per mission at INSPECT for opinionated panel review; the orchestrator routes to <code>gurus:software</code>, <code>gurus:council</code>, <code>gurus:writers</code>, or any future panel.</li>

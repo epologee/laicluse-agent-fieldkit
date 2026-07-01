@@ -24,7 +24,7 @@
 		<meta name="twitter:description" content="Keeps long-running Claude Code missions alive with heartbeat, wake, and restore machinery.">
 		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
 
-		<link rel="stylesheet" href="../../styles.css?v=8ef0627b26">
+		<link rel="stylesheet" href="../../styles.css?v=378681553a">
 		<script src="../../agent-command-switch.js?v=6932faf140"></script>
 	</head>
 	<body>
@@ -32,8 +32,7 @@
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-mark" aria-hidden="true">AF</span>
-				<span>l'Aicluse Agent Fieldkit</span>
+				<span class="brand-title">l'Aicluse Agent Fieldkit</span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="../#catalog">Catalog</a>
@@ -62,9 +61,6 @@
 				<article class="readme-content">
 <p>The layer that keeps an autonomous mission running across turns. It owns the persistence workarounds an interactive session needs to stay alive (a cron heartbeat with exponential backoff, auto-stop after sustained idleness, and wake/restore after a session restart) and decides by itself whether any of that machinery is needed.</p>
 <p>The decision is a capability probe, not a caller flag. The <code>rover</code> plugin's decision framework calls this layer once at dispatch and asks a single question: am I in a persistent process, or an interactive session that pauses between turns? The probe answers from the runtime.</p>
-<h2 id="installation">Installation</h2>
-<p><code>autonomous</code> is Claude Code-only. Install it with <code>rover</code> and <code>gurus</code> when a Claude Code session needs a cron heartbeat for rover missions:</p>
-<pre><code class="language-bash">claude plugins install autonomous@laicluse-agent-fieldkit rover@laicluse-agent-fieldkit gurus@laicluse-agent-fieldkit</code></pre>
 <h2 id="agent-support">Agent support</h2>
 <p>Codex does not currently receive this plugin because it has no compatible cron heartbeat API or wake path for these skills. The decision framework lives in <code>rover</code> (invoked as <code>/rover:...</code>); <code>autonomous</code> is one host-specific continuation implementation that <code>rover</code> can call when available.</p>
 <h2 id="why-this-is-its-own-plugin">Why this is its own plugin</h2>

@@ -456,7 +456,7 @@
 		},
 		{
 			"name": "saysay",
-			"version": "2.0.4",
+			"version": "2.0.5",
 			"category": "feedback",
 			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
 			"support": [
@@ -606,7 +606,7 @@
 		},
 		{
 			"plugin": "saysay",
-			"packageVersion": "2.0.4",
+			"packageVersion": "2.0.5",
 			"detailPath": "agent-fieldkit/saysay/",
 			"version": "v2.0.1",
 			"type": "Added",
