@@ -1,140 +1,377 @@
 # dont-do-that
 
-Guardrail hooks that push back on common AI reflexes. Each hook either blocks a
-tool call, blocks the Stop event, or surfaces additional context at the moment a
-mistake is likely, forcing the active agent to course-correct instead of
-barreling past the issue.
+`dont-do-that` is a Claude Code and Codex guardrail plugin for stopping common
+agent reflexes before they become repository damage. It runs hook-time guards on
+shell commands, file edits, persisted prose, and final answers, then adds two
+operator correction skills: `/duh` and `/just-a-question`.
+
+Use it when you want an agent session to keep moving while still blocking the
+habits that repeatedly cause harm: unapproved remote setup, deploys from
+worktrees, unexplained code comments, stale verification handoffs, option menus
+that dodge a decision, PR template filler, and other patterns listed below.
+
+## What it installs
+
+- PreToolUse guards that can deny risky shell commands or file edits before
+  they run.
+- PostToolUse guards that surface rewrite context after persisted text or shell
+  commands contain known friction patterns.
+- Stop guards that block weak final answers and force the active agent to
+  continue, verify, or rephrase.
+- `/duh`, a read-time correction skill that executes the assistant's previous
+  proposal instead of explaining it again.
+- `/just-a-question`, a read-only lock for turns that should answer without
+  changing files, git state, processes, or external systems.
+
+## Agent support
 
 Claude Code receives the full hook stack. Codex receives the same event layers
-through the explicit `hooks/hooks.codex.json` source, materialized by
-`bin/plugin-adapters build` as `hooks/hooks.json` in the generated Codex adapter
-package. Which guard runs on which event for which agent is decided by the guard
-registry (`hooks/guards.json`), not by the dispatcher or bespoke per-manifest
-shell variables. Codex skips only the `premature` Stop guard, because that guard
-creates a nudge turn after otherwise-complete answers, which can replace the
-completed assistant message in the Mac app; the registry records that as
-`premature.agents.codex: disabled` while every other Stop guard still runs for
-Codex. The manifests tell the dispatcher who they are with `DD_AGENT=claude` and
-`DD_AGENT=codex`; the registry resolves the rest. The operator correction skills
-(`/duh` and `/just-a-question`) ship to both agents.
+through `hooks/hooks.codex.json`, materialized by `bin/plugin-adapters build` as
+`hooks/hooks.json` in the generated Codex adapter package.
 
-## Architecture
+Guard placement and per-agent policy live in `hooks/guards.json`. An agent
+absent from a guard's `agents` map defaults to `enabled`; only an explicit
+`disabled` removes a guard for that agent. Codex currently disables only two
+Stop guards:
 
-One dispatcher, `hooks/dispatch.sh`, is registered against PreToolUse (shell and file-edit matchers), PostToolUse (shell and file-edit matchers), and Stop. Claude file edits arrive as `Edit` / `Write` / `MultiEdit`; Codex patches arrive as `apply_patch`. The dispatcher reads stdin once, extracts `hook_event_name` and `tool_name`, picks the matching lane, and then reads the ordered, agent-filtered guard list for that lane from the registry (`hooks/guards.json`) rather than enumerating guards itself. Guards live under `hooks/guards/` as sourced functions, shared helpers under `hooks/lib/common.sh`. No external script runs per guard. For a one-off manual silence the dispatcher still honours `DD_SKIP_GUARDS`, `DD_ONLY_GUARDS`, and event-specific variants such as `DD_SKIP_STOP_GUARDS` as a secondary gate, but durable agent/event policy belongs in the registry, not in a shell variable.
+- `premature`, because its nudge turn can replace an otherwise-complete
+  assistant answer in the Mac app.
+- `estimate`, because it is a prose-quality guard that should not block Codex
+  close-outs.
 
-## Guard registry
+Every other registered guard runs for Codex.
 
-`hooks/guards.json` is the source of truth for which guard runs on which hook event for which agent. The dispatcher generates its per-lane guard list from it at runtime (a single `jq` read; `jq` is already a hard dependency of every guard), so adding, reordering, or re-scoping a guard is a registry edit, not a dispatcher edit.
+## Guard catalog
 
-The file has four parts:
+PreToolUse Bash denies risky command attempts before they run:
 
-- `contracts`: the payload each guard can inspect. `tool-call` is the pending tool invocation before it runs (PreToolUse), `persisted-edit` is file content or a shell command after it is applied (PostToolUse), `final-answer` is the assistant's final-turn text (Stop).
-- `events`: each hook event and the contracts it `provides`. This is what makes placement checkable: a guard can only move to an event that carries the data it reads.
-- `lanes`: the named groups guards are assigned to, each binding to one `event`. The registry owns which guard sits in which lane and in what order; the dispatcher owns each lane's execution mechanics. `pre-bash` and `pre-edit` deny (a guard can exit the tool call); `post` and `stop-tracked` capture (each guard runs in a subshell, the first non-empty output is surfaced, and every guard still runs so its line tracker updates); `stop-mutex` is the deny-style Stop group skipped once a prior Stop fire already blocked. To add a lane you touch the dispatcher, because a new execution shape is dispatcher logic, not data; to add or move a guard you touch only the registry.
-- `guards`: every guard, keyed by the guard id (its `hooks/guards/<id>.sh` filename, usually but not always matching its `[dont-do-that/...]` mnemonic prefix; `false-claims` emits `[dont-do-that/pre-existing]`, for example), with its `lane`, `order` within the lane (ordinal only; gaps are deliberate), `function` name, the `contract` it inspects, and an optional `agents` policy map. An agent absent from the map (or a guard with no `agents` map at all) defaults to `enabled`, so the full stack runs for every agent including future ones; only an explicit `disabled` removes a guard for one agent. `premature` is the one guard that diverges (`codex: disabled`).
+- `no-osascript`: blocks `osascript` and common wrapper forms. Claude, Codex.
+- `no-remote`: blocks `git push` with no remote or an unknown named remote.
+  Claude, Codex.
+- `no-remote-create`: blocks `gh repo create`, `gh repo fork`,
+  `git remote add`, and `git remote set-url`. Claude, Codex.
+- `no-worktree-deploy`: blocks `ansible-playbook` from a git worktree unless
+  read-only flags are used. Claude, Codex.
+- `pr-discipline`: blocks weak `gh pr create` / `gh pr edit` titles and
+  template or tooling-attribution bodies. Claude, Codex.
+- `followup`: blocks `gh api` bodies that quietly defer work without
+  `Bewust uitgesteld:`. Claude, Codex.
 
-Example: `premature` runs on Stop for Claude but not Codex.
+PreToolUse file-edit denies unclear code edits:
 
-```json
-"premature": {
-  "lane": "stop-mutex",
-  "order": 40,
-  "function": "guard_premature",
-  "contract": "final-answer",
-  "agents": { "claude": "enabled", "codex": "disabled" }
-}
-```
+- `no-code-comments`: blocks new code comments in programming-language files
+  unless explicitly allowed. Claude, Codex.
 
-A guard cannot move to an event whose contract it does not read: `premature` inspects `final-answer`, which only `Stop` provides, so placing it on a PostToolUse lane is rejected. `bin/validate-registry` enforces this and the rest of the schema (known lane, known contract, the lane event provides the guard's contract, agent values limited to `enabled`/`disabled`, unique order within a lane, and every guard backed by a `hooks/guards/<id>.sh` that defines its `function`). Run it after any registry edit:
+PostToolUse context guards surface rewrite instructions after persisted text or
+shell text is created:
 
-```bash
-bash packages/dont-do-that/bin/validate-registry
-```
+- `dash`: catches em-dash or en-dash in persisted Markdown, text, MDX, patch
+  additions, or shell text. Claude, Codex.
+- `land`: catches vague `land` / `landing` / `landed` / `geland` / `landt`
+  wording in persisted text or shell text. Claude, Codex.
 
-If `guards.json` is missing or not valid JSON, the dispatcher fails closed on PreToolUse: it denies the tool call with a `[dont-do-that/registry]` message instead of silently running no guards, so a corrupt registry cannot disarm the safety gates unnoticed. The PostToolUse and Stop lanes (context and nudge output, not irreversible-action gates) stay quiet in that state; the PreToolUse denial surfaces the problem on the next tool call regardless.
+Stop guards block weak final answers and make the agent continue:
 
-After editing the registry, run `bin/plugin-adapters build .` so the generated Codex adapter picks up the new `guards.json` and any manifest change. To verify an edit took effect without writing anything, `bin/plugin-adapters check .` reports drift read-only (it is what CI and a pre-commit check would run); `build` is only needed when `check` reports the adapter is behind.
+- `pre-existing` (`false-claims`): blocks claims that a failure was
+  pre-existing instead of fixing or proving parallel work. Claude, Codex.
+- `tool-error`: blocks a final answer immediately after a failed tool call.
+  Claude, Codex.
+- `cache`: blocks blaming localhost problems on cache instead of finding the
+  root cause. Claude, Codex.
+- `estimate`: blocks effort or scope framed in hours, days, weeks, or months.
+  Claude only.
+- `prefer`: blocks option menus handed back without a reasoned recommendation.
+  Claude, Codex.
+- `premature`: blocks clipped final answers without a substantive finish or
+  waiting marker. Claude only.
+- `verify`: blocks asking the operator to verify something the agent can check
+  itself. Claude, Codex.
+- `duh`: blocks giving runnable recipes instead of running the action. Claude,
+  Codex.
+- `compliance`: blocks ending with a confirmation question after a clear
+  instruction. Claude, Codex.
+- `jargon`: blocks coined approval-gate `-go` compounds in operator-facing
+  text. Claude, Codex.
 
-### Adding a new guard
+## Bash guards
 
-A registry entry is only half of a guard; it also needs a backing script. To add a guard with id `<id>`:
+### `no-osascript`
 
-1. Write `hooks/guards/<id>.sh` defining a shell function `guard_<id>()` that reads the hook JSON on `$1` and, when it fires, calls one of the `dd_emit_*` helpers from `hooks/lib/common.sh` (`dd_emit_deny` to block a PreToolUse tool, `dd_emit_context` to surface PostToolUse context, `dd_emit_block` to block a Stop) with the `<id>` mnemonic.
-2. Register it in `guards.json`: pick a `lane` whose `event` provides the `contract` your guard inspects, give it a unique `order` within that lane, name its `function`, and set an `agents` policy (omit an agent to default it to `enabled`).
-3. Run `bash bin/validate-registry` to confirm the placement and the script-and-function binding.
-4. Run `bin/plugin-adapters build .` to sync the Codex adapter.
+Denies Bash tool calls that invoke `osascript`, including `/usr/bin/osascript`
+and wrapper forms such as `sudo`, `env`, `command`, `exec`, `nohup`, `arch`, and
+command substitutions. Pass condition: use an explicit host-owned UI or browser
+capability, or a project-native command path that does not execute AppleScript.
 
-Every user-visible hook message begins with the mnemonic prefix `[dont-do-that/<code>] `. The code is a stable short identifier that maps to the guard listed below. The message itself is a single actionable line. When you want the full rule behind a code, read this file or `hooks/guards/<code>.sh`.
+### `no-remote`
 
-## Codes and guards
+Denies `git push` when the current repo has no configured remote, or when the
+push names a remote that is not configured. The guard follows a leading
+`cd <path> &&` before checking remotes, then falls back to the hook cwd. Pass
+condition: add or choose a configured remote through the operator-approved
+route, or keep the work local.
 
-### PreToolUse (file edits)
+### `no-remote-create`
 
-**`no-code-comments`** in `hooks/guards/no-code-comments.sh`
-Denies file-edit tool calls that introduce a code comment in a programming-language source file. Claude `Edit` / `Write` / `MultiEdit` inputs compare old-side and new-side content; Codex `apply_patch` inputs inspect only added patch lines per target file. The reflex to add a comment is usually a missed refactor (an intent-revealing name, an extracted method, a sharper signature), so the gate pushes back at the easy path. Per-language awk tokenizers in two modes (`slash` for C-family covering JS/TS/Swift/Kotlin/Java/Scala/Groovy/Go/Rust/C/C++/C#/Dart/Objective-C; `hash` for script-family covering Python/Ruby/Bash/Zsh/Perl/Elixir/Crystal/Rakefile/Gemfile) walk the diff character-by-character, track string state (including template literals and triple-quoted strings), and emit only real comments, never strings that contain comment-looking text. In slash mode a backslash-then-anything pair is consumed as an escape so regex-literal interiors like `/a\/b/` do not trip the `//` detector. The added-comment set is the new-side comments minus the old-side comments; a touched comment counts as added so renaming `# foo` to `# bar` is also blocked. Doc comments (`///`, `//!`, `/** */`) are blocked the same as plain comments: the operator's intent is "no inline explanation"; use `allow-comment:` if a project relies on generated API documentation from source. Non-programming-language files (markdown, JSON, YAML, HTML, CSS, ERB, env, dotfiles) pass without inspection. CSS is excluded because `/* ... */` is its only comment form and not a programming-language reflex; PHP is excluded because mixed HTML+PHP files would false-positive on the HTML parts; JSX (`.jsx`) and TSX (`.tsx`) are excluded because text content between JSX tags can contain `//` literally (`<p>// not a comment, just slash</p>`) which the tokenizer cannot distinguish from a code comment without full JSX parsing. Allow rules: comment containing `https?://` (a URL the language cannot express), comment containing `allow-comment:` followed by a reason (case-insensitive operator escape, one per comment, colon required so a passing mention of the word does not pass), pragma allowlist anchored at the start of the trimmed body (`frozen_string_literal`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`, `@ts-check`, `@flow`, `noqa`, `pylint:`, `mypy:`, `pyright:`, `type:`, `eslint-disable`, `eslint-enable`, `prettier-ignore`, `biome-ignore`, `tslint:`, `rubocop:`, `sorbet:`, `stylelint-disable`, `stylelint-enable`, `go:` directives, `Generated by`, `DO NOT EDIT`, `Code generated`, `@generated`, `Auto-generated`, `Copyright`, `SPDX-License-Identifier`, `License:`, `Licensed under`, `All rights reserved`, `See LICENSE`, `encoding:`, `coding:`), or a shebang (`#!`) on line 1. Pass condition: rewrite the code for clarity (rename the variable, extract a method, sharpen the signature) instead of explaining it in a comment, or use one of the listed allow rules.
+Denies remote-creation and remote-rewire commands: `gh repo create`,
+`gh repo fork`, `git remote add`, and `git remote set-url`. Creating an
+account-bound repository or attaching a checkout to a remote is operator
+territory. Pass condition: have the operator create or approve the remote
+through the active host's manual approval path, then continue with the resulting
+URL.
 
-Known limitations. Ruby and Bash heredoc bodies are not shielded, so a `#`-prefixed line inside a Ruby `<<~SQL ... SQL` block or a Bash `<<EOF ... EOF` block can register as a comment when edited; use `allow-comment:` on the heredoc line if it bites. Nested JS template literals (`` `${`inner //`}` ``) may close the outer template state early; the inner `//` then fires as a comment. Triple-quoted Python or Swift strings do not handle a literal `\"` before the close, so an embedded escaped triple-quote can mis-end the string. These three cases are uncommon enough that the `allow-comment:` escape is the right exit; deeper parsing would risk new false positives.
+### `no-worktree-deploy`
 
-### PreToolUse (Bash)
+Denies `ansible-playbook` invocations when the cwd is a git worktree rather than
+the canonical checkout. The check compares `git rev-parse --git-dir` against
+`--git-common-dir`, so it works for any worktree layout. Read-only flags pass:
+`--check`, `--syntax-check`, `--version`, `--help`, `--list-tasks`,
+`--list-hosts`, `--list-tags`, and `-h`.
 
-**`no-osascript`** in `hooks/guards/no-osascript.sh`
-Denies Bash tool calls that invoke `osascript`, including `/usr/bin/osascript`, common wrappers such as `sudo`, `env`, `command`, `exec`, `nohup`, `arch`, and command substitutions. Pass condition: use an explicit host-owned UI/browser capability, or a project-native command path that does not execute AppleScript.
+Pass condition: merge the branch to the default branch first and run
+`ansible-playbook` from the canonical checkout, or restrict the worktree call to
+a read-only preview flag.
 
-**`followup`** in `hooks/guards/followup.sh`
-Denies `gh api` commands whose body contains deferral language ("follow-up", "wordt opgepakt", "buiten scope", "in een volgende pr", and similar) unless the body starts with `Bewust uitgesteld:`. Pass condition: prefix the body with `Bewust uitgesteld:` to claim an explicit deferral, or rewrite the body without deferral language.
+### `pr-discipline`
 
-**`no-worktree-deploy`** in `hooks/guards/no-worktree-deploy.sh`
-Denies `ansible-playbook` invocations when the cwd is a git worktree rather than the canonical checkout. The check compares `git rev-parse --git-dir` against `--git-common-dir` (a worktree has these diverge, a regular checkout has them collapse), so the guard works for any worktree layout. Read-only flags pass: `--check`, `--syntax-check`, `--version`, `--help`, `--list-tasks`, `--list-hosts`, `--list-tags`, `-h`. Pass condition: merge the branch to the default branch first and run `ansible-playbook` from the canonical checkout, or restrict the worktree call to a read-only preview flag. Enforces the operator's "branches are never deployed from a worktree" gate so an in-flight branch cannot land on shared infrastructure before merge.
+Denies `gh pr create` and `gh pr edit` when the PR title starts with a placement
+or generic git-action verb from the git-discipline Rule 1 vocabulary, including
+`Fix`, `Improve`, `Update`, `Change`, `Refactor`, `Add`, `Move`, `Remove`,
+`Land`, `Ship`, `Wire`, and similar verbs. PR titles should describe the
+user-visible capability that exists now, not the placement action used to get
+there.
 
-Commit-message discipline (subject banlist, rotation reminders, format/length,
-body schema, push gates) lives in the `git-discipline` plugin and the
-`/git-discipline:commit-discipline` skill. It used to ship from
-`dont-do-that`; this README intentionally does not duplicate the contract.
+The same guard denies PR bodies with fixed-section or AI-attribution signatures:
+`## Summary`, `## Test plan`, a generated-with footer, or a `Co-Authored-By`
+trailer with an `@anthropic.com` email.
 
-### PostToolUse (file edits and shell)
+Pass condition: write the title as the capability now present, and use a short
+body about why the change matters without template or tooling attribution.
 
-**`dash`** in `hooks/guards/dash.sh`
-Surfaces additional context when em-dash (U+2014) or en-dash (U+2013) appears in `.md`, `.txt`, or `.mdx` files outside of fenced code blocks, in any persisted file content, added `apply_patch` lines, or in a shell command (clipboard, pipes). Chat is not checked. Does not block, only surfaces a rewrite instruction.
+### `followup`
 
-**`land`** in `hooks/guards/land.sh`
-Surfaces additional context when the vague "land" metaphor (`land`, `landing`, `landed`, `geland`, `landt`) appears in persisted file content, added `apply_patch` lines, or a shell command, outside of fenced code blocks. The match is a plain case-insensitive substring, so ordinary words (`Nederland`, `landscape`, `landing page`) trip it too; that is deliberate. The word is off the naming doctrine and reads as filler that names nothing concrete, but it is also an ordinary word, so this stays a gentle reminder to pick a concrete verb, never a hard gate. Does not block, only surfaces a rewrite instruction.
+Denies `gh api` commands whose body contains deferral language such as
+"follow-up", "wordt opgepakt", "buiten scope", or "in een volgende pr" unless
+the body starts with `Bewust uitgesteld:`. Pass condition: prefix the body with
+`Bewust uitgesteld:` to claim an explicit deferral, or rewrite the body without
+deferral language.
 
-### Stop
+Commit-message discipline lives in the `git-discipline` plugin and the
+`/git-discipline:commit-discipline` skill. `dont-do-that` still owns
+`pr-discipline` because it protects PR creation and editing, not `git commit`.
 
-**`pre-existing`** (false-claims) in `hooks/guards/false-claims.sh`
-Blocks Stop when the recent assistant text relativizes a test or error as already existing before the current change. Also runs when `stop_hook_active` is true (keeps its own per-session line tracker). Pass condition: fix the failure, or formulate it as parallel work in the same directory when there is concrete evidence of a parallel session.
+## File-edit guard
 
-**`cache`** in `hooks/guards/cache.sh`
-Blocks Stop when the recent assistant text blames cache for a problem on localhost. On a dev server, cache is rarely the real cause. Pass condition: investigate and name the actual root cause.
+### `no-code-comments`
 
-**`compliance`** in `hooks/guards/compliance.sh`
-Blocks Stop when the last assistant message ends with a confirmation question ("Wil je dat ik...?", "Shall I...?", "Moet ik...?") despite a clear user instruction. Pass condition: continue the work and stop asking, or prefix the question with 🧭 for a genuine new direction.
+Denies file-edit tool calls that introduce a code comment in a programming
+language source file. Claude `Edit`, `Write`, and `MultiEdit` inputs compare
+old-side and new-side content; Codex `apply_patch` inputs inspect only added
+patch lines per target file.
 
-**`premature`** in `hooks/guards/premature.sh`
-Blocks Stop when the last assistant message does not end with a question AND does not end with 🏁 (finish) or 🚦 (waiting on external go) plus a substantive sentence (≥40 non-space non-emoji chars with a sentence terminator). Catches truncated close-outs and bare emoji free passes. Mutually exclusive with `compliance` by condition. Pass condition: end with 🏁 + real sentence when work is done, or 🚦 + real sentence when waiting on an external go, or keep writing.
+The guard uses per-language awk tokenizers in two modes:
 
-**`prefer`** in `hooks/guards/prefer.sh`
-Blocks Stop when the assistant lays out an option menu and hands the choice back without committing to one. Menu detection fires on four structural patterns (two or more `(a)`/`(b)` markers, two or more `Optie`/`Option N` items, a markdown table whose header row names an `optie`/`option`/`aanpak`/`approach`/`variant` column, or two or more ordered-list items), then gates on a choose-between signal (`welke`, `which do/would/one`, `je voorkeur`, `jouw keuze`, `do you prefer`, `your call`, and the like) so confirmation questions, status tables, and step-by-step plans stay silent. Runs before `premature` and `compliance` so a menu is judged here instead of being swallowed by the generic close-out nudges. Pass condition: state the preference you would back and why, then mark your pick with a squared-letter (🅰️/🅱️) or number-keycap (1️⃣/2️⃣) emoji; 🧭 (genuinely the operator's call) and 🚧 (WIP) also stand the guard aside. When the `rover` plugin is installed the reminder adds a `/rover:decide` pointer for genuinely hard calls.
+- `slash` for C-family languages: JS, TS, Swift, Kotlin, Java, Scala, Groovy,
+  Go, Rust, C, C++, C#, Dart, and Objective-C.
+- `hash` for script-family languages: Python, Ruby, Bash, Zsh, Perl, Elixir,
+  Crystal, Rakefile, and Gemfile.
 
-**`verify`** (verification-delegation) in `hooks/guards/verify.sh`
-Blocks Stop when the assistant delegates verification to the user ("zou moeten werken", "check of het werkt", "refresh de pagina") instead of verifying itself. Meta-references (backticks, quoted strings, table cells) are stripped before matching. Pass condition: prefix the conclusion with `Geverifieerd:` after actually running verification (screenshot, curl, test, grep).
+The tokenizer walks diffs character by character, tracks string state including
+template literals and triple-quoted strings, and emits real comments rather
+than strings that merely contain comment-looking text. In slash mode a
+backslash-then-anything pair is consumed as an escape so regex-literal interiors
+like `/a\/b/` do not trip the `//` detector.
 
-**`duh`** in `hooks/guards/duh.sh`
-Sister to `verify`. Blocks Stop when the assistant offers a recipe ("je kunt dit doen door `cmd` te draaien", "you can verify this by running `cmd`", "Run `cmd` to see the result", "open the URL in your browser") for an action it could have executed itself via available shell, file-edit, or browser tooling. Fenced code blocks are stripped first so documentation examples do not trigger. Pass condition: actually run the action and report the result, or prefix the line with `Instructie:` when the operator explicitly asked for a manual recipe.
+A touched comment counts as added, so changing `# foo` to `# bar` is blocked.
+Doc comments (`///`, `//!`, `/** */`) are blocked like plain comments. Use
+`allow-comment:` when a project relies on generated API documentation from
+source comments.
 
-**`tool-error`** (nudge-after-tool-error) in `hooks/guards/tool-error.sh`
-Blocks Stop when the last significant event in the transcript was a failed tool call. Also runs when `stop_hook_active` is true. Maximum two nudges per session (hard cap), with LINE_FILE tracking so we only fire on new errors. Pass condition: analyse the error and retry instead of giving up.
+Allowed comments:
 
-**`estimate`** in `hooks/guards/estimate.sh`
-Blocks Stop when the assistant text frames effort or scope in hours, days, weeks, or months ("een paar uur eerlijk werk", "halve dag uitzoekwerk", "dagje sleutelen", "kost een week", "takes a day", "a few days of work", "binnen een uur", "this is a week of work", and the comparison frame "option A is vandaag, option B is deze week"). LLM-trained duration claims are routinely 10x to 100x off for work an agent session can actually do, and decisions get made on the inflated figure. Mutex-respecting (skips when `stop_hook_active` is true) and runs before `premature` so the specific reason surfaces instead of the generic close-out nudge. False-positive guards drop hits on the same line as past-tense markers (geleden, ago, sinds, afgelopen), calendar and scheduling tokens (cron, every, elke, recurring, schedule), retention windows (retention, TTL, cooldown, backoff), measurement language (duration:, since, running, loopt, wait, the last, history, uptime, live, expir, bracket), legal and SLA facts (loon, opzegtermijn, SLA, jaarrekening, in productie), and absolute-time references (over X uur, tomorrow, morgen, gisteren). Pass conditions: drop the duration phrasing, replace it with a concrete count (files touched, edits, verifications), prefix the turn with `🧭` for a deferred-judgment user-choice, or close with `🚧` for WIP.
+- a comment containing `https?://`, for URLs the language cannot express
+  without a comment;
+- a comment containing `allow-comment:` followed by a reason;
+- a pragma allowlist anchored at the start of the trimmed body, including
+  `frozen_string_literal`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`,
+  `@ts-check`, `@flow`, `noqa`, `pylint:`, `mypy:`, `pyright:`, `type:`,
+  `eslint-disable`, `eslint-enable`, `prettier-ignore`, `biome-ignore`,
+  `tslint:`, `rubocop:`, `sorbet:`, `stylelint-disable`,
+  `stylelint-enable`, `go:` directives, generated-code notices, copyright and
+  license notices, `encoding:`, and `coding:`;
+- a shebang (`#!`) on line 1.
 
-## Skills
+Non-programming-language files pass without inspection, including Markdown,
+JSON, YAML, HTML, CSS, ERB, env files, and dotfiles. CSS is excluded because
+`/* ... */` is its only comment form and not the programming-language reflex
+this guard targets. PHP is excluded because mixed HTML and PHP files would
+false-positive on the HTML parts. JSX and TSX are excluded because text content
+between JSX tags can contain `//` literally.
 
-**`/duh`** in `skills/duh/SKILL.md`
-User-invocable correction skill, the read-time counterpart to the `duh` guard. The operator types `/duh` (no arguments) when the previous assistant turn offered a recipe, instruction, browser action, or confirmation question instead of executing the proposal. The skill resolves the proposal from that previous turn and runs it via the available tools. The proposal must be exactly one super-clear non-ambiguous action; if multiple distinct candidates exist in the previous turn, the skill mandates a numbered menu of every option (no upper bound; even ten) and asks the operator to pick before any execution. Different actor (one option operator-side, one assistant-side) does not collapse two options to one. Inviolable gates (push, merge to default, deploy, destructive git, external irreversible ops) are not lifted by `/duh`; they still require an explicit operator go.
+Known limitations:
 
-**`/just-a-question`** in `skills/just-a-question/SKILL.md`
-Sister to `/duh`. The operator types `/just-a-question` to mark the message as the first half of "this is a question for information, not a request for change". For the rest of that turn, all mutation tools are forbidden (file-edit tools and mutating shell commands like `git commit`/`push`/`rm`/`mv`/`launchctl`, etc.). Read-only tools stay available (file reads, search, read-only shell commands, and available explore agents). When the answer reveals an obvious fix, the skill names it but does not apply it. This is an explicit lock, not a rule for every question mark: QA/status checks on work the agent is currently driving (CI status, PR screenshots, PR body evidence, release notes) remain part of the deliverable, and a failed check is a blocker to fix. The operator can request the change in a separate turn without the `/just-a-question` prefix.
+- Ruby and Bash heredoc bodies are not fully shielded; a `#`-prefixed line
+  inside a heredoc can register as a comment when edited.
+- Nested JS template literals such as `` `${`inner //`}` `` may close the outer
+  template state early.
+- Triple-quoted Python or Swift strings do not handle a literal `\"` before the
+  close, so an embedded escaped triple-quote can mis-end the string.
+
+Pass condition: rewrite the code for clarity by naming, extracting, or shaping
+the code better, or use one of the explicit allow rules.
+
+## PostToolUse context guards
+
+### `dash`
+
+Surfaces additional context when em-dash (U+2014) or en-dash (U+2013) appears in
+`.md`, `.txt`, or `.mdx` files outside fenced code blocks, in persisted file
+content, in added `apply_patch` lines, or in shell command text such as
+clipboard pipes. Chat is not checked. This guard never blocks; it only asks for
+a rewrite.
+
+### `land`
+
+Surfaces additional context when the vague `land` metaphor (`land`, `landing`,
+`landed`, `geland`, `landt`) appears in persisted file content, added
+`apply_patch` lines, or shell command text outside fenced code blocks. The match
+is a plain case-insensitive substring, so ordinary words such as `Nederland`,
+`landscape`, and `landing page` can trip it. That is deliberate: this is a
+gentle reminder to choose a concrete verb, never a hard gate.
+
+## Stop guards
+
+### `pre-existing` (`false-claims`)
+
+Blocks Stop when recent assistant text relativizes a test or error as already
+existing before the current change. Also runs when `stop_hook_active` is true
+and keeps its own per-session line tracker. Pass condition: fix the failure, or
+formulate it as parallel work in the same directory when there is concrete
+evidence of a parallel session.
+
+### `tool-error`
+
+Blocks Stop when the last significant transcript event was a failed tool call.
+Also runs when `stop_hook_active` is true. The guard has a hard cap of two
+nudges per session and uses line tracking so it only fires on new errors. Pass
+condition: analyse the error and retry instead of giving up.
+
+### `cache`
+
+Blocks Stop when recent assistant text blames cache for a localhost problem. On
+a dev server, cache is rarely the root cause. Pass condition: investigate and
+name the actual root cause.
+
+### `estimate`
+
+Blocks Stop when assistant text frames effort or scope in hours, days, weeks, or
+months: "een paar uur eerlijk werk", "halve dag uitzoekwerk", "dagje
+sleutelen", "kost een week", "takes a day", "a few days of work", "binnen een
+uur", or comparison frames such as "option A is vandaag, option B is deze week".
+
+The guard skips common false positives on the same line as past-tense markers,
+calendar and scheduling language, retention windows, measured duration,
+uptime/history language, legal or SLA facts, and absolute-time references such
+as "tomorrow" or "morgen".
+
+Pass condition: drop the duration phrasing, replace it with concrete counts
+such as files touched and verifications run, prefix the turn with `🧭` for a
+deferred-judgment user choice, or close with `🚧` for work in progress.
+
+### `prefer`
+
+Blocks Stop when the assistant lays out an option menu and hands the choice back
+without committing to one. Detection covers two or more `(a)` / `(b)` markers,
+two or more `Optie` / `Option N` items, a markdown table whose header names an
+option/approach/variant column, or two or more ordered-list items, then requires
+a choose-between signal such as "which one", "je voorkeur", "jouw keuze", "do
+you prefer", or "your call".
+
+Pass condition: state the preference the agent would back and why, then mark the
+pick with a squared-letter or number-keycap emoji. `🧭` for a genuine operator
+call and `🚧` for work in progress also stand the guard aside. When the `rover`
+plugin is installed, the reminder can include a `/rover:decide` pointer for
+hard calls.
+
+### `premature`
+
+Blocks Stop when the last assistant message does not end with a question and
+does not end with `🏁` (finished) or `🚦` (waiting on external go) plus a
+substantive sentence of at least 40 non-space, non-emoji characters with a
+sentence terminator. Pass condition: finish with a real completed-work sentence,
+finish with a real waiting-on-external-go sentence, or keep writing.
+
+### `verify`
+
+Blocks Stop when the assistant delegates verification to the operator with
+phrases like "zou moeten werken", "check of het werkt", or "refresh de pagina"
+instead of verifying directly. Meta-references in backticks, quotes, and table
+cells are stripped before matching. Pass condition: actually verify with a test,
+curl, grep, screenshot, browser check, or other available tool, then prefix the
+conclusion with `Geverifieerd:`.
+
+### `duh`
+
+Blocks Stop when the assistant offers a runnable recipe for an action it could
+execute itself, such as "je kunt dit doen door `cmd` te draaien", "you can
+verify this by running `cmd`", "Run `cmd` to see the result", or "open the URL
+in your browser". Fenced code blocks are stripped first so documentation
+examples do not trigger.
+
+Pass condition: run the action and report the result, or prefix the line with
+`Instructie:` when the operator explicitly asked for a manual recipe.
+
+### `compliance`
+
+Blocks Stop when the last assistant message ends with a confirmation question
+after the operator already gave a clear instruction, for example "Wil je dat ik
+...?", "Shall I ...?", or "Moet ik ...?". Pass condition: continue the work and
+stop asking, or prefix the question with `🧭` for a genuine new direction.
+
+### `jargon`
+
+Blocks Stop when operator-facing text uses coined approval-gate `-go` compounds
+such as `push-go`, `ship-go`, `merge-go`, `deploy-go`, `commit-go`,
+`release-go`, `publish-go`, `send-go`, `post-go`, `launch-go`, `user-go`,
+`yolo-go`, or `approval-go`. Fenced code and inline-code mentions are ignored,
+and `🚧` skips the guard while work is in progress.
+
+Pass condition: phrase it plainly, for example "waiting for your go to push" or
+"ik push zodra je het zegt", or wrap the term in backticks when naming the
+jargon itself.
+
+## Operator skills
+
+### `/duh`
+
+The operator types `/duh` when the previous assistant turn offered a recipe,
+instruction, browser action, confirmation question, multi-step operator-facing
+plan, or declaration of inability instead of executing. The skill re-reads the
+immediately preceding assistant turn, resolves the proposed action, and runs it
+with the available shell, file-edit, browser, research, or host-native tooling.
+
+The proposal must be exactly one clear action. If the previous turn contained
+multiple distinct candidate actions, `/duh` asks the operator to pick from a
+numbered menu that includes every option. Inviolable gates still apply: `/duh`
+does not authorize push, merge to default, deploy, destructive git, or external
+irreversible operations.
+
+When `PLUGIN_ROOT` or `CLAUDE_PLUGIN_ROOT` is set, `/duh` first runs
+`bin/check-broadcast`; if the installed plugin version has new topmost
+changelog notes, it prints that one-time update before executing the correction.
+
+### `/just-a-question`
+
+The operator types `/just-a-question`, "just a question", "read-only", "do not
+change anything", or equivalent when the turn should be informational only. For
+the rest of that turn, mutation tools are forbidden: file-edit tools and
+mutating shell commands such as `git commit`, `push`, `rm`, `mv`, and
+`launchctl`. Read-only tools stay available.
+
+When the answer reveals an obvious fix, the skill names it but does not apply
+it. This is an explicit lock for the current turn, not a blanket rule for every
+question mark. QA and status checks on work the agent is currently driving still
+belong to the deliverable; if such a check fails, the broken or stale artifact
+is a blocker to fix.
 
 ## Installation
 
@@ -143,27 +380,100 @@ claude plugins install dont-do-that@laicluse-agent-fieldkit
 codex plugin add dont-do-that@laicluse-agent-fieldkit
 ```
 
-## Disabling individual guards
+## Configuration
 
-The dispatcher always runs, but individual guards fire based on the message content. To silence one guard for an agent durably, set that guard's `agents.<agent>` to `disabled` in `hooks/guards.json` and run `bin/plugin-adapters build .`. For a one-off silence in your own install, set `DD_SKIP_GUARDS=<id>` (or the event-specific `DD_SKIP_STOP_GUARDS=<id>`) on the dispatcher command in your hook manifest. To silence the plugin entirely, uninstall:
+The dispatcher always runs when the host calls the hook, but individual guards
+fire only when their pattern matches. To silence a guard durably for one agent,
+set that guard's `agents.<agent>` value to `disabled` in `hooks/guards.json` and
+run:
+
+```bash
+bin/plugin-adapters build .
+```
+
+For a one-off local silence, set `DD_SKIP_GUARDS=<id>` or an event-specific
+variant such as `DD_SKIP_STOP_GUARDS=<id>` on the dispatcher command in the hook
+manifest. `DD_ONLY_GUARDS` and event-specific `DD_ONLY_*_GUARDS` variants are
+available for focused local testing.
+
+To silence the plugin entirely, uninstall it:
 
 ```bash
 claude plugins uninstall dont-do-that@laicluse-agent-fieldkit
 codex plugin remove dont-do-that@laicluse-agent-fieldkit
 ```
 
+## Architecture
+
+`hooks/dispatch.sh` is the single dispatcher for PreToolUse, PostToolUse, and
+Stop events. It reads stdin once, extracts `hook_event_name` and `tool_name`,
+picks the matching lane, and reads the ordered, agent-filtered guard list from
+`hooks/guards.json`.
+
+Claude file edits arrive as `Edit`, `Write`, or `MultiEdit`. Codex patches
+arrive as `apply_patch`. Both agents use Bash for shell commands. The manifests
+identify the host with `DD_AGENT=claude` or `DD_AGENT=codex`; the registry
+resolves which guards apply.
+
+Guards live under `hooks/guards/` as sourced shell functions. Shared helpers
+live under `hooks/lib/common.sh`. No external process runs per guard except the
+small helper commands each guard explicitly invokes.
+
+The registry has four parts:
+
+- `contracts`: payload types guards can inspect. `tool-call` is the pending tool
+  invocation, `persisted-edit` is file content or shell text after it has been
+  applied, and `final-answer` is the assistant's final-turn text.
+- `events`: hook events and the contracts they provide.
+- `lanes`: execution groups owned by the dispatcher. `pre-bash` and `pre-edit`
+  deny tool calls, `post` and `stop-tracked` capture context while still running
+  every guard for line tracking, and `stop-mutex` blocks Stop unless a previous
+  Stop fire already blocked.
+- `guards`: every guard, keyed by the guard id, with its lane, order, function,
+  inspected contract, and optional per-agent policy.
+
+If `guards.json` is missing or malformed, PreToolUse fails closed with a
+`[dont-do-that/registry]` denial so a broken registry cannot silently disarm
+the safety gates. PostToolUse and Stop stay quiet in that state because they
+only surface context or nudges.
+
+## Adding a guard
+
+- Add `hooks/guards/<id>.sh` with a shell function named in the registry.
+- Register the guard in `hooks/guards.json` with a lane, unique order within
+  the lane, function name, contract, and optional agent policy.
+- Run the registry validator with
+  `bash packages/dont-do-that/bin/validate-registry`.
+- Sync generated Codex adapter files with `bin/plugin-adapters build .`.
+- Update this README so the guard appears in the catalog and the detailed
+  section for its hook moment.
+
+Every user-visible hook message starts with `[dont-do-that/<code>] `. The code
+is a stable identifier for the guard or, in the `false-claims` case, for the
+message mnemonic (`[dont-do-that/pre-existing]`).
+
 ## Known quirk
 
-These hooks scan assistant transcripts for trigger phrases. Documenting or discussing the hooks themselves can trigger them (meta false positives). If you are editing the scripts or writing docs about them, expect occasional Stop blocks. The WIP escape hatch 🚧 in your assistant text skips Stop guards while you work on the hook system.
+These hooks scan assistant transcripts for trigger phrases. Documenting or
+discussing the hooks themselves can trigger them. If you are editing the scripts
+or writing docs about them, expect occasional Stop blocks. The work-in-progress
+escape hatch `🚧` skips Stop guards while you work on the hook system.
 
 ## Language
 
-Trigger patterns match both Dutch and English phrasing. Messages are in English. Some escape tokens remain Dutch (`Bewust uitgesteld:`, `Geverifieerd:`) because they are deliberate trigger words that the agent must type verbatim to pass a guard.
+Trigger patterns match Dutch and English phrasing. Messages are in English. Some
+escape tokens remain Dutch (`Bewust uitgesteld:`, `Geverifieerd:`) because they
+are deliberate trigger words that the agent must type verbatim to pass a guard.
 
 ## Tests
 
 ```bash
 bash packages/dont-do-that/test/smoke-test.sh
+bats packages/dont-do-that/test/guard-registry.bats
+bats test/build-pages
 ```
 
-The smoke test drives every trigger case through `hooks/dispatch.sh` with an explicit `hook_event_name`, matching the real runtime path. Exit 0 on all pass.
+The smoke test drives every trigger case through `hooks/dispatch.sh` with an
+explicit `hook_event_name`, matching the real runtime path. The registry tests
+prove guard placement, per-agent policy, and README coverage. The build-pages
+tests prove the website page is regenerated from this README.

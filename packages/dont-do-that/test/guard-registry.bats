@@ -106,6 +106,16 @@ posttool_edit() {
   [ "$reg" -eq "$files" ]
 }
 
+@test "README documents every registered guard" {
+  readme="$DDROOT/README.md"
+  while IFS= read -r id; do
+    grep -q "\`$id\`" "$readme" || {
+      echo "README is missing guard: $id" >&2
+      return 1
+    }
+  done < <(jq -r '.guards | keys[]' "$REGISTRY")
+}
+
 @test "Codex premature does not block a short completed answer" {
   run bash -c 'printf "%s" "$1" | DD_AGENT=codex bash "$2"' _ "$(stop_payload "Klaar 🏁")" "$DISPATCH"
   [ "$status" -eq 0 ]

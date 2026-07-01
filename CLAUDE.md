@@ -19,6 +19,26 @@ Code, manifests, and commit messages also stay English. Keep package names,
 framework names, and literal trigger phrases unchanged when they are part of a
 skill's matching behavior.
 
+## Package README Structure
+
+Package READMEs under `packages/<plugin>/README.md` are public website detail
+pages as well as repository documentation and machine-readable context for
+future agents. Write them for all three audiences.
+
+Start with the user-facing purpose in plain language: what the plugin is, who
+it supports, and what practical problem it solves. Follow with a complete,
+scan-friendly capability inventory before implementation internals. For plugins
+with hooks, commands, skills, or generated adapter behavior, include stable
+names in headings, tables, or bullets so humans, search index crawlers, and
+agents can all find the same facts. Put install and configuration near the
+capability description. Put architecture, contributor workflow, generated-file
+notes, and tests after the product-level explanation.
+
+Do not open a package README with registry mechanics, adapter internals, or
+historical migration notes unless that is the plugin's primary user-visible
+purpose. Internal architecture is still documented, but it follows the readable
+overview and complete capability catalog.
+
 ## Local Storage
 
 All first-party runtime state for l'Aicluse Agent Fieldkit projects uses
