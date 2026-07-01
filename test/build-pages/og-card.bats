@@ -101,9 +101,9 @@ NODE
 }
 
 @test "the Fieldkit landing loads shared assets from the parent directory" {
-  grep -q '<link rel="stylesheet" href="../styles.css">' "$REPO/docs/agent-fieldkit/index.html"
-  grep -q '<script src="../agent-command-switch.js"></script>' "$REPO/docs/agent-fieldkit/index.html"
-  grep -q '<script src="../site.js"></script>' "$REPO/docs/agent-fieldkit/index.html"
+  grep -Eq '<link rel="stylesheet" href="../styles\.css\?v=[0-9a-f]{10}">' "$REPO/docs/agent-fieldkit/index.html"
+  grep -Eq '<script src="../agent-command-switch\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/agent-fieldkit/index.html"
+  grep -Eq '<script src="../site\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/agent-fieldkit/index.html"
 }
 
 @test "the rasterized PNG keeps the 1200x630 OG dimensions" {

@@ -650,7 +650,19 @@ function categoryLabel(data, id) {
 	return category ? category.label : id;
 }
 
-function buildPluginDetailPage(data, plugin, markdown, hash) {
+function sharedAssetVersions(repoRoot) {
+	return Object.fromEntries(
+		["styles.css", "agent-command-switch.js", "site.js"].map((fileName) => {
+			const targetPath = path.join(repoRoot, "docs", fileName);
+			const sourcePath = path.join(__dirname, "..", "docs", fileName);
+			const assetPath = fs.existsSync(targetPath) ? targetPath : sourcePath;
+			const version = crypto.createHash("sha256").update(fs.readFileSync(assetPath)).digest("hex").slice(0, 10);
+			return [fileName, version];
+		}),
+	);
+}
+
+function buildPluginDetailPage(data, plugin, markdown, hash, assetVersions) {
 	const title = markdownTitle(markdown, plugin.name);
 	const readmeHtml = renderMarkdown(markdownWithoutFirstTitle(markdown));
 	const pageUrl = `${PAGES_URL}/${plugin.detailPath}`;
@@ -691,8 +703,8 @@ function buildPluginDetailPage(data, plugin, markdown, hash) {
 		<meta name="twitter:description" content="${attributeEscape(plugin.summary)}">
 		<meta name="twitter:image" content="${imageUrl}">
 
-		<link rel="stylesheet" href="../../styles.css">
-		<script src="../../agent-command-switch.js"></script>
+		<link rel="stylesheet" href="../../styles.css?v=${assetVersions["styles.css"]}">
+		<script src="../../agent-command-switch.js?v=${assetVersions["agent-command-switch.js"]}"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
@@ -751,7 +763,7 @@ ${readmeHtml}
 `;
 }
 
-function renderPluginDetailPages(repoRoot, data, hash) {
+function renderPluginDetailPages(repoRoot, data, hash, assetVersions) {
 	const detailRoot = path.join(repoRoot, "docs", "agent-fieldkit");
 	const pluginNames = new Set(data.plugins.map((plugin) => plugin.name));
 	fs.mkdirSync(detailRoot, { recursive: true });
@@ -767,7 +779,7 @@ function renderPluginDetailPages(repoRoot, data, hash) {
 		const markdown = fs.readFileSync(readmePath, "utf8");
 		const pluginDir = path.join(detailRoot, plugin.name);
 		fs.mkdirSync(pluginDir, { recursive: true });
-		fs.writeFileSync(path.join(pluginDir, "index.html"), buildPluginDetailPage(data, plugin, markdown, hash));
+		fs.writeFileSync(path.join(pluginDir, "index.html"), buildPluginDetailPage(data, plugin, markdown, hash, assetVersions));
 	}
 }
 
@@ -922,27 +934,37 @@ function replaceHeadUrls(html, pageUrl, imageUrl) {
 
 // Keep the canonical/social URLs tied to PAGES_URL and point the image meta at
 // the freshly hashed asset so social platforms refetch the card after it changes.
-function updateFieldkitMeta(repoRoot, hash) {
+function updateFieldkitMeta(repoRoot, hash, assetVersions) {
 	const indexPath = path.join(repoRoot, "docs", "agent-fieldkit", "index.html");
 	const html = fs.readFileSync(indexPath, "utf8");
 	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
-	const normalized = html.replace(/\n?\t\t<script src="\.\.\/agent-command-switch\.js"><\/script>/g, "");
+	const sharedScripts = `<script src="../agent-command-switch.js?v=${assetVersions["agent-command-switch.js"]}"></script>
+		<script src="../site.js?v=${assetVersions["site.js"]}"></script>`;
+	const normalized = html.replace(
+		/\n?\t\t<script src="\.\.\/agent-command-switch\.js(?:\?v=[0-9a-f]+)?"><\/script>/g,
+		"",
+	);
 	const updated = replaceHeadUrls(normalized, FIELDKIT_URL, imageUrl)
-		.replace(/<link rel="stylesheet" href="styles\.css">/, '<link rel="stylesheet" href="../styles.css">')
-		.replace(/<script src="site\.js"><\/script>/, '<script src="../agent-command-switch.js"></script>\n\t\t<script src="../site.js"></script>')
 		.replace(
-			/<script src="\.\.\/site\.js"><\/script>/,
-			'<script src="../agent-command-switch.js"></script>\n\t\t<script src="../site.js"></script>',
+			/<link rel="stylesheet" href="(?:\.\.\/)?styles\.css(?:\?v=[0-9a-f]+)?">/,
+			`<link rel="stylesheet" href="../styles.css?v=${assetVersions["styles.css"]}">`,
+		)
+		.replace(/<script src="site\.js(?:\?v=[0-9a-f]+)?"><\/script>/, sharedScripts)
+		.replace(
+			/<script src="\.\.\/site\.js(?:\?v=[0-9a-f]+)?"><\/script>/,
+			sharedScripts,
 		);
 	if (updated !== html) fs.writeFileSync(indexPath, updated);
 }
 
 function writeSharedAssets(repoRoot) {
-	const sourcePath = path.join(__dirname, "..", "docs", "agent-command-switch.js");
-	const targetPath = path.join(repoRoot, "docs", "agent-command-switch.js");
-	if (path.resolve(sourcePath) !== path.resolve(targetPath)) {
-		fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-		fs.copyFileSync(sourcePath, targetPath);
+	for (const fileName of ["styles.css", "agent-command-switch.js", "site.js"]) {
+		const sourcePath = path.join(__dirname, "..", "docs", fileName);
+		const targetPath = path.join(repoRoot, "docs", fileName);
+		if (path.resolve(sourcePath) !== path.resolve(targetPath)) {
+			fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+			fs.copyFileSync(sourcePath, targetPath);
+		}
 	}
 }
 
@@ -1008,9 +1030,10 @@ function main() {
 
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
 	writeSharedAssets(repoRoot);
-	updateFieldkitMeta(repoRoot, hash);
+	const assetVersions = sharedAssetVersions(repoRoot);
+	updateFieldkitMeta(repoRoot, hash, assetVersions);
 	writeRootRedirect(repoRoot, hash);
-	renderPluginDetailPages(repoRoot, data, hash);
+	renderPluginDetailPages(repoRoot, data, hash, assetVersions);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
 }
 

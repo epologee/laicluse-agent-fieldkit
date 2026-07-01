@@ -167,8 +167,8 @@ NODE
 }
 
 @test "detail pages link back to the Fieldkit landing" {
-  grep -q '<link rel="stylesheet" href="../../styles.css">' "$REPO/docs/agent-fieldkit/dibs/index.html"
-  grep -q '<script src="../../agent-command-switch.js"></script>' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -Eq '<link rel="stylesheet" href="../../styles\.css\?v=[0-9a-f]{10}">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -Eq '<script src="../../agent-command-switch\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a class="brand" href="../" aria-label="l'\''Aicluse Agent Fieldkit home">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a class="back-link" href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
