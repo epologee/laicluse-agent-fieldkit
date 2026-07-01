@@ -25,6 +25,7 @@
 		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
 
 		<link rel="stylesheet" href="../../styles.css">
+		<script src="../../agent-command-switch.js"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
@@ -191,15 +192,37 @@
 <p>The operator types <code>/just-a-question</code>, &quot;just a question&quot;, &quot;read-only&quot;, &quot;do not change anything&quot;, or equivalent when the turn should be informational only. For the rest of that turn, mutation tools are forbidden: file-edit tools and mutating shell commands such as <code>git commit</code>, <code>push</code>, <code>rm</code>, <code>mv</code>, and <code>launchctl</code>. Read-only tools stay available.</p>
 <p>When the answer reveals an obvious fix, the skill names it but does not apply it. This is an explicit lock for the current turn, not a blanket rule for every question mark. QA and status checks on work the agent is currently driving still belong to the deliverable; if such a check fails, the broken or stale artifact is a blocker to fix.</p>
 <h2 id="installation">Installation</h2>
-<pre><code class="language-bash">claude plugins install dont-do-that@laicluse-agent-fieldkit
-codex plugin add dont-do-that@laicluse-agent-fieldkit</code></pre>
+<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-f10aa8e69a-claude">claude plugins install dont-do-that@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-f10aa8e69a-codex">codex plugin add dont-do-that@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
 <h2 id="configuration">Configuration</h2>
 <p>The dispatcher always runs when the host calls the hook, but individual guards fire only when their pattern matches. To silence a guard durably for one agent, set that guard's <code>agents.&lt;agent&gt;</code> value to <code>disabled</code> in <code>hooks/guards.json</code> and run:</p>
 <pre><code class="language-bash">bin/plugin-adapters build .</code></pre>
 <p>For a one-off local silence, set <code>DD_SKIP_GUARDS=&lt;id&gt;</code> or an event-specific variant such as <code>DD_SKIP_STOP_GUARDS=&lt;id&gt;</code> on the dispatcher command in the hook manifest. <code>DD_ONLY_GUARDS</code> and event-specific <code>DD_ONLY_*_GUARDS</code> variants are available for focused local testing.</p>
 <p>To silence the plugin entirely, uninstall it:</p>
-<pre><code class="language-bash">claude plugins uninstall dont-do-that@laicluse-agent-fieldkit
-codex plugin remove dont-do-that@laicluse-agent-fieldkit</code></pre>
+<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-4cea748954-claude">claude plugins uninstall dont-do-that@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-4cea748954-codex">codex plugin remove dont-do-that@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
 <h2 id="architecture">Architecture</h2>
 <p><code>hooks/dispatch.sh</code> is the single dispatcher for PreToolUse, PostToolUse, and Stop events. It reads stdin once, extracts <code>hook_event_name</code> and <code>tool_name</code>, picks the matching lane, and reads the ordered, agent-filtered guard list from <code>hooks/guards.json</code>.</p>
 <p>Claude file edits arrive as <code>Edit</code>, <code>Write</code>, or <code>MultiEdit</code>. Codex patches arrive as <code>apply_patch</code>. Both agents use Bash for shell commands. The manifests identify the host with <code>DD_AGENT=claude</code> or <code>DD_AGENT=codex</code>; the registry resolves which guards apply.</p>
@@ -234,8 +257,19 @@ bats test/build-pages</code></pre>
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">
 						<h2>Install</h2>
-						<pre><code>claude plugins install dont-do-that@laicluse-agent-fieldkit
-codex plugin add dont-do-that@laicluse-agent-fieldkit</code></pre>
+						<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="dont-do-that install commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="install-dont-do-that-claude">claude plugins install dont-do-that@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="install-dont-do-that-codex">codex plugin add dont-do-that@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
 					</div>
 					<div class="sidebar-block">
 						<h2>Source</h2>

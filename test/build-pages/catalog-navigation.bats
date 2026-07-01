@@ -98,6 +98,33 @@ PY
   [ "$status" -eq 0 ]
 }
 
+@test "landing install uses one persisted agent command switch" {
+  run python3 - <<'PY'
+import os
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as playwright:
+	browser = playwright.chromium.launch()
+	page = browser.new_page(viewport={"width": 1440, "height": 1000})
+	page.goto(f"http://127.0.0.1:{os.environ['PORT']}/agent-fieldkit/#install")
+	page.wait_for_selector('.agent-command-switch')
+	switches = page.locator('.agent-command-switch').count()
+	claude_visible = page.locator('[data-agent-panel="claude"]').first.is_visible()
+	codex_visible = page.locator('[data-agent-panel="codex"]').first.is_visible()
+	page.locator('[data-agent-option="codex"]').first.click()
+	codex_after = page.locator('[data-agent-panel="codex"]').first.is_visible()
+	stored = page.evaluate("() => localStorage.getItem('agent-fieldkit.agent')")
+	browser.close()
+	if switches != 1:
+		raise SystemExit(f"expected one command switch, got {switches}")
+	if not claude_visible or codex_visible:
+		raise SystemExit("default Claude pane was not the only visible pane")
+	if not codex_after or stored != "codex":
+		raise SystemExit(f"Codex pane not active or preference not stored: {stored}")
+PY
+  [ "$status" -eq 0 ]
+}
+
 @test "root redirects browser visits to the Fieldkit landing" {
   run python3 - <<'PY'
 import os

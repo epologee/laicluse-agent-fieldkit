@@ -516,8 +516,7 @@ h3 {
   justify-content: flex-start;
 }
 
-.segmented button,
-.copy-button {
+.segmented button {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.04);
@@ -529,8 +528,7 @@ h3 {
 }
 
 .segmented button[aria-pressed="true"],
-.segmented button:hover,
-.copy-button:hover {
+.segmented button:hover {
   border-color: rgba(49, 217, 148, 0.7);
   background: rgba(49, 217, 148, 0.13);
   color: var(--ink-strong);
@@ -690,26 +688,97 @@ h3 {
   color: var(--paper-muted);
 }
 
-.install-grid {
-  display: grid;
+.install-switch-slot {
   width: min(1180px, 100%);
   margin: 0 auto;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
 }
 
-.install-block {
-  min-width: 0;
+.agent-command-switch {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 100%;
+}
+
+.agent-command-switch-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.agent-command-options {
+  display: inline-flex;
+  gap: 0.3rem;
   border: 1px solid var(--paper-line);
   border-radius: 8px;
-  background: #ffffff;
-  padding: 1rem;
+  background: #f2efe5;
+  padding: 0.25rem;
 }
 
-.copy-button {
+.agent-command-option,
+.agent-command-single,
+.agent-command-copy {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.42rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.42rem 0.62rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.agent-command-option,
+.agent-command-copy {
+  background: transparent;
+  color: var(--paper-muted);
+}
+
+.agent-command-option svg,
+.agent-command-single svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.agent-command-option.is-active,
+.agent-command-option:hover,
+.agent-command-copy:hover {
+  border-color: rgba(15, 128, 88, 0.25);
+  background: #ffffff;
+  color: #0f8058;
+}
+
+.agent-command-single {
   border-color: var(--paper-line);
   background: #f2efe5;
   color: var(--paper-ink);
+}
+
+.agent-command-copy {
+  border-color: var(--paper-line);
+  background: #ffffff;
+  color: var(--paper-ink);
+}
+
+.agent-command-panel {
+  margin-top: 0;
+}
+
+.agent-command-panel[hidden] {
+  display: none;
+}
+
+.agent-command-panel code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 pre {
@@ -1034,7 +1103,6 @@ pre {
   }
 
   .hero-console,
-  .install-block,
   .plugin-card,
   .change-item {
     border-radius: 6px;
@@ -1043,7 +1111,6 @@ pre {
   .hero-stats,
   .principles-grid,
   .plugin-grid,
-  .install-grid,
   .change-feed {
     grid-template-columns: 1fr;
   }

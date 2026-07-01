@@ -102,6 +102,7 @@ NODE
 
 @test "the Fieldkit landing loads shared assets from the parent directory" {
   grep -q '<link rel="stylesheet" href="../styles.css">' "$REPO/docs/agent-fieldkit/index.html"
+  grep -q '<script src="../agent-command-switch.js"></script>' "$REPO/docs/agent-fieldkit/index.html"
   grep -q '<script src="../site.js"></script>' "$REPO/docs/agent-fieldkit/index.html"
 }
 

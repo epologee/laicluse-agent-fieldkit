@@ -25,6 +25,7 @@
 		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=32af977458">
 
 		<link rel="stylesheet" href="../../styles.css">
+		<script src="../../agent-command-switch.js"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
@@ -62,10 +63,19 @@
 <p>Find and converge parallel paths in any artefact: code in any language, prose, design systems, technical documentation. The name nods to DRY (Don't Repeat Yourself); doubling the word reinforces that the framework is about <em>drying up</em> parallel paths that already exist, not the original aspirational principle.</p>
 <p>The plugin's value: &quot;is dit een dubbeling?&quot; becomes a discipline with a runbook, not a vibe-check.</p>
 <h2 id="install">Install</h2>
-<p>Claude Code:</p>
-<pre><code class="language-bash">claude plugins install drydry@laicluse-agent-fieldkit</code></pre>
-<p>Codex:</p>
-<pre><code class="language-bash">codex plugin add drydry@laicluse-agent-fieldkit</code></pre>
+<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="Agent terminal commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="commands-d6da3724b8-claude">claude plugins install drydry@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="commands-d6da3724b8-codex">codex plugin add drydry@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
 <h2 id="how-to-invoke">How to invoke</h2>
 <p>One user-invocable surface: <code>/drydry:drydry</code>. The orchestrator routes between two modes:</p>
 <ul>
@@ -300,8 +310,19 @@ Signatures to look for:
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">
 						<h2>Install</h2>
-						<pre><code>claude plugins install drydry@laicluse-agent-fieldkit
-codex plugin add drydry@laicluse-agent-fieldkit</code></pre>
+						<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="drydry install commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="install-drydry-claude">claude plugins install drydry@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="install-drydry-codex">codex plugin add drydry@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
 					</div>
 					<div class="sidebar-block">
 						<h2>Source</h2>

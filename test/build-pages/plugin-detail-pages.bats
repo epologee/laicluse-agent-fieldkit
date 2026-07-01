@@ -50,6 +50,13 @@ A single-occupancy lock for a working directory with an [external reference](htt
 dibs claim <dir>
 ```
 
+## Installation
+
+```bash
+claude plugins install dibs@laicluse-agent-fieldkit
+codex plugin add dibs@laicluse-agent-fieldkit
+```
+
 ## Commands
 
 | Command | Purpose |
@@ -73,6 +80,20 @@ MD
 # clipboard
 
 Copy answer content to a clipboard.
+
+## Install
+
+Claude Code:
+
+```bash
+claude plugins install clipboard@laicluse-agent-fieldkit
+```
+
+Codex:
+
+```bash
+codex plugin add clipboard@laicluse-agent-fieldkit
+```
 MD
   cat > "$REPO/docs/index.html" <<'HTML'
 <link rel="canonical" href="https://example.test/old/">
@@ -147,9 +168,51 @@ NODE
 
 @test "detail pages link back to the Fieldkit landing" {
   grep -q '<link rel="stylesheet" href="../../styles.css">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -q '<script src="../../agent-command-switch.js"></script>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a class="brand" href="../" aria-label="l'\''Aicluse Agent Fieldkit home">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a class="back-link" href="../#catalog">Catalog</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
+}
+
+@test "detail install sidebar renders the shared agent command switch" {
+  run node - <<'NODE' "$REPO/docs/agent-fieldkit/dibs/index.html"
+const fs = require("fs");
+const html = fs.readFileSync(process.argv[2], "utf8");
+if (!html.includes('class="agent-command-switch"')) throw new Error("missing command switch");
+if (!html.includes('data-agent-option="claude"')) throw new Error("missing Claude option");
+if (!html.includes('data-agent-option="codex"')) throw new Error("missing Codex option");
+if (!html.includes('claude plugins install dibs@laicluse-agent-fieldkit')) throw new Error("missing Claude command");
+if (!html.includes('codex plugin add dibs@laicluse-agent-fieldkit')) throw new Error("missing Codex command");
+if (html.includes('claude plugins install dibs@laicluse-agent-fieldkit\ncodex plugin add dibs@laicluse-agent-fieldkit')) {
+	throw new Error("commands still render as one combined code block");
+}
+NODE
+  [ "$status" -eq 0 ]
+}
+
+@test "README agent command fences render through the shared switch" {
+  run node - <<'NODE' "$REPO/docs/agent-fieldkit/dibs/index.html"
+const fs = require("fs");
+const html = fs.readFileSync(process.argv[2], "utf8");
+const installSection = html.match(/<h2 id="installation">Installation<\/h2>\n([\s\S]*?)<h2 id="commands">Commands<\/h2>/);
+if (!installSection) throw new Error("README installation section not found");
+if (!installSection[1].includes('class="agent-command-switch"')) throw new Error("README install fence did not render as command switch");
+if (installSection[1].includes('class="language-bash"')) throw new Error("README install fence still renders as raw bash");
+NODE
+  [ "$status" -eq 0 ]
+}
+
+@test "split Claude and Codex README command sections merge into one switch" {
+  run node - <<'NODE' "$REPO/docs/agent-fieldkit/clipboard/index.html"
+const fs = require("fs");
+const html = fs.readFileSync(process.argv[2], "utf8");
+const section = html.match(/<h2 id="install">Install<\/h2>\n([\s\S]*?)<\/article>/);
+if (!section) throw new Error("clipboard install section not found");
+const switchCount = (section[1].match(/class="agent-command-switch"/g) || []).length;
+if (switchCount !== 1) throw new Error(`expected one merged switch, got ${switchCount}`);
+if (section[1].includes("Claude Code:") || section[1].includes("Codex:")) throw new Error("agent labels leaked as duplicate headings");
+NODE
+  [ "$status" -eq 0 ]
 }
 
 @test "site data points catalog cards at generated detail pages" {

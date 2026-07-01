@@ -209,19 +209,13 @@
 	}
 
 	function renderInstall(data) {
-		$("#claude-install").textContent = data.install.claude.join("\n");
-		$("#codex-install").textContent = data.install.codex.join("\n");
-		document.querySelectorAll("[data-copy-target]").forEach((button) => {
-			button.addEventListener("click", async () => {
-				const target = document.getElementById(button.dataset.copyTarget);
-				if (!target || !navigator.clipboard) return;
-				await navigator.clipboard.writeText(target.textContent);
-				button.textContent = "Copied";
-				window.setTimeout(() => {
-					button.textContent = "Copy";
-				}, 1400);
-			});
+		const installSwitch = $("#install-switch");
+		installSwitch.innerHTML = window.AgentCommandSwitch.render({
+			id: "marketplace-install",
+			label: "Marketplace install commands",
+			commands: data.install,
 		});
+		window.AgentCommandSwitch.hydrate(installSwitch);
 	}
 
 	function renderChangelog(data) {

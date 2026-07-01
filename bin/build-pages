@@ -21,6 +21,7 @@ const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
 // allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
 const WORDMARK = require("./wordmark.json");
+const AgentCommandSwitch = require("../docs/agent-command-switch.js");
 
 const copy = {
 	"how-plugins-work": {
@@ -293,8 +294,45 @@ function renderTable(rows) {
 	].join("\n");
 }
 
+function renderFencedCode(codeBlock) {
+	const commandSwitch = renderAgentCommandFence(codeBlock.lines, codeBlock.language || "");
+	if (commandSwitch) return commandSwitch;
+	const className = codeBlock.language ? ` class="language-${attributeEscape(codeBlock.language)}"` : "";
+	return `<pre><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`;
+}
+
+function renderAgentCommandFence(lines, language) {
+	if (language && !/^(bash|sh|shell|zsh)$/.test(language)) return "";
+	const commands = { claude: [], codex: [] };
+	for (const line of lines) {
+		const command = line.trim();
+		if (!command) continue;
+		if (command.startsWith("claude ")) {
+			commands.claude.push(command);
+		} else if (command.startsWith("codex ")) {
+			commands.codex.push(command);
+		} else {
+			return "";
+		}
+	}
+	if (commands.claude.length + commands.codex.length < 2) return "";
+	return AgentCommandSwitch.render({
+		id: `commands-${crypto.createHash("sha1").update(lines.join("\n")).digest("hex").slice(0, 10)}`,
+		label: "Agent terminal commands",
+		commands,
+	});
+}
+
+function mergeAgentCommandSections(markdown) {
+	return markdown.replace(
+		/(^|\n)(?:Claude Code|Claude):[ \t]*(?:\n[ \t]*)+```(bash|sh|shell|zsh)\n([\s\S]*?)\n```[ \t]*(?:\n[ \t]*)+Codex:[ \t]*(?:\n[ \t]*)+```(?:bash|sh|shell|zsh)\n([\s\S]*?)\n```/g,
+		(_match, prefix, language, claudeCommands, codexCommands) =>
+			`${prefix}\`\`\`${language}\n${claudeCommands.trim()}\n${codexCommands.trim()}\n\`\`\``,
+	);
+}
+
 function renderMarkdown(markdown) {
-	const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+	const lines = mergeAgentCommandSections(markdown).replace(/\r\n/g, "\n").split("\n");
 	const html = [];
 	let paragraph = [];
 	let list = null;
@@ -328,8 +366,7 @@ function renderMarkdown(markdown) {
 		const fence = line.match(/^```([A-Za-z0-9_-]*)\s*$/);
 		if (fence) {
 			if (codeBlock) {
-				const className = codeBlock.language ? ` class="language-${attributeEscape(codeBlock.language)}"` : "";
-				html.push(`<pre><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`);
+				html.push(renderFencedCode(codeBlock));
 				codeBlock = null;
 			} else {
 				flushFlow();
@@ -618,13 +655,15 @@ function buildPluginDetailPage(data, plugin, markdown, hash) {
 	const readmeHtml = renderMarkdown(markdownWithoutFirstTitle(markdown));
 	const pageUrl = `${PAGES_URL}/${plugin.detailPath}`;
 	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
-	const codexInstall = plugin.codex ? `codex plugin add ${plugin.name}@laicluse-agent-fieldkit` : "";
-	const installCommands = [
-		`claude plugins install ${plugin.name}@laicluse-agent-fieldkit`,
-		codexInstall,
-	]
-		.filter(Boolean)
-		.join("\n");
+	const installCommands = {
+		claude: [`claude plugins install ${plugin.name}@laicluse-agent-fieldkit`],
+		codex: plugin.codex ? [`codex plugin add ${plugin.name}@laicluse-agent-fieldkit`] : [],
+	};
+	const installSwitch = AgentCommandSwitch.render({
+		id: `install-${plugin.name}`,
+		label: `${plugin.name} install commands`,
+		commands: installCommands,
+	});
 
 	return `<!doctype html>
 <html lang="en">
@@ -653,6 +692,7 @@ function buildPluginDetailPage(data, plugin, markdown, hash) {
 		<meta name="twitter:image" content="${imageUrl}">
 
 		<link rel="stylesheet" href="../../styles.css">
+		<script src="../../agent-command-switch.js"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
@@ -692,7 +732,7 @@ ${readmeHtml}
 				<aside class="detail-sidebar" aria-label="Plugin links">
 					<div class="sidebar-block">
 						<h2>Install</h2>
-						<pre><code>${htmlEscape(installCommands)}</code></pre>
+						${installSwitch}
 					</div>
 					<div class="sidebar-block">
 						<h2>Source</h2>
@@ -886,10 +926,24 @@ function updateFieldkitMeta(repoRoot, hash) {
 	const indexPath = path.join(repoRoot, "docs", "agent-fieldkit", "index.html");
 	const html = fs.readFileSync(indexPath, "utf8");
 	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
-	const updated = replaceHeadUrls(html, FIELDKIT_URL, imageUrl)
+	const normalized = html.replace(/\n?\t\t<script src="\.\.\/agent-command-switch\.js"><\/script>/g, "");
+	const updated = replaceHeadUrls(normalized, FIELDKIT_URL, imageUrl)
 		.replace(/<link rel="stylesheet" href="styles\.css">/, '<link rel="stylesheet" href="../styles.css">')
-		.replace(/<script src="site\.js"><\/script>/, '<script src="../site.js"></script>');
+		.replace(/<script src="site\.js"><\/script>/, '<script src="../agent-command-switch.js"></script>\n\t\t<script src="../site.js"></script>')
+		.replace(
+			/<script src="\.\.\/site\.js"><\/script>/,
+			'<script src="../agent-command-switch.js"></script>\n\t\t<script src="../site.js"></script>',
+		);
 	if (updated !== html) fs.writeFileSync(indexPath, updated);
+}
+
+function writeSharedAssets(repoRoot) {
+	const sourcePath = path.join(__dirname, "..", "docs", "agent-command-switch.js");
+	const targetPath = path.join(repoRoot, "docs", "agent-command-switch.js");
+	if (path.resolve(sourcePath) !== path.resolve(targetPath)) {
+		fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+		fs.copyFileSync(sourcePath, targetPath);
+	}
 }
 
 function buildRootRedirect(hash) {
@@ -953,6 +1007,7 @@ function main() {
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
+	writeSharedAssets(repoRoot);
 	updateFieldkitMeta(repoRoot, hash);
 	writeRootRedirect(repoRoot, hash);
 	renderPluginDetailPages(repoRoot, data, hash);

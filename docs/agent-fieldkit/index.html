@@ -153,22 +153,7 @@
 						Claude Code-only because its keep-alive behavior is host-specific.
 					</p>
 				</div>
-				<div class="install-grid">
-					<article class="install-block">
-						<div class="block-heading">
-							<h3>Claude Code</h3>
-							<button class="copy-button" type="button" data-copy-target="claude-install">Copy</button>
-						</div>
-						<pre><code id="claude-install">Loading install commands...</code></pre>
-					</article>
-					<article class="install-block">
-						<div class="block-heading">
-							<h3>Codex</h3>
-							<button class="copy-button" type="button" data-copy-target="codex-install">Copy</button>
-						</div>
-						<pre><code id="codex-install">Loading install commands...</code></pre>
-					</article>
-				</div>
+				<div id="install-switch" class="install-switch-slot"></div>
 			</section>
 
 			<section id="changelog" class="section changelog-section" aria-labelledby="changelog-title">
@@ -191,6 +176,7 @@
 			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
 		</footer>
 
+		<script src="../agent-command-switch.js"></script>
 		<script src="../site.js"></script>
 	</body>
 </html>
