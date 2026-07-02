@@ -22,6 +22,13 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.27]
+
+### Changed
+
+- **`prefer` and `compliance` now distinguish reversible local work from external gates.** The guards still push agents to choose and continue for local edits, tests, scripts, commits, and local-only repo setup, but they no longer turn GitHub/remote/push/deploy/publish-style choices into "decide it yourself" nudges.
+- **`no-remote-create` explains why deletion is not true reversibility.** The denial now names account-bound forge state, internet-visible names, audit events, notifications, visibility mistakes, and later accidental pushes as the risk boundary.
+
 ## [v2.0.18]
 
 ### Added

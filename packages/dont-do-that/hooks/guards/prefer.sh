@@ -15,7 +15,7 @@ _dd_prefer_rover_tip() {
   if command -v codex >/dev/null 2>&1; then
     plugin_json=$(codex plugin list --json 2>/dev/null) || plugin_json=""
     if [ -n "$plugin_json" ] && jq -e '.installed[]? | select(.pluginId == "rover@laicluse-agent-fieldkit")' >/dev/null 2>&1 <<< "$plugin_json"; then
-      printf '%s\n' " /rover:decide is one way to land a genuinely hard call."
+      printf '%s\n' " /rover:decide is one way to settle a genuinely hard call."
       return 0
     fi
   fi
@@ -23,7 +23,7 @@ _dd_prefer_rover_tip() {
   if command -v claude >/dev/null 2>&1; then
     plugin_json=$(claude plugins list --json 2>/dev/null) || plugin_json=""
     if [ -n "$plugin_json" ] && jq -e '.plugins | keys[]? | select(startswith("rover@"))' >/dev/null 2>&1 <<< "$plugin_json"; then
-      printf '%s\n' " /rover:decide is one way to land a genuinely hard call."
+      printf '%s\n' " /rover:decide is one way to settle a genuinely hard call."
       return 0
     fi
   fi
@@ -58,9 +58,10 @@ guard_prefer() {
   [ "$is_menu" -eq 0 ] && return 0
 
   grep -qiE '\bwelke\b|\bwhich (do|would|one|of|approach|option|version|route|path)\b|wat (heeft|is) je voorkeur|geen voorkeur|wat verkies je|do you prefer|jouw keuze|aan jou|your (call|choice|pick)|up to you' <<< "$text" || return 0
+  dd_external_irreversible_gate "$text" && return 0
 
   local tip
   tip=$(_dd_prefer_rover_tip)
 
-  dd_emit_block prefer "You laid out options but handed the choice back without committing. Bring what you know and the tools you have to bear, land the preference you would back, and say why; mark your pick with a squared-letter or number-keycap emoji (🅰️/🅱️ or 1️⃣/2️⃣) so this back-stop stays silent. If the call is genuinely the operator's, still give a reasoned lean and mark it.${tip} A bare menu defers a decision you are equipped to make."
+  dd_emit_block prefer "You laid out options but handed the choice back without committing. If the answer is knowable and your pick is reversible local work, state the preference you would back and say why; mark it with a squared-letter or number-keycap emoji (🅰️/🅱️ or 1️⃣/2️⃣). If choosing would create or mutate external/account-bound state, do not decide it yourself: ask as a real gate and make the reversibility boundary explicit.${tip} A bare menu defers a decision you are equipped to make."
 }

@@ -193,7 +193,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.26",
+			"version": "2.0.27",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -208,9 +208,9 @@
 			"commandCount": 2,
 			"hookFileCount": 25,
 			"latestChange": {
-				"version": "v2.0.18",
-				"type": "Added",
-				"summary": "New PreToolUse:Bash guard no-osascript."
+				"version": "v2.0.27",
+				"type": "Changed",
+				"summary": "prefer and compliance now distinguish reversible local work from external gates."
 			}
 		},
 		{
@@ -516,11 +516,11 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.26",
+			"packageVersion": "2.0.27",
 			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.18",
-			"type": "Added",
-			"summary": "New PreToolUse:Bash guard no-osascript.",
+			"version": "v2.0.27",
+			"type": "Changed",
+			"summary": "prefer and compliance now distinguish reversible local work from external gates.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{

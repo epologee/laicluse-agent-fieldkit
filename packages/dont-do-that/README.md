@@ -87,16 +87,17 @@ Stop guards block weak final answers and make the agent continue:
   root cause. Claude, Codex.
 - `estimate`: blocks effort or scope framed in hours, days, weeks, or months.
   Claude only.
-- `prefer`: blocks option menus handed back without a reasoned recommendation.
-  Claude, Codex.
+- `prefer`: blocks option menus handed back without a reasoned recommendation
+  unless the options include an external irreversible gate. Claude, Codex.
 - `premature`: blocks clipped final answers without a substantive finish or
   waiting marker. Claude only.
 - `verify`: blocks asking the operator to verify something the agent can check
   itself. Claude, Codex.
 - `duh`: blocks giving runnable recipes instead of running the action. Claude,
   Codex.
-- `compliance`: blocks ending with a confirmation question after a clear
-  instruction. Claude, Codex.
+- `compliance`: blocks reversible local confirmation questions after a clear
+  instruction while letting external irreversible gates stay questions. Claude,
+  Codex.
 - `jargon`: blocks coined approval-gate `-go` compounds in operator-facing
   text. Claude, Codex.
 
@@ -121,10 +122,11 @@ route, or keep the work local.
 
 Denies remote-creation and remote-rewire commands: `gh repo create`,
 `gh repo fork`, `git remote add`, and `git remote set-url`. Creating an
-account-bound repository or attaching a checkout to a remote is operator
-territory. Pass condition: have the operator create or approve the remote
-through the active host's manual approval path, then continue with the resulting
-URL.
+account-bound repository, forking on a forge, or attaching a checkout to a
+remote is not reversible in the local sense: deletion cannot undo internet-visible
+names, audit events, notifications, visibility mistakes, or later accidental
+pushes. Pass condition: have the operator create or approve the remote through
+the active host's manual approval path, then continue with the resulting URL.
 
 ### `no-worktree-deploy`
 
@@ -299,6 +301,10 @@ call and `🚧` for work in progress also stand the guard aside. When the `rover
 plugin is installed, the reminder can include a `/rover:decide` pointer for
 hard calls.
 
+The guard stands aside when the menu includes external irreversible state such
+as remote creation, remote attachment, push, deploy, publish, production, DNS,
+or shared infrastructure; those are operator gates, not preference-reflex cases.
+
 ### `premature`
 
 Blocks Stop when the last assistant message does not end with a question and
@@ -331,8 +337,12 @@ Pass condition: run the action and report the result, or prefix the line with
 
 Blocks Stop when the last assistant message ends with a confirmation question
 after the operator already gave a clear instruction, for example "Wil je dat ik
-...?", "Shall I ...?", or "Moet ik ...?". Pass condition: continue the work and
-stop asking, or prefix the question with `🧭` for a genuine new direction.
+...?", "Shall I ...?", or "Moet ik ...?". The blocker applies to reversible
+local work: edits, tests, local scripts, local daemons, local commits, and
+local-only repo setup. It stands aside when the question is about external or
+account-bound state such as remote creation, remote attachment, push, deploy,
+publish, production, DNS, or shared infrastructure. Pass condition: continue the
+local work and stop asking, or make the external gate explicit.
 
 ### `jargon`
 
@@ -359,8 +369,8 @@ with the available shell, file-edit, browser, research, or host-native tooling.
 The proposal must be exactly one clear action. If the previous turn contained
 multiple distinct candidate actions, `/duh` asks the operator to pick from a
 numbered menu that includes every option. Inviolable gates still apply: `/duh`
-does not authorize push, merge to default, deploy, destructive git, or external
-irreversible operations.
+does not authorize push, merge to default, deploy, destructive git, remote
+creation, remote attachment, or other external irreversible operations.
 
 When `PLUGIN_ROOT` or `CLAUDE_PLUGIN_ROOT` is set, `/duh` first runs
 `bin/check-broadcast`; if the installed plugin version has new topmost

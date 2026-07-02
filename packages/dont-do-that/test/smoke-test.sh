@@ -231,6 +231,21 @@ expect_block "compliance: preference question" \
 expect_block "compliance: English shall I" \
   "$(stop_payload "Should I update this?")"
 
+expect_pass "compliance: remote creation question is a gate" \
+  "$(stop_payload "De lokale naam is duidelijk, maar een forge repo is account-bound state. Zal ik \`gh repo create stekker/backlog-vault --private\` uitvoeren?")"
+
+expect_pass "compliance: push question is a gate" \
+  "$(stop_payload "De commit staat lokaal en pushen raakt de gedeelde remote. Should I push this branch?")"
+
+expect_pass "compliance: push changes question is a gate" \
+  "$(stop_payload "De commit staat lokaal en raakt een gedeelde branch. Should I push these changes?")"
+
+expect_block "compliance: local push metaphor still blocks" \
+  "$(stop_payload "Should I push the validation into a helper?")"
+
+expect_block "compliance: local push changes metaphor still blocks" \
+  "$(stop_payload "Should I push these changes into a helper module?")"
+
 expect_pass "compliance: compass escape" \
   "$(stop_payload "🧭 Andere richting nodig?")"
 
@@ -257,6 +272,21 @@ expect_block_mnemonic "prefer: comparison table header" prefer \
 
 expect_block_mnemonic "prefer: non-question menu beats premature catch-all" prefer \
   "$(stop_payload "Er zijn twee opties: (a) de helper inline zetten, (b) een module extraheren. Geen voorkeur van mij, jouw keuze.")"
+
+expect_pass "prefer: remote creation menu is an operator gate" \
+  "$(stop_payload "Two paths:"$'\n'"1. Keep the vault in a local-only git repo"$'\n'"2. Create a GitHub repo with \`gh repo create stekker/backlog-vault\`"$'\n'"Which path do you want?")"
+
+expect_pass "prefer: remote attach menu is an operator gate" \
+  "$(stop_payload "Optie 1 houdt de repo local-only. Optie 2 gebruikt \`git remote add origin https://github.com/stekker/backlog-vault.git\`. Welke optie wil je?")"
+
+expect_block_mnemonic "prefer: reproduction wording is not an external gate" prefer \
+  "$(stop_payload "Two local options:"$'\n'"1. Keep the reproduction in the unit test"$'\n'"2. Move the reproduction into a fixture"$'\n'"Which do you prefer?")"
+
+expect_block_mnemonic "prefer: production build wording is not an external gate" prefer \
+  "$(stop_payload "Two local options:"$'\n'"1. Run the production build script locally"$'\n'"2. Run the dev build script locally"$'\n'"Which one do you prefer?")"
+
+expect_block_mnemonic "prefer: push changes into helper wording is not an external gate" prefer \
+  "$(stop_payload "Two local options:"$'\n'"1. Push these changes into a helper module"$'\n'"2. Keep these changes inline"$'\n'"Which one do you prefer?")"
 
 expect_pass "prefer: squared-letter marker silences" \
   "$(stop_payload "Twee wegen: (a) inline, (b) extract. Ik leun naar 🅰️ want simpeler en sneller te testen. 🏁")"
@@ -524,6 +554,24 @@ expect_deny "no-osascript: command substitution blocked" \
 
 expect_allow "no-osascript: searching for the word passes" \
   "$(pretool_bash 'rg osascript packages/dont-do-that')"
+
+# --- no-remote-create --- allow-comment: section divider matches existing smoke-test.sh pattern
+
+expect_deny "no-remote-create: gh repo create blocked" \
+  "$(pretool_bash 'gh repo create stekker/backlog-vault --private')" \
+  "not true reversibility"
+
+expect_deny "no-remote-create: gh repo fork blocked" \
+  "$(pretool_bash 'gh repo fork epologee/iii --clone=false')" \
+  "account-bound forge state"
+
+expect_deny "no-remote-create: git remote add blocked" \
+  "$(pretool_bash 'git remote add origin https://github.com/stekker/backlog-vault.git')" \
+  "internet-adjacent state"
+
+expect_deny "no-remote-create: git remote set-url blocked" \
+  "$(pretool_bash 'git remote set-url origin https://github.com/stekker/backlog.git')" \
+  "internet-adjacent state"
 
 # --- no-remote ---
 # Each case sets up a temp git repo and cd's in before invoking the hook,

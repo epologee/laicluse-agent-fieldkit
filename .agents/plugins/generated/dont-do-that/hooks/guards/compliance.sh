@@ -32,5 +32,7 @@ guard_compliance() {
     | grep -qiE "(bedoel je|do you mean|of (wil je|wilt u)|or (do you|would you)|is dit beter|is this better|welke (van|optie)|which (of|option)|[0-9]+ (issues|bestanden|items|punten|commits|stappen))" \
     && return 0
 
-  dd_emit_block compliance "'?' ending: double-check, not a whip. Reflex-ask or truncated output? Answer it yourself at your own pace, or mark deliberately: 🧭 (genuine user-choice, NOT a scope-check on a question the operator's own framework already answers; 'should I also add X?' on a trivial-yes change is reflex; 'shall I commit?' is reflex when a commit-discipline is already running, the discipline IS the framework and push is the separate gate; 'should I push?' stays a genuine question), 🏁 (done)."
+  dd_external_irreversible_gate "$text" && return 0
+
+  dd_emit_block compliance "'?' ending: double-check, not a whip. If the answer is knowable and the action is reversible local work, answer it yourself and continue. If it would create or mutate external/account-bound state (remote repo/fork/remote, push, deploy, publish, production, DNS, shared infra), ask as a real gate instead. Mark deliberately: 🧭 (genuine user-choice), 🚦 (waiting on external go), or 🏁 (done)."
 }

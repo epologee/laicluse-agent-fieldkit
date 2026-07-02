@@ -51,7 +51,7 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.26</span>
+						<span>2.0.27</span>
 						<span>2 skills</span>
 					</div>
 				</div>
@@ -102,11 +102,11 @@
 <li><code>tool-error</code>: blocks a final answer immediately after a failed tool call. Claude, Codex.</li>
 <li><code>cache</code>: blocks blaming localhost problems on cache instead of finding the root cause. Claude, Codex.</li>
 <li><code>estimate</code>: blocks effort or scope framed in hours, days, weeks, or months. Claude only.</li>
-<li><code>prefer</code>: blocks option menus handed back without a reasoned recommendation. Claude, Codex.</li>
+<li><code>prefer</code>: blocks option menus handed back without a reasoned recommendation unless the options include an external irreversible gate. Claude, Codex.</li>
 <li><code>premature</code>: blocks clipped final answers without a substantive finish or waiting marker. Claude only.</li>
 <li><code>verify</code>: blocks asking the operator to verify something the agent can check itself. Claude, Codex.</li>
 <li><code>duh</code>: blocks giving runnable recipes instead of running the action. Claude, Codex.</li>
-<li><code>compliance</code>: blocks ending with a confirmation question after a clear instruction. Claude, Codex.</li>
+<li><code>compliance</code>: blocks reversible local confirmation questions after a clear instruction while letting external irreversible gates stay questions. Claude, Codex.</li>
 <li><code>jargon</code>: blocks coined approval-gate <code>-go</code> compounds in operator-facing text. Claude, Codex.</li>
 </ul>
 <h2 id="bash-guards">Bash guards</h2>
@@ -115,7 +115,7 @@
 <h3 id="no-remote"><code>no-remote</code></h3>
 <p>Denies <code>git push</code> when the current repo has no configured remote, or when the push names a remote that is not configured. The guard follows a leading <code>cd &lt;path&gt; &amp;&amp;</code> before checking remotes, then falls back to the hook cwd. Pass condition: add or choose a configured remote through the operator-approved route, or keep the work local.</p>
 <h3 id="no-remote-create"><code>no-remote-create</code></h3>
-<p>Denies remote-creation and remote-rewire commands: <code>gh repo create</code>, <code>gh repo fork</code>, <code>git remote add</code>, and <code>git remote set-url</code>. Creating an account-bound repository or attaching a checkout to a remote is operator territory. Pass condition: have the operator create or approve the remote through the active host's manual approval path, then continue with the resulting URL.</p>
+<p>Denies remote-creation and remote-rewire commands: <code>gh repo create</code>, <code>gh repo fork</code>, <code>git remote add</code>, and <code>git remote set-url</code>. Creating an account-bound repository, forking on a forge, or attaching a checkout to a remote is not reversible in the local sense: deletion cannot undo internet-visible names, audit events, notifications, visibility mistakes, or later accidental pushes. Pass condition: have the operator create or approve the remote through the active host's manual approval path, then continue with the resulting URL.</p>
 <h3 id="no-worktree-deploy"><code>no-worktree-deploy</code></h3>
 <p>Denies <code>ansible-playbook</code> invocations when the cwd is a git worktree rather than the canonical checkout. The check compares <code>git rev-parse --git-dir</code> against <code>--git-common-dir</code>, so it works for any worktree layout. Read-only flags pass: <code>--check</code>, <code>--syntax-check</code>, <code>--version</code>, <code>--help</code>, <code>--list-tasks</code>, <code>--list-hosts</code>, <code>--list-tags</code>, and <code>-h</code>.</p>
 <p>Pass condition: merge the branch to the default branch first and run <code>ansible-playbook</code> from the canonical checkout, or restrict the worktree call to a read-only preview flag.</p>
@@ -170,6 +170,7 @@
 <h3 id="prefer"><code>prefer</code></h3>
 <p>Blocks Stop when the assistant lays out an option menu and hands the choice back without committing to one. Detection covers two or more <code>(a)</code> / <code>(b)</code> markers, two or more <code>Optie</code> / <code>Option N</code> items, a markdown table whose header names an option/approach/variant column, or two or more ordered-list items, then requires a choose-between signal such as &quot;which one&quot;, &quot;je voorkeur&quot;, &quot;jouw keuze&quot;, &quot;do you prefer&quot;, or &quot;your call&quot;.</p>
 <p>Pass condition: state the preference the agent would back and why, then mark the pick with a squared-letter or number-keycap emoji. <code>🧭</code> for a genuine operator call and <code>🚧</code> for work in progress also stand the guard aside. When the <code>rover</code> plugin is installed, the reminder can include a <code>/rover:decide</code> pointer for hard calls.</p>
+<p>The guard stands aside when the menu includes external irreversible state such as remote creation, remote attachment, push, deploy, publish, production, DNS, or shared infrastructure; those are operator gates, not preference-reflex cases.</p>
 <h3 id="premature"><code>premature</code></h3>
 <p>Blocks Stop when the last assistant message does not end with a question and does not end with <code>🏁</code> (finished) or <code>🚦</code> (waiting on external go) plus a substantive sentence of at least 40 non-space, non-emoji characters with a sentence terminator. Pass condition: finish with a real completed-work sentence, finish with a real waiting-on-external-go sentence, or keep writing.</p>
 <h3 id="verify"><code>verify</code></h3>
@@ -178,14 +179,14 @@
 <p>Blocks Stop when the assistant offers a runnable recipe for an action it could execute itself, such as &quot;je kunt dit doen door <code>cmd</code> te draaien&quot;, &quot;you can verify this by running <code>cmd</code>&quot;, &quot;Run <code>cmd</code> to see the result&quot;, or &quot;open the URL in your browser&quot;. Fenced code blocks are stripped first so documentation examples do not trigger.</p>
 <p>Pass condition: run the action and report the result, or prefix the line with <code>Instructie:</code> when the operator explicitly asked for a manual recipe.</p>
 <h3 id="compliance"><code>compliance</code></h3>
-<p>Blocks Stop when the last assistant message ends with a confirmation question after the operator already gave a clear instruction, for example &quot;Wil je dat ik ...?&quot;, &quot;Shall I ...?&quot;, or &quot;Moet ik ...?&quot;. Pass condition: continue the work and stop asking, or prefix the question with <code>🧭</code> for a genuine new direction.</p>
+<p>Blocks Stop when the last assistant message ends with a confirmation question after the operator already gave a clear instruction, for example &quot;Wil je dat ik ...?&quot;, &quot;Shall I ...?&quot;, or &quot;Moet ik ...?&quot;. The blocker applies to reversible local work: edits, tests, local scripts, local daemons, local commits, and local-only repo setup. It stands aside when the question is about external or account-bound state such as remote creation, remote attachment, push, deploy, publish, production, DNS, or shared infrastructure. Pass condition: continue the local work and stop asking, or make the external gate explicit.</p>
 <h3 id="jargon"><code>jargon</code></h3>
 <p>Blocks Stop when operator-facing text uses coined approval-gate <code>-go</code> compounds such as <code>push-go</code>, <code>ship-go</code>, <code>merge-go</code>, <code>deploy-go</code>, <code>commit-go</code>, <code>release-go</code>, <code>publish-go</code>, <code>send-go</code>, <code>post-go</code>, <code>launch-go</code>, <code>user-go</code>, <code>yolo-go</code>, or <code>approval-go</code>. Fenced code and inline-code mentions are ignored, and <code>🚧</code> skips the guard while work is in progress.</p>
 <p>Pass condition: phrase it plainly, for example &quot;waiting for your go to push&quot; or &quot;ik push zodra je het zegt&quot;, or wrap the term in backticks when naming the jargon itself.</p>
 <h2 id="operator-skills">Operator skills</h2>
 <h3 id="duh"><code>/duh</code></h3>
 <p>The operator types <code>/duh</code> when the previous assistant turn offered a recipe, instruction, browser action, confirmation question, multi-step operator-facing plan, or declaration of inability instead of executing. The skill re-reads the immediately preceding assistant turn, resolves the proposed action, and runs it with the available shell, file-edit, browser, research, or host-native tooling.</p>
-<p>The proposal must be exactly one clear action. If the previous turn contained multiple distinct candidate actions, <code>/duh</code> asks the operator to pick from a numbered menu that includes every option. Inviolable gates still apply: <code>/duh</code> does not authorize push, merge to default, deploy, destructive git, or external irreversible operations.</p>
+<p>The proposal must be exactly one clear action. If the previous turn contained multiple distinct candidate actions, <code>/duh</code> asks the operator to pick from a numbered menu that includes every option. Inviolable gates still apply: <code>/duh</code> does not authorize push, merge to default, deploy, destructive git, remote creation, remote attachment, or other external irreversible operations.</p>
 <p>When <code>PLUGIN_ROOT</code> or <code>CLAUDE_PLUGIN_ROOT</code> is set, <code>/duh</code> first runs <code>bin/check-broadcast</code>; if the installed plugin version has new topmost changelog notes, it prints that one-time update before executing the correction.</p>
 <h3 id="just-a-question"><code>/just-a-question</code></h3>
 <p>The operator types <code>/just-a-question</code>, &quot;just a question&quot;, &quot;read-only&quot;, &quot;do not change anything&quot;, or equivalent when the turn should be informational only. For the rest of that turn, mutation tools are forbidden: file-edit tools and mutating shell commands such as <code>git commit</code>, <code>push</code>, <code>rm</code>, <code>mv</code>, and <code>launchctl</code>. Read-only tools stay available.</p>

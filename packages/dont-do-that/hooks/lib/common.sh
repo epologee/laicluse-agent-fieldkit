@@ -93,6 +93,16 @@ dd_is_wip() {
   grep -q '🚧' <<< "$1"
 }
 
+dd_external_irreversible_gate() {
+  local text="$1"
+  grep -qiE '(gh[[:space:]]+repo[[:space:]]+(create|fork)|git[[:space:]]+remote[[:space:]]+(add|set-url)|git[[:space:]]+push|npm[[:space:]]+publish)' <<< "$text" && return 0
+  grep -qiE '\b(force[ -]?push|merge[[:space:]]+(to|into)[[:space:]]+(main|master|default))\b' <<< "$text" && return 0
+  grep -qiE '\bpush(en|ed|ing)?\b[^?]{0,80}\b(change|changes|wijziging|wijzigingen)\b([[:space:]]*[?]|[^?]{0,40}\b(to|naar|origin|remote|repo|github|production|productie|prod|staging|branch)\b)' <<< "$text" && return 0
+  grep -qiE '\b(push(en|ed|ing)?|publish(es|ed|ing)?|deploy(s|ed|ing)?)\b[^?]{0,80}\b(branch|commit|origin|remote|repo|pr|pull request|tag|image|package|registry|release|production|productie|prod|staging|cluster|server|shared infra|shared infrastructure)\b' <<< "$text" && return 0
+  grep -qiE '\b(remote repo|github repo|public repo|account-bound|external irreversible|app store|dns|shared infra|shared infrastructure)\b' <<< "$text" && return 0
+  return 1
+}
+
 # dd_assistant_text <input-json> <char-budget> [guard-name]
 # Returns the tail of the current turn's assistant text.
 # When guard-name is set, tracks last-seen transcript line count under
