@@ -267,7 +267,7 @@ h3 {
 }
 
 .home-wordmark-title .wordmark {
-  --wordmark-width: clamp(11.5rem, 28vw, 22rem);
+  --wordmark-width: clamp(10.5rem, 22vw, 18rem);
 }
 
 .home-hero .lede {
@@ -1736,6 +1736,16 @@ pre {
     justify-content: flex-start;
   }
 
+  .home-page .site-header {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .home-page .site-nav {
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+
   .brand-title {
     gap: 0.42rem;
     font-size: 0.92rem;
@@ -1751,7 +1761,7 @@ pre {
   }
 
   .home-wordmark-title .wordmark {
-    --wordmark-width: 11.5rem;
+    --wordmark-width: 10.5rem;
   }
 
   h1 {
