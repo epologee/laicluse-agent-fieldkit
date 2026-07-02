@@ -1,6 +1,6 @@
 {
   "name": "git-discipline",
-  "version": "2.0.39",
+  "version": "2.0.40",
   "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
   "author": {
     "name": "local"

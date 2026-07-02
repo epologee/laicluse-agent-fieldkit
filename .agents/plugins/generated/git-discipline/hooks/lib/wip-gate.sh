@@ -114,11 +114,16 @@ wip_gate_commit_is_ours() {
 # allow-comment: prefix up to " push ", tokenizes the remaining args
 # allow-comment: (skipping flags and stopping at shell separators or
 # allow-comment: redirections), pairs remote/refspec positionals, and
-# allow-comment: resolves the rev-list range via wip_gate_parse_range. With no
-# allow-comment: explicit refspec it scopes to origin/<default>..HEAD (the work
-# allow-comment: not yet on the default branch) so a rebased branch does not drag
-# allow-comment: every catching-up commit in, falling back to the tracked upstream
-# allow-comment: only when no default branch resolves.
+# allow-comment: resolves the rev-list range. With no explicit refspec it
+# allow-comment: scopes to origin/<default>..HEAD (the work not yet on the
+# allow-comment: default branch) so a rebased branch does not drag every
+# allow-comment: catching-up commit in, falling back to the tracked upstream
+# allow-comment: only when no default branch resolves. With an explicit
+# allow-comment: remote+refspec (git push -u origin <branch>) it scopes to
+# allow-comment: origin/<branch>..<local> when that upstream already exists,
+# allow-comment: else to origin/<default>..<local> on a brand new branch's
+# allow-comment: first push, falling back to a full local_ref scan only when
+# allow-comment: no default branch resolves either.
 wip_gate_resolve_push_range() {
   local command="$1"
 
@@ -155,7 +160,26 @@ wip_gate_resolve_push_range() {
     fi
     [[ -z "$local_ref" ]] && local_ref="HEAD"
     local upstream="$remote/$remote_branch"
-    wip_gate_parse_range "$upstream" "$local_ref"
+
+    if git rev-parse --verify --quiet "$upstream" >/dev/null 2>&1; then
+      printf '%s..%s' "$upstream" "$local_ref"
+    else
+      # allow-comment: the explicit upstream (origin/<branch>) does not exist
+      # allow-comment: yet on a brand new branch's first push. Scope to
+      # allow-comment: origin/<default>..local_ref when a default branch
+      # allow-comment: resolves, same as the no-explicit-refspec case below,
+      # allow-comment: instead of scanning every commit reachable from
+      # allow-comment: local_ref (which drags in the whole pre-discipline
+      # allow-comment: repo history on a repo's very first feature branch).
+      local default_ref
+      default_ref=$(wip_gate_resolve_default_ref)
+      if [[ -n "$default_ref" ]] \
+	&& git rev-parse --verify --quiet "$default_ref" >/dev/null 2>&1; then
+	printf '%s..%s' "$default_ref" "$local_ref"
+      else
+	printf '%s' "$local_ref"
+      fi
+    fi
   else
     local default_ref
     default_ref=$(wip_gate_resolve_default_ref)
