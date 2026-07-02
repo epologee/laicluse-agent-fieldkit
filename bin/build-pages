@@ -119,7 +119,7 @@ const apps = [
 			{ label: "Codex", command: "$vocalist:hands-free" },
 			{ label: "Terminal", command: "vocalist" },
 		],
-		dmgUrl: "https://github.com/epologee/vocalist/releases/latest",
+		dmgUrl: "https://github.com/laicluse/vocalist-releases/releases/latest",
 		requirement: "macOS Tahoe (26) or newer, Apple Silicon",
 		features: [
 			"Prompt Codex and Claude Code by voice without touching the keyboard.",

@@ -43,7 +43,7 @@ HTML
 }
 
 @test "the Vocalist entry has the brew one-liner and Releases DMG URL" {
-  run node -e 'const v=require(process.argv[1]).apps.find(x=>x.name==="Vocalist");const commands=(v.runCommands||[]).map(x=>x.command).join(" ");const ok=v.brew==="brew install --cask laicluse/tap/vocalist" && v.pluginInstall==="vocalist plugin install" && commands.includes("/vocalist:hands-free") && commands.includes("$vocalist:hands-free") && commands.includes("vocalist") && /github.com\/epologee\/vocalist\/releases/.test(v.dmgUrl);process.exit(ok?0:1)' "$REPO/docs/site-data.json"
+  run node -e 'const v=require(process.argv[1]).apps.find(x=>x.name==="Vocalist");const commands=(v.runCommands||[]).map(x=>x.command).join(" ");const ok=v.brew==="brew install --cask laicluse/tap/vocalist" && v.pluginInstall==="vocalist plugin install" && commands.includes("/vocalist:hands-free") && commands.includes("$vocalist:hands-free") && commands.includes("vocalist") && /github.com\/laicluse\/vocalist-releases\/releases/.test(v.dmgUrl);process.exit(ok?0:1)' "$REPO/docs/site-data.json"
   [ "$status" -eq 0 ]
 }
 
@@ -71,7 +71,7 @@ HTML
   grep -q '<code>/vocalist:hands-free</code>' "$REPO/docs/vocalist/index.html"
   grep -Fq '<code>$vocalist:hands-free</code>' "$REPO/docs/vocalist/index.html"
   grep -q '<code>vocalist</code>' "$REPO/docs/vocalist/index.html"
-  grep -q 'https://github.com/epologee/vocalist/releases/latest' "$REPO/docs/vocalist/index.html"
+  grep -q 'https://github.com/laicluse/vocalist-releases/releases/latest' "$REPO/docs/vocalist/index.html"
   grep -q 'laicluse.com/vocalist' "$REPO/docs/vocalist/index.html"
   run grep -q 'epologee/tap/vocalist' "$REPO/docs/vocalist/index.html"
   [ "$status" -ne 0 ]
