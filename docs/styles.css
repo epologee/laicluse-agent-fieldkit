@@ -133,7 +133,7 @@ button {
 }
 
 .brand-title .wordmark {
-  --wordmark-width: 5.65rem;
+  --wordmark-width: 4.5rem;
 }
 
 .brand-suffix {
@@ -267,7 +267,7 @@ h3 {
 }
 
 .home-wordmark-title .wordmark {
-  --wordmark-width: clamp(18rem, 50vw, 42rem);
+  --wordmark-width: clamp(11.5rem, 28vw, 22rem);
 }
 
 .home-hero .lede {
@@ -1742,7 +1742,7 @@ pre {
   }
 
   .brand-title .wordmark {
-    --wordmark-width: 5.1rem;
+    --wordmark-width: 4.2rem;
   }
 
   .hero-grid {
@@ -1751,7 +1751,7 @@ pre {
   }
 
   .home-wordmark-title .wordmark {
-    --wordmark-width: min(100%, 21rem);
+    --wordmark-width: 11.5rem;
   }
 
   h1 {
