@@ -56,11 +56,37 @@ HTML
   [ -f "$REPO/docs/vocalist/index.html" ]
   grep -q '<link rel="canonical" href="https://laicluse.com/vocalist/">' "$REPO/docs/vocalist/index.html"
   grep -q '<meta property="og:url" content="https://laicluse.com/vocalist/">' "$REPO/docs/vocalist/index.html"
+  grep -q '<meta property="og:site_name" content="l'"'"'Aicluse Apps">' "$REPO/docs/vocalist/index.html"
+  grep -Eq '<meta property="og:image" content="https://laicluse\.com/assets/vocalist-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/vocalist/index.html"
+  grep -Eq '<meta property="og:image:secure_url" content="https://laicluse\.com/assets/vocalist-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/vocalist/index.html"
+  grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/vocalist-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/vocalist/index.html"
+  run grep -q '<meta property="og:site_name" content="l'"'"'Aicluse Agent Fieldkit">' "$REPO/docs/vocalist/index.html"
+  [ "$status" -ne 0 ]
   grep -q '<title>Vocalist</title>' "$REPO/docs/vocalist/index.html"
   grep -q '<a class="brand" href="../" aria-label="l'"'"'Aicluse Apps">' "$REPO/docs/vocalist/index.html"
   grep -q '<span class="brand-title">l'"'"'Aicluse Apps</span>' "$REPO/docs/vocalist/index.html"
   run grep -q 'brand-mark" aria-hidden="true">V</span>' "$REPO/docs/vocalist/index.html"
   [ "$status" -ne 0 ]
+}
+
+@test "build-pages writes a Vocalist-specific social card" {
+  [ -f "$REPO/docs/assets/vocalist-og-card.svg" ]
+  grep -q "l'Aicluse Apps" "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'Vocalist' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'Hands-free prompting' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'for Codex + Claude Code.' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'CMUX' "$REPO/docs/assets/vocalist-og-card.svg"
+  run grep -E 'PROMPT PREVIEW|brew install --cask|LOCAL STT|NO CLOUD|Agent Fieldkit' "$REPO/docs/assets/vocalist-og-card.svg"
+  [ "$status" -ne 0 ]
+  run grep -q 'Guardrails for coding agents' "$REPO/docs/assets/vocalist-og-card.svg"
+  [ "$status" -ne 0 ]
+
+  if ! command -v rsvg-convert > /dev/null 2>&1 && ! command -v vips > /dev/null 2>&1; then
+    skip "no SVG rasterizer available"
+  fi
+  [ -f "$REPO/docs/assets/vocalist-og-image.png" ]
+  run node -e 'const b=require("fs").readFileSync(process.argv[1]);process.stdout.write(b.readUInt32BE(16)+"x"+b.readUInt32BE(20))' "$REPO/docs/assets/vocalist-og-image.png"
+  [ "$output" = "1200x630" ]
 }
 
 @test "the /vocalist route carries the public install and release links" {

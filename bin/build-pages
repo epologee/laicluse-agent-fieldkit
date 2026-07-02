@@ -20,12 +20,15 @@ const SITE_TWITTER_DESCRIPTION =
 	"Guardrails for coding agents that touch real repositories. A public Claude Code and Codex plugin marketplace.";
 const SITE_IMAGE_ALT = "l'Aicluse Agent Fieldkit: guardrails for coding agents that touch real repositories.";
 const SITE_TWITTER_IMAGE_ALT = "l'Aicluse Agent Fieldkit share card";
+const VOCALIST_IMAGE_ALT = "Vocalist: hands-free prompting for Codex and Claude Code.";
+const VOCALIST_TWITTER_IMAGE_ALT = "Vocalist app share card";
 const ROOT_TITLE = "l'Aicluse";
 const ROOT_DESCRIPTION = "Local-first, human-in-the-loop apps and coding-agent plugins for working alongside AI.";
 const ROOT_IMAGE_ALT = "l'Aicluse: apps and coding-agent plugins for working alongside AI.";
 const LINKEDIN_URL = "https://www.linkedin.com/in/lecluse";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
+const OG_SERIF = "'Snell Roundhand', Georgia, 'Times New Roman', serif";
 // allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
 const WORDMARK = require("./wordmark.json");
 const AgentCommandSwitch = require("../docs/agent-command-switch.js");
@@ -908,7 +911,7 @@ function renderPluginDetailPages(repoRoot, data, hash, assetVersions) {
 
 function buildVocalistPage(app, hash, assetVersions) {
 	const pageUrl = VOCALIST_URL;
-	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+	const imageUrl = `${PAGES_URL}/assets/vocalist-og-image.png?v=${hash}`;
 
 	return `<!doctype html>
 <html lang="en">
@@ -923,7 +926,7 @@ function buildVocalistPage(app, hash, assetVersions) {
 		<link rel="canonical" href="${pageUrl}">
 
 		<meta property="og:type" content="website">
-		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:site_name" content="l'Aicluse Apps">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:url" content="${pageUrl}">
 		<meta property="og:title" content="${htmlEscape(app.name)}">
@@ -933,13 +936,13 @@ function buildVocalistPage(app, hash, assetVersions) {
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
-		<meta property="og:image:alt" content="Vocalist: a local voice interface for coding-agent terminals.">
+		<meta property="og:image:alt" content="${attributeEscape(VOCALIST_IMAGE_ALT)}">
 
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="${htmlEscape(app.name)}">
 		<meta name="twitter:description" content="${attributeEscape(app.tagline)}">
 		<meta name="twitter:image" content="${imageUrl}">
-		<meta name="twitter:image:alt" content="Vocalist app page">
+		<meta name="twitter:image:alt" content="${attributeEscape(VOCALIST_TWITTER_IMAGE_ALT)}">
 
 		<link rel="stylesheet" href="../styles.css?v=${assetVersions["styles.css"]}">
 	</head>
@@ -1211,6 +1214,28 @@ ${pills}
 `;
 }
 
+function buildVocalistOgSvg(app) {
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<defs>
+		<pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+			<path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="1"/>
+		</pattern>
+	</defs>
+	<rect width="1200" height="630" fill="#070807"/>
+	<rect width="1200" height="630" fill="url(#grid)"/>
+	<rect x="56" y="56" width="1088" height="518" rx="34" fill="rgba(16,19,17,0.84)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
+	<text x="92" y="146" font-family="${OG_SERIF}" font-size="72" fill="#31d994">l'Aicluse Apps</text>
+	<text x="92" y="290" font-family="${OG_SANS}" font-size="128" font-weight="850" fill="#ffffff">${xmlEscape(app.name)}</text>
+	<text x="98" y="378" font-family="${OG_SANS}" font-size="48" font-weight="750" fill="#f7f7f2">Hands-free prompting</text>
+	<text x="98" y="444" font-family="${OG_SANS}" font-size="48" font-weight="750" fill="#f7f7f2">for Codex + Claude Code.</text>
+	<g>
+		<rect x="98" y="492" width="170" height="62" rx="31" fill="rgba(246,180,75,0.12)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
+		<text x="136" y="532" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#f6b44b">CMUX</text>
+	</g>
+</svg>
+`;
+}
+
 function ogHash(buffer) {
 	return crypto.createHash("sha256").update(buffer).digest("hex").slice(0, 10);
 }
@@ -1258,13 +1283,15 @@ function findRenderer() {
 
 // Write the SVG always; replace the PNG only when its bytes change, so a no-op
 // build leaves the binary untouched. Returns the content hash for cache-busting.
-function renderOgImage(repoRoot, svg) {
+function renderOgImage(repoRoot, svg, options = {}) {
+	const svgFileName = options.svgFileName || "og-card.svg";
+	const pngFileName = options.pngFileName || "og-image.png";
 	const assetsDir = path.join(repoRoot, "docs", "assets");
 	fs.mkdirSync(assetsDir, { recursive: true });
-	const svgPath = path.join(assetsDir, "og-card.svg");
+	const svgPath = path.join(assetsDir, svgFileName);
 	fs.writeFileSync(svgPath, svg);
 
-	const pngPath = path.join(assetsDir, "og-image.png");
+	const pngPath = path.join(assetsDir, pngFileName);
 	const keepExisting = () =>
 		fs.existsSync(pngPath) ? ogHash(fs.readFileSync(pngPath)) : ogHash(Buffer.from(svg));
 
@@ -1274,7 +1301,7 @@ function renderOgImage(repoRoot, svg) {
 		return keepExisting();
 	}
 
-	const tmpPath = path.join(assetsDir, ".og-image.tmp.png");
+	const tmpPath = path.join(assetsDir, `.${pngFileName}.tmp`);
 	try {
 		render(svgPath, tmpPath);
 		const bytes = fs.readFileSync(tmpPath);
@@ -1445,13 +1472,21 @@ function main() {
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
+	const vocalistApp = data.apps.find((item) => item.name === "Vocalist");
+	const vocalistHash = vocalistApp
+		? renderOgImage(repoRoot, buildVocalistOgSvg(vocalistApp), {
+				svgFileName: "vocalist-og-card.svg",
+				pngFileName: "vocalist-og-image.png",
+			})
+		: hash;
 	writeSharedAssets(repoRoot);
 	const assetVersions = sharedAssetVersions(repoRoot);
 	updateFieldkitMeta(repoRoot, hash, assetVersions);
 	writeRootPage(repoRoot, hash, assetVersions);
 	renderPluginDetailPages(repoRoot, data, hash, assetVersions);
-	renderVocalistPage(repoRoot, data, hash, assetVersions);
+	renderVocalistPage(repoRoot, data, vocalistHash, assetVersions);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
+	process.stdout.write(`build-pages: vocalist-og-image hash ${vocalistHash}\n`);
 }
 
 main();
