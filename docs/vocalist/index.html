@@ -16,8 +16,8 @@
 		<meta property="og:url" content="https://laicluse.com/vocalist/">
 		<meta property="og:title" content="Vocalist">
 		<meta property="og:description" content="A Mac menu-bar app for speaking prompts to Codex or Claude Code.">
-		<meta property="og:image" content="https://laicluse.com/assets/vocalist-og-image.png?v=d22a909cbe">
-		<meta property="og:image:secure_url" content="https://laicluse.com/assets/vocalist-og-image.png?v=d22a909cbe">
+		<meta property="og:image" content="https://laicluse.com/assets/vocalist-og-image.png?v=7dce1491a1">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/vocalist-og-image.png?v=7dce1491a1">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="Vocalist">
 		<meta name="twitter:description" content="A Mac menu-bar app for speaking prompts to Codex or Claude Code.">
-		<meta name="twitter:image" content="https://laicluse.com/assets/vocalist-og-image.png?v=d22a909cbe">
+		<meta name="twitter:image" content="https://laicluse.com/assets/vocalist-og-image.png?v=7dce1491a1">
 		<meta name="twitter:image:alt" content="Vocalist app share card">
 
 		<link rel="stylesheet" href="../styles.css?v=f87699b124">
@@ -53,7 +53,7 @@
 					<div class="hero-copy">
 						<p class="eyebrow">Free macOS app</p>
 						<h1>Vocalist</h1>
-						<p class="lede">Talk instead of typing. Vocalist shows what it heard in a floating bubble; say "over" to send it to the Codex or Claude Code terminal that is active in CMUX. Speech-to-text runs locally on your Mac.</p>
+						<p class="lede">Talk instead of typing. Vocalist shows what it heard in a floating bubble; say "over" to send it to Codex or Claude Code. It follows the active agent terminal in CMUX, or a registered terminal session started with <code>vocalist claude</code> or <code>vocalist codex</code>. Speech-to-text runs locally on your Mac.</p>
 						<div class="hero-actions" aria-label="Primary actions">
 							<a class="button primary" href="#install">Install with Homebrew</a>
 							<a class="button secondary" href="https://github.com/laicluse/vocalist-releases/releases/latest">Download directly</a>
@@ -68,7 +68,7 @@
 						</div>
 						<div class="terminal-command">
 							<span>to</span>
-							<code>CMUX -> active Codex or Claude Code terminal</code>
+							<code>CMUX or vocalist claude/codex</code>
 						</div>
 					</aside>
 				</div>
@@ -80,14 +80,14 @@
 						<p class="eyebrow">Get Vocalist</p>
 						<h2 id="install-title">Install, connect, run.</h2>
 					</div>
-					<p>macOS Tahoe (26) or newer, Apple Silicon. Vocalist is a Mac menu-bar app plus a coding-agent plugin. Homebrew installs the app, the CLI, and the bundled plugin marketplace; the second command connects that plugin to your agent. Start it from your agent session or from a terminal.</p>
+					<p>macOS Tahoe (26) or newer, Apple Silicon. Vocalist is a Mac menu-bar app plus a coding-agent plugin. Homebrew installs the app, the CLI, and the bundled plugin marketplace; the second command connects that plugin to your agent. Start it from your agent session, let it follow CMUX, or wrap your own terminal agent with the CLI.</p>
 				</div>
 				<div class="install-grid install-grid-three">
 					<article class="install-block">
 						<div class="block-heading">
 							<h3>1. Mac app</h3>
 						</div>
-						<p>The menu-bar app listens, shows the floating bubble, and sends the final prompt into CMUX.</p>
+						<p>The menu-bar app listens, shows the floating bubble, and sends the final prompt into CMUX or a registered terminal agent pane.</p>
 						<pre><code>brew install --cask laicluse/tap/vocalist</code></pre>
 						<div class="app-buttons">
 							<a class="button secondary" href="https://github.com/laicluse/vocalist-releases/releases/latest">Download directly</a>
@@ -105,11 +105,12 @@
 						<div class="block-heading">
 							<h3>3. Run Vocalist</h3>
 						</div>
-						<p>Open Vocalist from your coding agent once the plugin is connected, or start the app directly from a terminal.</p>
+						<p>Open Vocalist from your coding agent once the plugin is connected. In a regular terminal, start the agent through Vocalist so that pane becomes targetable.</p>
 						<ul class="install-command-list">
 							<li><span>Claude Code</span><code>/vocalist:hands-free</code></li>
 							<li><span>Codex</span><code>$vocalist:hands-free</code></li>
-							<li><span>Terminal</span><code>vocalist</code></li>
+							<li><span>Terminal + Claude Code</span><code>vocalist claude</code></li>
+							<li><span>Terminal + Codex</span><code>vocalist codex</code></li>
 						</ul>
 					</article>
 				</div>
@@ -131,7 +132,7 @@
 					</article>
 					<article class="vocalist-detail-card">
 						<h3>Codex and Claude Code</h3>
-						<p>It sends your prompt to the active CMUX terminal running Codex or Claude Code, even when your frontmost app is a browser.</p>
+						<p>It sends your prompt to the active CMUX terminal or a registered terminal session running Codex or Claude Code, even when your frontmost app is a browser.</p>
 					</article>
 					<article class="vocalist-detail-card">
 						<h3>Preview before send</h3>
@@ -190,10 +191,10 @@
 				</article>
 				<div class="vocalist-routing-panel">
 					<div>
-						<p class="eyebrow">CMUX</p>
-						<h3>Works with CMUX today.</h3>
-						<p>Vocalist asks CMUX which terminal is active, checks that it is running Codex or Claude Code rather than a bare shell, and then types the prompt there.</p>
-						<p>Other tmux-style apps would need an adapter that can report the active terminal, identify the running agent, and accept text plus key input. That path is not implemented yet.</p>
+						<p class="eyebrow">Routing</p>
+						<h3>Deepest support is CMUX.</h3>
+						<p>Vocalist asks CMUX which terminal is active, checks that it is running Codex or Claude Code rather than a bare shell, and then types the prompt there. That means you can click around in a browser while your spoken turn still lands in the agent terminal.</p>
+						<p>Run it from your own terminal with <code>vocalist claude</code> or <code>vocalist codex</code>. Vocalist launches the agent, registers that tmux pane, and can keep targeting it without pretending every terminal window is safe to type into.</p>
 					</div>
 					<div class="vocalist-layer-map" aria-label="Vocalist layers: Capture, Segment, Transcribe, Shape, Deliver">
 					<article class="vocalist-layer">
@@ -247,7 +248,7 @@
 							<p>send only when ready</p>
 						</header>
 						<ul>
-							<li>Active CMUX pane</li>
+							<li>CMUX or terminal pane</li>
 							<li>Codex or Claude Code</li>
 							<li>Type prompt</li>
 							<li>Press Enter</li>
@@ -278,11 +279,11 @@
 						<p class="eyebrow">B.Y.O.T.</p>
 						<h2 id="byot-title">Bring your own tokens.</h2>
 					</div>
-					<p>So, you're not a Mac user with CMUX? Why not build the version your stack needs? This is the current Vocalist-shaped prompt to hand to a coding agent.</p>
+					<p>So, you're not using a Mac, CMUX, or this exact terminal stack? Why not build the version your stack needs? This is the current Vocalist-shaped prompt to hand to a coding agent.</p>
 				</div>
 				<pre class="vocalist-byot-prompt"><code>Build a local voice-to-agent app like laicluse.com/vocalist for your own platform and terminal stack.
 
-The current Vocalist design is a local macOS menu-bar app in Swift 6.2 for macOS Tahoe (26) and newer. It is built around a hands-free prompting loop for coding agents in CMUX: the operator speaks, a floating bubble previews the pending turn, and the final text is delivered only when the turn is ready.
+The current Vocalist design is a local macOS menu-bar app in Swift 6.2 for macOS Tahoe (26) and newer. It is built around a hands-free prompting loop for coding agents: the operator speaks, a floating bubble previews the pending turn, and the final text is delivered only when the turn is ready. CMUX gets the deepest integration because Vocalist can follow its active terminal surface directly. For other terminal apps, the operator starts the agent through the Vocalist CLI, for example vocalist claude or vocalist codex, so that terminal pane is explicitly registered as a target.
 
 Audio is captured with AVFoundation, converted to 16 kHz mono Float samples through FluidAudio, and processed locally with FluidAudio 0.15.4. Speech recognition uses NVIDIA Parakeet TDT v3 through FluidAudio's Core ML model path, loaded with AsrModels.downloadAndLoad(version: .v3). Vocalist creates an AsrManager and transcribes bounded utterances locally; it does not depend on cloud speech APIs or token-by-token streaming ASR.
 
@@ -292,9 +293,9 @@ The command layer above ASR matters as much as the recognizer. Voice commands ar
 
 For agent-specific commands, Vocalist builds a dynamic InvocationCatalog. It discovers local Codex and Claude skills, project-level skills from the active terminal process directories, enabled plugin skills, plugin command files, and Claude built-in slash commands. Spoken forms such as &quot;slash status&quot; or &quot;dollar conveyor order status&quot; can become real invocations like /status or $conveyor:order-status without custom ASR vocabulary.
 
-Delivery is CMUX-specific in this implementation. Vocalist reads cmux top --all --processes --json, follows the active terminal surface, derives active project directories from process IDs, checks that the focused terminal is running Codex or Claude Code rather than a bare shell, and reads the screen before submit so it does not press Return into an interactive menu. Submitted agent turns are prefixed with 🎙️ so the receiving agent knows the text came from speech-to-text and should be read for intent. For inspiration on the companion plugin and transcribed-turn skill language, see https://laicluse.com/vocalist/#transcribed-turn.
+Delivery has two target adapters in this implementation. For CMUX, Vocalist reads cmux top --all --processes --json, follows the active terminal surface, derives active project directories from process IDs, checks that the focused terminal is running Codex or Claude Code rather than a bare shell, and reads the screen before submit so it does not press Return into an interactive menu. For regular terminal apps, the CLI wrappers vocalist claude and vocalist codex launch the agent process and register the tmux pane so Vocalist can still deliver text and keys without needing global keyboard focus. Submitted agent turns are prefixed with 🎙️ so the receiving agent knows the text came from speech-to-text and should be read for intent. For inspiration on the companion plugin and transcribed-turn skill language, see https://laicluse.com/vocalist/#transcribed-turn.
 
-The shipping setup has two pieces: the Mac app plus a small coding-agent plugin. The plugin gives Claude Code /vocalist:hands-free, Codex $vocalist:hands-free, and a transcribed-turn instruction that explains the 🎙️ marker. If you rebuild this for Linux, Windows, tmux, wezterm, or another agent stack, keep the same separation: local STT app, configurable trailing command mapper, dynamic agent-command catalog, target-surface adapter, and an explicit marker/instruction protocol for transcribed turns.
+The shipping setup has two pieces: the Mac app plus a small coding-agent plugin. The plugin gives Claude Code /vocalist:hands-free, Codex $vocalist:hands-free, and a transcribed-turn instruction that explains the 🎙️ marker. If you rebuild this for Linux, Windows, tmux, wezterm, or another agent stack, keep the same separation: local STT app, configurable trailing command mapper, dynamic agent-command catalog, target-surface adapters, and an explicit marker/instruction protocol for transcribed turns.
 
 Optional tiny credit: if this prompt helps and you feel generous, add a small note somewhere in your README, help screen, or credits: &quot;This prompt was originally borrowed from laicluse.com/vocalist/.&quot;</code></pre>
 			</section>

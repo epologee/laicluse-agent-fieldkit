@@ -43,7 +43,7 @@ HTML
 }
 
 @test "the Vocalist entry has the brew one-liner and Releases DMG URL" {
-  run node -e 'const v=require(process.argv[1]).apps.find(x=>x.name==="Vocalist");const commands=(v.runCommands||[]).map(x=>x.command).join(" ");const ok=v.brew==="brew install --cask laicluse/tap/vocalist" && v.pluginInstall==="vocalist plugin install" && commands.includes("/vocalist:hands-free") && commands.includes("$vocalist:hands-free") && commands.includes("vocalist") && /github.com\/laicluse\/vocalist-releases\/releases/.test(v.dmgUrl);process.exit(ok?0:1)' "$REPO/docs/site-data.json"
+  run node -e 'const v=require(process.argv[1]).apps.find(x=>x.name==="Vocalist");const commands=(v.runCommands||[]).map(x=>x.command).join(" ");const ok=v.brew==="brew install --cask laicluse/tap/vocalist" && v.pluginInstall==="vocalist plugin install" && commands.includes("/vocalist:hands-free") && commands.includes("$vocalist:hands-free") && commands.includes("vocalist claude") && commands.includes("vocalist codex") && /github.com\/laicluse\/vocalist-releases\/releases/.test(v.dmgUrl);process.exit(ok?0:1)' "$REPO/docs/site-data.json"
   [ "$status" -eq 0 ]
 }
 
@@ -75,7 +75,7 @@ HTML
   grep -q 'Vocalist' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'Hands-free prompting' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'for Codex + Claude Code.' "$REPO/docs/assets/vocalist-og-card.svg"
-  grep -q 'CMUX' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'CMUX + terminal' "$REPO/docs/assets/vocalist-og-card.svg"
   run grep -E 'PROMPT PREVIEW|brew install --cask|LOCAL STT|NO CLOUD|Agent Fieldkit' "$REPO/docs/assets/vocalist-og-card.svg"
   [ "$status" -ne 0 ]
   run grep -q 'Guardrails for coding agents' "$REPO/docs/assets/vocalist-og-card.svg"
@@ -96,7 +96,8 @@ HTML
   grep -q '3. Run Vocalist' "$REPO/docs/vocalist/index.html"
   grep -q '<code>/vocalist:hands-free</code>' "$REPO/docs/vocalist/index.html"
   grep -Fq '<code>$vocalist:hands-free</code>' "$REPO/docs/vocalist/index.html"
-  grep -q '<code>vocalist</code>' "$REPO/docs/vocalist/index.html"
+  grep -q '<code>vocalist claude</code>' "$REPO/docs/vocalist/index.html"
+  grep -q '<code>vocalist codex</code>' "$REPO/docs/vocalist/index.html"
   grep -q 'https://github.com/laicluse/vocalist-releases/releases/latest' "$REPO/docs/vocalist/index.html"
   grep -q 'laicluse.com/vocalist' "$REPO/docs/vocalist/index.html"
   run grep -q 'epologee/tap/vocalist' "$REPO/docs/vocalist/index.html"
@@ -118,7 +119,8 @@ HTML
 @test "the /vocalist route explains the app in user terms" {
   grep -q 'Mac menu-bar app' "$REPO/docs/vocalist/index.html"
   grep -q 'floating bubble' "$REPO/docs/vocalist/index.html"
-  grep -q 'active in CMUX' "$REPO/docs/vocalist/index.html"
+  grep -q 'active agent terminal in CMUX' "$REPO/docs/vocalist/index.html"
+  grep -q 'registered terminal session' "$REPO/docs/vocalist/index.html"
   grep -q 'frontmost app is a browser' "$REPO/docs/vocalist/index.html"
   grep -q 'Codex and Claude Code' "$REPO/docs/vocalist/index.html"
   grep -q 'Speech-to-text runs locally' "$REPO/docs/vocalist/index.html"
@@ -166,19 +168,25 @@ HTML
 @test "the /vocalist route explains voice commands and CMUX support" {
   grep -q 'Voice commands' "$REPO/docs/vocalist/index.html"
   grep -q 'spoken at the end of a turn' "$REPO/docs/vocalist/index.html"
-  grep -q 'Works with CMUX today' "$REPO/docs/vocalist/index.html"
-  grep -q 'Other tmux-style apps would need an adapter' "$REPO/docs/vocalist/index.html"
+  grep -q 'Deepest support is CMUX' "$REPO/docs/vocalist/index.html"
+  grep -q 'Run it from your own terminal' "$REPO/docs/vocalist/index.html"
+  grep -q '<code>vocalist claude</code>' "$REPO/docs/vocalist/index.html"
+  grep -q '<code>vocalist codex</code>' "$REPO/docs/vocalist/index.html"
+  run grep -q 'Other tmux-style apps would need an adapter' "$REPO/docs/vocalist/index.html"
+  [ "$status" -ne 0 ]
 }
 
 @test "the /vocalist route includes a BYOT prompt for non-CMUX stacks" {
   grep -q 'B.Y.O.T.' "$REPO/docs/vocalist/index.html"
   grep -q 'Bring your own tokens' "$REPO/docs/vocalist/index.html"
-  grep -q "So, you're not a Mac user with CMUX" "$REPO/docs/vocalist/index.html"
+  grep -q "So, you're not using a Mac, CMUX, or this exact terminal stack" "$REPO/docs/vocalist/index.html"
   grep -q 'Build a local voice-to-agent app like laicluse.com/vocalist for your own platform and terminal stack' "$REPO/docs/vocalist/index.html"
   grep -Fq 'Swift 6.2' "$REPO/docs/vocalist/index.html"
   grep -Fq 'FluidAudio 0.15.4' "$REPO/docs/vocalist/index.html"
   grep -Fq 'AsrModels.downloadAndLoad(version: .v3)' "$REPO/docs/vocalist/index.html"
   grep -Fq 'cmux top --all --processes --json' "$REPO/docs/vocalist/index.html"
+  grep -Fq 'vocalist claude' "$REPO/docs/vocalist/index.html"
+  grep -Fq 'vocalist codex' "$REPO/docs/vocalist/index.html"
   grep -Fq 'https://laicluse.com/vocalist/#transcribed-turn' "$REPO/docs/vocalist/index.html"
   grep -Fq '$conveyor:order-status' "$REPO/docs/vocalist/index.html"
   grep -q 'two pieces: the Mac app plus a small coding-agent plugin' "$REPO/docs/vocalist/index.html"
@@ -193,7 +201,7 @@ HTML
 @test "the /vocalist route includes a native technical layer diagram" {
   grep -q 'vocalist-layer-map' "$REPO/docs/vocalist/index.html"
   grep -q 'Capture, Segment, Transcribe, Shape, Deliver' "$REPO/docs/vocalist/index.html"
-  grep -q 'Active CMUX pane' "$REPO/docs/vocalist/index.html"
+  grep -q 'CMUX or terminal pane' "$REPO/docs/vocalist/index.html"
   run grep -q 'vocalist-complexity-slide.png' "$REPO/docs/vocalist/index.html"
   [ "$status" -ne 0 ]
 }

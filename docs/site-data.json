@@ -48,8 +48,12 @@
 					"command": "$vocalist:hands-free"
 				},
 				{
-					"label": "Terminal",
-					"command": "vocalist"
+					"label": "Terminal + Claude Code",
+					"command": "vocalist claude"
+				},
+				{
+					"label": "Terminal + Codex",
+					"command": "vocalist codex"
 				}
 			],
 			"dmgUrl": "https://github.com/laicluse/vocalist-releases/releases/latest",
@@ -57,7 +61,7 @@
 			"features": [
 				"Prompt Codex and Claude Code by voice without touching the keyboard.",
 				"Preview each turn in a floating speech bubble before it reaches the agent.",
-				"Send the prompt to the active CMUX terminal, even while another Mac app is frontmost."
+				"Send the prompt to CMUX or to an agent session started with the Vocalist CLI."
 			],
 			"privacy": [
 				"Local Parakeet speech-to-text runs on the Mac.",
