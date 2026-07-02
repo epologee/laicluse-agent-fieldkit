@@ -28,9 +28,7 @@ const ROOT_IMAGE_ALT = "l'Aicluse: apps and coding-agent plugins for working alo
 const LINKEDIN_URL = "https://www.linkedin.com/in/lecluse";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
-const OG_SERIF = "'Snell Roundhand', Georgia, 'Times New Roman', serif";
-// allow-comment: the wordmark is a pre-vectorized Snell Roundhand path so the cursive title rasterizes identically everywhere without depending on a system font being installed at build time.
-const WORDMARK = require("./wordmark.json");
+const WORDMARK = readWordmarkSvg();
 const AgentCommandSwitch = require("../docs/agent-command-switch.js");
 
 const copy = {
@@ -764,6 +762,37 @@ function xmlEscape(value) {
 		.replace(/>/g, "&gt;");
 }
 
+function readWordmarkSvg() {
+	const svg = fs.readFileSync(path.join(__dirname, "..", "docs", "assets", "laicluse-wordmark.svg"), "utf8");
+	const viewBox = svg.match(/viewBox="0 0 ([0-9.]+) ([0-9.]+)"/);
+	const pathTag = svg.match(/<path\b[^>]*>/);
+	if (!viewBox || !pathTag) throw new Error("laicluse-wordmark.svg is missing a supported viewBox or path");
+	const pathData = pathTag[0].match(/\bd="([^"]+)"/);
+	const fillRule = pathTag[0].match(/\bfill-rule="([^"]+)"/);
+	if (!pathData) throw new Error("laicluse-wordmark.svg path is missing d");
+	return {
+		width: Number(viewBox[1]),
+		height: Number(viewBox[2]),
+		d: pathData[1],
+		fillRule: fillRule ? fillRule[1] : "nonzero",
+	};
+}
+
+function renderWordmarkBrand(suffix = "") {
+	const label = suffix ? `l'Aicluse ${suffix}` : "l'Aicluse";
+	const suffixMarkup = suffix ? `<span class="brand-suffix">${htmlEscape(suffix)}</span>` : "";
+	return `<span class="brand-title"><span class="wordmark" aria-hidden="true"></span>${suffixMarkup}<span class="sr-only">${htmlEscape(label)}</span></span>`;
+}
+
+function renderWordmarkHeading(id, label = "l'Aicluse") {
+	return `<h1 id="${attributeEscape(id)}" class="home-wordmark-title"><span class="wordmark" aria-hidden="true"></span><span class="sr-only">${htmlEscape(label)}</span></h1>`;
+}
+
+function renderOgWordmark({ x, y, width, fill }) {
+	const scale = width / WORDMARK.width;
+	return `<g transform="translate(${x} ${y}) scale(${scale.toFixed(6)})"><path d="${WORDMARK.d}" fill="${fill}" fill-rule="${WORDMARK.fillRule}"/></g>`;
+}
+
 function categoryCounts(data) {
 	return data.categories
 		.map((category) => ({
@@ -839,7 +868,7 @@ function buildPluginDetailPage(data, plugin, markdown, hash, assetVersions) {
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
-				<span class="brand-title">l'Aicluse Agent Fieldkit</span>
+				${renderWordmarkBrand("Agent Fieldkit")}
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="../#catalog">Catalog</a>
@@ -952,7 +981,7 @@ function buildVocalistPage(app, hash, assetVersions) {
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="../" aria-label="l'Aicluse Apps">
-				<span class="brand-title">l'Aicluse Apps</span>
+				${renderWordmarkBrand("Apps")}
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="#install">Install</a>
@@ -1191,8 +1220,6 @@ function buildOgSvg(data) {
 		})
 		.join("\n");
 
-	const wmScale = 1040 / WORDMARK.adv;
-
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
 	<defs>
 		<radialGradient id="glow" cx="78%" cy="6%" r="55%">
@@ -1206,7 +1233,8 @@ function buildOgSvg(data) {
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#dots)"/>
 	<rect width="1200" height="630" fill="url(#glow)"/>
-	<g transform="translate(80, 164) scale(${wmScale.toFixed(6)}, ${(-wmScale).toFixed(6)})"><path d="${WORDMARK.d}" fill="#f7f7f2"/></g>
+	${renderOgWordmark({ x: 76, y: 45, width: 420, fill: "#f7f7f2" })}
+	<text x="520" y="152" font-family="${OG_SANS}" font-size="54" font-weight="800" fill="#f7f7f2">Agent Fieldkit</text>
 	<text x="80" y="262" font-family="${OG_MONO}" font-size="34" font-weight="700" letter-spacing="0.5" fill="#31d994">${pluginCount} PLUGINS · ${skillCount} SKILLS · CLAUDE CODE + CODEX</text>
 	<text x="78" y="346" font-family="${OG_SANS}" font-size="54" font-weight="800" letter-spacing="-1.1" fill="#ffffff">Guardrails for coding agents</text>
 	<text x="78" y="408" font-family="${OG_SANS}" font-size="54" font-weight="800" letter-spacing="-1.1" xml:space="preserve"><tspan fill="#ffffff">that touch </tspan><tspan fill="#31d994">real repositories.</tspan></text>
@@ -1225,7 +1253,8 @@ function buildVocalistOgSvg(app) {
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#grid)"/>
 	<rect x="56" y="56" width="1088" height="518" rx="34" fill="rgba(16,19,17,0.84)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
-	<text x="92" y="146" font-family="${OG_SERIF}" font-size="72" fill="#31d994">l'Aicluse Apps</text>
+	${renderOgWordmark({ x: 88, y: 74, width: 330, fill: "#31d994" })}
+	<text x="452" y="146" font-family="${OG_SANS}" font-size="52" font-weight="800" fill="#31d994">Apps</text>
 	<text x="92" y="290" font-family="${OG_SANS}" font-size="128" font-weight="850" fill="#ffffff">${xmlEscape(app.name)}</text>
 	<text x="98" y="378" font-family="${OG_SANS}" font-size="48" font-weight="750" fill="#f7f7f2">Hands-free prompting</text>
 	<text x="98" y="444" font-family="${OG_SANS}" font-size="48" font-weight="750" fill="#f7f7f2">for Codex + Claude Code.</text>
@@ -1351,7 +1380,8 @@ function updateFieldkitMeta(repoRoot, hash, assetVersions) {
 		.replace(
 			/<script src="\.\.\/site\.js(?:\?v=[0-9a-f]+)?"><\/script>/,
 			sharedScripts,
-		);
+		)
+		.replace(/<span class="brand-title">l'Aicluse Agent Fieldkit<\/span>/, renderWordmarkBrand("Agent Fieldkit"));
 	if (updated !== html) fs.writeFileSync(indexPath, updated);
 }
 
@@ -1359,6 +1389,14 @@ function writeSharedAssets(repoRoot) {
 	for (const fileName of ["styles.css", "agent-command-switch.js", "site.js"]) {
 		const sourcePath = path.join(__dirname, "..", "docs", fileName);
 		const targetPath = path.join(repoRoot, "docs", fileName);
+		if (path.resolve(sourcePath) !== path.resolve(targetPath)) {
+			fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+			fs.copyFileSync(sourcePath, targetPath);
+		}
+	}
+	for (const fileName of ["laicluse-wordmark.svg"]) {
+		const sourcePath = path.join(__dirname, "..", "docs", "assets", fileName);
+		const targetPath = path.join(repoRoot, "docs", "assets", fileName);
 		if (path.resolve(sourcePath) !== path.resolve(targetPath)) {
 			fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 			fs.copyFileSync(sourcePath, targetPath);
@@ -1404,7 +1442,7 @@ function buildRootPage(hash, assetVersions) {
 
 		<header class="site-header" aria-label="Primary">
 			<a class="brand" href="/" aria-label="l'Aicluse home">
-				<span class="brand-title">l'Aicluse</span>
+				${renderWordmarkBrand()}
 			</a>
 			<nav class="site-nav" aria-label="Contact">
 				<a href="${attributeEscape(LINKEDIN_URL)}">LinkedIn</a>
@@ -1415,7 +1453,7 @@ function buildRootPage(hash, assetVersions) {
 			<section class="home-hero" aria-labelledby="home-title">
 				<div class="home-hero-inner">
 					<p class="eyebrow">Coding agent plugins + apps</p>
-					<h1 id="home-title">l'Aicluse</h1>
+					${renderWordmarkHeading("home-title")}
 					<p class="lede">Local-first, human-in-the-loop tools for working alongside AI.</p>
 				</div>
 			</section>

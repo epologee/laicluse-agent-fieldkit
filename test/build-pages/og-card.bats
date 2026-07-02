@@ -50,6 +50,9 @@ HTML
 
 @test "the SVG card carries the live plugin count" {
   grep -q "1 PLUGINS" "$REPO/docs/assets/og-card.svg"
+  grep -q '>Agent Fieldkit<' "$REPO/docs/assets/og-card.svg"
+  run grep -q 'Snell' "$REPO/docs/assets/og-card.svg"
+  [ "$status" -ne 0 ]
 }
 
 @test "the meta hash replaces the dev placeholder" {
@@ -79,6 +82,8 @@ HTML
   grep -q 'href="/agent-fieldkit/"' "$REPO/docs/index.html"
   grep -q 'https://www.linkedin.com/in/lecluse' "$REPO/docs/index.html"
   grep -q 'assets/vocalist-icon.svg' "$REPO/docs/index.html"
+  grep -q 'assets/laicluse-wordmark.svg' "$REPO/docs/styles.css"
+  grep -q '<span class="wordmark" aria-hidden="true"></span><span class="sr-only">l'"'"'Aicluse</span>' "$REPO/docs/index.html"
   grep -q '<link rel="stylesheet" href="styles.css' "$REPO/docs/index.html"
   run node -e 'const root=require("fs").readFileSync(process.argv[1],"utf8");if((root.match(/<h1\b/g)||[]).length!==1)throw new Error("expected one h1");const fieldkit=root.indexOf("<h2>Agent Fieldkit</h2>");const vocalist=root.indexOf("<h2>Vocalist</h2>");if(fieldkit<0)throw new Error("missing Agent Fieldkit h2");if(vocalist<0)throw new Error("missing Vocalist h2");if(fieldkit>vocalist)throw new Error("expected Agent Fieldkit before Vocalist");' "$REPO/docs/index.html"
   [ "$status" -eq 0 ]

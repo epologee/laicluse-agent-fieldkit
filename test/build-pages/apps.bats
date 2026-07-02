@@ -64,18 +64,20 @@ HTML
   [ "$status" -ne 0 ]
   grep -q '<title>Vocalist</title>' "$REPO/docs/vocalist/index.html"
   grep -q '<a class="brand" href="../" aria-label="l'"'"'Aicluse Apps">' "$REPO/docs/vocalist/index.html"
-  grep -q '<span class="brand-title">l'"'"'Aicluse Apps</span>' "$REPO/docs/vocalist/index.html"
+  grep -q '<span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Apps</span><span class="sr-only">l'"'"'Aicluse Apps</span>' "$REPO/docs/vocalist/index.html"
   run grep -q 'brand-mark" aria-hidden="true">V</span>' "$REPO/docs/vocalist/index.html"
   [ "$status" -ne 0 ]
 }
 
 @test "build-pages writes a Vocalist-specific social card" {
   [ -f "$REPO/docs/assets/vocalist-og-card.svg" ]
-  grep -q "l'Aicluse Apps" "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q '>Apps<' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'Vocalist' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'Hands-free prompting' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'for Codex + Claude Code.' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'CMUX + terminal' "$REPO/docs/assets/vocalist-og-card.svg"
+  run grep -E "Snell|l'Aicluse Apps" "$REPO/docs/assets/vocalist-og-card.svg"
+  [ "$status" -ne 0 ]
   run grep -E 'PROMPT PREVIEW|brew install --cask|LOCAL STT|NO CLOUD|Agent Fieldkit' "$REPO/docs/assets/vocalist-og-card.svg"
   [ "$status" -ne 0 ]
   run grep -q 'Guardrails for coding agents' "$REPO/docs/assets/vocalist-og-card.svg"
