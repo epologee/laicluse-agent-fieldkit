@@ -71,11 +71,11 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 18,
-		"codexPackages": 17,
+		"sourcePackages": 19,
+		"codexPackages": 18,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 18,
-		"skillEntries": 72,
+		"changelogEntries": 19,
+		"skillEntries": 73,
 		"hookFiles": 54
 	},
 	"install": {
@@ -90,6 +90,7 @@
 			"claude plugins install intervision@laicluse-agent-fieldkit",
 			"claude plugins install anger-management@laicluse-agent-fieldkit",
 			"claude plugins install drydry@laicluse-agent-fieldkit",
+			"claude plugins install pattern-memory@laicluse-agent-fieldkit",
 			"claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit",
 			"claude plugins install autonomous@laicluse-agent-fieldkit",
 			"claude plugins install clipboard@laicluse-agent-fieldkit",
@@ -111,6 +112,7 @@
 			"codex plugin add intervision@laicluse-agent-fieldkit",
 			"codex plugin add anger-management@laicluse-agent-fieldkit",
 			"codex plugin add drydry@laicluse-agent-fieldkit",
+			"codex plugin add pattern-memory@laicluse-agent-fieldkit",
 			"codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit",
 			"codex plugin add clipboard@laicluse-agent-fieldkit",
 			"codex plugin add gurus@laicluse-agent-fieldkit",
@@ -318,6 +320,28 @@
 				"version": "v2.0.0",
 				"type": "Breaking",
 				"summary": "Marketplace identity moved to Fieldkit."
+			}
+		},
+		{
+			"name": "pattern-memory",
+			"version": "2.0.1",
+			"category": "feedback",
+			"summary": "Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"detailPath": "agent-fieldkit/pattern-memory/",
+			"sourcePath": "packages/pattern-memory",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/pattern-memory",
+			"skillCount": 1,
+			"commandCount": 2,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.0",
+				"type": "Changed",
+				"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry."
 			}
 		},
 		{
@@ -680,6 +704,15 @@
 			"type": "Added",
 			"summary": "inspire and ground now ship together from the lifeline plugin.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
+		},
+		{
+			"plugin": "pattern-memory",
+			"packageVersion": "2.0.1",
+			"detailPath": "agent-fieldkit/pattern-memory/",
+			"version": "v2.0.0",
+			"type": "Changed",
+			"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/pattern-memory/CHANGELOG.md"
 		}
 	]
 }

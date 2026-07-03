@@ -1,0 +1,26 @@
+{
+  "name": "pattern-memory",
+  "version": "2.0.1",
+  "description": "Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "pattern-memory"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Pattern Memory",
+    "shortDescription": "Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps privat...",
+    "longDescription": "Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Pattern Memory plugin."
+    ]
+  }
+}

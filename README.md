@@ -59,6 +59,10 @@ The marketplace currently ships:
 - `drydry`: duplication-audit methodology for code, prose, design systems, and
   technical docs. Quick mode answers scoped "is this duplicate?" questions;
   audit mode produces a findings artefact with verifier commands.
+- `pattern-memory`: local-first Pattern Memory for reusable implementation
+  recipes. Keeps personal patterns under `${LAICLUSE_HOME:-$HOME/.laicluse}` as
+  Markdown, omits private precedents from public artifacts, and gives agents a
+  preflight lookup before fresh implementation work.
 - `laicluse-agent-fieldkit`: marketplace-wide utilities.
   `/whats-new [plugin]`
   re-reads the latest CHANGELOG section of any installed plugin, or the

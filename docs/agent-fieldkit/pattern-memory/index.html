@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>pattern-memory · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/pattern-memory/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/pattern-memory/">
+		<meta property="og:title" content="pattern-memory · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=1810c33722">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=1810c33722">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="pattern-memory · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=1810c33722">
+
+		<link rel="stylesheet" href="../../styles.css?v=016d163975">
+		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
+		<script src="../../agent-command-switch.js?v=a82a9a6e56"></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-title"><span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Agent Fieldkit</span><span class="sr-only">l'Aicluse Agent Fieldkit</span></span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../#catalog">Catalog</a>
+				<a href="../#install">Install</a>
+				<a href="../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/pattern-memory">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>pattern-memory</h1>
+					<p class="lede">Local-first Pattern Memory for reusable implementation recipes. Stores personal patterns as Markdown and keeps private precedents out of public artifacts.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.1</span>
+						<span>1 skill</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>Pattern Memory is a local-first registry for reusable implementation patterns. It helps coding agents reuse known interaction contracts, build conventions, architecture recipes, and named implementation principles before they invent a fresh version.</p>
+<p>The plugin ships the mechanism, not your private content. Real pattern files live in personal local state under <code>${LAICLUSE_HOME:-$HOME/.laicluse}/patterns</code> by default. Public docs and generated examples describe only sanitized mechanics; concrete app names, private repository paths, local paths, and origin stories stay in private <code>precedents</code> fields and must never be surfaced in public artifacts.</p>
+<h2 id="local-store">Local Store</h2>
+<p>The default store is:</p>
+<pre><code class="language-bash">${LAICLUSE_HOME:-$HOME/.laicluse}/patterns</code></pre>
+<p>The store is a standalone git repository. It must sit outside project working trees so pattern files cannot be accidentally staged into a product repository.</p>
+<p>Initialize it from an installed plugin:</p>
+<pre><code class="language-bash">node &quot;$PLUGIN_ROOT/bin/pattern-memory&quot; init</code></pre>
+<p>The helper creates:</p>
+<pre><code class="language-text">README.md
+SCHEMA.md
+INDEX.md
+patterns/example-map-like-canvas-interaction.md</code></pre>
+<h2 id="commands">Commands</h2>
+<h3 id="pattern-memory-init"><code>pattern-memory init</code></h3>
+<p>Creates the local Pattern Memory root, writes starter docs when missing, runs <code>git init</code> when needed, and generates <code>INDEX.md</code>.</p>
+<h3 id="pattern-memory-index"><code>pattern-memory index</code></h3>
+<p>Rebuilds <code>INDEX.md</code> from Markdown frontmatter. The index deliberately omits <code>precedents</code> so private pointers are not repeated in a skim-friendly file.</p>
+<h3 id="pattern-memory-search-query"><code>pattern-memory search &lt;query&gt;</code></h3>
+<p>Searches pattern titles, slugs, tags, triggers, exemplars, applicability fields, and body text. Output includes the matching file path and sanitized metadata, never private <code>precedents</code>.</p>
+<h3 id="pattern-memory-validate"><code>pattern-memory validate</code></h3>
+<p>Checks schema fields, allowed lifecycle values, the local root boundary, and index freshness.</p>
+<h2 id="pattern-schema">Pattern Schema</h2>
+<p>Each pattern is a Markdown file with YAML-style frontmatter:</p>
+<pre><code class="language-yaml">---
+slug: map-like-canvas-interaction
+type: pattern
+status: draft
+visibility: public-example
+triggers:
+  - canvas pan zoom
+  - wheel event
+  - trackpad pinch
+exemplars:
+  - map-like canvas
+precedents: []
+applies_to:
+  - browser canvas
+tags:
+  - ui
+  - interaction
+last_verified: 2026-07-04
+---</code></pre>
+<p>Use these body sections:</p>
+<ul>
+<li><code>Use when</code></li>
+<li><code>Invariants</code></li>
+<li><code>Recipe</code></li>
+<li><code>Verification</code></li>
+<li><code>Anti-patterns</code></li>
+<li><code>Do not surface</code></li>
+</ul>
+<h2 id="privacy-contract">Privacy Contract</h2>
+<p><code>exemplars</code> are sanitized handles that may appear in summaries, generated docs, and agent replies. <code>precedents</code> are private recall pointers for implementation only. Agents may inspect precedents to find real code, but must not copy precedent values into commits, PR bodies, public docs, generated examples, or chat intended for third parties.</p>
+<h2 id="agent-workflow">Agent Workflow</h2>
+<p>Pattern Memory is a candidate source, not the source of truth. The intended order is:</p>
+<ol>
+<li>Search Pattern Memory for matching triggers, exemplars, tags, and applicability.</li>
+<li>Read matching pattern files.</li>
+<li>Inspect the current repository and any private precedent code that is relevant and available.</li>
+<li>Treat the current repository as ground truth.</li>
+<li>Implement only after reconciling the pattern with the codebase in front of the agent.</li>
+</ol>
+<h2 id="requirements">Requirements</h2>
+<p>Node.js and git on <code>$PATH</code>. No database, private knowledge-base plugin, remote service, or agent-specific storage backend is required.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="pattern-memory install commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="install-pattern-memory-claude">claude plugins install pattern-memory@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="install-pattern-memory-codex">codex plugin add pattern-memory@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/pattern-memory">Package source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>
