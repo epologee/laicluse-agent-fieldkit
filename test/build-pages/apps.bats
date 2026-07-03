@@ -76,8 +76,10 @@ HTML
   grep -q 'Hands-free prompting' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'for Codex + Claude Code.' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'CMUX + terminal' "$REPO/docs/assets/vocalist-og-card.svg"
-  grep -q 'Refactor release notes' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'Refactor notes' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'agent terminal' "$REPO/docs/assets/vocalist-og-card.svg"
+  run node "$BATS_TEST_DIRNAME/assert-svg-text-bounds.js" "$REPO/docs/assets/vocalist-og-card.svg"
+  [ "$status" -eq 0 ]
   run grep -E "Snell|l'Aicluse Apps" "$REPO/docs/assets/vocalist-og-card.svg"
   [ "$status" -ne 0 ]
   run grep -E 'PROMPT PREVIEW|brew install --cask|LOCAL STT|NO CLOUD|Agent Fieldkit' "$REPO/docs/assets/vocalist-og-card.svg"
