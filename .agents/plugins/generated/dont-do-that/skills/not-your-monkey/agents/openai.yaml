@@ -1,0 +1,4 @@
+interface:
+  display_name: "Not Your Monkey"
+  short_description: "Run the visual feedback loop yourself"
+  default_prompt: "Use $not-your-monkey to visually inspect, fix, reload, and re-check the current UI yourself."

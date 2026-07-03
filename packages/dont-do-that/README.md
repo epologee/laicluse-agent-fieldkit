@@ -1,9 +1,6 @@
 # dont-do-that
 
-`dont-do-that` is a Claude Code and Codex guardrail plugin for stopping common
-agent reflexes before they become repository damage. It runs hook-time guards on
-shell commands, file edits, persisted prose, and final answers, then adds two
-operator correction skills: `/duh` and `/just-a-question`.
+`dont-do-that` is a Claude Code and Codex guardrail plugin for stopping common agent reflexes before they become repository damage. It runs hook-time guards on shell commands, file edits, persisted prose, and final answers, then adds three operator correction skills: `/duh`, `/just-a-question`, and `/not-your-monkey`.
 
 Use it when you want an agent session to keep moving while still blocking the
 habits that repeatedly cause harm: unapproved remote setup, deploys from
@@ -29,6 +26,7 @@ codex plugin add dont-do-that@laicluse-agent-fieldkit
   proposal instead of explaining it again.
 - `/just-a-question`, a read-only lock for turns that should answer without
   changing files, git state, processes, or external systems.
+- `/not-your-monkey` / `$not-your-monkey`, a visual self-inspection correction skill for turns where the agent must stop making the operator reload and judge UI changes.
 
 ## Agent support
 
@@ -390,6 +388,12 @@ it. This is an explicit lock for the current turn, not a blanket rule for every
 question mark. QA and status checks on work the agent is currently driving still
 belong to the deliverable; if such a check fails, the broken or stale artifact
 is a blocker to fix.
+
+### `/not-your-monkey`
+
+The operator invokes `/not-your-monkey` in Claude Code, `$not-your-monkey` in Codex, or natural-language variants such as "niet je aapje", "je aapje niet", "ik ben niet je reload-aapje", or "not your monkey" when visual review work has been handed back to them. The skill makes the active agent reconstruct the target, open or render it with the available host-owned visual capability, capture evidence, patch the visible cause, reload, and iterate until its own screenshot or renderer evidence shows the issue is resolved.
+
+This is for visual or interactive work: web apps, app screens, PDFs, images, generated screenshots, canvas output, responsive layouts, and similar artifacts where code review alone cannot prove the result. It does not lift normal gates; credentials, human-only account approvals, external irreversible operations, or inaccessible hardware still require the operator.
 
 ## Configuration
 

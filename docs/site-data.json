@@ -75,7 +75,7 @@
 		"codexPackages": 17,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 18,
-		"skillEntries": 71,
+		"skillEntries": 72,
 		"hookFiles": 54
 	},
 	"install": {
@@ -234,7 +234,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.28",
+			"version": "2.0.31",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -245,13 +245,13 @@
 			"detailPath": "agent-fieldkit/dont-do-that/",
 			"sourcePath": "packages/dont-do-that",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that",
-			"skillCount": 2,
+			"skillCount": 3,
 			"commandCount": 2,
 			"hookFileCount": 25,
 			"latestChange": {
-				"version": "v2.0.28",
+				"version": "v2.0.30",
 				"type": "Changed",
-				"summary": "no-remote-create now honors explicit operator approval in the latest user turn."
+				"summary": "/not-your-monkey now routes on looser \"niet je aapje\" phrasing."
 			}
 		},
 		{
@@ -529,6 +529,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
+			"plugin": "dont-do-that",
+			"packageVersion": "2.0.31",
+			"detailPath": "agent-fieldkit/dont-do-that/",
+			"version": "v2.0.30",
+			"type": "Changed",
+			"summary": "/not-your-monkey now routes on looser \"niet je aapje\" phrasing.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
+		},
+		{
 			"plugin": "how-plugins-work",
 			"packageVersion": "2.0.31",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
@@ -545,15 +554,6 @@
 			"type": "Changed",
 			"summary": "Exclude management is now the imperative pair exclude / include.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
-		},
-		{
-			"plugin": "dont-do-that",
-			"packageVersion": "2.0.28",
-			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.28",
-			"type": "Changed",
-			"summary": "no-remote-create now honors explicit operator approval in the latest user turn.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
 			"plugin": "bonsai",

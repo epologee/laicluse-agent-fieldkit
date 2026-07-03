@@ -46,8 +46,7 @@ The marketplace currently ships:
   guarded teardown.
 - `dibs`: single-occupancy locks so one coding agent owns a working directory
   at a time.
-- `dont-do-that`: guardrail hooks for Claude Code plus `/duh` and
-  `/just-a-question` correction skills for Claude Code and Codex.
+- `dont-do-that`: guardrail hooks for Claude Code plus `/duh`, `/just-a-question`, and `/not-your-monkey` correction skills for Claude Code and Codex.
 - `intervision`: bring another coding agent in as a peer to review work just
   done or just discussed. Claude hands work to Codex; Codex hands work to
   Claude.
