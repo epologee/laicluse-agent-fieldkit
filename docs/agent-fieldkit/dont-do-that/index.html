@@ -52,7 +52,7 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.27</span>
+						<span>2.0.28</span>
 						<span>2 skills</span>
 					</div>
 				</div>
@@ -116,7 +116,7 @@
 <h3 id="no-remote"><code>no-remote</code></h3>
 <p>Denies <code>git push</code> when the current repo has no configured remote, or when the push names a remote that is not configured. The guard follows a leading <code>cd &lt;path&gt; &amp;&amp;</code> before checking remotes, then falls back to the hook cwd. Pass condition: add or choose a configured remote through the operator-approved route, or keep the work local.</p>
 <h3 id="no-remote-create"><code>no-remote-create</code></h3>
-<p>Denies remote-creation and remote-rewire commands: <code>gh repo create</code>, <code>gh repo fork</code>, <code>git remote add</code>, and <code>git remote set-url</code>. Creating an account-bound repository, forking on a forge, or attaching a checkout to a remote is not reversible in the local sense: deletion cannot undo internet-visible names, audit events, notifications, visibility mistakes, or later accidental pushes. Pass condition: have the operator create or approve the remote through the active host's manual approval path, then continue with the resulting URL.</p>
+<p>Denies remote-creation and remote-rewire commands: <code>gh repo create</code>, <code>gh repo fork</code>, <code>git remote add</code>, and <code>git remote set-url</code>. Creating an account-bound repository, forking on a forge, or attaching a checkout to a remote is not reversible in the local sense: deletion cannot undo internet-visible names, audit events, notifications, visibility mistakes, or later accidental pushes. Pass condition: the latest user turn explicitly approves the same remote creation or remote attach action, or the operator creates the remote through the active host and gives the resulting URL.</p>
 <h3 id="no-worktree-deploy"><code>no-worktree-deploy</code></h3>
 <p>Denies <code>ansible-playbook</code> invocations when the cwd is a git worktree rather than the canonical checkout. The check compares <code>git rev-parse --git-dir</code> against <code>--git-common-dir</code>, so it works for any worktree layout. Read-only flags pass: <code>--check</code>, <code>--syntax-check</code>, <code>--version</code>, <code>--help</code>, <code>--list-tasks</code>, <code>--list-hosts</code>, <code>--list-tags</code>, and <code>-h</code>.</p>
 <p>Pass condition: merge the branch to the default branch first and run <code>ansible-playbook</code> from the canonical checkout, or restrict the worktree call to a read-only preview flag.</p>

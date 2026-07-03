@@ -125,8 +125,9 @@ Denies remote-creation and remote-rewire commands: `gh repo create`,
 account-bound repository, forking on a forge, or attaching a checkout to a
 remote is not reversible in the local sense: deletion cannot undo internet-visible
 names, audit events, notifications, visibility mistakes, or later accidental
-pushes. Pass condition: have the operator create or approve the remote through
-the active host's manual approval path, then continue with the resulting URL.
+pushes. Pass condition: the latest user turn explicitly approves the same
+remote creation or remote attach action, or the operator creates the remote
+through the active host and gives the resulting URL.
 
 ### `no-worktree-deploy`
 

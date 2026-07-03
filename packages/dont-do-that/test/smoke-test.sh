@@ -32,6 +32,16 @@ pretool_bash() {
     '{hook_event_name:"PreToolUse", tool_name:"Bash", tool_input:{command:$c}}'
 }
 
+pretool_bash_with_user() {
+  local cmd="$1" user_text="$2" transcript_file
+  transcript_file=$(mktemp)
+  jq -cn --arg t "$user_text" \
+    '{type:"user",message:{content:[{type:"text",text:$t}]}}' \
+    > "$transcript_file"
+  jq -cn --arg c "$cmd" --arg tr "$transcript_file" \
+    '{hook_event_name:"PreToolUse", tool_name:"Bash", transcript_path:$tr, tool_input:{command:$c}}'
+}
+
 posttool_edit() {
   local file="$1" content="$2"
   jq -cn --arg f "$file" --arg c "$content" \
@@ -572,6 +582,12 @@ expect_deny "no-remote-create: git remote add blocked" \
 expect_deny "no-remote-create: git remote set-url blocked" \
   "$(pretool_bash 'git remote set-url origin https://github.com/stekker/backlog.git')" \
   "internet-adjacent state"
+
+expect_allow "no-remote-create: operator-approved gh repo fork passes" \
+  "$(pretool_bash_with_user 'gh repo fork wbso-ai/slop-off --remote=false' 'Maak de epologee fork van deze repo.')"
+
+expect_allow "no-remote-create: operator-approved remote add passes" \
+  "$(pretool_bash_with_user 'git remote add epologee https://github.com/epologee/slop-off.git' 'Voeg de epologee remote toe voor deze fork.')"
 
 # --- no-remote ---
 # Each case sets up a temp git repo and cd's in before invoking the hook,

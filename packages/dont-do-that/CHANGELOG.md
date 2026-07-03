@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.28]
+
+### Changed
+
+- **`no-remote-create` now honors explicit operator approval in the latest user turn.** Remote creation and remote attach commands still block by default, but a current user message that names the same action and approves running it now lets the tool call proceed.
+
 ## [v2.0.27]
 
 ### Changed

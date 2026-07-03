@@ -234,7 +234,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.27",
+			"version": "2.0.28",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -249,9 +249,9 @@
 			"commandCount": 2,
 			"hookFileCount": 25,
 			"latestChange": {
-				"version": "v2.0.27",
+				"version": "v2.0.28",
 				"type": "Changed",
-				"summary": "prefer and compliance now distinguish reversible local work from external gates."
+				"summary": "no-remote-create now honors explicit operator approval in the latest user turn."
 			}
 		},
 		{
@@ -547,6 +547,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
+			"plugin": "dont-do-that",
+			"packageVersion": "2.0.28",
+			"detailPath": "agent-fieldkit/dont-do-that/",
+			"version": "v2.0.28",
+			"type": "Changed",
+			"summary": "no-remote-create now honors explicit operator approval in the latest user turn.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
+		},
+		{
 			"plugin": "bonsai",
 			"packageVersion": "2.0.27",
 			"detailPath": "agent-fieldkit/bonsai/",
@@ -554,15 +563,6 @@
 			"type": "Fixed",
 			"summary": "No more worktree-in-a-worktree: bonsai create now anchors new worktrees at the main working tree even when --repo (or the cwd) points at a linked worktree, instead of nesting worktrees/<name> under that worktree.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
-		},
-		{
-			"plugin": "dont-do-that",
-			"packageVersion": "2.0.27",
-			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.27",
-			"type": "Changed",
-			"summary": "prefer and compliance now distinguish reversible local work from external gates.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
 			"plugin": "anger-management",
