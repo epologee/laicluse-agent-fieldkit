@@ -50,6 +50,12 @@ A single-occupancy lock for a working directory with an [external reference](htt
 dibs claim <dir>
 ```
 
+## Runnable example
+
+```bash copy
+dibs check .
+```
+
 ## Installation
 
 ```bash
@@ -128,6 +134,7 @@ HTML
   grep -q 'A single-occupancy lock for a working directory' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<h2 id="cli">CLI</h2>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<pre><code class="language-bash">dibs claim &lt;dir&gt;' "$REPO/docs/agent-fieldkit/dibs/index.html"
+  grep -q '<pre data-copyable><code class="language-bash">dibs check .' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -Eq '<script src="../../code-panel-copy\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<a href="https://example.test/dibs">external reference</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<table>' "$REPO/docs/agent-fieldkit/dibs/index.html"

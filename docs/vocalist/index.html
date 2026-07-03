@@ -30,7 +30,7 @@
 		<meta name="twitter:image:alt" content="Vocalist app share card">
 
 		<link rel="stylesheet" href="../styles.css?v=016d163975">
-		<script src="../code-panel-copy.js?v=6ebfc9a21a"></script>
+		<script src="../code-panel-copy.js?v=3ee1e4c503"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
@@ -89,7 +89,7 @@
 							<h3>1. Mac app</h3>
 						</div>
 						<p>The menu-bar app listens, shows the floating bubble, and sends the final prompt into CMUX or a registered terminal agent pane.</p>
-						<pre><code>brew install --cask laicluse/tap/vocalist</code></pre>
+						<pre data-copyable><code>brew install --cask laicluse/tap/vocalist</code></pre>
 						<div class="app-buttons">
 							<a class="button secondary" href="https://github.com/laicluse/vocalist-releases/releases/latest">Download directly</a>
 						</div>
@@ -99,7 +99,7 @@
 							<h3>2. Agent plugin</h3>
 						</div>
 						<p>The plugin adds <code>/vocalist:hands-free</code> for Claude Code, <code>$vocalist:hands-free</code> for Codex, and the <code>transcribed-turn</code> rule that explains the 🎙️ marker.</p>
-						<pre><code>vocalist plugin install</code></pre>
+						<pre data-copyable><code>vocalist plugin install</code></pre>
 						<p>Run it after installing or upgrading Vocalist so your agent sees the bundled marketplace.</p>
 					</article>
 					<article class="install-block">
@@ -282,7 +282,7 @@
 					</div>
 					<p>So, you're not using a Mac, CMUX, or this exact terminal stack? Why not build the version your stack needs? This is the current Vocalist-shaped prompt to hand to a coding agent.</p>
 				</div>
-				<pre class="vocalist-byot-prompt"><code>Build a local voice-to-agent app like laicluse.com/vocalist for your own platform and terminal stack.
+				<pre class="vocalist-byot-prompt" data-copyable><code>Build a local voice-to-agent app like laicluse.com/vocalist for your own platform and terminal stack.
 
 The current Vocalist design is a local macOS menu-bar app in Swift 6.2 for macOS Tahoe (26) and newer. It is built around a hands-free prompting loop for coding agents: the operator speaks, a floating bubble previews the pending turn, and the final text is delivered only when the turn is ready. CMUX gets the deepest integration because Vocalist can follow its active terminal surface directly. For other terminal apps, the operator starts the agent through the Vocalist CLI, for example vocalist claude or vocalist codex, so that terminal pane is explicitly registered as a target.
 

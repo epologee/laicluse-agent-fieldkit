@@ -66,6 +66,7 @@
 		rootNode.querySelectorAll("pre").forEach((pre) => {
 			if (pre.dataset.codePanelCopyHydrated === "true") return;
 			if (pre.closest("[data-agent-command-switch]")) return;
+			if (!pre.hasAttribute("data-copyable")) return;
 			const code = pre.querySelector("code");
 			if (!code) return;
 			pre.dataset.codePanelCopyHydrated = "true";

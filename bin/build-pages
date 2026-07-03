@@ -402,7 +402,9 @@ function renderFencedCode(codeBlock) {
 	const commandSwitch = renderAgentCommandFence(codeBlock.lines, codeBlock.language || "");
 	if (commandSwitch) return commandSwitch;
 	const className = codeBlock.language ? ` class="language-${attributeEscape(codeBlock.language)}"` : "";
-	return `<pre><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`;
+	const copyable = /(?:^|\s)(?:copy|copyable)(?:\s|$)/i.test(codeBlock.meta || "");
+	const preAttrs = copyable ? " data-copyable" : "";
+	return `<pre${preAttrs}><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`;
 }
 
 function renderAgentCommandFence(lines, language) {
@@ -467,14 +469,14 @@ function renderMarkdown(markdown) {
 	};
 
 	for (const line of lines) {
-		const fence = line.match(/^```([A-Za-z0-9_-]*)\s*$/);
+		const fence = line.match(/^```([A-Za-z0-9_-]*)(?:\s+(.+?))?\s*$/);
 		if (fence) {
 			if (codeBlock) {
 				html.push(renderFencedCode(codeBlock));
 				codeBlock = null;
 			} else {
 				flushFlow();
-				codeBlock = { language: fence[1], lines: [] };
+				codeBlock = { language: fence[1], meta: fence[2] || "", lines: [] };
 			}
 			continue;
 		}
@@ -532,8 +534,7 @@ function renderMarkdown(markdown) {
 	}
 
 	if (codeBlock) {
-		const className = codeBlock.language ? ` class="language-${attributeEscape(codeBlock.language)}"` : "";
-		html.push(`<pre><code${className}>${htmlEscape(codeBlock.lines.join("\n"))}</code></pre>`);
+		html.push(renderFencedCode(codeBlock));
 	}
 	flushFlow();
 
@@ -1035,7 +1036,7 @@ function buildVocalistPage(app, hash, assetVersions) {
 							<h3>1. Mac app</h3>
 						</div>
 						<p>The menu-bar app listens, shows the floating bubble, and sends the final prompt into CMUX or a registered terminal agent pane.</p>
-						<pre><code>${htmlEscape(app.brew)}</code></pre>
+						<pre data-copyable><code>${htmlEscape(app.brew)}</code></pre>
 						<div class="app-buttons">
 							<a class="button secondary" href="${attributeEscape(app.dmgUrl)}">Download directly</a>
 						</div>
@@ -1045,7 +1046,7 @@ function buildVocalistPage(app, hash, assetVersions) {
 							<h3>2. Agent plugin</h3>
 						</div>
 						<p>The plugin adds <code>/vocalist:hands-free</code> for Claude Code, <code>$vocalist:hands-free</code> for Codex, and the <code>transcribed-turn</code> rule that explains the 🎙️ marker.</p>
-						<pre><code>${htmlEscape(app.pluginInstall)}</code></pre>
+						<pre data-copyable><code>${htmlEscape(app.pluginInstall)}</code></pre>
 						<p>Run it after installing or upgrading Vocalist so your agent sees the bundled marketplace.</p>
 					</article>
 					<article class="install-block">
@@ -1166,7 +1167,7 @@ ${renderList(app.privacy, "\t\t\t\t\t\t")}
 					</div>
 					<p>So, you're not using a Mac, CMUX, or this exact terminal stack? Why not build the version your stack needs? This is the current Vocalist-shaped prompt to hand to a coding agent.</p>
 				</div>
-				<pre class="vocalist-byot-prompt"><code>${htmlEscape(vocalistByotPrompt)}</code></pre>
+				<pre class="vocalist-byot-prompt" data-copyable><code>${htmlEscape(vocalistByotPrompt)}</code></pre>
 			</section>
 		</main>
 

@@ -265,7 +265,7 @@
 								<div class="block-heading">
 									<span class="mini-label">install</span>
 								</div>
-								<pre><code>${escapeHtml(app.brew)}</code></pre>
+								<pre data-copyable><code>${escapeHtml(app.brew)}</code></pre>
 							</div>
 							<div class="app-buttons">
 								<a class="button primary" href="${escapeHtml(appHref(app))}">Vocalist page</a>

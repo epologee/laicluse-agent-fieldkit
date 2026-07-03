@@ -95,6 +95,8 @@ HTML
   grep -q 'Install, connect, run' "$REPO/docs/vocalist/index.html"
   grep -q 'brew install --cask laicluse/tap/vocalist' "$REPO/docs/vocalist/index.html"
   grep -q 'vocalist plugin install' "$REPO/docs/vocalist/index.html"
+  grep -q '<pre data-copyable><code>brew install --cask laicluse/tap/vocalist</code></pre>' "$REPO/docs/vocalist/index.html"
+  grep -q '<pre data-copyable><code>vocalist plugin install</code></pre>' "$REPO/docs/vocalist/index.html"
   grep -Eq '<script src="../code-panel-copy\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/vocalist/index.html"
   grep -q '3. Run Vocalist' "$REPO/docs/vocalist/index.html"
   grep -q '<code>/vocalist:hands-free</code>' "$REPO/docs/vocalist/index.html"
