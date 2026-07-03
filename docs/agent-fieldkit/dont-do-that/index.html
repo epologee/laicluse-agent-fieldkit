@@ -52,7 +52,7 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.29</span>
+						<span>2.0.30</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -194,7 +194,7 @@
 <p>The operator types <code>/just-a-question</code>, &quot;just a question&quot;, &quot;read-only&quot;, &quot;do not change anything&quot;, or equivalent when the turn should be informational only. For the rest of that turn, mutation tools are forbidden: file-edit tools and mutating shell commands such as <code>git commit</code>, <code>push</code>, <code>rm</code>, <code>mv</code>, and <code>launchctl</code>. Read-only tools stay available.</p>
 <p>When the answer reveals an obvious fix, the skill names it but does not apply it. This is an explicit lock for the current turn, not a blanket rule for every question mark. QA and status checks on work the agent is currently driving still belong to the deliverable; if such a check fails, the broken or stale artifact is a blocker to fix.</p>
 <h3 id="not-your-monkey"><code>/not-your-monkey</code></h3>
-<p>The operator invokes <code>/not-your-monkey</code> in Claude Code, <code>$not-your-monkey</code> in Codex, or natural-language variants such as &quot;ik ben niet je aapje&quot;, &quot;ik ben niet je reload-aapje&quot;, or &quot;not your monkey&quot; when visual review work has been handed back to them. The skill makes the active agent reconstruct the target, open or render it with the available host-owned visual capability, capture evidence, patch the visible cause, reload, and iterate until its own screenshot or renderer evidence shows the issue is resolved.</p>
+<p>The operator invokes <code>/not-your-monkey</code> in Claude Code, <code>$not-your-monkey</code> in Codex, or natural-language variants such as &quot;niet je aapje&quot;, &quot;je aapje niet&quot;, &quot;ik ben niet je reload-aapje&quot;, or &quot;not your monkey&quot; when visual review work has been handed back to them. The skill makes the active agent reconstruct the target, open or render it with the available host-owned visual capability, capture evidence, patch the visible cause, reload, and iterate until its own screenshot or renderer evidence shows the issue is resolved.</p>
 <p>This is for visual or interactive work: web apps, app screens, PDFs, images, generated screenshots, canvas output, responsive layouts, and similar artifacts where code review alone cannot prove the result. It does not lift normal gates; credentials, human-only account approvals, external irreversible operations, or inaccessible hardware still require the operator.</p>
 <h2 id="configuration">Configuration</h2>
 <p>The dispatcher always runs when the host calls the hook, but individual guards fire only when their pattern matches. To silence a guard durably for one agent, set that guard's <code>agents.&lt;agent&gt;</code> value to <code>disabled</code> in <code>hooks/guards.json</code> and run:</p>

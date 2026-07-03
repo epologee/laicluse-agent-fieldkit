@@ -1,7 +1,7 @@
 ---
 name: not-your-monkey
 description: >-
-  Visual self-inspection correction for $not-your-monkey, "ik ben niet je aapje", "ik ben niet je bitch", "not your monkey", or "not your bitch": inspect, fix, reload, and iterate instead of delegating visual QA.
+  Visual self-inspection correction for $not-your-monkey or frustration like "niet je aapje", "je aapje niet", "niet je bitch", or reload-aapje: inspect, fix, reload, and iterate instead of delegating visual QA.
 ---
 
 # not-your-monkey
@@ -10,7 +10,7 @@ The operator is refusing to be the visual reload loop. Treat this as a blocker o
 
 ## Trigger meaning
 
-This fires on explicit invocation (`$not-your-monkey`, `/not-your-monkey`, `/dont-do-that:not-your-monkey`) and on natural-language variants like "ik ben niet je aapje", "ik ben niet je reload-aapje", "ik ben niet je bitch", "I'm not your monkey", "not your reload monkey", "not your bitch", or equivalent frustration about being used as the visual QA operator.
+This fires on explicit invocation (`$not-your-monkey`, `/not-your-monkey`, `/dont-do-that:not-your-monkey`) and on natural-language variants like "niet je aapje", "je aapje niet", "ben je aapje niet", "ik ben niet je reload-aapje", "niet je bitch", "I'm not your monkey", "not your reload monkey", "not your bitch", or equivalent frustration about being used as the visual QA operator. Do not require a grammatical sentence; the core signal is the operator refusing to be the agent's visual QA or reload loop.
 
 ## Visual loop
 

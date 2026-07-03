@@ -391,7 +391,7 @@ is a blocker to fix.
 
 ### `/not-your-monkey`
 
-The operator invokes `/not-your-monkey` in Claude Code, `$not-your-monkey` in Codex, or natural-language variants such as "ik ben niet je aapje", "ik ben niet je reload-aapje", or "not your monkey" when visual review work has been handed back to them. The skill makes the active agent reconstruct the target, open or render it with the available host-owned visual capability, capture evidence, patch the visible cause, reload, and iterate until its own screenshot or renderer evidence shows the issue is resolved.
+The operator invokes `/not-your-monkey` in Claude Code, `$not-your-monkey` in Codex, or natural-language variants such as "niet je aapje", "je aapje niet", "ik ben niet je reload-aapje", or "not your monkey" when visual review work has been handed back to them. The skill makes the active agent reconstruct the target, open or render it with the available host-owned visual capability, capture evidence, patch the visible cause, reload, and iterate until its own screenshot or renderer evidence shows the issue is resolved.
 
 This is for visual or interactive work: web apps, app screens, PDFs, images, generated screenshots, canvas output, responsive layouts, and similar artifacts where code review alone cannot prove the result. It does not lift normal gates; credentials, human-only account approvals, external irreversible operations, or inaccessible hardware still require the operator.
 
