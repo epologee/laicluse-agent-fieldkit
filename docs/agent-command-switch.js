@@ -117,6 +117,25 @@ ${panels}
 		});
 	}
 
+	async function copyText(text) {
+		if (globalThis.CodePanelCopy) {
+			await globalThis.CodePanelCopy.copyText(text);
+			return;
+		}
+		if (navigator.clipboard) await navigator.clipboard.writeText(text);
+	}
+
+	function markCopied(button) {
+		if (globalThis.CodePanelCopy) {
+			globalThis.CodePanelCopy.markButtonCopied(button);
+			return;
+		}
+		button.textContent = "Copied";
+		window.setTimeout(() => {
+			button.textContent = "Copy";
+		}, 1400);
+	}
+
 	function hydrate(rootElement) {
 		const rootNode = rootElement || document;
 		const initialAgent = preferredAgent();
@@ -134,12 +153,9 @@ ${panels}
 				const copyButton = event.target.closest("[data-agent-copy]");
 				if (!copyButton) return;
 				const activePanel = switchElement.querySelector("[data-agent-panel].is-active code");
-				if (!activePanel || !navigator.clipboard) return;
-				await navigator.clipboard.writeText(activePanel.textContent);
-				copyButton.textContent = "Copied";
-				window.setTimeout(() => {
-					copyButton.textContent = "Copy";
-				}, 1400);
+				if (!activePanel) return;
+				await copyText(activePanel.textContent);
+				markCopied(copyButton);
 			});
 		});
 	}

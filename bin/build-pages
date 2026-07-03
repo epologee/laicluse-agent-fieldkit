@@ -809,7 +809,7 @@ function categoryLabel(data, id) {
 
 function sharedAssetVersions(repoRoot) {
 	return Object.fromEntries(
-		["styles.css", "agent-command-switch.js", "site.js"].map((fileName) => {
+		["styles.css", "code-panel-copy.js", "agent-command-switch.js", "site.js"].map((fileName) => {
 			const targetPath = path.join(repoRoot, "docs", fileName);
 			const sourcePath = path.join(__dirname, "..", "docs", fileName);
 			const assetPath = fs.existsSync(targetPath) ? targetPath : sourcePath;
@@ -861,6 +861,7 @@ function buildPluginDetailPage(data, plugin, markdown, hash, assetVersions) {
 		<meta name="twitter:image" content="${imageUrl}">
 
 		<link rel="stylesheet" href="../../styles.css?v=${assetVersions["styles.css"]}">
+		<script src="../../code-panel-copy.js?v=${assetVersions["code-panel-copy.js"]}"></script>
 		<script src="../../agent-command-switch.js?v=${assetVersions["agent-command-switch.js"]}"></script>
 	</head>
 	<body>
@@ -975,6 +976,7 @@ function buildVocalistPage(app, hash, assetVersions) {
 		<meta name="twitter:image:alt" content="${attributeEscape(VOCALIST_TWITTER_IMAGE_ALT)}">
 
 		<link rel="stylesheet" href="../styles.css?v=${assetVersions["styles.css"]}">
+		<script src="../code-panel-copy.js?v=${assetVersions["code-panel-copy.js"]}"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
@@ -1365,10 +1367,14 @@ function updateFieldkitMeta(repoRoot, hash, assetVersions) {
 	const indexPath = path.join(repoRoot, "docs", "agent-fieldkit", "index.html");
 	const html = fs.readFileSync(indexPath, "utf8");
 	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
-	const sharedScripts = `<script src="../agent-command-switch.js?v=${assetVersions["agent-command-switch.js"]}"></script>
+	const sharedScripts = `<script src="../code-panel-copy.js?v=${assetVersions["code-panel-copy.js"]}"></script>
+		<script src="../agent-command-switch.js?v=${assetVersions["agent-command-switch.js"]}"></script>
 		<script src="../site.js?v=${assetVersions["site.js"]}"></script>`;
 	const normalized = html.replace(
 		/\n?\t\t<script src="\.\.\/agent-command-switch\.js(?:\?v=[0-9a-f]+)?"><\/script>/g,
+		"",
+	).replace(
+		/\n?\t\t<script src="\.\.\/code-panel-copy\.js(?:\?v=[0-9a-f]+)?"><\/script>/g,
 		"",
 	);
 	const updated = replaceHeadUrls(normalized, FIELDKIT_URL, imageUrl)
@@ -1386,7 +1392,7 @@ function updateFieldkitMeta(repoRoot, hash, assetVersions) {
 }
 
 function writeSharedAssets(repoRoot) {
-	for (const fileName of ["styles.css", "agent-command-switch.js", "site.js"]) {
+	for (const fileName of ["styles.css", "code-panel-copy.js", "agent-command-switch.js", "site.js"]) {
 		const sourcePath = path.join(__dirname, "..", "docs", fileName);
 		const targetPath = path.join(repoRoot, "docs", fileName);
 		if (path.resolve(sourcePath) !== path.resolve(targetPath)) {

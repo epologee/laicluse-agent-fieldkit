@@ -666,7 +666,8 @@ h3 {
 }
 
 .segmented button,
-.copy-button {
+.copy-button,
+.code-panel-copy {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.04);
@@ -679,7 +680,8 @@ h3 {
 
 .segmented button[aria-pressed="true"],
 .segmented button:hover,
-.copy-button:hover {
+.copy-button:hover,
+.code-panel-copy:hover {
   border-color: rgba(49, 217, 148, 0.7);
   background: rgba(49, 217, 148, 0.13);
   color: var(--ink-strong);
@@ -1098,6 +1100,7 @@ h3 {
 }
 
 pre {
+  position: relative;
   max-height: 27rem;
   overflow: auto;
   margin: 0.75rem 0 0;
@@ -1110,11 +1113,42 @@ pre {
   line-height: 1.6;
 }
 
+pre.code-panel {
+  padding-top: 3.15rem;
+}
+
 pre code {
   display: block;
   min-width: 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.code-panel-copy {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  display: inline-flex;
+  min-width: 5.1rem;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(7, 8, 7, 0.82);
+  color: #dce5df;
+  padding: 0.36rem 0.58rem;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.26);
+}
+
+.code-panel-copy svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .change-feed {

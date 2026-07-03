@@ -248,9 +248,8 @@
 		if (!container) return;
 		const apps = data.apps || [];
 		container.innerHTML = apps
-			.map((app, index) => {
-				const brewId = `app-brew-${index}`;
-				return `
+			.map(
+				(app) => `
 					<article class="app-card">
 						<div class="app-card-body">
 							<p class="app-category">${escapeHtml(app.category)}</p>
@@ -265,9 +264,8 @@
 							<div class="app-install">
 								<div class="block-heading">
 									<span class="mini-label">install</span>
-									<button class="copy-button" type="button" data-copy-target="${brewId}">Copy</button>
 								</div>
-								<pre><code id="${brewId}">${escapeHtml(app.brew)}</code></pre>
+								<pre><code>${escapeHtml(app.brew)}</code></pre>
 							</div>
 							<div class="app-buttons">
 								<a class="button primary" href="${escapeHtml(appHref(app))}">Vocalist page</a>
@@ -275,20 +273,9 @@
 							</div>
 						</div>
 					</article>
-				`;
-			})
+				`,
+			)
 			.join("");
-		container.querySelectorAll("[data-copy-target]").forEach((button) => {
-			button.addEventListener("click", async () => {
-				const target = document.getElementById(button.dataset.copyTarget);
-				if (!target || !navigator.clipboard) return;
-				await navigator.clipboard.writeText(target.textContent);
-				button.textContent = "Copied";
-				window.setTimeout(() => {
-					button.textContent = "Copy";
-				}, 1400);
-			});
-		});
 	}
 
 	function renderError(error) {
