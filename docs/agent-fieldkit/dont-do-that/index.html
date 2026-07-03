@@ -13,8 +13,8 @@
 		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dont-do-that/">
 		<meta property="og:title" content="dont-do-that · l'Aicluse Agent Fieldkit">
 		<meta property="og:description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
-		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=09fa1b2acc">
-		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=09fa1b2acc">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=183a1fb44c">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=183a1fb44c">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
@@ -22,7 +22,7 @@
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="dont-do-that · l'Aicluse Agent Fieldkit">
 		<meta name="twitter:description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
-		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=09fa1b2acc">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=183a1fb44c">
 
 		<link rel="stylesheet" href="../../styles.css?v=016d163975">
 		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
@@ -52,15 +52,15 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.28</span>
-						<span>2 skills</span>
+						<span>2.0.29</span>
+						<span>3 skills</span>
 					</div>
 				</div>
 			</section>
 
 			<section class="detail-content-section">
 				<article class="readme-content">
-<p><code>dont-do-that</code> is a Claude Code and Codex guardrail plugin for stopping common agent reflexes before they become repository damage. It runs hook-time guards on shell commands, file edits, persisted prose, and final answers, then adds two operator correction skills: <code>/duh</code> and <code>/just-a-question</code>.</p>
+<p><code>dont-do-that</code> is a Claude Code and Codex guardrail plugin for stopping common agent reflexes before they become repository damage. It runs hook-time guards on shell commands, file edits, persisted prose, and final answers, then adds three operator correction skills: <code>/duh</code>, <code>/just-a-question</code>, and <code>/not-your-monkey</code>.</p>
 <p>Use it when you want an agent session to keep moving while still blocking the habits that repeatedly cause harm: unapproved remote setup, deploys from worktrees, unexplained code comments, stale verification handoffs, option menus that dodge a decision, PR template filler, and other patterns listed below.</p>
 <h2 id="what-it-installs">What it installs</h2>
 <ul>
@@ -69,6 +69,7 @@
 <li>Stop guards that block weak final answers and force the active agent to continue, verify, or rephrase.</li>
 <li><code>/duh</code>, a read-time correction skill that executes the assistant's previous proposal instead of explaining it again.</li>
 <li><code>/just-a-question</code>, a read-only lock for turns that should answer without changing files, git state, processes, or external systems.</li>
+<li><code>/not-your-monkey</code> / <code>$not-your-monkey</code>, a visual self-inspection correction skill for turns where the agent must stop making the operator reload and judge UI changes.</li>
 </ul>
 <h2 id="agent-support">Agent support</h2>
 <p>Claude Code receives the full hook stack. Codex receives the same event layers through <code>hooks/hooks.codex.json</code>, materialized by <code>bin/plugin-adapters build</code> as <code>hooks/hooks.json</code> in the generated Codex adapter package.</p>
@@ -192,6 +193,9 @@
 <h3 id="just-a-question"><code>/just-a-question</code></h3>
 <p>The operator types <code>/just-a-question</code>, &quot;just a question&quot;, &quot;read-only&quot;, &quot;do not change anything&quot;, or equivalent when the turn should be informational only. For the rest of that turn, mutation tools are forbidden: file-edit tools and mutating shell commands such as <code>git commit</code>, <code>push</code>, <code>rm</code>, <code>mv</code>, and <code>launchctl</code>. Read-only tools stay available.</p>
 <p>When the answer reveals an obvious fix, the skill names it but does not apply it. This is an explicit lock for the current turn, not a blanket rule for every question mark. QA and status checks on work the agent is currently driving still belong to the deliverable; if such a check fails, the broken or stale artifact is a blocker to fix.</p>
+<h3 id="not-your-monkey"><code>/not-your-monkey</code></h3>
+<p>The operator invokes <code>/not-your-monkey</code> in Claude Code, <code>$not-your-monkey</code> in Codex, or natural-language variants such as &quot;ik ben niet je aapje&quot;, &quot;ik ben niet je reload-aapje&quot;, or &quot;not your monkey&quot; when visual review work has been handed back to them. The skill makes the active agent reconstruct the target, open or render it with the available host-owned visual capability, capture evidence, patch the visible cause, reload, and iterate until its own screenshot or renderer evidence shows the issue is resolved.</p>
+<p>This is for visual or interactive work: web apps, app screens, PDFs, images, generated screenshots, canvas output, responsive layouts, and similar artifacts where code review alone cannot prove the result. It does not lift normal gates; credentials, human-only account approvals, external irreversible operations, or inaccessible hardware still require the operator.</p>
 <h2 id="configuration">Configuration</h2>
 <p>The dispatcher always runs when the host calls the hook, but individual guards fire only when their pattern matches. To silence a guard durably for one agent, set that guard's <code>agents.&lt;agent&gt;</code> value to <code>disabled</code> in <code>hooks/guards.json</code> and run:</p>
 <pre><code class="language-bash">bin/plugin-adapters build .</code></pre>

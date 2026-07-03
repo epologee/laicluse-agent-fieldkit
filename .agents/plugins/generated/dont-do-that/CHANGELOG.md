@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.29]
+
+### Added
+
+- **New `/not-your-monkey` visual self-inspection skill.** Invoke it as `/not-your-monkey` in Claude Code, `$not-your-monkey` in Codex, or with natural-language variants like "ik ben niet je aapje" when an agent has handed visual reload or QA work back to the operator; it requires the agent to inspect, adjust, reload, and iterate with visual evidence.
+
 ## [v2.0.28]
 
 ### Changed
