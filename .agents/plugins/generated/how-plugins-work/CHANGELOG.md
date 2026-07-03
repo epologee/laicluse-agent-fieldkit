@@ -25,6 +25,7 @@ without a `## [vX.Y.Z]` section stays silent on every update.
 ### Changed
 
 - **Codex skill-only installs are now distinguished from plugin installs.** The reference now treats `npx skills add <repo>` with Codex selected as the lean path for instruction-only skills, and reserves Codex plugin metadata for workflows that need MCP registration, hooks, helper binaries, or other plugin-owned runtime payload.
+- **Codex plugin guidance now separates preference from necessity.** The reference can recommend a plugin as the cleaner product shape when it keeps generated runtime views and install metadata together, but only calls it technically necessary when a platform rule or local install test proves the skill-only route cannot provide the needed behavior.
 
 ## [v2.0.17]
 
