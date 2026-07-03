@@ -76,6 +76,8 @@ HTML
   grep -q 'Hands-free prompting' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'for Codex + Claude Code.' "$REPO/docs/assets/vocalist-og-card.svg"
   grep -q 'CMUX + terminal' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'VOICE PREVIEW' "$REPO/docs/assets/vocalist-og-card.svg"
+  grep -q 'over to send' "$REPO/docs/assets/vocalist-og-card.svg"
   run grep -E "Snell|l'Aicluse Apps" "$REPO/docs/assets/vocalist-og-card.svg"
   [ "$status" -ne 0 ]
   run grep -E 'PROMPT PREVIEW|brew install --cask|LOCAL STT|NO CLOUD|Agent Fieldkit' "$REPO/docs/assets/vocalist-og-card.svg"

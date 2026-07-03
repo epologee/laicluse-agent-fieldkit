@@ -1252,18 +1252,36 @@ function buildVocalistOgSvg(app) {
 		<pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
 			<path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="1"/>
 		</pattern>
+		<linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#101511"/>
+			<stop offset="100%" stop-color="#0a0d0b"/>
+		</linearGradient>
 	</defs>
 	<rect width="1200" height="630" fill="#070807"/>
 	<rect width="1200" height="630" fill="url(#grid)"/>
-	<rect x="56" y="56" width="1088" height="518" rx="34" fill="rgba(16,19,17,0.84)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
-	${renderOgWordmark({ x: 88, y: 74, width: 330, fill: "#31d994" })}
-	<text x="452" y="146" font-family="${OG_SANS}" font-size="52" font-weight="800" fill="#31d994">Apps</text>
-	<text x="92" y="290" font-family="${OG_SANS}" font-size="128" font-weight="850" fill="#ffffff">${xmlEscape(app.name)}</text>
-	<text x="98" y="378" font-family="${OG_SANS}" font-size="48" font-weight="750" fill="#f7f7f2">Hands-free prompting</text>
-	<text x="98" y="444" font-family="${OG_SANS}" font-size="48" font-weight="750" fill="#f7f7f2">for Codex + Claude Code.</text>
+	<rect x="56" y="56" width="1088" height="518" rx="34" fill="url(#panel)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
+	${renderOgWordmark({ x: 88, y: 80, width: 270, fill: "#31d994" })}
+	<text x="380" y="140" font-family="${OG_SANS}" font-size="44" font-weight="800" fill="#31d994">Apps</text>
+	<text x="88" y="264" font-family="${OG_SANS}" font-size="112" font-weight="850" fill="#ffffff">${xmlEscape(app.name)}</text>
+	<text x="92" y="350" font-family="${OG_SANS}" font-size="43" font-weight="750" fill="#f7f7f2">Hands-free prompting</text>
+	<text x="92" y="408" font-family="${OG_SANS}" font-size="43" font-weight="750" fill="#f7f7f2">for Codex + Claude Code.</text>
 	<g>
-		<rect x="98" y="492" width="338" height="62" rx="31" fill="rgba(246,180,75,0.12)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
-		<text x="136" y="532" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#f6b44b">CMUX + terminal</text>
+		<rect x="92" y="478" width="324" height="62" rx="31" fill="rgba(246,180,75,0.12)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
+		<text x="130" y="518" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#f6b44b">CMUX + terminal</text>
+	</g>
+	<g>
+		<rect x="686" y="100" width="380" height="430" rx="32" fill="rgba(255,255,255,0.045)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+		<text x="730" y="156" font-family="${OG_MONO}" font-size="23" font-weight="800" fill="#31d994">VOICE PREVIEW</text>
+		<rect x="730" y="186" width="292" height="118" rx="28" fill="#0a0d0b" stroke="rgba(49,217,148,0.5)" stroke-width="2"/>
+		<circle cx="776" cy="245" r="23" fill="rgba(49,217,148,0.18)" stroke="#31d994" stroke-width="3"/>
+		<path d="M776 232 v22 M765 247 c0 18 22 18 22 0 M776 265 v13 M766 278 h20" fill="none" stroke="#31d994" stroke-width="4" stroke-linecap="round"/>
+		<text x="824" y="237" font-family="${OG_SANS}" font-size="25" font-weight="750" fill="#ffffff">spoken turn</text>
+		<text x="824" y="271" font-family="${OG_SANS}" font-size="25" font-weight="750" fill="#aeb8b0">held until ready</text>
+		<rect x="730" y="338" width="292" height="84" rx="24" fill="#090b09" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+		<text x="764" y="373" font-family="${OG_MONO}" font-size="21" font-weight="800" fill="#f6b44b">TARGET</text>
+		<text x="764" y="405" font-family="${OG_SANS}" font-size="28" font-weight="800" fill="#f7f7f2">CMUX or agent CLI</text>
+		<rect x="730" y="456" width="292" height="56" rx="28" fill="rgba(49,217,148,0.16)" stroke="rgba(49,217,148,0.72)" stroke-width="2"/>
+		<text x="804" y="492" font-family="${OG_MONO}" font-size="23" font-weight="800" fill="#31d994">over to send</text>
 	</g>
 </svg>
 `;
