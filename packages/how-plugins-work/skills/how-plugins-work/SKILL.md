@@ -119,6 +119,14 @@ Important differences from Claude:
   newer generated manifest while the installed version still reports the old
   value; refresh the install before treating the new skill text as live.
 
+## Skills CLI versus plugin installs
+
+The `skills` CLI and the native plugin systems solve different problems. The `skills` CLI, for example `npx skills add <repo>`, can install plain `SKILL.md` files for Codex when Codex is selected as the target agent; the install may be project-local, such as under `.agents/skills/`, or user-level through the CLI's global install option. That is the lean path when the workflow is pure instructions and the active agent already has every tool it needs.
+
+A Codex plugin is technically needed only when Codex must receive plugin runtime payload that `skills add` does not install, such as MCP registration, hooks, or bundled helper binaries. Generated/sanitized runtime views and install metadata that travels as one unit can still make a plugin the cleaner product shape, but that is an engineering judgment, not proof that a skill-only route cannot work.
+
+Decision rule: choose `skills add` for instruction-only skills, choose a Codex plugin when the workflow depends on MCP tools or other plugin-owned runtime files, and keep both routes documented when they serve different users. It is fine for this skill to prefer the plugin route as the cleaner product experience, but phrase that as an engineering judgment, not as a platform necessity, unless a local install test proves the `skills` route cannot provide the needed behavior.
+
 ## Uniqueness and conflicts
 
 ### Within a marketplace

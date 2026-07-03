@@ -20,6 +20,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.29]
+
+### Changed
+
+- **Codex skill-only installs are now distinguished from plugin installs.** The reference now treats `npx skills add <repo>` with Codex selected as the lean path for instruction-only skills, and reserves Codex plugin metadata for workflows that need MCP registration, hooks, helper binaries, or other plugin-owned runtime payload.
+
 ## [v2.0.17]
 
 ### Changed
