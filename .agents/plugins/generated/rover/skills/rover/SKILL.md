@@ -117,8 +117,8 @@ You type `/rover:rover "build the settings page"`. In response:
    `.autonomous/BUILD-SETTINGS-PAGE.md` (the loop file holds the full plan and
    progress).
 2. The active agent records how this host will keep the mission moving:
-   persistent process, Claude cron, Codex goal loop, external scheduler, or
-   "none available, drive in this turn".
+   persistent process, host-owned self-check wake-up, Claude cron, Codex goal
+   loop, external scheduler, or "none available, drive in this turn".
 3. The active agent immediately runs the first SURVEY iteration in the same
    turn, so you see work happening right away. Reading files, searching the
    codebase, forming a plan.
@@ -148,10 +148,12 @@ re-entering this skill with the loop-file path.
 
 **Continuation is host-owned.** Rover does not depend on one keepalive
 implementation. The active agent inspects its runtime and records the best
-available continuation path: a persistent process that keeps driving, a Claude
-cron/wake helper, a Codex goal or work-loop mechanism, a scheduler, or no
-continuation. The loop-file discipline is identical either way; a future
-session can resume by invoking `/rover:rover .autonomous/<NAME>.md`.
+available continuation path: a persistent process that truly keeps driving, a
+host-owned self-check wake-up for a persistent runtime that may fall silent
+between turns, a Claude cron/wake helper, a Codex goal or work-loop mechanism,
+a scheduler, or no continuation. The loop-file discipline is identical either
+way; a future session can resume by invoking this skill with
+`.autonomous/<NAME>.md`.
 
 Phases and transitions:
 
@@ -286,20 +288,63 @@ The first tool calls after this skill loads are:
 
 1. Determine the loop-file name and arrange continuation through the host, not
    through a rover dependency. Derive `<NAME>` from the Dispatch: ALL-CAPS,
-   hyphens, no spaces, goal not mechanism. Then choose the best available
-   continuation mode:
-   - **Persistent process:** record `continuation: in-process`; no heartbeat is
-     needed because this process can drive the phase machine to completion.
+   hyphens, no spaces, goal not mechanism. If the host exposes a continuation
+   probe, use it; otherwise inspect the runtime directly. Do not hand-write
+   `in-process` just because the run is not an interactive REPL. Then choose
+   the best available continuation mode:
+   - **Persistent process:** record `continuation: in-process` only when this
+     process truly keeps driving the phase machine after the current turn
+     yields, or when this invocation will run the loop to completion before
+     exiting. A background or persistent host that can end a turn quietly and
+     wait for a later wake-up is not `in-process`; it needs a host-owned
+     continuation.
    - **Host keepalive available:** ask the host/caller to re-enter this skill
      with `.autonomous/<NAME>.md` when the session would otherwise go idle.
      In Claude this may be a cron/wake helper; in Codex it may be a
-     goal/work-loop mechanism; in another host it may be a scheduler.
-     Record the implementation in `continuation:` and any opaque handle in
-     `continuation_handle:`.
+     goal/work-loop mechanism; in another host it may be a scheduler or a
+     self-check wake-up. Record `host:<name>` in `continuation:` and any
+     opaque handle in `continuation_handle:`.
    - **No continuation available:** record
-     `continuation: none (drive current turn)`. Keep driving in this turn as
-     far as the runtime allows; the loop file still lets a future session
-     resume explicitly with `/rover:rover .autonomous/<NAME>.md`.
+     `continuation: none (drive current turn)` only after the host probe or
+     runtime inspection confirms no continuation path exists. Keep driving in
+     this turn as far as the runtime allows; the loop file still lets a future
+     session resume explicitly with `/rover:rover .autonomous/<NAME>.md`.
+
+   **Host-owned self-check continuation contract.** Some persistent or
+   background hosts can schedule delayed re-entry but can still go silent
+   between agent turns. That mode is a host continuation, not a rover
+   dependency: record it as `continuation: host:<name>` plus the host-owned
+   handle, never as `legacy_cron_job_id`, and never by naming a specific
+   helper skill in the loop file. A self-check fire reads the loop file,
+   acquires the same loop-file lock the host continuation uses, runs
+   `date +%H:%M`, and confirms that `continuation` plus
+   `continuation_handle` still identify this live heartbeat. A stale fire
+   writes one `self-check:` beat naming why it stood down, does not re-engage,
+   and does not reschedule.
+
+   The first live self-check fire only writes a baseline beat and reschedules;
+   it has no prior beat to measure. Later fires classify against the previous
+   `self-check:` beat. Self-check beats are never progress. Real progress is a
+   Phase change or any non-beat Log entry after the previous beat.
+   PROGRESSING writes a beat and reschedules. WAITING applies only when the
+   latest non-beat Log entry names an external arrival channel that will
+   re-enter this same run on its own; write the wait reason and reschedule
+   without double-driving the mission. Everything else is STALLED, and when in
+   doubt choose STALLED: re-enter the current Phase from the loop file, do the
+   next action, write what was done in the beat, and reschedule. If the run is
+   genuinely complete or blocked with no path forward, invoke `stop` with the
+   loop-file path instead of asking or silently ending.
+
+   Every self-check fire writes exactly one timestamped beat, including
+   no-op, stale, and stand-down fires, because the beat is how the host sees
+   that the run is alive. The interval belongs to the host, but the constraint
+   is `interval < stall_window - longest_expected_turn`; for a ten-minute
+   stall window, a roughly 270-second interval leaves room for a multi-minute
+   turn and also stays inside common five-minute prompt-cache windows. This
+   safety net covers idle gaps between turns. One unbroken blocking tool call
+   that writes nothing until the host stall window expires is a host-side
+   observability problem, not something rover can solve from a delayed wake-up.
+
    The continuation setup goes first so that every subsequent setup step lands
    under the host's safety net when one exists. If the prelaunch question in
    step 2 ends the mission, cancel or mark the continuation through the same
@@ -527,9 +572,9 @@ PR creation is not a rover default. The rover commits the work locally on the mi
 
 The mission is complete but the rover may stay reachable while there are live listeners. STANDBY lets the rover absorb new input, catch interrupted active work, and transition back to SURVEY when a watched signal changes.
 
-**Some hosts have no STANDBY continuation.** When `continuation` is `in-process` or `none (drive current turn)`, there may be no heartbeat after the current turn yields. STANDBY still runs the entry check once. If there are no live listeners, end the mission through `stop`. If listeners remain but no continuation exists, log that the loop is waiting for an explicit `/rover:rover <loop-file>` wake or an external host signal.
+**Some hosts have no STANDBY continuation.** When `continuation` is `in-process` or `none (drive current turn)`, there may be no heartbeat after the current turn yields; `in-process` is only correct when the process truly keeps driving without a later wake-up. STANDBY still runs the entry check once. If there are no live listeners, end the mission through `stop`. If listeners remain but no continuation exists, log that the loop is waiting for an explicit `/rover:rover <loop-file>` wake or an external host signal.
 
-The continuation safety-net is scoped to transient failures during active phases: a failed shell command, a timed-out tool call, or an interrupted edit that leaves the session stuck mid-turn. A host-owned continuation re-enters the loop file and restarts the phase machine from its last logged state. That safety net is not meant as an eternal watch post: sustained idleness means the mission is truly done, and the host should back off or stop to avoid token burn.
+The continuation safety-net is scoped to transient failures during active phases: a failed shell command, a timed-out tool call, an interrupted edit that leaves the session stuck mid-turn, or a host-owned self-check finding that the process went quiet between turns. A host-owned continuation re-enters the loop file and restarts the phase machine from its last logged state. That safety net is not meant as an eternal watch post: sustained idleness means the mission is truly done, and the host should back off or stop to avoid token burn.
 
 **Entry check: any listeners?** The first thing STANDBY does on entry is decide whether to stay. Listeners are concrete signals that can change what the rover cares about: an open PR with reviews or CI the rover is watching, CI jobs still running, or uncommitted work in the tree. Zero listeners means nothing to wait for: invoke `stop` via the Skill tool to mark or cancel the continuation, log the final entry, and transmit the communiqué. Keep STANDBY only when at least one listener is live; otherwise the backoff loop is watching nothing. New input later wakes the loop via `/rover:rover` either way.
 
