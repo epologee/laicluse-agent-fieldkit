@@ -1295,6 +1295,71 @@ function buildVocalistOgSvg(app) {
 `;
 }
 
+function buildRootOgSvg(data, app) {
+	const pluginCount = data.plugins.length;
+	const skillCount = data.counts.skillEntries;
+	const appName = app ? app.name : "Vocalist";
+
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<defs>
+		<pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+			<path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="1"/>
+		</pattern>
+		<linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#111611"/>
+			<stop offset="100%" stop-color="#080a08"/>
+		</linearGradient>
+		<filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+			<feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.36"/>
+		</filter>
+	</defs>
+	<rect width="1200" height="630" fill="#070807"/>
+	<rect width="1200" height="630" fill="url(#grid)"/>
+	<rect x="54" y="52" width="1092" height="526" rx="34" fill="url(#panel)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+	${renderOgWordmark({ x: 88, y: 78, width: 360, fill: "#f7f7f2" })}
+	<text x="92" y="250" font-family="${OG_SANS}" font-size="64" font-weight="850" fill="#ffffff">Local-first tools</text>
+	<text x="94" y="306" font-family="${OG_SANS}" font-size="34" font-weight="760" fill="#f7f7f2">for working alongside AI.</text>
+	<g>
+		<rect x="94" y="350" width="318" height="58" rx="29" fill="rgba(49,217,148,0.10)" stroke="rgba(49,217,148,0.54)" stroke-width="2"/>
+		<text x="126" y="388" font-family="${OG_MONO}" font-size="23" font-weight="850" fill="#31d994">${pluginCount} plugins</text>
+		<text x="286" y="388" font-family="${OG_MONO}" font-size="23" font-weight="850" fill="#f7f7f2">${skillCount} skills</text>
+	</g>
+	<g>
+		<rect x="430" y="350" width="166" height="58" rx="29" fill="rgba(246,180,75,0.11)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
+		<text x="461" y="388" font-family="${OG_MONO}" font-size="23" font-weight="850" fill="#f6b44b">Mac app</text>
+	</g>
+	<g filter="url(#softShadow)">
+		<rect x="90" y="450" width="480" height="82" rx="22" fill="#090d0a" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
+		<text x="124" y="501" font-family="${OG_MONO}" font-size="28" font-weight="850" fill="#31d994">$</text>
+		<text x="166" y="501" font-family="${OG_SANS}" font-size="30" font-weight="820" fill="#ffffff">Agent Fieldkit</text>
+		<text x="382" y="501" font-family="${OG_MONO}" font-size="24" font-weight="760" fill="#8f9890">guardrails</text>
+	</g>
+	<g filter="url(#softShadow)">
+		<rect x="650" y="96" width="438" height="162" rx="30" fill="#0a100d" stroke="rgba(49,217,148,0.52)" stroke-width="2.5"/>
+		<text x="684" y="153" font-family="${OG_SANS}" font-size="40" font-weight="850" fill="#31d994">${xmlEscape(appName)}</text>
+		<text x="686" y="199" font-family="${OG_SANS}" font-size="27" font-weight="760" fill="#ffffff">Talk instead of typing.</text>
+		<text x="686" y="229" font-family="${OG_SANS}" font-size="21" font-weight="680" fill="#aab3ac">Menu-bar voice input for coding agents.</text>
+	</g>
+	<g filter="url(#softShadow)">
+		<path d="M690 306 h315 a28 28 0 0 1 28 28 v76 a28 28 0 0 1 -28 28 h-147 l-50 42 v-42 h-118 a28 28 0 0 1 -28 -28 v-76 a28 28 0 0 1 28 -28 z" fill="#0f1713" stroke="rgba(49,217,148,0.62)" stroke-width="2.5"/>
+		<circle cx="724" cy="364" r="22" fill="rgba(49,217,148,0.16)" stroke="#31d994" stroke-width="3"/>
+		<path d="M724 352 v20 M714 365 c0 17 20 17 20 0 M724 382 v12 M716 394 h16" fill="none" stroke="#31d994" stroke-width="4" stroke-linecap="round"/>
+		<text x="764" y="357" font-family="${OG_SANS}" font-size="27" font-weight="820" fill="#ffffff">Shape the prompt</text>
+		<text x="764" y="397" font-family="${OG_MONO}" font-size="22" font-weight="850" fill="#f6b44b">over</text>
+	</g>
+	<g filter="url(#softShadow)">
+		<rect x="706" y="462" width="362" height="86" rx="22" fill="#080a08" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+		<circle cx="736" cy="493" r="6" fill="#f06464"/>
+		<circle cx="758" cy="493" r="6" fill="#f6b44b"/>
+		<circle cx="780" cy="493" r="6" fill="#31d994"/>
+		<text x="812" y="501" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#8f9890">agent terminal</text>
+		<text x="736" y="532" font-family="${OG_MONO}" font-size="23" font-weight="850" fill="#31d994">&gt;</text>
+		<text x="772" y="532" font-family="${OG_MONO}" font-size="23" font-weight="740" fill="#f7f7f2">Codex + Claude Code</text>
+	</g>
+</svg>
+`;
+}
+
 function ogHash(buffer) {
 	return crypto.createHash("sha256").update(buffer).digest("hex").slice(0, 10);
 }
@@ -1438,7 +1503,7 @@ function writeSharedAssets(repoRoot) {
 }
 
 function buildRootPage(hash, assetVersions) {
-	const imageUrl = `${PAGES_URL}/assets/og-image.png?v=${hash}`;
+	const imageUrl = `${PAGES_URL}/assets/root-og-image.png?v=${hash}`;
 
 	return `<!doctype html>
 <html lang="en">
@@ -1543,8 +1608,12 @@ function main() {
 	fs.writeFileSync(outputPath, `${JSON.stringify(data, null, "\t")}\n`);
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 
-	const hash = renderOgImage(repoRoot, buildOgSvg(data));
 	const vocalistApp = data.apps.find((item) => item.name === "Vocalist");
+	const hash = renderOgImage(repoRoot, buildOgSvg(data));
+	const rootHash = renderOgImage(repoRoot, buildRootOgSvg(data, vocalistApp), {
+		svgFileName: "root-og-card.svg",
+		pngFileName: "root-og-image.png",
+	});
 	const vocalistHash = vocalistApp
 		? renderOgImage(repoRoot, buildVocalistOgSvg(vocalistApp), {
 				svgFileName: "vocalist-og-card.svg",
@@ -1554,10 +1623,11 @@ function main() {
 	writeSharedAssets(repoRoot);
 	const assetVersions = sharedAssetVersions(repoRoot);
 	updateFieldkitMeta(repoRoot, hash, assetVersions);
-	writeRootPage(repoRoot, hash, assetVersions);
+	writeRootPage(repoRoot, rootHash, assetVersions);
 	renderPluginDetailPages(repoRoot, data, hash, assetVersions);
 	renderVocalistPage(repoRoot, data, vocalistHash, assetVersions);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
+	process.stdout.write(`build-pages: root-og-image hash ${rootHash}\n`);
 	process.stdout.write(`build-pages: vocalist-og-image hash ${vocalistHash}\n`);
 }
 

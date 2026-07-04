@@ -3,8 +3,9 @@
 #
 # build-pages renders a share card from live marketplace data and stamps a
 # cache-busting hash into the head. These assertions guard that the SVG always
-# carries the live plugin count, the rasterized PNG keeps the declared
-# 1200x630 OG dimensions, and the meta hash stops being the "dev" placeholder.
+# carries the live plugin count, the root page has its own share card, the
+# rasterized PNGs keep the declared 1200x630 OG dimensions, and the meta hash
+# stops being the "dev" placeholder.
 
 SCRIPT="$BATS_TEST_DIRNAME/../../bin/build-pages"
 
@@ -60,6 +61,7 @@ HTML
   [ "$output" -eq 0 ]
   run grep -c 'og-image.png?v=dev' "$REPO/docs/agent-fieldkit/index.html"
   [ "$output" -eq 0 ]
+  grep -Eq 'root-og-image\.png\?v=[0-9a-f]{10}' "$REPO/docs/index.html"
   grep -Eq 'og-image\.png\?v=[0-9a-f]{10}' "$REPO/docs/agent-fieldkit/index.html"
 }
 
@@ -77,6 +79,9 @@ HTML
   grep -q '<title>l'"'"'Aicluse</title>' "$REPO/docs/index.html"
   grep -q '<link rel="canonical" href="https://laicluse.com/">' "$REPO/docs/index.html"
   grep -q '<meta property="og:url" content="https://laicluse.com/">' "$REPO/docs/index.html"
+  grep -Eq '<meta property="og:image" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
+  grep -Eq '<meta property="og:image:secure_url" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
+  grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
   grep -q 'Local-first, human-in-the-loop tools for working alongside AI' "$REPO/docs/index.html"
   grep -q 'href="/vocalist/"' "$REPO/docs/index.html"
   grep -q 'href="/agent-fieldkit/"' "$REPO/docs/index.html"
@@ -87,6 +92,13 @@ HTML
   grep -q '<link rel="stylesheet" href="styles.css' "$REPO/docs/index.html"
   run node -e 'const root=require("fs").readFileSync(process.argv[1],"utf8");if((root.match(/<h1\b/g)||[]).length!==1)throw new Error("expected one h1");const fieldkit=root.indexOf("<h2>Agent Fieldkit</h2>");const vocalist=root.indexOf("<h2>Vocalist</h2>");if(fieldkit<0)throw new Error("missing Agent Fieldkit h2");if(vocalist<0)throw new Error("missing Vocalist h2");if(fieldkit>vocalist)throw new Error("expected Agent Fieldkit before Vocalist");' "$REPO/docs/index.html"
   [ "$status" -eq 0 ]
+}
+
+@test "the root share card combines the app and plugin surfaces" {
+  grep -q '>Local-first tools<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Agent Fieldkit<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Vocalist<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Talk instead of typing.<' "$REPO/docs/assets/root-og-card.svg"
 }
 
 @test "the Fieldkit landing loads shared assets from the parent directory" {
@@ -102,5 +114,8 @@ HTML
   fi
   [ -f "$REPO/docs/assets/og-image.png" ]
   run node -e 'const b=require("fs").readFileSync(process.argv[1]);process.stdout.write(b.readUInt32BE(16)+"x"+b.readUInt32BE(20))' "$REPO/docs/assets/og-image.png"
+  [ "$output" = "1200x630" ]
+  [ -f "$REPO/docs/assets/root-og-image.png" ]
+  run node -e 'const b=require("fs").readFileSync(process.argv[1]);process.stdout.write(b.readUInt32BE(16)+"x"+b.readUInt32BE(20))' "$REPO/docs/assets/root-og-image.png"
   [ "$output" = "1200x630" ]
 }
