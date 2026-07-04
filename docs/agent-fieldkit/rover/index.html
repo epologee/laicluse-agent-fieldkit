@@ -52,7 +52,7 @@
 					<p class="lede">Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.14</span>
+						<span>2.0.16</span>
 						<span>8 skills</span>
 					</div>
 				</div>
@@ -61,7 +61,7 @@
 			<section class="detail-content-section">
 				<article class="readme-content">
 <p>Dispatch a rover at a task. You stay back, the rover works in the field. The distance means it decides locally rather than round-tripping every question, so the plugin carries a <code>decide</code> framework, a contrarian <code>pride</code> check, a subtraction-biased <code>trim</code> pass, and an evidence-discipline <code>verify</code> pass. The rover only reports done when the mission is solid.</p>
-<p>This is the decision framework half of the old <code>autonomous</code> plugin. The keep-it-running half (cron heartbeat, wake/restore, goal loops, persistent runners) is now a host-owned continuation concern. Rover records a loop file and tells the active agent to arrange whatever continuation mechanism that runtime supports; it does not hard-code one implementation.</p>
+<p>This is the decision framework half of the old <code>autonomous</code> plugin. The keep-it-running half (cron heartbeat, wake/restore, goal loops, self-check wake-ups, persistent runners) is now a host-owned continuation concern. Rover records a loop file and tells the active agent to arrange whatever continuation mechanism that runtime supports; it does not hard-code one implementation.</p>
 <p>Use <code>rover</code> for long-running or high-stakes work where the agent needs a field loop instead of a single conversational answer: survey the task, drive the work, inspect the result, apply pride/trim/verify gates, and return a mission report.</p>
 <h2 id="dependencies">Dependencies</h2>
 <ul>
@@ -70,7 +70,7 @@
 <p>No other hard dependencies. Optional integrations (notifier, reviewbot, commit-splitter) are user-named at invocation and only used when installed.</p>
 <h2 id="user-invocable-skills">User-invocable skills</h2>
 <h3 id="rover-rover-loop-file-path-free-form-text"><code>/rover:rover [loop-file-path | free-form text]</code></h3>
-<p>Entry point. Accepts a loop file path to resume or free-form mission text (a description, a pasted issue body, a GitHub URL). Writes <code>.autonomous/&lt;NAME&gt;.md</code> (the loop file), records the host continuation mechanism if one is available, and runs the first SURVEY iteration. The rover does not fetch remote content on its own; paste an issue body or PR diff into the invocation if it is part of the mission.</p>
+<p>Entry point. Accepts a loop file path to resume or free-form mission text (a description, a pasted issue body, a GitHub URL). Writes <code>.autonomous/&lt;NAME&gt;.md</code> (the loop file), records the host continuation mechanism if one is available, and runs the first SURVEY iteration. A host continuation may be a cron, goal loop, scheduler, or self-check wake-up; rover only records the opaque handle. The rover does not fetch remote content on its own; paste an issue body or PR diff into the invocation if it is part of the mission.</p>
 <h3 id="rover-stop-loop-file-path"><code>/rover:stop [loop-file-path]</code></h3>
 <p>Cleanly stop a running mission. Cancels or marks the host continuation mechanism when one was recorded, writes a final log entry, and transmits a mission-report communiqué.</p>
 <h3 id="rover-pride-git-range-uncommitted"><code>/rover:pride [git-range | uncommitted]</code></h3>

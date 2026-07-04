@@ -7,10 +7,10 @@ subtraction-biased `trim` pass, and an evidence-discipline `verify` pass. The
 rover only reports done when the mission is solid.
 
 This is the decision framework half of the old `autonomous` plugin. The
-keep-it-running half (cron heartbeat, wake/restore, goal loops, persistent
-runners) is now a host-owned continuation concern. Rover records a loop file
-and tells the active agent to arrange whatever continuation mechanism that
-runtime supports; it does not hard-code one implementation.
+keep-it-running half (cron heartbeat, wake/restore, goal loops, self-check
+wake-ups, persistent runners) is now a host-owned continuation concern. Rover
+records a loop file and tells the active agent to arrange whatever continuation
+mechanism that runtime supports; it does not hard-code one implementation.
 
 Use `rover` for long-running or high-stakes work where the agent needs a field
 loop instead of a single conversational answer: survey the task, drive the work,
@@ -28,7 +28,9 @@ codex plugin add gurus@laicluse-agent-fieldkit
 
 Claude Code sessions that need a cron heartbeat can additionally install
 `autonomous@laicluse-agent-fieldkit`; that plugin is one implementation of the
-continuation contract, not a rover dependency.
+continuation contract, not a rover dependency. Other hosts may satisfy the same
+contract with goal loops, schedulers, or self-check wake-ups that re-enter a
+quiet persistent run.
 
 ## Dependencies
 
@@ -47,9 +49,11 @@ commit-splitter) are user-named at invocation and only used when installed.
 Entry point. Accepts a loop file path to resume or free-form mission text (a
 description, a pasted issue body, a GitHub URL). Writes
 `.autonomous/<NAME>.md` (the loop file), records the host continuation
-mechanism if one is available, and runs the first SURVEY iteration. The rover
-does not fetch remote content on its own; paste an issue body or PR diff into
-the invocation if it is part of the mission.
+mechanism if one is available, and runs the first SURVEY iteration. A host
+continuation may be a cron, goal loop, scheduler, or self-check wake-up; rover
+only records the opaque handle. The rover does not fetch remote content on its
+own; paste an issue body or PR diff into the invocation if it is part of the
+mission.
 
 ### `/rover:stop [loop-file-path]`
 
