@@ -94,12 +94,12 @@ HTML
   [ "$status" -eq 0 ]
 }
 
-@test "the root share card uses umbrella labels" {
-  grep -q '>Plugins and apps<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>Plugins<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>Apps<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>Local workflows<' "$REPO/docs/assets/root-og-card.svg"
-  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Talk instead of typing\.<|>Codex \+ Claude Code<' "$REPO/docs/assets/root-og-card.svg"
+@test "the root share card keeps the brand message minimal" {
+  grep -q '>Apps and plugins for humans and coding agents<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>1 app<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>1 plugin<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>0 skills<' "$REPO/docs/assets/root-og-card.svg"
+  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Talk instead of typing\.<|>Codex \+ Claude Code<|>Human-in-the-loop<|>Local workflows<' "$REPO/docs/assets/root-og-card.svg"
   [ "$status" -ne 0 ]
 }
 
