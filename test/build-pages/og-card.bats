@@ -94,11 +94,13 @@ HTML
   [ "$status" -eq 0 ]
 }
 
-@test "the root share card combines the app and plugin surfaces" {
-  grep -q '>Local-first tools<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>Agent Fieldkit<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>Vocalist<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>Talk instead of typing.<' "$REPO/docs/assets/root-og-card.svg"
+@test "the root share card uses umbrella labels" {
+  grep -q '>Plugins and apps<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Plugins<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Apps<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Local workflows<' "$REPO/docs/assets/root-og-card.svg"
+  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Talk instead of typing\.<|>Codex \+ Claude Code<' "$REPO/docs/assets/root-og-card.svg"
+  [ "$status" -ne 0 ]
 }
 
 @test "the Fieldkit landing loads shared assets from the parent directory" {
