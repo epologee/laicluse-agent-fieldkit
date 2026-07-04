@@ -289,9 +289,13 @@ The first tool calls after this skill loads are:
 1. Determine the loop-file name and arrange continuation through the host, not
    through a rover dependency. Derive `<NAME>` from the Dispatch: ALL-CAPS,
    hyphens, no spaces, goal not mechanism. If the host exposes a continuation
-   probe, use it; otherwise inspect the runtime directly. Do not hand-write
-   `in-process` just because the run is not an interactive REPL. Then choose
-   the best available continuation mode:
+   probe, invoke it and record the value it hands back; do not choose a
+   `continuation:` value by your own judgment when a probe exists. The probe
+   owns the interactive-vs-persistent decision. If no probe exists, inspect the
+   runtime directly. Do not hand-write `in-process` just because the run is not
+   an interactive REPL, and do not hand-write `none (drive current turn)` until
+   the host path has actually been checked. Then record the best available
+   continuation outcome:
    - **Persistent process:** record `continuation: in-process` only when this
      process truly keeps driving the phase machine after the current turn
      yields, or when this invocation will run the loop to completion before
@@ -305,10 +309,22 @@ The first tool calls after this skill loads are:
      self-check wake-up. Record `host:<name>` in `continuation:` and any
      opaque handle in `continuation_handle:`.
    - **No continuation available:** record
-     `continuation: none (drive current turn)` only after the host probe or
-     runtime inspection confirms no continuation path exists. Keep driving in
-     this turn as far as the runtime allows; the loop file still lets a future
-     session resume explicitly with `/rover:rover .autonomous/<NAME>.md`.
+     `continuation: none (drive current turn)` only after the host probe
+     returns no continuation or runtime inspection confirms no continuation
+     path exists. Keep driving in this turn as far as the runtime allows; the
+     loop file still lets a future session resume explicitly with
+     `/rover:rover .autonomous/<NAME>.md`.
+
+   The common silent-death failure is writing `continuation: none (drive
+   current turn)` or `continuation: in-process` into the loop file without
+   invoking the host probe. In an interactive host, the probe may have started
+   a cron or work-loop heartbeat. In a persistent host, the probe may have
+   scheduled a self-check wake-up. Skipping it makes the mission look alive in
+   the loop file while no host mechanism can re-enter it. If you typed a
+   `continuation:` value that neither the host probe nor direct runtime
+   inspection produced, stop setup, run the probe or inspection, and replace
+   the value. Arranging continuation is a setup action the rover performs; it
+   is not a question for the operator.
 
    **Host-owned self-check continuation contract.** Some persistent or
    background hosts can schedule delayed re-entry but can still go silent
