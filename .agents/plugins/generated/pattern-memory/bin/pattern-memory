@@ -1,0 +1,463 @@
+#!/usr/bin/env node
+import { execFileSync } from 'node:child_process';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync
+} from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
+import { homedir } from 'node:os';
+
+const ARRAY_FIELDS = new Set(['triggers', 'exemplars', 'precedents', 'applies_to', 'tags']);
+const REQUIRED_FIELDS = ['slug', 'type', 'status', 'visibility', 'triggers'];
+const ALLOWED_STATUS = new Set(['draft', 'verified', 'deprecated']);
+const ALLOWED_VISIBILITY = new Set(['private', 'shareable', 'public-example']);
+
+function usage() {
+  return `Usage:
+  pattern-memory init [--root PATH] [--json]
+  pattern-memory index [--root PATH] [--check] [--json]
+  pattern-memory search <query> [--root PATH] [--json]
+  pattern-memory validate [--root PATH] [--json]
+  pattern-memory root [--root PATH]
+`;
+}
+
+function parseArgs(argv) {
+  const args = [...argv];
+  const command = args.shift();
+  const options = { root: null, json: false, check: false, rest: [] };
+  while (args.length > 0) {
+    const arg = args.shift();
+    if (arg === '--root') {
+      options.root = args.shift();
+    } else if (arg === '--json') {
+      options.json = true;
+    } else if (arg === '--check') {
+      options.check = true;
+    } else {
+      options.rest.push(arg);
+    }
+  }
+  return { command, options };
+}
+
+function expandHome(path) {
+  if (!path) return path;
+  if (path === '~') return homedir();
+  if (path.startsWith('~/')) return join(homedir(), path.slice(2));
+  return path;
+}
+
+function defaultRoot() {
+  return join(process.env.LAICLUSE_HOME || join(homedir(), '.laicluse'), 'patterns');
+}
+
+function patternRoot(options) {
+  return resolve(expandHome(options.root || process.env.PATTERN_MEMORY_ROOT || defaultRoot()));
+}
+
+function output(data, json) {
+  if (json) {
+    process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+  } else if (typeof data === 'string') {
+    process.stdout.write(data.endsWith('\n') ? data : `${data}\n`);
+  }
+}
+
+function fail(message, json = false) {
+  if (json) {
+    process.stdout.write(`${JSON.stringify({ ok: false, error: message }, null, 2)}\n`);
+  } else {
+    process.stderr.write(`pattern-memory: ${message}\n`);
+  }
+  process.exit(1);
+}
+
+function parentGitRoot(root) {
+  let dir = dirname(root);
+  while (dir !== dirname(dir)) {
+    if (existsSync(join(dir, '.git'))) return dir;
+    dir = dirname(dir);
+  }
+  return null;
+}
+
+function assertRootBoundary(root) {
+  const parentRoot = parentGitRoot(root);
+  if (parentRoot) {
+    throw new Error(`pattern root must live outside project git worktrees; parent git root found at ${parentRoot}`);
+  }
+}
+
+function writeIfMissing(path, content) {
+  if (existsSync(path)) return false;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, content, 'utf8');
+  return true;
+}
+
+function gitInitIfNeeded(root) {
+  if (existsSync(join(root, '.git'))) return false;
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  return true;
+}
+
+function starterReadme() {
+  return `# Pattern Memory
+
+Pattern Memory stores reusable implementation patterns for coding agents.
+
+Use \`patterns/*.md\` for pattern files. Keep private code pointers in \`precedents\`; those values are recall-only and must not be surfaced in public artifacts.
+`;
+}
+
+function starterSchema() {
+  return `# Pattern Memory Schema
+
+Required frontmatter fields:
+
+- \`slug\`
+- \`type: pattern\`
+- \`status: draft|verified|deprecated\`
+- \`visibility: private|shareable|public-example\`
+- \`triggers\`
+
+\`exemplars\` are sanitized names that may be surfaced. \`precedents\` are private implementation pointers and are never surfaced.
+`;
+}
+
+function starterPattern() {
+  return `---
+slug: example-map-like-canvas-interaction
+type: pattern
+status: draft
+visibility: public-example
+triggers:
+  - canvas pan zoom
+  - wheel event
+  - trackpad pinch
+  - drag to pan
+exemplars:
+  - map-like canvas
+precedents: []
+applies_to:
+  - browser canvas
+  - interactive viewport
+tags:
+  - ui
+  - interaction
+  - gestures
+last_verified: 2026-07-04
+---
+
+# Example Map-Like Canvas Interaction
+
+## Use when
+
+Use this when an interactive surface needs map-like viewport behavior: pan, zoom, and click-hold interactions sharing the same surface.
+
+## Invariants
+
+- Wheel and trackpad gestures change the viewport without moving unrelated page content.
+- Dragging pans the viewport.
+- Click-hold can enter an interaction mode without fighting pan gestures.
+
+## Recipe
+
+Model viewport state explicitly: scale, translation, active pointer, and interaction mode. Normalize wheel, pinch, pointer-down, pointer-move, and pointer-up events into that model before rendering.
+
+## Verification
+
+- Search finds this pattern by \`canvas pan zoom\`.
+- Manual interaction can pan, zoom, and click-hold without accidental mode switches.
+
+## Anti-patterns
+
+- Binding wheel events directly to page scroll.
+- Treating drag and click-hold as unrelated handlers with no shared state.
+
+## Do not surface
+
+Do not surface private precedents. This example has none.
+`;
+}
+
+function ensureInitialized(root) {
+  assertRootBoundary(root);
+  mkdirSync(join(root, 'patterns'), { recursive: true });
+  const created = [];
+  if (writeIfMissing(join(root, '.gitignore'), '.DS_Store\n')) created.push('.gitignore');
+  if (writeIfMissing(join(root, 'README.md'), starterReadme())) created.push('README.md');
+  if (writeIfMissing(join(root, 'SCHEMA.md'), starterSchema())) created.push('SCHEMA.md');
+  if (writeIfMissing(join(root, 'patterns', 'example-map-like-canvas-interaction.md'), starterPattern())) {
+    created.push('patterns/example-map-like-canvas-interaction.md');
+  }
+  const gitInitialized = gitInitIfNeeded(root);
+  const indexText = buildIndex(root);
+  writeFileSync(join(root, 'INDEX.md'), indexText, 'utf8');
+  return { root, created, gitInitialized, indexed: true };
+}
+
+function markdownFiles(dir) {
+  if (!existsSync(dir)) return [];
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (entry === '.git') continue;
+    const stat = statSync(path);
+    if (stat.isDirectory()) {
+      out.push(...markdownFiles(path));
+    } else if (stat.isFile() && entry.endsWith('.md')) {
+      out.push(path);
+    }
+  }
+  return out;
+}
+
+function isPatternFile(root, file) {
+  const name = basename(file);
+  if (dirname(file) === root && ['README.md', 'SCHEMA.md', 'INDEX.md'].includes(name)) return false;
+  return true;
+}
+
+function stripQuotes(value) {
+  const trimmed = value.trim();
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function parseInlineArray(value) {
+  const body = value.trim().slice(1, -1).trim();
+  if (!body) return [];
+  return body.split(',').map((item) => stripQuotes(item)).filter(Boolean);
+}
+
+function parseFrontmatter(text) {
+  if (!text.startsWith('---\n')) return null;
+  const end = text.indexOf('\n---', 4);
+  if (end === -1) return null;
+  const rawFrontmatter = text.slice(4, end);
+  const bodyStart = text.indexOf('\n', end + 4);
+  const body = bodyStart === -1 ? '' : text.slice(bodyStart + 1);
+  const data = {};
+  let currentKey = null;
+  for (const rawLine of rawFrontmatter.split('\n')) {
+    const line = rawLine.trimEnd();
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const listMatch = line.match(/^\s*-\s*(.*)$/);
+    if (listMatch && currentKey) {
+      data[currentKey].push(stripQuotes(listMatch[1]));
+      continue;
+    }
+    const pairMatch = line.match(/^([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
+    if (!pairMatch) continue;
+    const key = pairMatch[1];
+    const value = pairMatch[2] || '';
+    if (value === '') {
+      data[key] = [];
+      currentKey = key;
+    } else if (value.trim().startsWith('[') && value.trim().endsWith(']')) {
+      data[key] = parseInlineArray(value);
+      currentKey = null;
+    } else {
+      data[key] = stripQuotes(value);
+      currentKey = null;
+    }
+  }
+  for (const field of ARRAY_FIELDS) {
+    if (data[field] === undefined) continue;
+    if (!Array.isArray(data[field])) data[field] = [data[field]];
+  }
+  return { data, body };
+}
+
+function patternRecords(root) {
+  return markdownFiles(root)
+    .filter((file) => isPatternFile(root, file))
+    .map((file) => {
+      const parsed = parseFrontmatter(readFileSync(file, 'utf8'));
+      return { file, relativePath: file.slice(root.length + 1), parsed };
+    })
+    .filter((record) => record.parsed);
+}
+
+function fieldList(data, field) {
+  const value = data[field];
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function escapeCell(value) {
+  return String(value || '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+}
+
+function buildIndex(root) {
+  const rows = patternRecords(root)
+    .map(({ relativePath, parsed }) => {
+      const data = parsed.data;
+      return [
+        data.slug || '',
+        data.status || '',
+        data.visibility || '',
+        fieldList(data, 'applies_to').join(', '),
+        fieldList(data, 'triggers').slice(0, 4).join(', '),
+        fieldList(data, 'exemplars').join(', '),
+        relativePath
+      ];
+    })
+    .sort((left, right) => left[0].localeCompare(right[0]));
+  const lines = [
+    '# Pattern Memory Index',
+    '',
+    'Generated by `pattern-memory index`. Do not edit by hand.',
+    '',
+    '| Slug | Status | Visibility | Applies to | Triggers | Exemplars | Path |',
+    '|------|--------|------------|------------|----------|-----------|------|'
+  ];
+  for (const row of rows) {
+    lines.push(`| ${row.map(escapeCell).join(' | ')} |`);
+  }
+  if (rows.length === 0) lines.push('|  |  |  |  |  |  |  |');
+  lines.push('');
+  return lines.join('\n');
+}
+
+function validateRecords(root, checkIndex = true) {
+  assertRootBoundary(root);
+  if (!existsSync(root)) throw new Error(`pattern root does not exist: ${root}`);
+  if (!existsSync(join(root, '.git'))) throw new Error(`pattern root is not a git repository: ${root}`);
+  const errors = [];
+  const records = patternRecords(root);
+  for (const record of records) {
+    const data = record.parsed.data;
+    for (const field of REQUIRED_FIELDS) {
+      if (data[field] === undefined || data[field] === '' || (Array.isArray(data[field]) && data[field].length === 0)) {
+        errors.push(`${record.relativePath}: missing ${field}`);
+      }
+    }
+    if (data.type && data.type !== 'pattern') errors.push(`${record.relativePath}: type must be pattern`);
+    if (data.status && !ALLOWED_STATUS.has(data.status)) errors.push(`${record.relativePath}: invalid status ${data.status}`);
+    if (data.visibility && !ALLOWED_VISIBILITY.has(data.visibility)) {
+      errors.push(`${record.relativePath}: invalid visibility ${data.visibility}`);
+    }
+  }
+  if (checkIndex) {
+    const indexPath = join(root, 'INDEX.md');
+    const expected = buildIndex(root);
+    if (!existsSync(indexPath)) {
+      errors.push('INDEX.md is missing; run pattern-memory index');
+    } else if (readFileSync(indexPath, 'utf8') !== expected) {
+      errors.push('INDEX.md is stale; run pattern-memory index');
+    }
+  }
+  return { root, records: records.length, errors };
+}
+
+function search(root, query) {
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  return patternRecords(root)
+    .map(({ file, relativePath, parsed }) => {
+      const data = parsed.data;
+      const searchable = [
+        data.slug,
+        data.title,
+        data.type,
+        data.status,
+        data.visibility,
+        ...fieldList(data, 'triggers'),
+        ...fieldList(data, 'exemplars'),
+        ...fieldList(data, 'applies_to'),
+        ...fieldList(data, 'tags'),
+        parsed.body
+      ].filter(Boolean).join('\n').toLowerCase();
+      const score = terms.filter((term) => searchable.includes(term)).length;
+      return { file, relativePath, data, score };
+    })
+    .filter((record) => record.score > 0)
+    .sort((left, right) => right.score - left.score || left.relativePath.localeCompare(right.relativePath))
+    .map(({ file, relativePath, data, score }) => ({
+      path: file,
+      relativePath,
+      slug: data.slug || '',
+      status: data.status || '',
+      visibility: data.visibility || '',
+      triggers: fieldList(data, 'triggers'),
+      exemplars: fieldList(data, 'exemplars'),
+      applies_to: fieldList(data, 'applies_to'),
+      tags: fieldList(data, 'tags'),
+      score
+    }));
+}
+
+function formatSearch(matches) {
+  if (matches.length === 0) return 'No matching patterns found.\n';
+  return matches.map((match) => {
+    const lines = [
+      `${match.slug} (${match.status}, ${match.visibility})`,
+      `  path: ${match.path}`
+    ];
+    if (match.triggers.length > 0) lines.push(`  triggers: ${match.triggers.join(', ')}`);
+    if (match.exemplars.length > 0) lines.push(`  exemplars: ${match.exemplars.join(', ')}`);
+    if (match.applies_to.length > 0) lines.push(`  applies_to: ${match.applies_to.join(', ')}`);
+    if (match.tags.length > 0) lines.push(`  tags: ${match.tags.join(', ')}`);
+    return lines.join('\n');
+  }).join('\n\n') + '\n';
+}
+
+function main() {
+  const { command, options } = parseArgs(process.argv.slice(2));
+  if (!command || command === 'help' || command === '--help') {
+    output(usage(), false);
+    return;
+  }
+  const root = patternRoot(options);
+  if (command === 'root') {
+    output(root, false);
+    return;
+  }
+  if (command === 'init') {
+    const result = ensureInitialized(root);
+    output(options.json ? { ok: true, ...result } : `Pattern Memory initialized at ${root}`, options.json);
+    return;
+  }
+  if (command === 'index') {
+    const indexText = buildIndex(root);
+    if (options.check) {
+      const indexPath = join(root, 'INDEX.md');
+      if (!existsSync(indexPath) || readFileSync(indexPath, 'utf8') !== indexText) {
+        fail('INDEX.md is stale; run pattern-memory index', options.json);
+      }
+      output(options.json ? { ok: true, root, checked: true } : 'INDEX.md is current', options.json);
+      return;
+    }
+    writeFileSync(join(root, 'INDEX.md'), indexText, 'utf8');
+    output(options.json ? { ok: true, root, indexed: true } : `Indexed ${root}`, options.json);
+    return;
+  }
+  if (command === 'validate') {
+    const result = validateRecords(root);
+    if (result.errors.length > 0) fail(result.errors.join('\n'), options.json);
+    output(options.json ? { ok: true, ...result } : `Pattern Memory valid: ${root}`, options.json);
+    return;
+  }
+  if (command === 'search') {
+    const query = options.rest.join(' ').trim();
+    if (!query) fail('search requires a query', options.json);
+    const matches = search(root, query);
+    output(options.json ? { ok: true, root, matches } : formatSearch(matches), options.json);
+    return;
+  }
+  fail(`unknown command ${command}\n\n${usage()}`, options.json);
+}
+
+try {
+  main();
+} catch (error) {
+  fail(error.message);
+}
