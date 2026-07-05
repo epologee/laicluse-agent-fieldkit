@@ -46,10 +46,10 @@ dd_nrc_operator_approved() {
 
   case "$kind" in
     forge)
-      grep -qiE '\b(gh[[:space:]]+repo[[:space:]]+(create|fork)|repo[ -]?(create|fork)|github repo|forge repo|fork|forken|remote creation)\b' <<< "$user"
+      grep -qiE '\b(gh[[:space:]]+repo[[:space:]]+(create|fork)|repo[ -]?(create|fork)|github repo|forge repo|fork|forken|remote creation|remotes?\b.{0,40}\b(aan ?maken|aanmaken|geven|maken|instellen|krijgen))\b' <<< "$user"
       ;;
     remote)
-      grep -qiE '\b(git[[:space:]]+remote[[:space:]]+(add|set-url)|remote[ -]?(add|attach|set-url|toevoeg|koppel|wijzig)|voeg.{0,30}remote|remote.{0,30}toe|remote.{0,30}zetten)\b' <<< "$user"
+      grep -qiE '\b(git[[:space:]]+remote[[:space:]]+(add|set-url)|remote[ -]?(add|attach|set-url|toevoeg|koppel|wijzig)|voeg.{0,30}remote|remote.{0,30}toe|remote.{0,30}zetten|remotes?\b.{0,40}\b(aan ?maken|aanmaken|geven|maken|instellen|krijgen))\b' <<< "$user"
       ;;
     *)
       return 1

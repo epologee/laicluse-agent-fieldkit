@@ -589,6 +589,19 @@ expect_allow "no-remote-create: operator-approved gh repo fork passes" \
 expect_allow "no-remote-create: operator-approved remote add passes" \
   "$(pretool_bash_with_user 'git remote add epologee https://github.com/epologee/slop-off.git' 'Voeg de epologee remote toe voor deze fork.')"
 
+expect_allow "no-remote-create: Dutch remotes-aanmaken approval passes for repo create" \
+  "$(pretool_bash_with_user 'gh repo create example/infra-tools --private --source . --remote origin --push' 'Ik wil met expliciete toestemming dat jij remotes kan aan maken.')"
+
+expect_allow "no-remote-create: Dutch remotes-geven approval passes for repo create" \
+  "$(pretool_bash_with_user 'gh repo create example/gateway --private' 'Kun je deze twee repositories ook private remotes geven onder github?')"
+
+expect_allow "no-remote-create: Dutch remotes-aanmaken approval passes for remote add" \
+  "$(pretool_bash_with_user 'git remote add origin git@github.com:example/infra-tools.git' 'Ja, remotes aanmaken mag.')"
+
+expect_deny "no-remote-create: unrelated chatter still blocks repo create" \
+  "$(pretool_bash_with_user 'gh repo create example/sneaky --private' 'Mooi werk, de tests zijn groen.')" \
+  "no-remote-create"
+
 # --- no-remote ---
 # Each case sets up a temp git repo and cd's in before invoking the hook,
 # because the guard reads `git remote` against the current working directory.

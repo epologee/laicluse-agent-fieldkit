@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.32]
+
+### Changed
+
+- **`no-remote-create` verstaat nu ook Nederlandse remote-toestemmingen.** De operator-approved escape herkende "remotes aanmaken", "remotes aan maken", "remotes geven" en verwanten niet, waardoor een expliciete go in het Nederlands alsnog blokkeerde. Beide kind-matchers (forge en remote) dekken die frasering nu; ongerelateerde berichten blokkeren onveranderd.
+
 ## [v2.0.30]
 
 ### Changed

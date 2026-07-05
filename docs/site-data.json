@@ -236,7 +236,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.31",
+			"version": "2.0.32",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -251,9 +251,9 @@
 			"commandCount": 2,
 			"hookFileCount": 25,
 			"latestChange": {
-				"version": "v2.0.30",
+				"version": "v2.0.32",
 				"type": "Changed",
-				"summary": "/not-your-monkey now routes on looser \"niet je aapje\" phrasing."
+				"summary": "no-remote-create verstaat nu ook Nederlandse remote-toestemmingen."
 			}
 		},
 		{
@@ -554,11 +554,11 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.31",
+			"packageVersion": "2.0.32",
 			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.30",
+			"version": "v2.0.32",
 			"type": "Changed",
-			"summary": "/not-your-monkey now routes on looser \"niet je aapje\" phrasing.",
+			"summary": "no-remote-create verstaat nu ook Nederlandse remote-toestemmingen.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
