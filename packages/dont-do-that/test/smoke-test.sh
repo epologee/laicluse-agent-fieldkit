@@ -32,6 +32,18 @@ pretool_bash() {
     '{hook_event_name:"PreToolUse", tool_name:"Bash", tool_input:{command:$c}}'
 }
 
+pretool_bash_with_users() {
+  local cmd="$1" first="$2" second="$3" transcript_file
+  transcript_file=$(mktemp)
+  {
+    jq -cn --arg t "$first" '{type:"user",message:{content:[{type:"text",text:$t}]}}'
+    jq -cn '{type:"assistant",message:{content:[{type:"text",text:"tussenstap"}]}}'
+    jq -cn --arg t "$second" '{type:"user",message:{content:[{type:"text",text:$t}]}}'
+  } > "$transcript_file"
+  jq -cn --arg c "$cmd" --arg tr "$transcript_file" \
+    '{hook_event_name:"PreToolUse", tool_name:"Bash", transcript_path:$tr, tool_input:{command:$c}}'
+}
+
 pretool_bash_with_user() {
   local cmd="$1" user_text="$2" transcript_file
   transcript_file=$(mktemp)
@@ -600,6 +612,13 @@ expect_allow "no-remote-create: Dutch remotes-aanmaken approval passes for remot
 
 expect_deny "no-remote-create: unrelated chatter still blocks repo create" \
   "$(pretool_bash_with_user 'gh repo create example/sneaky --private' 'Mooi werk, de tests zijn groen.')" \
+  "no-remote-create"
+
+expect_allow "no-remote-create: bare go after a remotes question passes" \
+  "$(pretool_bash_with_users 'gh repo create example/infra-tools --private --source . --remote origin --push' 'Kun je deze repositories private remotes geven onder github?' 'go')"
+
+expect_deny "no-remote-create: bare go after unrelated chatter still blocks" \
+  "$(pretool_bash_with_users 'gh repo create example/sneaky --private' 'De testsuite is groen, mooi werk.' 'go')" \
   "no-remote-create"
 
 # --- no-remote ---

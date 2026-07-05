@@ -27,8 +27,11 @@ else "" end;
 [
 .[]
 | select(.type == "user" or .role == "user" or .message.role == "user")
+| select(((.message.content? // .content?) | type) != "array"
+    or (((.message.content? // .content?) | map(.type? // "")) | index("tool_result") | not))
 | (.message.content? // .content? // .text? // empty | textify)
-] | last // empty
+| select(length > 0)
+] | .[-3:] | join("\n")
 ' 2>/dev/null \
     | tail -c 1000
 }
