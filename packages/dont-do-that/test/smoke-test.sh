@@ -621,6 +621,16 @@ expect_deny "no-remote-create: bare go after unrelated chatter still blocks" \
   "$(pretool_bash_with_users 'gh repo create example/sneaky --private' 'De testsuite is groen, mooi werk.' 'go')" \
   "no-remote-create"
 
+expect_allow "no-remote-create: imperative Dutch order passes for repo create" \
+  "$(pretool_bash_with_user 'gh repo create example/infra-tools --private --source . --remote origin --push' 'Maak de remotes. En push. Private.')"
+
+expect_allow "no-remote-create: imperative Dutch order passes for remote add" \
+  "$(pretool_bash_with_user 'git remote add origin git@github.com:example/infra-tools.git' 'Maak de remotes. En push. Private.')"
+
+expect_deny "no-remote-create: status question without assent still blocks" \
+  "$(pretool_bash_with_user 'gh repo create example/sneaky --private' 'Welke remotes heeft dit project eigenlijk?')" \
+  "no-remote-create"
+
 # --- no-remote ---
 # Each case sets up a temp git repo and cd's in before invoking the hook,
 # because the guard reads `git remote` against the current working directory.
