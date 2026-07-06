@@ -176,6 +176,10 @@ button {
   padding: clamp(3rem, 6vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
 }
 
+.hero-copy {
+  min-width: 0;
+}
+
 .eyebrow {
   margin: 0 0 0.8rem;
   color: var(--green);
@@ -288,7 +292,7 @@ h3 {
 
 .home-product-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -330,6 +334,10 @@ h3 {
   font-size: clamp(2.4rem, 4.4vw, 4.6rem);
 }
 
+#supermax .home-card-top h2 {
+  font-size: clamp(2.35rem, 3.4vw, 4rem);
+}
+
 .home-product-icon {
   width: clamp(3.8rem, 8vw, 5.3rem);
   height: auto;
@@ -348,6 +356,40 @@ h3 {
   font-family: var(--mono);
   font-size: clamp(2rem, 5vw, 3.3rem);
   font-weight: 800;
+}
+
+.home-supermax-mark {
+  display: grid;
+  width: clamp(3.6rem, 5vw, 4.7rem);
+  aspect-ratio: 1;
+  grid-template-columns: 0.8fr 1fr 1.3fr;
+  gap: 0.22rem;
+  align-items: end;
+  flex: 0 0 auto;
+  border: 1px solid rgba(112, 167, 255, 0.38);
+  border-radius: 8px;
+  background: rgba(112, 167, 255, 0.08);
+  padding: 0.46rem;
+}
+
+.home-supermax-mark span {
+  min-width: 0;
+  border-radius: 4px;
+}
+
+.home-supermax-mark span:nth-child(1) {
+  height: 42%;
+  background: #0f766e;
+}
+
+.home-supermax-mark span:nth-child(2) {
+  height: 66%;
+  background: #7c3aed;
+}
+
+.home-supermax-mark span:nth-child(3) {
+  height: 88%;
+  background: #0b6bcb;
 }
 
 .home-card-link {
@@ -1545,6 +1587,175 @@ pre code {
   white-space: inherit;
 }
 
+.supermax-hero h1 {
+  max-width: none;
+}
+
+.supermax-hero .lede {
+  overflow-wrap: anywhere;
+}
+
+.supermax-panel {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(10, 13, 11, 0.94);
+  padding: clamp(1rem, 3vw, 1.35rem);
+  box-shadow: var(--shadow);
+}
+
+.supermax-toolbar {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.65rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.85rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.supermax-toolbar strong {
+  min-width: 0;
+  color: var(--green);
+  overflow-wrap: anywhere;
+}
+
+.supermax-preview-grid {
+  display: grid;
+  min-width: 0;
+  min-height: 16rem;
+  grid-template-columns: minmax(4.25rem, 3fr) minmax(5rem, 5fr) minmax(9rem, 10fr) minmax(6rem, 6fr);
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.supermax-preview-cell {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 7px;
+  padding: 0.75rem;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.supermax-preview-cell strong,
+.supermax-preview-cell span {
+  overflow-wrap: anywhere;
+}
+
+.supermax-preview-cell strong {
+  font-size: clamp(0.82rem, 1.2vw, 1rem);
+  overflow-wrap: normal;
+}
+
+.supermax-preview-cell span {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  opacity: 0.84;
+}
+
+.supermax-preview-cell.source {
+  background: #0f766e;
+}
+
+.supermax-preview-cell.context {
+  background: #7c3aed;
+}
+
+.supermax-preview-cell.board {
+  background: #0b6bcb;
+}
+
+.supermax-preview-cell.details {
+  background: #be123c;
+}
+
+.supermax-preview-note {
+  border: 1px solid rgba(49, 217, 148, 0.32);
+  border-radius: 6px;
+  background: rgba(49, 217, 148, 0.08);
+  color: #dce5df;
+  padding: 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.supermax-model-section {
+  background: #101311;
+}
+
+.supermax-detail-grid {
+  display: grid;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.supermax-detail-card {
+  min-height: 13rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 1rem;
+}
+
+.supermax-detail-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.supermax-source-section {
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.supermax-source-section h2,
+.supermax-source-section h3 {
+  color: var(--paper-ink);
+}
+
+.supermax-source-section .eyebrow {
+  color: #0f8058;
+}
+
+.supermax-source-section .split-heading p {
+  color: var(--paper-muted);
+}
+
+.supermax-source-section a {
+  color: var(--paper-ink);
+  font-weight: 760;
+}
+
+.supermax-feature-list {
+  display: grid;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  padding: 0;
+  list-style: none;
+}
+
+.supermax-feature-list li {
+  min-height: 8.5rem;
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 1rem;
+  color: var(--paper-muted);
+}
+
 .detail-page {
   background: var(--paper);
   color: var(--paper-ink);
@@ -1759,6 +1970,7 @@ pre code {
   }
 
   .principles-grid,
+  .home-product-grid,
   .plugin-grid,
   .change-feed,
   .vocalist-detail-grid,
@@ -1766,7 +1978,9 @@ pre code {
   .vocalist-duplex-card,
   .vocalist-command-examples,
   .vocalist-mic-note,
-  .vocalist-routing-panel {
+  .vocalist-routing-panel,
+  .supermax-detail-grid,
+  .supermax-feature-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1813,7 +2027,7 @@ pre code {
   }
 
   .hero-grid {
-    width: min(100% - 1rem, 1180px);
+    width: min(1180px, calc(100% - 1rem));
     padding-top: 3rem;
   }
 
@@ -1832,7 +2046,9 @@ pre code {
   .hero-console,
   .home-product-card,
   .home-command-mark,
+  .home-supermax-mark,
   .vocalist-panel,
+  .supermax-panel,
   .install-block,
   .plugin-card,
   .change-item,
@@ -1844,7 +2060,10 @@ pre code {
   .vocalist-mic-note,
   .vocalist-routing-panel,
   .vocalist-layer,
-  .vocalist-byot-prompt {
+  .vocalist-byot-prompt,
+  .supermax-preview-cell,
+  .supermax-detail-card,
+  .supermax-feature-list li {
     border-radius: 6px;
   }
 
@@ -1861,8 +2080,19 @@ pre code {
   .vocalist-command-examples,
   .vocalist-mic-note,
   .vocalist-routing-panel,
-  .vocalist-layer {
+  .vocalist-layer,
+  .supermax-detail-grid,
+  .supermax-feature-list {
     grid-template-columns: 1fr;
+  }
+
+  .supermax-preview-grid {
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .supermax-preview-cell {
+    min-height: 4.8rem;
   }
 
   .vocalist-command-examples li {

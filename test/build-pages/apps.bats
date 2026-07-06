@@ -42,6 +42,11 @@ HTML
   [ "$status" -eq 0 ]
 }
 
+@test "site-data.json carries a Supermax package entry" {
+  run node -e 'const a=require(process.argv[1]).apps||[];const s=a.find(x=>x.name==="Supermax");const ok=s && s.category==="JavaScript package" && s.pagePath==="supermax/" && s.homepageUrl==="https://laicluse.com/supermax/" && s.packageName==="@laicluse/supermax" && s.repoUrl==="https://github.com/laicluse/supermax" && /github:laicluse\/supermax#69bf385/.test(s.install||"");process.exit(ok?0:1)' "$REPO/docs/site-data.json"
+  [ "$status" -eq 0 ]
+}
+
 @test "the Vocalist entry has the brew one-liner and Releases DMG URL" {
   run node -e 'const v=require(process.argv[1]).apps.find(x=>x.name==="Vocalist");const commands=(v.runCommands||[]).map(x=>x.command).join(" ");const ok=v.brew==="brew install --cask laicluse/tap/vocalist" && v.pluginInstall==="vocalist plugin install" && commands.includes("/vocalist:hands-free") && commands.includes("$vocalist:hands-free") && commands.includes("vocalist claude") && commands.includes("vocalist codex") && /github.com\/laicluse\/vocalist-releases\/releases/.test(v.dmgUrl);process.exit(ok?0:1)' "$REPO/docs/site-data.json"
   [ "$status" -eq 0 ]
@@ -93,6 +98,56 @@ HTML
   [ -f "$REPO/docs/assets/vocalist-og-image.png" ]
   run node -e 'const b=require("fs").readFileSync(process.argv[1]);process.stdout.write(b.readUInt32BE(16)+"x"+b.readUInt32BE(20))' "$REPO/docs/assets/vocalist-og-image.png"
   [ "$output" = "1200x630" ]
+}
+
+@test "build-pages writes a standalone /supermax package route" {
+  [ -f "$REPO/docs/supermax/index.html" ]
+  grep -q '<link rel="canonical" href="https://laicluse.com/supermax/">' "$REPO/docs/supermax/index.html"
+  grep -q '<meta property="og:url" content="https://laicluse.com/supermax/">' "$REPO/docs/supermax/index.html"
+  grep -q '<meta property="og:site_name" content="l'"'"'Aicluse Apps">' "$REPO/docs/supermax/index.html"
+  grep -Eq '<meta property="og:image" content="https://laicluse\.com/assets/supermax-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/supermax/index.html"
+  grep -Eq '<meta property="og:image:secure_url" content="https://laicluse\.com/assets/supermax-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/supermax/index.html"
+  grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/supermax-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/supermax/index.html"
+  grep -q '<title>Supermax</title>' "$REPO/docs/supermax/index.html"
+  grep -q '<a class="brand" href="../" aria-label="l'"'"'Aicluse Apps">' "$REPO/docs/supermax/index.html"
+  grep -q 'Responsive cell distribution primitives' "$REPO/docs/supermax/index.html"
+}
+
+@test "build-pages writes a Supermax-specific social card" {
+  [ -f "$REPO/docs/assets/supermax-og-card.svg" ]
+  grep -q '>Apps<' "$REPO/docs/assets/supermax-og-card.svg"
+  grep -q 'Supermax' "$REPO/docs/assets/supermax-og-card.svg"
+  grep -q '@laicluse/supermax' "$REPO/docs/assets/supermax-og-card.svg"
+  grep -q 'Cell layout' "$REPO/docs/assets/supermax-og-card.svg"
+  grep -q 'framework-free' "$REPO/docs/assets/supermax-og-card.svg"
+  run node "$BATS_TEST_DIRNAME/assert-svg-text-bounds.js" "$REPO/docs/assets/supermax-og-card.svg"
+  [ "$status" -eq 0 ]
+
+  if ! command -v rsvg-convert > /dev/null 2>&1 && ! command -v vips > /dev/null 2>&1; then
+    skip "no SVG rasterizer available"
+  fi
+  [ -f "$REPO/docs/assets/supermax-og-image.png" ]
+  run node -e 'const b=require("fs").readFileSync(process.argv[1]);process.stdout.write(b.readUInt32BE(16)+"x"+b.readUInt32BE(20))' "$REPO/docs/assets/supermax-og-image.png"
+  [ "$output" = "1200x630" ]
+}
+
+@test "the /supermax route carries the public package and source links" {
+  grep -q 'Install the package' "$REPO/docs/supermax/index.html"
+  grep -q 'corepack pnpm add github:laicluse/supermax#69bf385' "$REPO/docs/supermax/index.html"
+  grep -q '<pre data-copyable><code>corepack pnpm add github:laicluse/supermax#69bf385</code></pre>' "$REPO/docs/supermax/index.html"
+  grep -Eq '<script src="../code-panel-copy\.js\?v=[0-9a-f]{10}"></script>' "$REPO/docs/supermax/index.html"
+  grep -q 'https://github.com/laicluse/supermax' "$REPO/docs/supermax/index.html"
+  grep -q '@laicluse/supermax' "$REPO/docs/supermax/index.html"
+  run grep -q 'epologee/supermax' "$REPO/docs/supermax/index.html"
+  [ "$status" -ne 0 ]
+}
+
+@test "the /supermax route explains responsive cell distribution in user terms" {
+  grep -q 'column budget' "$REPO/docs/supermax/index.html"
+  grep -q 'left-to-right workspace' "$REPO/docs/supermax/index.html"
+  grep -q 'viewer, editor, or board' "$REPO/docs/supermax/index.html"
+  grep -q 'host application owns rendering' "$REPO/docs/supermax/index.html"
+  grep -q 'framework-free ESM' "$REPO/docs/supermax/index.html"
 }
 
 @test "the /vocalist route carries the public install and release links" {

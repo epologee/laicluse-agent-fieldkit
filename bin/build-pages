@@ -12,6 +12,9 @@ const FIELDKIT_PATH = "agent-fieldkit/";
 const FIELDKIT_URL = `${PAGES_URL}/${FIELDKIT_PATH}`;
 const VOCALIST_PATH = "vocalist/";
 const VOCALIST_URL = `${PAGES_URL}/${VOCALIST_PATH}`;
+const SUPERMAX_PATH = "supermax/";
+const SUPERMAX_URL = `${PAGES_URL}/${SUPERMAX_PATH}`;
+const SUPERMAX_PACKAGE_COMMIT = "69bf385";
 const SAYSAY_PATH = "agent-fieldkit/saysay/";
 const SITE_TITLE = "l'Aicluse Agent Fieldkit";
 const SITE_DESCRIPTION =
@@ -22,6 +25,8 @@ const SITE_IMAGE_ALT = "l'Aicluse Agent Fieldkit: guardrails for coding agents t
 const SITE_TWITTER_IMAGE_ALT = "l'Aicluse Agent Fieldkit share card";
 const VOCALIST_IMAGE_ALT = "Vocalist: hands-free prompting for Codex and Claude Code.";
 const VOCALIST_TWITTER_IMAGE_ALT = "Vocalist app share card";
+const SUPERMAX_IMAGE_ALT = "Supermax: responsive cell distribution primitives for drilldown interfaces.";
+const SUPERMAX_TWITTER_IMAGE_ALT = "Supermax package share card";
 const ROOT_TITLE = "l'Aicluse";
 const ROOT_DESCRIPTION = "Apps and plugins for humans and coding agents.";
 const ROOT_IMAGE_ALT = "l'Aicluse: apps and plugins for humans and coding agents.";
@@ -132,6 +137,21 @@ const apps = [
 			"Local Parakeet speech-to-text runs on the Mac.",
 			"Speech-to-text has no cloud, no API keys, and no server-side account.",
 			"Submitted text is handed to the active coding-agent terminal; that agent's own provider policy still applies.",
+		],
+	},
+	{
+		name: "Supermax",
+		category: "JavaScript package",
+		tagline: "Responsive cell distribution primitives for drilldown interfaces.",
+		pagePath: SUPERMAX_PATH,
+		homepageUrl: SUPERMAX_URL,
+		packageName: "@laicluse/supermax",
+		install: `corepack pnpm add github:laicluse/supermax#${SUPERMAX_PACKAGE_COMMIT}`,
+		repoUrl: "https://github.com/laicluse/supermax",
+		features: [
+			"Distribute a left-to-right workspace across a fixed column budget.",
+			"Let a viewer, editor, or board decide which cells stay visible at each size.",
+			"Use a framework-free ESM package while the host application owns rendering.",
 		],
 	},
 ];
@@ -1193,6 +1213,194 @@ function renderVocalistPage(repoRoot, data, hash, assetVersions) {
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 }
 
+function buildSupermaxPage(app, hash, assetVersions) {
+	const pageUrl = SUPERMAX_URL;
+	const imageUrl = `${PAGES_URL}/assets/supermax-og-image.png?v=${hash}`;
+	const usage = `import { CellCollection } from "@laicluse/supermax";
+
+const cells = new CellCollection([
+  { id: "vault", title: "Vault", min: 3, max: 4 },
+  { id: "board", title: "Board", min: 8, max: 28, zoomable: true },
+  { id: "details", title: "Details", min: 6, max: 18 },
+]);
+
+const layout = cells.distribute(24, "board");`;
+
+	return `<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>${htmlEscape(app.name)}</title>
+		<meta
+			name="description"
+			content="${attributeEscape(app.tagline)}"
+		>
+		<link rel="canonical" href="${pageUrl}">
+
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="l'Aicluse Apps">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="${pageUrl}">
+		<meta property="og:title" content="${htmlEscape(app.name)}">
+		<meta property="og:description" content="${attributeEscape(app.tagline)}">
+		<meta property="og:image" content="${imageUrl}">
+		<meta property="og:image:secure_url" content="${imageUrl}">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:image:alt" content="${attributeEscape(SUPERMAX_IMAGE_ALT)}">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="${htmlEscape(app.name)}">
+		<meta name="twitter:description" content="${attributeEscape(app.tagline)}">
+		<meta name="twitter:image" content="${imageUrl}">
+		<meta name="twitter:image:alt" content="${attributeEscape(SUPERMAX_TWITTER_IMAGE_ALT)}">
+
+		<link rel="stylesheet" href="../styles.css?v=${assetVersions["styles.css"]}">
+		<script src="../code-panel-copy.js?v=${assetVersions["code-panel-copy.js"]}"></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../" aria-label="l'Aicluse Apps">
+				${renderWordmarkBrand("Apps")}
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="#install">Install</a>
+				<a href="#model">Model</a>
+				<a href="#source">Source</a>
+				<a href="../agent-fieldkit/">Agent Fieldkit</a>
+			</nav>
+		</header>
+
+		<main id="content">
+			<section id="top" class="hero supermax-hero">
+				<div class="hero-grid supermax-hero-grid">
+					<div class="hero-copy">
+						<p class="eyebrow">${htmlEscape(app.category)}</p>
+						<h1>${htmlEscape(app.name)}</h1>
+						<p class="lede">Responsive cell distribution primitives for a left-to-right workspace. Give Supermax a column budget and it returns which cells stay visible, how wide each cell should be, and which zoomable anchor gets priority.</p>
+						<div class="hero-actions" aria-label="Primary actions">
+							<a class="button primary" href="#install">Install the package</a>
+							<a class="button secondary" href="${attributeEscape(app.repoUrl)}">View source</a>
+						</div>
+					</div>
+
+					<aside class="supermax-panel" aria-label="Supermax layout preview">
+						<div class="supermax-toolbar">
+							<span>24 column budget</span>
+							<strong>@laicluse/supermax</strong>
+						</div>
+						<div class="supermax-preview-grid" aria-hidden="true">
+							<div class="supermax-preview-cell source">
+								<strong>Vault</strong>
+								<span>3 cols</span>
+							</div>
+							<div class="supermax-preview-cell context">
+								<strong>Epics</strong>
+								<span>5 cols</span>
+							</div>
+							<div class="supermax-preview-cell board">
+								<strong>Board</strong>
+								<span>10 cols</span>
+							</div>
+							<div class="supermax-preview-cell details">
+								<strong>Details</strong>
+								<span>6 cols</span>
+							</div>
+						</div>
+						<div class="supermax-preview-note">Zoom anchor: Board. Hidden cells are reported, not rendered.</div>
+					</aside>
+				</div>
+			</section>
+
+			<section id="install" class="section install-section" aria-labelledby="install-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Package</p>
+						<h2 id="install-title">Install the package and let the host render.</h2>
+					</div>
+					<p>Supermax is a framework-free ESM package. It does the distribution math; the host application owns rendering, transitions, persistence, and any viewer, editor, or board controls around it.</p>
+				</div>
+				<div class="install-grid install-grid-three">
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>1. Add it</h3>
+						</div>
+						<p>Pin the public GitHub package until it is published through a registry.</p>
+						<pre data-copyable><code>${htmlEscape(app.install)}</code></pre>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>2. Describe cells</h3>
+						</div>
+						<p>Each cell declares a minimum, maximum, title, and optional zoomable anchor behavior.</p>
+						<pre data-copyable><code>${htmlEscape(usage)}</code></pre>
+					</article>
+					<article class="install-block">
+						<div class="block-heading">
+							<h3>3. Render anywhere</h3>
+						</div>
+						<p>The result is plain data: actual width, visibility, hidden count, rightmost hidden title, and spare columns.</p>
+					</article>
+				</div>
+			</section>
+
+			<section id="model" class="section supermax-model-section" aria-labelledby="model-title">
+				<div class="section-heading">
+					<p class="eyebrow">Model</p>
+					<h2 id="model-title">Small package, one job: fit cells into a changing viewport.</h2>
+				</div>
+				<div class="supermax-detail-grid">
+					<article class="supermax-detail-card">
+						<h3>Column budget</h3>
+						<p>The column budget is the only input that needs to change with the viewport. Supermax fills visible cells by weight and clamps them to each cell's min and max.</p>
+					</article>
+					<article class="supermax-detail-card">
+						<h3>Zoomable anchors</h3>
+						<p>When a zoomable cell becomes the anchor, earlier cells can collapse first so the active work area stays readable instead of blindly centered.</p>
+					</article>
+					<article class="supermax-detail-card">
+						<h3>Plain output</h3>
+						<p>The package returns serializable layout data. A viewer, editor, or board can map that data to CSS grid, panes, portals, or baked static HTML.</p>
+					</article>
+				</div>
+			</section>
+
+			<section id="source" class="section supermax-source-section" aria-labelledby="source-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Source</p>
+						<h2 id="source-title">A public source package under l'Aicluse.</h2>
+					</div>
+					<p>The package exports <code>CellCollection</code> and <code>CellProxy</code>, and also assigns <code>globalThis.Supermax</code> for bundled browser compatibility. The public source lives at <a href="${attributeEscape(app.repoUrl)}">github.com/laicluse/supermax</a>.</p>
+				</div>
+				<ul class="supermax-feature-list">
+${renderList(app.features, "\t\t\t\t\t")}
+				</ul>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>Supermax</span>
+			<a href="https://laicluse.com/supermax/">laicluse.com/supermax</a>
+		</footer>
+	</body>
+</html>
+`;
+}
+
+function renderSupermaxPage(repoRoot, data, hash, assetVersions) {
+	const app = data.apps.find((item) => item.name === "Supermax");
+	if (!app) return;
+	const outputPath = path.join(repoRoot, "docs", SUPERMAX_PATH, "index.html");
+	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+	fs.writeFileSync(outputPath, buildSupermaxPage(app, hash, assetVersions));
+	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
+}
+
 // Build the share card as an SVG string. The plugin count, per-category counts,
 // and skill/Codex totals come from the live marketplace data, so the card stays
 // in sync every time the page is generated.
@@ -1294,6 +1502,48 @@ function buildVocalistOgSvg(app) {
 		<text x="740" y="475" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#31d994">&gt;</text>
 		<text x="778" y="475" font-family="${OG_MONO}" font-size="25" font-weight="700" fill="#f7f7f2" data-max-width="285" data-width-factor="0.62">Refactor notes</text>
 		<rect x="742" y="492" width="318" height="3" rx="1.5" fill="rgba(49,217,148,0.7)"/>
+	</g>
+</svg>
+`;
+}
+
+function buildSupermaxOgSvg(app) {
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<defs>
+		<pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+			<path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="1"/>
+		</pattern>
+		<linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#101511"/>
+			<stop offset="100%" stop-color="#080a08"/>
+		</linearGradient>
+		<filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+			<feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.34"/>
+		</filter>
+	</defs>
+	<rect width="1200" height="630" fill="#070807"/>
+	<rect width="1200" height="630" fill="url(#grid)"/>
+	<rect x="56" y="56" width="1088" height="518" rx="34" fill="url(#panel)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
+	${renderOgWordmark({ x: 88, y: 80, width: 270, fill: "#31d994" })}
+	<text x="380" y="140" font-family="${OG_SANS}" font-size="44" font-weight="800" fill="#31d994">Apps</text>
+	<text x="88" y="264" font-family="${OG_SANS}" font-size="108" font-weight="850" fill="#ffffff">${xmlEscape(app.name)}</text>
+	<text x="92" y="348" font-family="${OG_SANS}" font-size="40" font-weight="750" fill="#f7f7f2">Cell layout for drilldown interfaces.</text>
+	<g>
+		<rect x="92" y="470" width="330" height="62" rx="31" fill="rgba(112,167,255,0.12)" stroke="rgba(112,167,255,0.62)" stroke-width="2"/>
+		<text x="130" y="510" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#70a7ff">@laicluse/supermax</text>
+	</g>
+	<text x="92" y="432" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#31d994" data-max-width="360" data-width-factor="0.62">framework-free ESM</text>
+	<g filter="url(#softShadow)">
+		<rect x="620" y="136" width="438" height="360" rx="30" fill="#0d1110" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
+		<text x="660" y="194" font-family="${OG_MONO}" font-size="24" font-weight="800" fill="#a8b0aa">24 cols</text>
+		<rect x="660" y="238" width="76" height="168" rx="16" fill="#0f766e"/>
+		<rect x="750" y="238" width="98" height="168" rx="16" fill="#7c3aed"/>
+		<rect x="862" y="238" width="142" height="168" rx="16" fill="#0b6bcb"/>
+		<rect x="660" y="424" width="344" height="30" rx="15" fill="rgba(49,217,148,0.18)" stroke="rgba(49,217,148,0.45)" stroke-width="2"/>
+		<text x="685" y="333" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">Vault</text>
+		<text x="799" y="333" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">Epics</text>
+		<text x="933" y="333" font-family="${OG_MONO}" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle">Board</text>
+		<text x="832" y="446" font-family="${OG_MONO}" font-size="20" font-weight="800" fill="#31d994" text-anchor="middle">zoom anchor keeps the board visible</text>
 	</g>
 </svg>
 `;
@@ -1558,6 +1808,22 @@ function buildRootPage(hash, assetVersions) {
 							<p>A Mac menu-bar app for hands-free prompting: talk to Codex or Claude Code instead of typing.</p>
 							<a class="home-card-link" href="/vocalist/">See Vocalist</a>
 						</article>
+
+						<article class="home-product-card" id="supermax">
+							<div class="home-card-top">
+								<div>
+									<p class="eyebrow">Package</p>
+									<h2>Supermax</h2>
+								</div>
+								<div class="home-supermax-mark" aria-hidden="true">
+									<span></span>
+									<span></span>
+									<span></span>
+								</div>
+							</div>
+							<p>A framework-free layout package for responsive drilldown cells, zoom anchors, and side-by-side workspaces.</p>
+							<a class="home-card-link" href="/supermax/">See Supermax</a>
+						</article>
 					</div>
 				</div>
 			</section>
@@ -1585,6 +1851,7 @@ function main() {
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 
 	const vocalistApp = data.apps.find((item) => item.name === "Vocalist");
+	const supermaxApp = data.apps.find((item) => item.name === "Supermax");
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
 	const rootHash = renderOgImage(repoRoot, buildRootOgSvg(data), {
 		svgFileName: "root-og-card.svg",
@@ -1596,15 +1863,23 @@ function main() {
 				pngFileName: "vocalist-og-image.png",
 			})
 		: hash;
+	const supermaxHash = supermaxApp
+		? renderOgImage(repoRoot, buildSupermaxOgSvg(supermaxApp), {
+				svgFileName: "supermax-og-card.svg",
+				pngFileName: "supermax-og-image.png",
+			})
+		: hash;
 	writeSharedAssets(repoRoot);
 	const assetVersions = sharedAssetVersions(repoRoot);
 	updateFieldkitMeta(repoRoot, hash, assetVersions);
 	writeRootPage(repoRoot, rootHash, assetVersions);
 	renderPluginDetailPages(repoRoot, data, hash, assetVersions);
 	renderVocalistPage(repoRoot, data, vocalistHash, assetVersions);
+	renderSupermaxPage(repoRoot, data, supermaxHash, assetVersions);
 	process.stdout.write(`build-pages: og-image hash ${hash}\n`);
 	process.stdout.write(`build-pages: root-og-image hash ${rootHash}\n`);
 	process.stdout.write(`build-pages: vocalist-og-image hash ${vocalistHash}\n`);
+	process.stdout.write(`build-pages: supermax-og-image hash ${supermaxHash}\n`);
 }
 
 main();

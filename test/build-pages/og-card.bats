@@ -84,22 +84,23 @@ HTML
   grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
   grep -q 'Local-first, human-in-the-loop tools for working alongside AI' "$REPO/docs/index.html"
   grep -q 'href="/vocalist/"' "$REPO/docs/index.html"
+  grep -q 'href="/supermax/"' "$REPO/docs/index.html"
   grep -q 'href="/agent-fieldkit/"' "$REPO/docs/index.html"
   grep -q 'https://www.linkedin.com/in/lecluse' "$REPO/docs/index.html"
   grep -q 'assets/vocalist-icon.svg' "$REPO/docs/index.html"
   grep -q 'assets/laicluse-wordmark.svg' "$REPO/docs/styles.css"
   grep -q '<span class="wordmark" aria-hidden="true"></span><span class="sr-only">l'"'"'Aicluse</span>' "$REPO/docs/index.html"
   grep -q '<link rel="stylesheet" href="styles.css' "$REPO/docs/index.html"
-  run node -e 'const root=require("fs").readFileSync(process.argv[1],"utf8");if((root.match(/<h1\b/g)||[]).length!==1)throw new Error("expected one h1");const fieldkit=root.indexOf("<h2>Agent Fieldkit</h2>");const vocalist=root.indexOf("<h2>Vocalist</h2>");if(fieldkit<0)throw new Error("missing Agent Fieldkit h2");if(vocalist<0)throw new Error("missing Vocalist h2");if(fieldkit>vocalist)throw new Error("expected Agent Fieldkit before Vocalist");' "$REPO/docs/index.html"
+  run node -e 'const root=require("fs").readFileSync(process.argv[1],"utf8");if((root.match(/<h1\b/g)||[]).length!==1)throw new Error("expected one h1");const fieldkit=root.indexOf("<h2>Agent Fieldkit</h2>");const vocalist=root.indexOf("<h2>Vocalist</h2>");const supermax=root.indexOf("<h2>Supermax</h2>");if(fieldkit<0)throw new Error("missing Agent Fieldkit h2");if(vocalist<0)throw new Error("missing Vocalist h2");if(supermax<0)throw new Error("missing Supermax h2");if(fieldkit>vocalist || vocalist>supermax)throw new Error("expected Agent Fieldkit before Vocalist before Supermax");' "$REPO/docs/index.html"
   [ "$status" -eq 0 ]
 }
 
 @test "the root share card keeps the brand message minimal" {
   grep -q '>Apps and plugins for humans and coding agents<' "$REPO/docs/assets/root-og-card.svg"
-  grep -q '>1 app<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>2 apps<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 plugin<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>0 skills<' "$REPO/docs/assets/root-og-card.svg"
-  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Talk instead of typing\.<|>Codex \+ Claude Code<|>Human-in-the-loop<|>Local workflows<' "$REPO/docs/assets/root-og-card.svg"
+  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Supermax<|>Talk instead of typing\.<|>Codex \+ Claude Code<|>Cell layout<|>Human-in-the-loop<|>Local workflows<' "$REPO/docs/assets/root-og-card.svg"
   [ "$status" -ne 0 ]
 }
 

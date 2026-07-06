@@ -68,6 +68,21 @@
 				"Speech-to-text has no cloud, no API keys, and no server-side account.",
 				"Submitted text is handed to the active coding-agent terminal; that agent's own provider policy still applies."
 			]
+		},
+		{
+			"name": "Supermax",
+			"category": "JavaScript package",
+			"tagline": "Responsive cell distribution primitives for drilldown interfaces.",
+			"pagePath": "supermax/",
+			"homepageUrl": "https://laicluse.com/supermax/",
+			"packageName": "@laicluse/supermax",
+			"install": "corepack pnpm add github:laicluse/supermax#69bf385",
+			"repoUrl": "https://github.com/laicluse/supermax",
+			"features": [
+				"Distribute a left-to-right workspace across a fixed column budget.",
+				"Let a viewer, editor, or board decide which cells stay visible at each size.",
+				"Use a framework-free ESM package while the host application owns rendering."
+			]
 		}
 	],
 	"counts": {
