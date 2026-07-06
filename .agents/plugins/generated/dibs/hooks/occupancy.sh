@@ -75,7 +75,11 @@ occ_json_tool_paths() {
 occ_patch_paths() {
   local patch
   patch="$(jq -r '
-    (.tool_input.patch? // .tool_input.input? // .tool_input.content? // empty)
+    (
+      if (.tool_input? | type) == "string" then .tool_input
+      else (.tool_input.patch? // .tool_input.input? // .tool_input.content? // empty)
+      end
+    )
     | select(type == "string")
   ' <<< "$1" 2>/dev/null)"
   [ -n "$patch" ] || return 0
