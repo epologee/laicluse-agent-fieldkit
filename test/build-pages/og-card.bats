@@ -82,7 +82,7 @@ HTML
   grep -Eq '<meta property="og:image" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
   grep -Eq '<meta property="og:image:secure_url" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
   grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/root-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/index.html"
-  grep -q 'Open-source libraries, apps, and plugins for humans and coding agents' "$REPO/docs/index.html"
+  grep -q 'Tools, workflows and assistance for agentic coding' "$REPO/docs/index.html"
   grep -q 'href="/vocalist/"' "$REPO/docs/index.html"
   grep -q 'href="/supermax/"' "$REPO/docs/index.html"
   grep -q 'href="/agent-fieldkit/"' "$REPO/docs/index.html"
@@ -96,11 +96,11 @@ HTML
 }
 
 @test "the root share card keeps the brand message minimal" {
-  grep -q '>Open source, apps, and plugins for humans and coding agents<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>Tools, workflows and assistance for agentic coding<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 app<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 open source<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 plugin<' "$REPO/docs/assets/root-og-card.svg"
-  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Supermax<|>Talk instead of typing\.<|>Codex \+ Claude Code<|>Multi-pane layout<|>Human-in-the-loop<|>Local workflows<' "$REPO/docs/assets/root-og-card.svg"
+  run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Supermax<|>Talk instead of typing\.<|>Codex \+ Claude Code<|>Multi-pane layout<|>Human-in-the-loop<|>Local workflows<|>Apps and plugins for humans and coding agents<' "$REPO/docs/assets/root-og-card.svg"
   [ "$status" -ne 0 ]
 }
 

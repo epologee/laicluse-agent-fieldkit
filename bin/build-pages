@@ -28,8 +28,8 @@ const VOCALIST_TWITTER_IMAGE_ALT = "Vocalist app share card";
 const SUPERMAX_IMAGE_ALT = "Supermax: responsive cell distribution primitives for multi-pane layouts.";
 const SUPERMAX_TWITTER_IMAGE_ALT = "Supermax package share card";
 const ROOT_TITLE = "l'Aicluse";
-const ROOT_DESCRIPTION = "Open-source libraries, apps, and plugins for humans and coding agents.";
-const ROOT_IMAGE_ALT = "l'Aicluse: open-source libraries, apps, and plugins for humans and coding agents.";
+const ROOT_DESCRIPTION = "Tools, workflows and assistance for agentic coding";
+const ROOT_IMAGE_ALT = "l'Aicluse: Tools, workflows and assistance for agentic coding";
 const LINKEDIN_URL = "https://www.linkedin.com/in/lecluse";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
@@ -1656,7 +1656,7 @@ function buildRootOgSvg(data) {
 	<rect width="1200" height="630" fill="url(#grid)"/>
 	<rect x="54" y="52" width="1092" height="526" rx="34" fill="rgba(255,255,255,0.018)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
 	${renderOgWordmark({ x: 320, y: 82, width: 560, fill: "#f7f7f2" })}
-	<text x="600" y="374" text-anchor="middle" font-family="${OG_SANS}" font-size="40" font-weight="760" fill="#f7f7f2">Open source, apps, and plugins for humans and coding agents</text>
+	<text x="600" y="374" text-anchor="middle" font-family="${OG_SANS}" font-size="38" font-weight="760" fill="#f7f7f2">Tools, workflows and assistance for agentic coding</text>
 	<g>
 		<rect x="242" y="444" width="204" height="66" rx="33" fill="rgba(49,217,148,0.10)" stroke="rgba(49,217,148,0.58)" stroke-width="2"/>
 		<text x="344" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#31d994">${appLabel}</text>
@@ -1861,7 +1861,7 @@ function buildRootPage(hash, assetVersions) {
 				<div class="home-hero-inner">
 					<p class="eyebrow">Open source + apps + plugins</p>
 					${renderWordmarkHeading("home-title")}
-					<p class="lede">Open-source libraries, apps, and plugins for humans and coding agents.</p>
+					<p class="lede">Tools, workflows and assistance for agentic coding</p>
 				</div>
 			</section>
 
