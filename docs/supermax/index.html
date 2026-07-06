@@ -6,38 +6,38 @@
 		<title>Supermax</title>
 		<meta
 			name="description"
-			content="Responsive cell distribution primitives for drilldown interfaces."
+			content="Responsive cell distribution primitives for multi-pane layouts."
 		>
 		<link rel="canonical" href="https://laicluse.com/supermax/">
 
 		<meta property="og:type" content="website">
-		<meta property="og:site_name" content="l'Aicluse Apps">
+		<meta property="og:site_name" content="l'Aicluse Open Source">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:url" content="https://laicluse.com/supermax/">
 		<meta property="og:title" content="Supermax">
-		<meta property="og:description" content="Responsive cell distribution primitives for drilldown interfaces.">
-		<meta property="og:image" content="https://laicluse.com/assets/supermax-og-image.png?v=c79cb449ed">
-		<meta property="og:image:secure_url" content="https://laicluse.com/assets/supermax-og-image.png?v=c79cb449ed">
+		<meta property="og:description" content="Responsive cell distribution primitives for multi-pane layouts.">
+		<meta property="og:image" content="https://laicluse.com/assets/supermax-og-image.png?v=45a1f25293">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/supermax-og-image.png?v=45a1f25293">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
-		<meta property="og:image:alt" content="Supermax: responsive cell distribution primitives for drilldown interfaces.">
+		<meta property="og:image:alt" content="Supermax: responsive cell distribution primitives for multi-pane layouts.">
 
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="Supermax">
-		<meta name="twitter:description" content="Responsive cell distribution primitives for drilldown interfaces.">
-		<meta name="twitter:image" content="https://laicluse.com/assets/supermax-og-image.png?v=c79cb449ed">
+		<meta name="twitter:description" content="Responsive cell distribution primitives for multi-pane layouts.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/supermax-og-image.png?v=45a1f25293">
 		<meta name="twitter:image:alt" content="Supermax package share card">
 
-		<link rel="stylesheet" href="../styles.css?v=cfe37cfb4c">
+		<link rel="stylesheet" href="../styles.css?v=eafe748078">
 		<script src="../code-panel-copy.js?v=3ee1e4c503"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#content">Skip to content</a>
 
 		<header class="site-header" aria-label="Primary">
-			<a class="brand" href="../" aria-label="l'Aicluse Apps">
-				<span class="brand-title"><span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Apps</span><span class="sr-only">l'Aicluse Apps</span></span>
+			<a class="brand" href="../" aria-label="l'Aicluse Open Source">
+				<span class="brand-title"><span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Open Source</span><span class="sr-only">l'Aicluse Open Source</span></span>
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="#install">Install</a>
@@ -51,9 +51,9 @@
 			<section id="top" class="hero supermax-hero">
 				<div class="hero-grid supermax-hero-grid">
 					<div class="hero-copy">
-						<p class="eyebrow">JavaScript package</p>
+						<p class="eyebrow">Open-source JavaScript library</p>
 						<h1>Supermax</h1>
-						<p class="lede">Responsive cell distribution primitives for a left-to-right workspace. Give Supermax a column budget and it returns which cells stay visible, how wide each cell should be, and which zoomable anchor gets priority.</p>
+						<p class="lede">Responsive cell distribution primitives for a left-to-right layout. Give Supermax a column budget and it returns which cells stay visible, how wide each cell should be, and which zoomable anchor gets priority.</p>
 						<div class="hero-actions" aria-label="Primary actions">
 							<a class="button primary" href="#install">Install the package</a>
 							<a class="button secondary" href="https://github.com/laicluse/supermax">View source</a>
@@ -67,24 +67,38 @@
 						</div>
 						<div class="supermax-preview-grid" aria-hidden="true">
 							<div class="supermax-preview-cell source">
-								<strong>Vault</strong>
+								<strong>Menu</strong>
 								<span>3 cols</span>
 							</div>
 							<div class="supermax-preview-cell context">
-								<strong>Epics</strong>
+								<strong>List</strong>
 								<span>5 cols</span>
 							</div>
-							<div class="supermax-preview-cell board">
-								<strong>Board</strong>
+							<div class="supermax-preview-cell article">
+								<strong>Article</strong>
 								<span>10 cols</span>
 							</div>
-							<div class="supermax-preview-cell details">
-								<strong>Details</strong>
+							<div class="supermax-preview-cell notes">
+								<strong>Notes</strong>
 								<span>6 cols</span>
 							</div>
 						</div>
-						<div class="supermax-preview-note">Zoom anchor: Board. Hidden cells are reported, not rendered.</div>
+						<div class="supermax-preview-note">Zoom anchor: Article. Hidden cells are reported, not rendered.</div>
 					</aside>
+				</div>
+			</section>
+
+			<section class="section supermax-intro-section" aria-labelledby="intro-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Responsive model</p>
+						<h2 id="intro-title">One focused pane when space is tight. More context when space is available.</h2>
+					</div>
+					<div class="supermax-intro-copy">
+						<p>Most responsive layouts handle narrow screens by stacking columns into one long page. That works for editorial content, but data-heavy applications often need a different rhythm: one focused pane on small screens, and as much useful context as possible when there is room.</p>
+						<p>Supermax is built around that hybrid. On a phone, a layout can behave like an iOS-style navigation stack: move one step deeper, show one cell, and go back when needed. On a wider screen, those same cells sit side by side and grow up to their configured max widths.</p>
+						<p>The result is a layout engine that protects each pane's single responsibility while using the available screen real estate, from a phone to a 34-inch monitor.</p>
+					</div>
 				</div>
 			</section>
 
@@ -94,7 +108,7 @@
 						<p class="eyebrow">Package</p>
 						<h2 id="install-title">Install the package and let the host render.</h2>
 					</div>
-					<p>Supermax is a framework-free ESM package. It does the distribution math; the host application owns rendering, transitions, persistence, and any viewer, editor, or board controls around it.</p>
+					<p>Supermax is a framework-free ESM package. It does the distribution math; the host application owns rendering, transitions, persistence, and any reader, editor, or dashboard controls around it.</p>
 				</div>
 				<div class="install-grid install-grid-three">
 					<article class="install-block">
@@ -112,12 +126,13 @@
 						<pre data-copyable><code>import { CellCollection } from &quot;@laicluse/supermax&quot;;
 
 const cells = new CellCollection([
-  { id: &quot;vault&quot;, title: &quot;Vault&quot;, min: 3, max: 4 },
-  { id: &quot;board&quot;, title: &quot;Board&quot;, min: 8, max: 28, zoomable: true },
-  { id: &quot;details&quot;, title: &quot;Details&quot;, min: 6, max: 18 },
+  { id: &quot;menu&quot;, title: &quot;Menu&quot;, min: 3, max: 4 },
+  { id: &quot;list&quot;, title: &quot;List&quot;, min: 5, max: 10 },
+  { id: &quot;article&quot;, title: &quot;Article&quot;, min: 8, max: 28, zoomable: true },
+  { id: &quot;notes&quot;, title: &quot;Notes&quot;, min: 6, max: 18 },
 ]);
 
-const layout = cells.distribute(24, &quot;board&quot;);</code></pre>
+const layout = cells.distribute(24, &quot;article&quot;);</code></pre>
 					</article>
 					<article class="install-block">
 						<div class="block-heading">
@@ -144,7 +159,7 @@ const layout = cells.distribute(24, &quot;board&quot;);</code></pre>
 					</article>
 					<article class="supermax-detail-card">
 						<h3>Plain output</h3>
-						<p>The package returns serializable layout data. A viewer, editor, or board can map that data to CSS grid, panes, portals, or baked static HTML.</p>
+						<p>The package returns serializable layout data. A reader, editor, or dashboard can map that data to CSS grid, panes, portals, or baked static HTML.</p>
 					</article>
 				</div>
 			</section>
@@ -158,8 +173,8 @@ const layout = cells.distribute(24, &quot;board&quot;);</code></pre>
 					<p>The package exports <code>CellCollection</code> and <code>CellProxy</code>, and also assigns <code>globalThis.Supermax</code> for bundled browser compatibility. The public source lives at <a href="https://github.com/laicluse/supermax">github.com/laicluse/supermax</a>.</p>
 				</div>
 				<ul class="supermax-feature-list">
-					<li>Distribute a left-to-right workspace across a fixed column budget.</li>
-					<li>Let a viewer, editor, or board decide which cells stay visible at each size.</li>
+					<li>Distribute a left-to-right layout across a fixed column budget.</li>
+					<li>Let a reader, editor, or dashboard decide which cells stay visible at each size.</li>
 					<li>Use a framework-free ESM package while the host application owns rendering.</li>
 				</ul>
 			</section>

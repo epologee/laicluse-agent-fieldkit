@@ -25,11 +25,11 @@ const SITE_IMAGE_ALT = "l'Aicluse Agent Fieldkit: guardrails for coding agents t
 const SITE_TWITTER_IMAGE_ALT = "l'Aicluse Agent Fieldkit share card";
 const VOCALIST_IMAGE_ALT = "Vocalist: hands-free prompting for Codex and Claude Code.";
 const VOCALIST_TWITTER_IMAGE_ALT = "Vocalist app share card";
-const SUPERMAX_IMAGE_ALT = "Supermax: responsive cell distribution primitives for drilldown interfaces.";
+const SUPERMAX_IMAGE_ALT = "Supermax: responsive cell distribution primitives for multi-pane layouts.";
 const SUPERMAX_TWITTER_IMAGE_ALT = "Supermax package share card";
 const ROOT_TITLE = "l'Aicluse";
-const ROOT_DESCRIPTION = "Apps and plugins for humans and coding agents.";
-const ROOT_IMAGE_ALT = "l'Aicluse: apps and plugins for humans and coding agents.";
+const ROOT_DESCRIPTION = "Open-source libraries, apps, and plugins for humans and coding agents.";
+const ROOT_IMAGE_ALT = "l'Aicluse: open-source libraries, apps, and plugins for humans and coding agents.";
 const LINKEDIN_URL = "https://www.linkedin.com/in/lecluse";
 const OG_SANS = "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const OG_MONO = "'SFMono-Regular', Menlo, Consolas, monospace";
@@ -139,18 +139,21 @@ const apps = [
 			"Submitted text is handed to the active coding-agent terminal; that agent's own provider policy still applies.",
 		],
 	},
+];
+
+const openSource = [
 	{
 		name: "Supermax",
-		category: "JavaScript package",
-		tagline: "Responsive cell distribution primitives for drilldown interfaces.",
+		category: "Open-source JavaScript library",
+		tagline: "Responsive cell distribution primitives for multi-pane layouts.",
 		pagePath: SUPERMAX_PATH,
 		homepageUrl: SUPERMAX_URL,
 		packageName: "@laicluse/supermax",
 		install: `corepack pnpm add github:laicluse/supermax#${SUPERMAX_PACKAGE_COMMIT}`,
 		repoUrl: "https://github.com/laicluse/supermax",
 		features: [
-			"Distribute a left-to-right workspace across a fixed column budget.",
-			"Let a viewer, editor, or board decide which cells stay visible at each size.",
+			"Distribute a left-to-right layout across a fixed column budget.",
+			"Let a reader, editor, or dashboard decide which cells stay visible at each size.",
 			"Use a framework-free ESM package while the host application owns rendering.",
 		],
 	},
@@ -751,6 +754,7 @@ function build(repoRoot) {
 		},
 		categories,
 		apps,
+		openSource,
 		counts: {
 			sourcePackages: plugins.length,
 			codexPackages: plugins.filter((plugin) => plugin.codex).length,
@@ -1219,12 +1223,13 @@ function buildSupermaxPage(app, hash, assetVersions) {
 	const usage = `import { CellCollection } from "@laicluse/supermax";
 
 const cells = new CellCollection([
-  { id: "vault", title: "Vault", min: 3, max: 4 },
-  { id: "board", title: "Board", min: 8, max: 28, zoomable: true },
-  { id: "details", title: "Details", min: 6, max: 18 },
+  { id: "menu", title: "Menu", min: 3, max: 4 },
+  { id: "list", title: "List", min: 5, max: 10 },
+  { id: "article", title: "Article", min: 8, max: 28, zoomable: true },
+  { id: "notes", title: "Notes", min: 6, max: 18 },
 ]);
 
-const layout = cells.distribute(24, "board");`;
+const layout = cells.distribute(24, "article");`;
 
 	return `<!doctype html>
 <html lang="en">
@@ -1239,7 +1244,7 @@ const layout = cells.distribute(24, "board");`;
 		<link rel="canonical" href="${pageUrl}">
 
 		<meta property="og:type" content="website">
-		<meta property="og:site_name" content="l'Aicluse Apps">
+		<meta property="og:site_name" content="l'Aicluse Open Source">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:url" content="${pageUrl}">
 		<meta property="og:title" content="${htmlEscape(app.name)}">
@@ -1264,8 +1269,8 @@ const layout = cells.distribute(24, "board");`;
 		<a class="skip-link" href="#content">Skip to content</a>
 
 		<header class="site-header" aria-label="Primary">
-			<a class="brand" href="../" aria-label="l'Aicluse Apps">
-				${renderWordmarkBrand("Apps")}
+			<a class="brand" href="../" aria-label="l'Aicluse Open Source">
+				${renderWordmarkBrand("Open Source")}
 			</a>
 			<nav class="site-nav" aria-label="Sections">
 				<a href="#install">Install</a>
@@ -1281,7 +1286,7 @@ const layout = cells.distribute(24, "board");`;
 					<div class="hero-copy">
 						<p class="eyebrow">${htmlEscape(app.category)}</p>
 						<h1>${htmlEscape(app.name)}</h1>
-						<p class="lede">Responsive cell distribution primitives for a left-to-right workspace. Give Supermax a column budget and it returns which cells stay visible, how wide each cell should be, and which zoomable anchor gets priority.</p>
+						<p class="lede">Responsive cell distribution primitives for a left-to-right layout. Give Supermax a column budget and it returns which cells stay visible, how wide each cell should be, and which zoomable anchor gets priority.</p>
 						<div class="hero-actions" aria-label="Primary actions">
 							<a class="button primary" href="#install">Install the package</a>
 							<a class="button secondary" href="${attributeEscape(app.repoUrl)}">View source</a>
@@ -1295,24 +1300,38 @@ const layout = cells.distribute(24, "board");`;
 						</div>
 						<div class="supermax-preview-grid" aria-hidden="true">
 							<div class="supermax-preview-cell source">
-								<strong>Vault</strong>
+								<strong>Menu</strong>
 								<span>3 cols</span>
 							</div>
 							<div class="supermax-preview-cell context">
-								<strong>Epics</strong>
+								<strong>List</strong>
 								<span>5 cols</span>
 							</div>
-							<div class="supermax-preview-cell board">
-								<strong>Board</strong>
+							<div class="supermax-preview-cell article">
+								<strong>Article</strong>
 								<span>10 cols</span>
 							</div>
-							<div class="supermax-preview-cell details">
-								<strong>Details</strong>
+							<div class="supermax-preview-cell notes">
+								<strong>Notes</strong>
 								<span>6 cols</span>
 							</div>
 						</div>
-						<div class="supermax-preview-note">Zoom anchor: Board. Hidden cells are reported, not rendered.</div>
+						<div class="supermax-preview-note">Zoom anchor: Article. Hidden cells are reported, not rendered.</div>
 					</aside>
+				</div>
+			</section>
+
+			<section class="section supermax-intro-section" aria-labelledby="intro-title">
+				<div class="section-heading split-heading">
+					<div>
+						<p class="eyebrow">Responsive model</p>
+						<h2 id="intro-title">One focused pane when space is tight. More context when space is available.</h2>
+					</div>
+					<div class="supermax-intro-copy">
+						<p>Most responsive layouts handle narrow screens by stacking columns into one long page. That works for editorial content, but data-heavy applications often need a different rhythm: one focused pane on small screens, and as much useful context as possible when there is room.</p>
+						<p>Supermax is built around that hybrid. On a phone, a layout can behave like an iOS-style navigation stack: move one step deeper, show one cell, and go back when needed. On a wider screen, those same cells sit side by side and grow up to their configured max widths.</p>
+						<p>The result is a layout engine that protects each pane's single responsibility while using the available screen real estate, from a phone to a 34-inch monitor.</p>
+					</div>
 				</div>
 			</section>
 
@@ -1322,7 +1341,7 @@ const layout = cells.distribute(24, "board");`;
 						<p class="eyebrow">Package</p>
 						<h2 id="install-title">Install the package and let the host render.</h2>
 					</div>
-					<p>Supermax is a framework-free ESM package. It does the distribution math; the host application owns rendering, transitions, persistence, and any viewer, editor, or board controls around it.</p>
+					<p>Supermax is a framework-free ESM package. It does the distribution math; the host application owns rendering, transitions, persistence, and any reader, editor, or dashboard controls around it.</p>
 				</div>
 				<div class="install-grid install-grid-three">
 					<article class="install-block">
@@ -1364,7 +1383,7 @@ const layout = cells.distribute(24, "board");`;
 					</article>
 					<article class="supermax-detail-card">
 						<h3>Plain output</h3>
-						<p>The package returns serializable layout data. A viewer, editor, or board can map that data to CSS grid, panes, portals, or baked static HTML.</p>
+						<p>The package returns serializable layout data. A reader, editor, or dashboard can map that data to CSS grid, panes, portals, or baked static HTML.</p>
 					</article>
 				</div>
 			</section>
@@ -1393,7 +1412,7 @@ ${renderList(app.features, "\t\t\t\t\t")}
 }
 
 function renderSupermaxPage(repoRoot, data, hash, assetVersions) {
-	const app = data.apps.find((item) => item.name === "Supermax");
+	const app = data.openSource.find((item) => item.name === "Supermax");
 	if (!app) return;
 	const outputPath = path.join(repoRoot, "docs", SUPERMAX_PATH, "index.html");
 	fs.mkdirSync(path.dirname(outputPath), { recursive: true });
@@ -1525,9 +1544,9 @@ function buildSupermaxOgSvg(app) {
 	<rect width="1200" height="630" fill="url(#grid)"/>
 	<rect x="56" y="56" width="1088" height="518" rx="34" fill="url(#panel)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
 	${renderOgWordmark({ x: 88, y: 80, width: 270, fill: "#31d994" })}
-	<text x="380" y="140" font-family="${OG_SANS}" font-size="44" font-weight="800" fill="#31d994">Apps</text>
+	<text x="380" y="140" font-family="${OG_SANS}" font-size="44" font-weight="800" fill="#31d994">Open Source</text>
 	<text x="88" y="264" font-family="${OG_SANS}" font-size="108" font-weight="850" fill="#ffffff">${xmlEscape(app.name)}</text>
-	<text x="92" y="348" font-family="${OG_SANS}" font-size="40" font-weight="750" fill="#f7f7f2">Cell layout for drilldown interfaces.</text>
+	<text x="92" y="348" font-family="${OG_SANS}" font-size="40" font-weight="750" fill="#f7f7f2">Multi-pane layout for responsive apps.</text>
 	<g>
 		<rect x="92" y="470" width="330" height="62" rx="31" fill="rgba(112,167,255,0.12)" stroke="rgba(112,167,255,0.62)" stroke-width="2"/>
 		<text x="130" y="510" font-family="${OG_MONO}" font-size="25" font-weight="800" fill="#70a7ff">@laicluse/supermax</text>
@@ -1540,10 +1559,10 @@ function buildSupermaxOgSvg(app) {
 		<rect x="750" y="238" width="98" height="168" rx="16" fill="#7c3aed"/>
 		<rect x="862" y="238" width="142" height="168" rx="16" fill="#0b6bcb"/>
 		<rect x="660" y="424" width="344" height="30" rx="15" fill="rgba(49,217,148,0.18)" stroke="rgba(49,217,148,0.45)" stroke-width="2"/>
-		<text x="685" y="333" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">Vault</text>
-		<text x="799" y="333" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">Epics</text>
-		<text x="933" y="333" font-family="${OG_MONO}" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle">Board</text>
-		<text x="832" y="446" font-family="${OG_MONO}" font-size="20" font-weight="800" fill="#31d994" text-anchor="middle">zoom anchor keeps the board visible</text>
+		<text x="685" y="333" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">Menu</text>
+		<text x="799" y="333" font-family="${OG_MONO}" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">List</text>
+		<text x="933" y="333" font-family="${OG_MONO}" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle">Article</text>
+		<text x="832" y="446" font-family="${OG_MONO}" font-size="20" font-weight="800" fill="#31d994" text-anchor="middle">zoom anchor keeps the article visible</text>
 	</g>
 </svg>
 `;
@@ -1551,11 +1570,11 @@ function buildSupermaxOgSvg(app) {
 
 function buildRootOgSvg(data) {
 	const appCount = data.apps.length;
+	const openSourceCount = data.openSource.length;
 	const pluginCount = data.plugins.length;
-	const skillCount = data.counts.skillEntries;
 	const appLabel = formatCount(appCount, "app");
+	const openSourceLabel = formatCount(openSourceCount, "open source", "open source");
 	const pluginLabel = formatCount(pluginCount, "plugin");
-	const skillLabel = formatCount(skillCount, "skill");
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
 	<defs>
@@ -1573,14 +1592,14 @@ function buildRootOgSvg(data) {
 	<rect width="1200" height="630" fill="url(#grid)"/>
 	<rect x="54" y="52" width="1092" height="526" rx="34" fill="rgba(255,255,255,0.018)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
 	${renderOgWordmark({ x: 320, y: 82, width: 560, fill: "#f7f7f2" })}
-	<text x="600" y="374" text-anchor="middle" font-family="${OG_SANS}" font-size="40" font-weight="760" fill="#f7f7f2">Apps and plugins for humans and coding agents</text>
+	<text x="600" y="374" text-anchor="middle" font-family="${OG_SANS}" font-size="40" font-weight="760" fill="#f7f7f2">Open source, apps, and plugins for humans and coding agents</text>
 	<g>
 		<rect x="242" y="444" width="204" height="66" rx="33" fill="rgba(49,217,148,0.10)" stroke="rgba(49,217,148,0.58)" stroke-width="2"/>
 		<text x="344" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#31d994">${appLabel}</text>
 		<rect x="474" y="444" width="252" height="66" rx="33" fill="rgba(247,247,242,0.055)" stroke="rgba(255,255,255,0.20)" stroke-width="2"/>
-		<text x="600" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f7f7f2">${pluginLabel}</text>
+		<text x="600" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f7f7f2">${openSourceLabel}</text>
 		<rect x="754" y="444" width="204" height="66" rx="33" fill="rgba(246,180,75,0.11)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
-		<text x="856" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f6b44b">${skillLabel}</text>
+		<text x="856" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f6b44b">${pluginLabel}</text>
 	</g>
 </svg>
 `;
@@ -1776,9 +1795,9 @@ function buildRootPage(hash, assetVersions) {
 		<main id="content" class="home-main">
 			<section class="home-hero" aria-labelledby="home-title">
 				<div class="home-hero-inner">
-					<p class="eyebrow">Coding agent plugins + apps</p>
+					<p class="eyebrow">Open source + apps + plugins</p>
 					${renderWordmarkHeading("home-title")}
-					<p class="lede">Local-first, human-in-the-loop tools for working alongside AI.</p>
+					<p class="lede">Open-source libraries, apps, and plugins for humans and coding agents.</p>
 				</div>
 			</section>
 
@@ -1812,7 +1831,7 @@ function buildRootPage(hash, assetVersions) {
 						<article class="home-product-card" id="supermax">
 							<div class="home-card-top">
 								<div>
-									<p class="eyebrow">Package</p>
+									<p class="eyebrow">Open source</p>
 									<h2>Supermax</h2>
 								</div>
 								<div class="home-supermax-mark" aria-hidden="true">
@@ -1821,7 +1840,7 @@ function buildRootPage(hash, assetVersions) {
 									<span></span>
 								</div>
 							</div>
-							<p>A framework-free layout package for responsive drilldown cells, zoom anchors, and side-by-side workspaces.</p>
+							<p>A framework-free JavaScript library for responsive multi-pane layouts, zoom anchors, and side-by-side workspaces.</p>
 							<a class="home-card-link" href="/supermax/">See Supermax</a>
 						</article>
 					</div>
@@ -1851,7 +1870,7 @@ function main() {
 	process.stdout.write(`build-pages: wrote ${path.relative(repoRoot, outputPath)}\n`);
 
 	const vocalistApp = data.apps.find((item) => item.name === "Vocalist");
-	const supermaxApp = data.apps.find((item) => item.name === "Supermax");
+	const supermaxApp = data.openSource.find((item) => item.name === "Supermax");
 	const hash = renderOgImage(repoRoot, buildOgSvg(data));
 	const rootHash = renderOgImage(repoRoot, buildRootOgSvg(data), {
 		svgFileName: "root-og-card.svg",

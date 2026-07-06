@@ -42,8 +42,8 @@ HTML
   [ "$status" -eq 0 ]
 }
 
-@test "site-data.json carries a Supermax package entry" {
-  run node -e 'const a=require(process.argv[1]).apps||[];const s=a.find(x=>x.name==="Supermax");const ok=s && s.category==="JavaScript package" && s.pagePath==="supermax/" && s.homepageUrl==="https://laicluse.com/supermax/" && s.packageName==="@laicluse/supermax" && s.repoUrl==="https://github.com/laicluse/supermax" && /github:laicluse\/supermax#69bf385/.test(s.install||"");process.exit(ok?0:1)' "$REPO/docs/site-data.json"
+@test "site-data.json carries a Supermax open-source package entry" {
+  run node -e 'const data=require(process.argv[1]);const s=(data.openSource||[]).find(x=>x.name==="Supermax");const stillApp=(data.apps||[]).some(x=>x.name==="Supermax");const ok=s && !stillApp && s.category==="Open-source JavaScript library" && s.pagePath==="supermax/" && s.homepageUrl==="https://laicluse.com/supermax/" && s.packageName==="@laicluse/supermax" && s.repoUrl==="https://github.com/laicluse/supermax" && /github:laicluse\/supermax#69bf385/.test(s.install||"");process.exit(ok?0:1)' "$REPO/docs/site-data.json"
   [ "$status" -eq 0 ]
 }
 
@@ -104,22 +104,27 @@ HTML
   [ -f "$REPO/docs/supermax/index.html" ]
   grep -q '<link rel="canonical" href="https://laicluse.com/supermax/">' "$REPO/docs/supermax/index.html"
   grep -q '<meta property="og:url" content="https://laicluse.com/supermax/">' "$REPO/docs/supermax/index.html"
-  grep -q '<meta property="og:site_name" content="l'"'"'Aicluse Apps">' "$REPO/docs/supermax/index.html"
+  grep -q '<meta property="og:site_name" content="l'"'"'Aicluse Open Source">' "$REPO/docs/supermax/index.html"
   grep -Eq '<meta property="og:image" content="https://laicluse\.com/assets/supermax-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/supermax/index.html"
   grep -Eq '<meta property="og:image:secure_url" content="https://laicluse\.com/assets/supermax-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/supermax/index.html"
   grep -Eq '<meta name="twitter:image" content="https://laicluse\.com/assets/supermax-og-image\.png\?v=[0-9a-f]{10}">' "$REPO/docs/supermax/index.html"
   grep -q '<title>Supermax</title>' "$REPO/docs/supermax/index.html"
-  grep -q '<a class="brand" href="../" aria-label="l'"'"'Aicluse Apps">' "$REPO/docs/supermax/index.html"
+  grep -q '<a class="brand" href="../" aria-label="l'"'"'Aicluse Open Source">' "$REPO/docs/supermax/index.html"
+  grep -q '<span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Open Source</span><span class="sr-only">l'"'"'Aicluse Open Source</span>' "$REPO/docs/supermax/index.html"
   grep -q 'Responsive cell distribution primitives' "$REPO/docs/supermax/index.html"
+  run grep -q 'l'"'"'Aicluse Apps' "$REPO/docs/supermax/index.html"
+  [ "$status" -ne 0 ]
 }
 
 @test "build-pages writes a Supermax-specific social card" {
   [ -f "$REPO/docs/assets/supermax-og-card.svg" ]
-  grep -q '>Apps<' "$REPO/docs/assets/supermax-og-card.svg"
+  grep -q '>Open Source<' "$REPO/docs/assets/supermax-og-card.svg"
   grep -q 'Supermax' "$REPO/docs/assets/supermax-og-card.svg"
   grep -q '@laicluse/supermax' "$REPO/docs/assets/supermax-og-card.svg"
-  grep -q 'Cell layout' "$REPO/docs/assets/supermax-og-card.svg"
+  grep -q 'Multi-pane layout' "$REPO/docs/assets/supermax-og-card.svg"
   grep -q 'framework-free' "$REPO/docs/assets/supermax-og-card.svg"
+  run grep -q '>Apps<' "$REPO/docs/assets/supermax-og-card.svg"
+  [ "$status" -ne 0 ]
   run node "$BATS_TEST_DIRNAME/assert-svg-text-bounds.js" "$REPO/docs/assets/supermax-og-card.svg"
   [ "$status" -eq 0 ]
 
@@ -144,9 +149,12 @@ HTML
 
 @test "the /supermax route explains responsive cell distribution in user terms" {
   grep -q 'column budget' "$REPO/docs/supermax/index.html"
-  grep -q 'left-to-right workspace' "$REPO/docs/supermax/index.html"
-  grep -q 'viewer, editor, or board' "$REPO/docs/supermax/index.html"
+  grep -q 'left-to-right layout' "$REPO/docs/supermax/index.html"
+  grep -q 'reader, editor, or dashboard' "$REPO/docs/supermax/index.html"
   grep -q 'host application owns rendering' "$REPO/docs/supermax/index.html"
+  grep -q 'one focused pane on small screens' "$REPO/docs/supermax/index.html"
+  grep -q 'iOS-style navigation stack' "$REPO/docs/supermax/index.html"
+  grep -q '34-inch monitor' "$REPO/docs/supermax/index.html"
   grep -q 'framework-free ESM' "$REPO/docs/supermax/index.html"
 }
 

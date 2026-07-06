@@ -1671,11 +1671,13 @@ pre code {
   background: #7c3aed;
 }
 
-.supermax-preview-cell.board {
+.supermax-preview-cell.board,
+.supermax-preview-cell.article {
   background: #0b6bcb;
 }
 
-.supermax-preview-cell.details {
+.supermax-preview-cell.details,
+.supermax-preview-cell.notes {
   background: #be123c;
 }
 
@@ -1687,6 +1689,30 @@ pre code {
   padding: 0.75rem;
   font-family: var(--mono);
   font-size: 0.8rem;
+}
+
+.supermax-intro-section {
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.supermax-intro-section h2 {
+  color: var(--paper-ink);
+}
+
+.supermax-intro-section .eyebrow {
+  color: #0f8058;
+}
+
+.supermax-intro-copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.supermax-intro-copy p {
+  margin: 0;
+  color: var(--paper-muted);
+  font-size: clamp(1.02rem, 1.45vw, 1.18rem);
 }
 
 .supermax-model-section {
