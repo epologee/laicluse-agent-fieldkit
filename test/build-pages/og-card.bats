@@ -98,6 +98,7 @@ HTML
 @test "the root share card keeps the brand message minimal" {
   grep -q '>Tools, workflows and assistance for agentic coding<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 app<' "$REPO/docs/assets/root-og-card.svg"
+  grep -q '>3 projects<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 open source<' "$REPO/docs/assets/root-og-card.svg"
   grep -q '>1 plugin<' "$REPO/docs/assets/root-og-card.svg"
   run grep -Eq '>Agent Fieldkit<|>Vocalist<|>Supermax<|>Talk instead of typing\.<|>Codex \+ Claude Code<|>Multi-pane layout<|>Human-in-the-loop<|>Local workflows<|>Apps and plugins for humans and coding agents<' "$REPO/docs/assets/root-og-card.svg"

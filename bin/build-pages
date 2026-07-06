@@ -757,6 +757,7 @@ function build(repoRoot) {
 		openSource,
 		counts: {
 			sourcePackages: plugins.length,
+			publicProjects: 1 + apps.length + openSource.length,
 			codexPackages: plugins.filter((plugin) => plugin.codex).length,
 			claudeOnlyPackages: plugins.filter((plugin) => !plugin.codex).length,
 			changelogEntries: changelog.length,
@@ -1635,9 +1636,11 @@ function buildSupermaxOgSvg(app) {
 function buildRootOgSvg(data) {
 	const appCount = data.apps.length;
 	const openSourceCount = data.openSource.length;
+	const projectCount = data.counts.publicProjects;
 	const pluginCount = data.plugins.length;
 	const appLabel = formatCount(appCount, "app");
 	const openSourceLabel = formatCount(openSourceCount, "open source", "open source");
+	const projectLabel = formatCount(projectCount, "project");
 	const pluginLabel = formatCount(pluginCount, "plugin");
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
@@ -1658,12 +1661,14 @@ function buildRootOgSvg(data) {
 	${renderOgWordmark({ x: 320, y: 82, width: 560, fill: "#f7f7f2" })}
 	<text x="600" y="374" text-anchor="middle" font-family="${OG_SANS}" font-size="38" font-weight="760" fill="#f7f7f2">Tools, workflows and assistance for agentic coding</text>
 	<g>
-		<rect x="242" y="444" width="204" height="66" rx="33" fill="rgba(49,217,148,0.10)" stroke="rgba(49,217,148,0.58)" stroke-width="2"/>
-		<text x="344" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#31d994">${appLabel}</text>
-		<rect x="474" y="444" width="252" height="66" rx="33" fill="rgba(247,247,242,0.055)" stroke="rgba(255,255,255,0.20)" stroke-width="2"/>
-		<text x="600" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f7f7f2">${openSourceLabel}</text>
-		<rect x="754" y="444" width="204" height="66" rx="33" fill="rgba(246,180,75,0.11)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
-		<text x="856" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f6b44b">${pluginLabel}</text>
+		<rect x="126" y="444" width="172" height="66" rx="33" fill="rgba(49,217,148,0.10)" stroke="rgba(49,217,148,0.58)" stroke-width="2"/>
+		<text x="212" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#31d994">${appLabel}</text>
+		<rect x="326" y="444" width="238" height="66" rx="33" fill="rgba(49,217,148,0.07)" stroke="rgba(49,217,148,0.34)" stroke-width="2"/>
+		<text x="445" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#b9f5d8">${projectLabel}</text>
+		<rect x="592" y="444" width="254" height="66" rx="33" fill="rgba(247,247,242,0.055)" stroke="rgba(255,255,255,0.20)" stroke-width="2"/>
+		<text x="719" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f7f7f2">${openSourceLabel}</text>
+		<rect x="874" y="444" width="200" height="66" rx="33" fill="rgba(246,180,75,0.11)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
+		<text x="974" y="486" text-anchor="middle" font-family="${OG_MONO}" font-size="25" font-weight="850" fill="#f6b44b">${pluginLabel}</text>
 	</g>
 </svg>
 `;
