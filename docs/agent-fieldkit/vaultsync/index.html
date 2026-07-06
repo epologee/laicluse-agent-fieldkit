@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>vaultsync · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/vaultsync/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/vaultsync/">
+		<meta property="og:title" content="vaultsync · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=3c65d9a591">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=3c65d9a591">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="vaultsync · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=3c65d9a591">
+
+		<link rel="stylesheet" href="../../styles.css?v=eafe748078">
+		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
+		<script src="../../agent-command-switch.js?v=a82a9a6e56"></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-title"><span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Agent Fieldkit</span><span class="sr-only">l'Aicluse Agent Fieldkit</span></span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../#catalog">Catalog</a>
+				<a href="../#install">Install</a>
+				<a href="../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/vaultsync">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>vaultsync</h1>
+					<p class="lede">Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.1</span>
+						<span>1 skill</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>vaultsync turns a Markdown vault or note repository into a local-first sync backend. It watches a whole Git checkout, debounces Git-visible changes into commits, runs an optional verifier, and keeps the current branch reconciled with its upstream when one exists. It is built for prose-heavy repositories such as Markdown vaults, local knowledge stores, and other free-form text collections where small edits should become durable without every application reinventing sync.</p>
+<p>Remote sync is optional. A repository without a remote or upstream still gets the core behavior: debounced auto-commits plus verification. When an upstream is configured later, vaultsync starts fetching, rebasing, resolving conflicts through the configured LLM command, and pushing the current branch. It follows the branch already checked out and never creates branches or remotes.</p>
+<h2 id="capabilities">Capabilities</h2>
+<ul>
+<li>Registers a Git checkout as a vaultsync target.</li>
+<li>Stores runtime state under <code>${LAICLUSE_HOME:-$HOME/.laicluse}/vaultsync</code>.</li>
+<li>Installs a user-level macOS LaunchAgent for the daemon loop.</li>
+<li>Debounces dirty Git state before committing.</li>
+<li>Generates substantive English commit messages through the configured LLM command, with deterministic git-discipline-safe trailers.</li>
+<li>Runs an optional verifier before a cycle is considered clean.</li>
+<li>Asks the configured LLM command to repair bounded verifier failures for included text files.</li>
+<li>Claims <code>dibs</code> during mutating cycles so another agent does not edit the same checkout concurrently.</li>
+<li>When an upstream exists, fetches, rebases, resolves conflicts through the LLM command, and pushes the current branch.</li>
+<li>When no upstream exists, skips remote operations and remains a local auto-commit vault.</li>
+</ul>
+<h2 id="commands">Commands</h2>
+<pre><code class="language-bash">vaultsync install [path] --llm-command '&lt;json command&gt;' [--verify '&lt;command&gt;']
+vaultsync status [path] [--json]
+vaultsync now [path] [--json]
+vaultsync pause [path] [--minutes &lt;n&gt; | --until &lt;time&gt;] [--reason &lt;text&gt;]
+vaultsync resume [path]
+vaultsync doctor [path] --llm-command '&lt;json command&gt;'
+vaultsync daemon</code></pre>
+<p><code>install</code> resolves the requested path to the nearest Git worktree root and records that whole checkout. The current branch is the sync branch. The branch's upstream is recorded when present; missing upstream is allowed and means local-only mode.</p>
+<p><code>pause</code> always has an automatic resume deadline. The default is 120 minutes. If a pause expires while another live <code>dibs</code> holder still owns the checkout, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears.</p>
+<h2 id="llm-command-contract">LLM Command Contract</h2>
+<p>The configured LLM command reads one JSON object from stdin and writes one JSON object to stdout. The protocol field is <code>vaultsync.llm.v1</code>.</p>
+<p>For commit messages:</p>
+<pre><code class="language-json">{ &quot;message&quot;: &quot;Substantive English commit message body&quot; }</code></pre>
+<p>vaultsync keeps the LLM-generated subject and body but canonicalizes the required trailers:</p>
+<pre><code class="language-text">Tests: n/a (docs-only)
+Slice: docs-only
+Red-then-green: n/a (no executable behaviour changed)
+Vaultsync-Reason: &lt;cycle reason&gt;</code></pre>
+<p>For conflicts:</p>
+<pre><code class="language-json">{ &quot;resolved&quot;: &quot;full file content without conflict markers&quot; }</code></pre>
+<p>Remote/upstream content is authoritative. If local-only material cannot be merged cleanly, the resolver may preserve it in a sidecar file named like <code>name.conflict-extra-info.md</code>, but the original path must keep the remote truth intact.</p>
+<p>For verifier failures:</p>
+<pre><code class="language-json">{ &quot;repairs&quot;: [{ &quot;path&quot;: &quot;relative/path.md&quot;, &quot;content&quot;: &quot;full replacement content&quot;, &quot;reason&quot;: &quot;short reason&quot; }] }</code></pre>
+<p>vaultsync only accepts repairs for files included in the request. Verifier-reported files are included first, followed by current sync paths as context, with fixed limits on repair rounds, file count, and file size.</p>
+<h2 id="verification">Verification</h2>
+<p>Run the package tests from the source checkout:</p>
+<pre><code class="language-bash">npm test --prefix packages/vaultsync</code></pre>
+<p>The tests cover local-only installs without upstream, remote-backed sync cycles, managed sync hooks that explicitly permit <code>--no-verify</code>, verifier failure recording, and verifier repair loops.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="vaultsync install commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="install-vaultsync-claude">claude plugins install vaultsync@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="install-vaultsync-codex">codex plugin add vaultsync@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/vaultsync">Package source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

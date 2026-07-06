@@ -114,11 +114,14 @@ The lock only helps if it is acquired before mutation, so the reliable
 acquisition points are:
 
 - **Pre-mutation hook.** A coding agent claims the directory at its first
-  mutating file edit, not when the session starts. Read-only questions in an
-  occupied directory stay quiet; the refusal and worktree recovery suggestion
-  appear only when another live session already holds the directory and this
-  session tries to write. Claude and Codex call the same CLI; the on-disk lock
-  is the shared artifact.
+  mutating file edit or recognised mutating shell command, not when the session
+  starts. Read-only questions and read-only shell commands in an occupied
+  directory stay quiet; the refusal and worktree recovery suggestion appear only
+  when another live session already holds the directory and this session tries
+  to mutate it. Claude and Codex call the same CLI; the on-disk lock is the
+  shared artifact. Repos that should only be mutated through linked worktrees
+  can set local git config `laicluse.requireWorktree=true`; the hook then denies
+  mutating the primary checkout while allowing linked worktrees.
 - **Directory handout.** `bonsai` claims the lock for a worktree it hands out
   (it consumes this one implementation; there is no second lock anywhere). The
   git-native commit hook in the branch-worktree-discipline order remains the

@@ -97,11 +97,64 @@ occ_patch_paths() {
   '
 }
 
+occ_bash_command() {
+	jq -r '.tool_input.command // empty' <<< "$1" 2>/dev/null
+}
+
+occ_command_without_strings() {
+	printf '%s' "$1" | sed -E "s/'[^']*'//g; s/\"([^\"\\\\]|\\\\.)*\"//g"
+}
+
+occ_bash_mutates() {
+	local command="$1" stripped
+	[ -n "$command" ] || return 1
+	stripped="$(occ_command_without_strings "$command")"
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])(cp|mv|rm|mkdir|rmdir|touch|tee|ln|unlink|truncate|install)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?(add|stage|commit|checkout|switch|merge|rebase|reset|restore|clean|mv|rm|am|cherry-pick|revert)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?stash[[:space:]]+(push|pop|apply|drop|clear|save)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?worktree[[:space:]]+(add|remove|move|prune|repair)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?branch[[:space:]]+(-d|-D|-m|-M|-c|-C|--delete|--move|--copy)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?tag[[:space:]]+(-a|-s|-u|-d|--annotate|--sign|--delete)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])(npm|pnpm|yarn|bun)[[:space:]]+(install|add|remove|update|link|unlink)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])bundle[[:space:]]+(install|add|remove|update)([[:space:]\;\&\|\)]|$) ]] && return 0
+	[[ "$stripped" =~ (^|[[:space:]\;\&\|])[0-9]*\>\>?[[:space:]]*[^[:space:]\&] ]] && return 0
+	return 1
+}
+
+occ_bash_path_candidates() {
+	printf '%s\n' "$1" | awk '
+		{
+			while (match($0, /(^|[[:space:];&|<>()])((\/|\.{1,2}\/)[^[:space:];&|<>()"]+)/)) {
+				token = substr($0, RSTART, RLENGTH)
+				sub(/^[[:space:];&|<>()]+/, "", token)
+				print token
+				$0 = substr($0, RSTART + RLENGTH)
+			}
+		}
+	'
+}
+
+occ_bash_dirs() {
+	local input="$1" command path emitted=0
+	command="$(occ_bash_command "$input")"
+	occ_bash_mutates "$command" || return 0
+	while IFS= read -r path; do
+		[ -n "$path" ] || continue
+		occ_target_dir_for_path "$input" "$path" && emitted=1
+	done < <(occ_bash_path_candidates "$command")
+	[ "$emitted" -eq 1 ] || occ_cwd "$input"
+}
+
 occ_gate_dirs() {
   local input="$1" path
   {
-    occ_json_tool_paths "$input"
-    [ "$(occ_tool "$input")" = "apply_patch" ] && occ_patch_paths "$input"
+    case "$(occ_tool "$input")" in
+      Bash) occ_bash_dirs "$input" ;;
+      *)
+        occ_json_tool_paths "$input"
+        [ "$(occ_tool "$input")" = "apply_patch" ] && occ_patch_paths "$input"
+        ;;
+    esac
   } | while IFS= read -r path; do
     occ_target_dir_for_path "$input" "$path" || true
   done | awk 'NF && !seen[$0]++ { print }'
@@ -158,6 +211,44 @@ occ_refusal_suggestion() {
   jq -r '.suggestion // "Create a separate git worktree on a new branch (for example with bonsai:bonsai, or plain git worktree if you do not have it), then claim that worktree path."' 2>/dev/null
 }
 
+occ_abs_existing_dir() {
+	local path="$1" base
+	[ -n "$path" ] || return 1
+	case "$path" in
+		/*) ;;
+		*) path="$(pwd -P)/$path" ;;
+	esac
+	[ -d "$path" ] && { (cd "$path" && pwd -P); return 0; }
+	base="$(dirname "$path")"
+	[ -d "$base" ] && (cd "$base" && pwd -P)
+}
+
+occ_is_linked_worktree_root() {
+	local root="$1" git_dir common_dir git_abs common_abs
+	git_dir="$(git -C "$root" rev-parse --git-dir 2>/dev/null)" || return 1
+	common_dir="$(git -C "$root" rev-parse --git-common-dir 2>/dev/null)" || return 1
+	case "$git_dir" in /*) ;; *) git_dir="$root/$git_dir" ;; esac
+	case "$common_dir" in /*) ;; *) common_dir="$root/$common_dir" ;; esac
+	git_abs="$(occ_abs_existing_dir "$git_dir")" || return 1
+	common_abs="$(occ_abs_existing_dir "$common_dir")" || return 1
+	[ "$git_abs" != "$common_abs" ]
+}
+
+occ_requires_linked_worktree() {
+	local dir="$1" required
+	required="$(git -C "$dir" config --bool --get laicluse.requireWorktree 2>/dev/null || true)"
+	[ "$required" = "true" ] || return 1
+	occ_is_linked_worktree_root "$dir" && return 1
+	return 0
+}
+
+occ_enforce_worktree_requirement() {
+	local dir="$1"
+	occ_requires_linked_worktree "$dir" || return 0
+	printf '[dibs/worktree-required] %s has laicluse.requireWorktree=true; mutating the primary checkout is blocked. Create or use a linked git worktree, for example with bonsai:bonsai, and retry there.\n' "$dir" >&2
+	exit 2
+}
+
 occ_claim_output() {
   local input="$1" dir="${2:-}" dibs pid agent sid owner
   dibs="$(occ_dibs_bin)" || return 2
@@ -193,10 +284,13 @@ occ_refused_by_other() {
 occ_gate() {
   local input="$1" out rc dir dirs
   dirs="$(occ_gate_dirs "$input")"
-  [ -n "$dirs" ] || dirs="$(occ_cwd "$input")"
+  if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then
+    dirs="$(occ_cwd "$input")"
+  fi
   [ -n "$dirs" ] || return 0
   while IFS= read -r dir; do
     [ -n "$dir" ] || continue
+    occ_enforce_worktree_requirement "$dir"
     out="$(occ_claim_output "$input" "$dir")"
     rc=$?
     case "$rc" in 0 | 2 | 3) continue ;; esac
@@ -226,7 +320,7 @@ occ_dispatch() {
     SessionEnd)   occ_release "$input" ;;
     PreToolUse)
       case "$(occ_tool "$input")" in
-        Edit|Write|MultiEdit|apply_patch) occ_gate "$input" ;;
+        Bash|Edit|Write|MultiEdit|apply_patch) occ_gate "$input" ;;
       esac
       ;;
   esac

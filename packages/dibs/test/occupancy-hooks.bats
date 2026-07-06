@@ -27,6 +27,16 @@ run_hook() {
   run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
 }
 
+bash_emit() {
+	jq -nc --arg cwd "$DIR" --arg cmd "$1" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:$cmd}}'
+}
+
+run_bash_hook() {
+	bash_emit "$1" > "$BATS_TEST_TMPDIR/in.json"
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+}
+
 @test "gate hard-denies a write when a live other-session agent holds the dir" {
   sleep 60 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
@@ -91,6 +101,63 @@ run_hook() {
   [ "$status" -eq 0 ]
   run dibs check "$DIR" --json
   echo "$output" | grep -q "\"pid\": $$"
+}
+
+@test "Bash read-only command does not claim or block" {
+	sleep 60 & local other=$!
+	dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	run_bash_hook "git status --short"
+	local rc=$status out="$output"
+	run dibs check "$DIR" --json
+	kill "$other" 2>/dev/null || true
+	[ "$rc" -eq 0 ]
+	[ -z "$out" ]
+	echo "$output" | grep -q '"agent": "codex"'
+}
+
+@test "Bash mutating command gates an absolute target git worktree" {
+	local repo="$BATS_TEST_TMPDIR/repo"
+	mkdir -p "$repo"
+	git -C "$repo" init >/dev/null
+	git -C "$repo" config user.email test@example.invalid
+	git -C "$repo" config user.name Test
+	echo root > "$repo/README.md"
+	git -C "$repo" add README.md
+	git -C "$repo" commit -m init >/dev/null
+
+	sleep 60 & local other=$!
+	dibs claim "$repo" --pid "$other" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$BATS_TEST_TMPDIR"
+	run_bash_hook "touch $repo/new.txt"
+	kill "$other" 2>/dev/null || true
+	[ "$status" -eq 2 ]
+	echo "$output" | grep -q '\[dibs/occupancy\]'
+}
+
+@test "opt-in worktree requirement denies primary checkout mutation and allows linked worktree" {
+	local primary="$BATS_TEST_TMPDIR/primary"
+	local linked="$BATS_TEST_TMPDIR/linked"
+	mkdir -p "$primary"
+	git -C "$primary" init >/dev/null
+	git -C "$primary" config user.email test@example.invalid
+	git -C "$primary" config user.name Test
+	echo root > "$primary/README.md"
+	git -C "$primary" add README.md
+	git -C "$primary" commit -m init >/dev/null
+	git -C "$primary" config laicluse.requireWorktree true
+	git -C "$primary" worktree add -b linked "$linked" >/dev/null
+
+	export DIBS_HOLDER_PID=$$
+	DIR="$primary"
+	run_bash_hook "touch primary.txt"
+	[ "$status" -eq 2 ]
+	echo "$output" | grep -q '\[dibs/worktree-required\]'
+
+	DIR="$linked"
+	run_bash_hook "touch linked.txt"
+	[ "$status" -eq 0 ]
 }
 
 @test "gate self-heals a dead holder and allows the write" {

@@ -58,6 +58,11 @@
       "source": "./packages/pattern-memory"
     },
     {
+      "name": "vaultsync",
+      "description": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict handling while respecting dibs locks.",
+      "source": "./packages/vaultsync"
+    },
+    {
       "name": "laicluse-agent-fieldkit",
       "description": "Marketplace-wide utilities for the laicluse-agent-fieldkit marketplace. Currently ships /whats-new (namespaced as /laicluse-agent-fieldkit:whats-new when needed), a one-stop reader for the post-update CHANGELOG section of any installed plugin.",
       "source": "./packages/laicluse-agent-fieldkit"

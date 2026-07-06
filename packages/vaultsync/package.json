@@ -1,0 +1,9 @@
+{
+  "name": "vaultsync",
+  "private": true,
+  "type": "module",
+  "description": "Local-first Git sync automation for Markdown vault repositories, with debounce commits, upstream rebases, dibs-aware mutating cycles, and an LLM command contract for conflict handling.",
+  "scripts": {
+    "test": "node --test lib/test/*.test.js"
+  }
+}

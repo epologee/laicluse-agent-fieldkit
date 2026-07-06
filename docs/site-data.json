@@ -88,11 +88,11 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 19,
-		"codexPackages": 18,
+		"sourcePackages": 20,
+		"codexPackages": 19,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 19,
-		"skillEntries": 73,
+		"skillEntries": 74,
 		"hookFiles": 54
 	},
 	"install": {
@@ -108,6 +108,7 @@
 			"claude plugins install anger-management@laicluse-agent-fieldkit",
 			"claude plugins install drydry@laicluse-agent-fieldkit",
 			"claude plugins install pattern-memory@laicluse-agent-fieldkit",
+			"claude plugins install vaultsync@laicluse-agent-fieldkit",
 			"claude plugins install laicluse-agent-fieldkit@laicluse-agent-fieldkit",
 			"claude plugins install autonomous@laicluse-agent-fieldkit",
 			"claude plugins install clipboard@laicluse-agent-fieldkit",
@@ -130,6 +131,7 @@
 			"codex plugin add anger-management@laicluse-agent-fieldkit",
 			"codex plugin add drydry@laicluse-agent-fieldkit",
 			"codex plugin add pattern-memory@laicluse-agent-fieldkit",
+			"codex plugin add vaultsync@laicluse-agent-fieldkit",
 			"codex plugin add laicluse-agent-fieldkit@laicluse-agent-fieldkit",
 			"codex plugin add clipboard@laicluse-agent-fieldkit",
 			"codex plugin add gurus@laicluse-agent-fieldkit",
@@ -187,7 +189,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.29",
+			"version": "2.0.30",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -202,9 +204,9 @@
 			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.28",
-				"type": "Changed",
-				"summary": "Exclude management is now the imperative pair exclude / include."
+				"version": "v2.0.30",
+				"type": "Added",
+				"summary": "Bash mutations now participate in occupancy."
 			}
 		},
 		{
@@ -360,6 +362,24 @@
 				"type": "Changed",
 				"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry."
 			}
+		},
+		{
+			"name": "vaultsync",
+			"version": "2.0.1",
+			"category": "feedback",
+			"summary": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"detailPath": "agent-fieldkit/vaultsync/",
+			"sourcePath": "packages/vaultsync",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/vaultsync",
+			"skillCount": 1,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": null
 		},
 		{
 			"name": "laicluse-agent-fieldkit",
@@ -589,11 +609,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.29",
+			"packageVersion": "2.0.30",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.28",
-			"type": "Changed",
-			"summary": "Exclude management is now the imperative pair exclude / include.",
+			"version": "v2.0.30",
+			"type": "Added",
+			"summary": "Bash mutations now participate in occupancy.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{

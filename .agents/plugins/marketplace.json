@@ -125,6 +125,18 @@
       "category": "Productivity"
     },
     {
+      "name": "vaultsync",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/vaultsync"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
       "name": "laicluse-agent-fieldkit",
       "source": {
         "source": "local",
