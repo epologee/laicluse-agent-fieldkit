@@ -76,7 +76,14 @@ This also works mid-session during `/saysay`. Add the word and use it immediatel
 echo "The text to be spoken." | saysay --context "label"
 ```
 
+If `saysay` is not on `PATH`, resolve the plugin's `bin/saysay` and call that
+executable. Do not fall back to direct `say`, and do not pick a voice with
+`say -v ...` as a workaround for a bad or forbidden default voice. A voice
+problem is a `saysay`/system-voice configuration issue to report or fix at its
+source; direct `say` bypasses the serializer and violates this skill.
+
 **Never this:** `say -r 240` (direct say, no serialization)
+**Never this:** `say -v Ellen -r 240` (direct say with a manual voice)
 **Never this:** `say-phonetic process | say -r 240` (old pipeline)
 **Never this:** heredoc syntax (`saysay <<'SAY'`), that sprawls across the transcript
 **Always this:** `echo "text" | saysay --context "label"`
@@ -174,4 +181,4 @@ When say mode is active and another skill produces output (recap, changelog, ana
 
 ## Persistent mode
 
-Say mode stays active until the user says `/saysay off`. Every response ends with a `say` call. This applies to short answers, error messages, and intermediate steps as well. If you have nothing substantial to report, you do not need to speak (e.g. a pure tool call without a conclusion).
+Say mode stays active until the user says `/saysay off`. Every response ends with a `saysay` call. This applies to short answers, error messages, and intermediate steps as well. If you have nothing substantial to report, you do not need to speak (e.g. a pure tool call without a conclusion).

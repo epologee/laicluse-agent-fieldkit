@@ -521,7 +521,7 @@
 		},
 		{
 			"name": "saysay",
-			"version": "2.0.5",
+			"version": "2.0.6",
 			"category": "feedback",
 			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
 			"support": [
@@ -652,6 +652,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
 		},
 		{
+			"plugin": "saysay",
+			"packageVersion": "2.0.6",
+			"detailPath": "agent-fieldkit/saysay/",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
+		},
+		{
 			"plugin": "house-rules",
 			"packageVersion": "2.0.5",
 			"detailPath": "agent-fieldkit/house-rules/",
@@ -668,15 +677,6 @@
 			"type": "Added",
 			"summary": "$whats-new now works in Codex.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
-		},
-		{
-			"plugin": "saysay",
-			"packageVersion": "2.0.5",
-			"detailPath": "agent-fieldkit/saysay/",
-			"version": "v2.0.1",
-			"type": "Added",
-			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
 			"plugin": "whywhy",

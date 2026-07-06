@@ -1,6 +1,6 @@
 {
   "name": "saysay",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Speech mode for macOS: the agent speaks every response aloud through the `say` command, translating screen content into spoken language instead of reading it out verbatim. /saysay toggles it on, /saysay off exits. Ships a per-user phonetic dictionary plus serialized, ducked playback so parallel sessions speak one after another.",
   "author": {
     "name": "local"
