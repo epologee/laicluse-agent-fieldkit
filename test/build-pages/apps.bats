@@ -158,6 +158,14 @@ HTML
   grep -q 'framework-free ESM' "$REPO/docs/supermax/index.html"
 }
 
+@test "the /supermax route visualizes responsive shrink behavior" {
+  grep -q 'Responsive behavior comparison' "$REPO/docs/supermax/index.html"
+  grep -q 'Standard responsive' "$REPO/docs/supermax/index.html"
+  grep -q 'Supermax' "$REPO/docs/supermax/index.html"
+  grep -q 'class="supermax-animation-section"' "$REPO/docs/supermax/index.html"
+  grep -q 'demoViewportShrink' "$REPO/docs/styles.css"
+}
+
 @test "the /vocalist route carries the public install and release links" {
   grep -q 'Install, connect, run' "$REPO/docs/vocalist/index.html"
   grep -q 'brew install --cask laicluse/tap/vocalist' "$REPO/docs/vocalist/index.html"

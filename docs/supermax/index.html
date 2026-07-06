@@ -29,7 +29,7 @@
 		<meta name="twitter:image" content="https://laicluse.com/assets/supermax-og-image.png?v=45a1f25293">
 		<meta name="twitter:image:alt" content="Supermax package share card">
 
-		<link rel="stylesheet" href="../styles.css?v=eafe748078">
+		<link rel="stylesheet" href="../styles.css?v=3e75879177">
 		<script src="../code-panel-copy.js?v=3ee1e4c503"></script>
 	</head>
 	<body>
@@ -98,6 +98,57 @@
 						<p>Most responsive layouts handle narrow screens by stacking columns into one long page. That works for editorial content, but data-heavy applications often need a different rhythm: one focused pane on small screens, and as much useful context as possible when there is room.</p>
 						<p>Supermax is built around that hybrid. On a phone, a layout can behave like an iOS-style navigation stack: move one step deeper, show one cell, and go back when needed. On a wider screen, those same cells sit side by side and grow up to their configured max widths.</p>
 						<p>The result is a layout engine that protects each pane's single responsibility while using the available screen real estate, from a phone to a 34-inch monitor.</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="supermax-animation-section" aria-labelledby="comparison-title">
+				<div class="supermax-animation-frame">
+					<div class="supermax-animation-heading">
+						<div>
+							<p class="eyebrow">Responsive behavior comparison</p>
+							<h2 id="comparison-title">Same shrink, different outcome.</h2>
+						</div>
+						<p>Both viewports shrink in sync. One layout turns columns into a long page; Supermax keeps the current responsibility in focus and reports the hidden cells.</p>
+					</div>
+					<div class="supermax-animation-grid">
+						<article class="supermax-animation-card">
+							<header>
+								<strong>Standard responsive</strong>
+								<span>Columns stack into a page</span>
+							</header>
+							<div class="responsive-demo-stage" aria-hidden="true">
+								<div class="responsive-demo-viewport standard-demo-viewport">
+									<div class="standard-demo-content">
+										<span class="standard-demo-tile hero"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile wide"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile tall"></span>
+									</div>
+								</div>
+							</div>
+						</article>
+						<article class="supermax-animation-card">
+							<header>
+								<strong>Supermax</strong>
+								<span>Cells stay intentional</span>
+							</header>
+							<div class="responsive-demo-stage" aria-hidden="true">
+								<div class="responsive-demo-viewport supermax-demo-viewport">
+									<div class="supermax-demo-back">Back</div>
+									<div class="supermax-demo-content">
+										<span class="supermax-demo-cell menu">Menu</span>
+										<span class="supermax-demo-cell list">List</span>
+										<span class="supermax-demo-cell article">Article</span>
+										<span class="supermax-demo-cell notes">Notes</span>
+									</div>
+									<div class="supermax-demo-status">Hidden: Menu, List, Notes</div>
+								</div>
+							</div>
+						</article>
 					</div>
 				</div>
 			</section>

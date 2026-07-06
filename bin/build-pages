@@ -1335,6 +1335,57 @@ const layout = cells.distribute(24, "article");`;
 				</div>
 			</section>
 
+			<section class="supermax-animation-section" aria-labelledby="comparison-title">
+				<div class="supermax-animation-frame">
+					<div class="supermax-animation-heading">
+						<div>
+							<p class="eyebrow">Responsive behavior comparison</p>
+							<h2 id="comparison-title">Same shrink, different outcome.</h2>
+						</div>
+						<p>Both viewports shrink in sync. One layout turns columns into a long page; Supermax keeps the current responsibility in focus and reports the hidden cells.</p>
+					</div>
+					<div class="supermax-animation-grid">
+						<article class="supermax-animation-card">
+							<header>
+								<strong>Standard responsive</strong>
+								<span>Columns stack into a page</span>
+							</header>
+							<div class="responsive-demo-stage" aria-hidden="true">
+								<div class="responsive-demo-viewport standard-demo-viewport">
+									<div class="standard-demo-content">
+										<span class="standard-demo-tile hero"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile wide"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile tall"></span>
+									</div>
+								</div>
+							</div>
+						</article>
+						<article class="supermax-animation-card">
+							<header>
+								<strong>Supermax</strong>
+								<span>Cells stay intentional</span>
+							</header>
+							<div class="responsive-demo-stage" aria-hidden="true">
+								<div class="responsive-demo-viewport supermax-demo-viewport">
+									<div class="supermax-demo-back">Back</div>
+									<div class="supermax-demo-content">
+										<span class="supermax-demo-cell menu">Menu</span>
+										<span class="supermax-demo-cell list">List</span>
+										<span class="supermax-demo-cell article">Article</span>
+										<span class="supermax-demo-cell notes">Notes</span>
+									</div>
+									<div class="supermax-demo-status">Hidden: Menu, List, Notes</div>
+								</div>
+							</div>
+						</article>
+					</div>
+				</div>
+			</section>
+
 			<section id="install" class="section install-section" aria-labelledby="install-title">
 				<div class="section-heading split-heading">
 					<div>
