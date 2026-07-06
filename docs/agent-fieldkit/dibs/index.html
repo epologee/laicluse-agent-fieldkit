@@ -13,8 +13,8 @@
 		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dibs/">
 		<meta property="og:title" content="dibs · l'Aicluse Agent Fieldkit">
 		<meta property="og:description" content="Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.">
-		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=1810c33722">
-		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=1810c33722">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=3c65d9a591">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=3c65d9a591">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
@@ -22,7 +22,7 @@
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="dibs · l'Aicluse Agent Fieldkit">
 		<meta name="twitter:description" content="Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.">
-		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=1810c33722">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=3c65d9a591">
 
 		<link rel="stylesheet" href="../../styles.css?v=3e75879177">
 		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
@@ -52,7 +52,7 @@
 					<p class="lede">Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.29</span>
+						<span>2.0.30</span>
 						<span>2 skills</span>
 					</div>
 				</div>
@@ -96,10 +96,13 @@ dibs excludes    [--json]</code></pre>
 <p>The lock only helps if it is acquired before mutation. dibs ships <code>hooks/occupancy.sh</code>, a vendor-neutral hook that enforces single occupancy for mutating file edits, not only the worktrees <code>bonsai</code> hands out. It is registered for both agents (<code>hooks/hooks.json</code> for Claude, <code>hooks/hooks.codex.json</code> for Codex, materialized into the generated Codex adapter) and shells out to this plugin's own CLI, so there is no second lock path.</p>
 <ul>
 <li><strong>SessionStart</strong> does not claim the working directory. A read-only question in a directory another live agent holds stays quiet and does not occupy the directory.</li>
-<li><strong>PreToolUse</strong> (file edits: <code>Edit</code> / <code>Write</code> / <code>MultiEdit</code> / <code>apply_patch</code>) claims the directory before the mutation and hard-denies (exit 2) when a <em>different</em> live session holds it, reporting the holder and how to recover. The recovery text points the blocked agent at a separate git worktree on a new branch, so the safe next move is visible at the denial point. The agent's own session is recognised by the lock's stable owner id first and the hook session id second, so a drifted worker pid or resumed Codex thread never self-locks the agent out. A legacy ownerless Codex resume is reclaimed at the first write. A free directory, a self-healed dead holder, and any non-refusal dibs result all pass (fail-open).</li>
+<li><strong>PreToolUse</strong> claims the directory before mutating file edits (<code>Edit</code> / <code>Write</code> / <code>MultiEdit</code> / <code>apply_patch</code>) and conservative shell mutations (<code>Bash</code>) such as <code>cp</code>, <code>mv</code>, <code>rm</code>, <code>touch</code>, mutating <code>git</code> subcommands, package installs, and shell redirection. Read-only shell commands stay quiet. When a shell command names absolute or relative path operands, dibs gates those target worktrees; otherwise it falls back to the hook cwd only for commands it recognised as mutating. It hard-denies (exit 2) when a <em>different</em> live session holds the target, reporting the holder and how to recover. The recovery text points the blocked agent at a separate git worktree on a new branch, so the safe next move is visible at the denial point. The agent's own session is recognised by the lock's stable owner id first and the hook session id second, so a drifted worker pid or resumed Codex thread never self-locks the agent out. A legacy ownerless Codex resume is reclaimed at the first write. A free directory, a self-healed dead holder, and any non-refusal dibs result all pass (fail-open).</li>
 <li><strong>SessionEnd</strong> (Claude only) releases every directory the session locked, not just the cwd: it sweeps with <code>release-all</code> keyed by the session's holder pid, so a session that edited several git roots leaves nothing locked behind. Codex has no session-end event, so a Codex lock clears through pid-liveness self-heal on the next claim, or through owner-based reclaim on a Codex resume, which is expected rather than a leak.</li>
 </ul>
-<p>Shell (<code>Bash</code>) mutations are intentionally not gated; the git-native commit hook remains the backstop for those and for agents under bypassPermissions. Opt out of enforcement for a session with <code>DIBS_OCCUPANCY=off</code>. <code>bonsai</code>'s claim-at-handout is unaffected and complementary.</p>
+<p>Repos that should only be mutated through linked worktrees can opt in locally:</p>
+<pre><code class="language-bash">git config laicluse.requireWorktree true</code></pre>
+<p>When that config is true, the occupancy hook denies mutating the primary checkout and still allows linked worktrees for the same repository. This is local git config by design: dibs stays a general lock by default, and only repos that explicitly ask for worktree-only mutation get the extra guard.</p>
+<p>Opt out of enforcement for a session with <code>DIBS_OCCUPANCY=off</code>. <code>bonsai</code>'s claim-at-handout is unaffected and complementary.</p>
 <h2 id="excludes">Excludes</h2>
 <p>Some directories should never take an occupancy lock: the agent-config homes, where two sessions each editing their own runtime config must not steer each other aside and the git-native commit hook is the backstop. dibs keeps a per-machine exclude list. <code>claim</code> and <code>check</code> on an excluded directory (or any path inside it) return state <code>excluded</code> and write no lock, so the occupancy hook passes the edit through untouched. Exclusion lives in the CLI, not the hook, so there is a single decision point.</p>
 <p>The list is the union of built-in defaults and a plain-text config file at <code>${LAICLUSE_HOME:-$HOME/.laicluse}/dibs/excludes</code> (one path per line, <code>#</code> comments and blank lines ignored, a leading <code>~</code> expands to <code>$HOME</code>). Every install ships with <code>/tmp</code> (transient scratch) and the agent-config homes (<code>~/.claude</code>, <code>~/.codex</code>, <code>~/.config/opencode</code>) excluded by default; those cannot be included back. Manage the rest with the imperative pair <code>exclude</code>/<code>include</code>:</p>

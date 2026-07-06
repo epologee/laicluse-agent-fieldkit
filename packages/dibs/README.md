@@ -136,10 +136,15 @@ plugin's own CLI, so there is no second lock path.
 - **SessionStart** does not claim the working directory. A read-only question in
   a directory another live agent holds stays quiet and does not occupy the
   directory.
-- **PreToolUse** (file edits: `Edit` / `Write` / `MultiEdit` / `apply_patch`)
-  claims the directory before the mutation and hard-denies (exit 2) when a
-  *different* live session holds it, reporting the holder and how to recover.
-  The recovery text points the blocked agent at a separate git worktree on a new
+- **PreToolUse** claims the directory before mutating file edits (`Edit` /
+  `Write` / `MultiEdit` / `apply_patch`) and conservative shell mutations
+  (`Bash`) such as `cp`, `mv`, `rm`, `touch`, mutating `git` subcommands,
+  package installs, and shell redirection. Read-only shell commands stay quiet.
+  When a shell command names absolute or relative path operands, dibs gates
+  those target worktrees; otherwise it falls back to the hook cwd only for
+  commands it recognised as mutating. It hard-denies (exit 2) when a *different*
+  live session holds the target, reporting the holder and how to recover. The
+  recovery text points the blocked agent at a separate git worktree on a new
   branch, so the safe next move is visible at the denial point.
   The agent's own session is recognised by the lock's stable owner id first and
   the hook session id second, so a drifted worker pid or resumed Codex thread
@@ -153,9 +158,18 @@ plugin's own CLI, so there is no second lock path.
   on the next claim, or through owner-based reclaim on a Codex resume, which is
   expected rather than a leak.
 
-Shell (`Bash`) mutations are intentionally not gated; the git-native commit hook
-remains the backstop for those and for agents under bypassPermissions. Opt out
-of enforcement for a session with `DIBS_OCCUPANCY=off`. `bonsai`'s
+Repos that should only be mutated through linked worktrees can opt in locally:
+
+```bash
+git config laicluse.requireWorktree true
+```
+
+When that config is true, the occupancy hook denies mutating the primary
+checkout and still allows linked worktrees for the same repository. This is
+local git config by design: dibs stays a general lock by default, and only repos
+that explicitly ask for worktree-only mutation get the extra guard.
+
+Opt out of enforcement for a session with `DIBS_OCCUPANCY=off`. `bonsai`'s
 claim-at-handout is unaffected and complementary.
 
 ## Excludes

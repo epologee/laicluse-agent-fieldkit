@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import { parseInvocation, helpText } from '../lib/cli.mjs';
+import { runCommand } from '../lib/runtime.mjs';
+
+const inv = parseInvocation(process.argv.slice(2));
+
+if (inv.kind === 'help') {
+  process.stdout.write(`${helpText()}\n`);
+  process.exit(0);
+}
+
+if (inv.kind === 'unknown') {
+  process.stderr.write(`vaultsync: unknown command '${inv.command}'\n\n${helpText()}\n`);
+  process.exit(2);
+}
+
+try {
+  await runCommand(inv.command, inv.args);
+} catch (err) {
+  process.stderr.write(`vaultsync: ${err.message}\n`);
+  if (err.detail) process.stderr.write(`${err.detail}\n`);
+  process.exit(err.exitCode || 1);
+}

@@ -63,6 +63,7 @@ The marketplace currently ships:
   recipes. Keeps personal patterns under `${LAICLUSE_HOME:-$HOME/.laicluse}` as
   Markdown, omits private precedents from public artifacts, and gives agents a
   preflight lookup before fresh implementation work.
+- `vaultsync`: local-first Git sync automation for Markdown vault repositories. Debounces Git-visible changes into verified commits, works local-only without an upstream, and syncs with upstream when one exists.
 - `laicluse-agent-fieldkit`: marketplace-wide utilities.
   `/whats-new [plugin]`
   re-reads the latest CHANGELOG section of any installed plugin, or the
