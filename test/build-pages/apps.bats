@@ -163,12 +163,12 @@ HTML
   grep -q 'Standard responsive' "$REPO/docs/supermax/index.html"
   grep -q 'Supermax' "$REPO/docs/supermax/index.html"
   grep -q 'class="supermax-animation-section"' "$REPO/docs/supermax/index.html"
+  grep -q 'supermax-demo-brand' "$REPO/docs/supermax/index.html"
+  grep -q 'supermax-demo-previous' "$REPO/docs/supermax/index.html"
+  grep -q '&lsaquo; List' "$REPO/docs/supermax/index.html"
   grep -q 'demoViewportShrink' "$REPO/docs/styles.css"
   grep -q 'demoSupermaxFocus' "$REPO/docs/styles.css"
   grep -q 'demoStandardBreakpoint' "$REPO/docs/styles.css"
-  grep -q 'Hidden: Menu' "$REPO/docs/supermax/index.html"
-  grep -q 'Hidden: Menu, Notes' "$REPO/docs/supermax/index.html"
-  grep -q 'Hidden: Menu, List, Notes' "$REPO/docs/supermax/index.html"
 }
 
 @test "the /vocalist route carries the public install and release links" {

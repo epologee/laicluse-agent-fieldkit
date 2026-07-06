@@ -1374,17 +1374,15 @@ const layout = cells.distribute(24, "article");`;
 							</header>
 							<div class="responsive-demo-stage" aria-hidden="true">
 								<div class="responsive-demo-viewport supermax-demo-viewport">
-									<div class="supermax-demo-back">Back</div>
+									<div class="supermax-demo-nav">
+										<div class="supermax-demo-brand">supermax</div>
+										<div class="supermax-demo-previous">&lsaquo; List</div>
+									</div>
 									<div class="supermax-demo-content">
 										<span class="supermax-demo-cell menu">Menu</span>
 										<span class="supermax-demo-cell list">List</span>
 										<span class="supermax-demo-cell article">Article</span>
 										<span class="supermax-demo-cell notes">Notes</span>
-									</div>
-									<div class="supermax-demo-status">
-										<span class="supermax-demo-status-menu">Hidden: Menu</span>
-										<span class="supermax-demo-status-menu-notes">Hidden: Menu, Notes</span>
-										<span class="supermax-demo-status-menu-list-notes">Hidden: Menu, List, Notes</span>
 									</div>
 								</div>
 							</div>

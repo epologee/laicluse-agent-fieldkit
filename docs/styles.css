@@ -1854,20 +1854,36 @@ pre code {
 
 .supermax-demo-viewport {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   padding: 0.55rem;
 }
 
-.supermax-demo-back {
+.supermax-demo-nav {
+  display: flex;
+  min-height: 1.42rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+}
+
+.supermax-demo-brand,
+.supermax-demo-previous {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.supermax-demo-brand {
+  color: #ffffff;
+  font-weight: 780;
+}
+
+.supermax-demo-previous {
   display: none;
   width: fit-content;
-  margin-bottom: 0.45rem;
   border: 1px solid rgba(49, 217, 148, 0.4);
   border-radius: 999px;
   color: var(--green);
   padding: 0.22rem 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.68rem;
 }
 
 .supermax-demo-content {
@@ -1906,22 +1922,6 @@ pre code {
 
 .supermax-demo-cell.notes {
   background: #be123c;
-}
-
-.supermax-demo-status {
-  display: none;
-  margin-top: 0.45rem;
-  border: 1px solid rgba(49, 217, 148, 0.34);
-  border-radius: 5px;
-  background: rgba(49, 217, 148, 0.08);
-  color: #dce5df;
-  padding: 0.4rem 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.68rem;
-}
-
-.supermax-demo-status span {
-  display: none;
 }
 
 @keyframes demoViewportShrink {
@@ -1997,10 +1997,12 @@ pre code {
     grid-column: span 2;
   }
 
-  .supermax-demo-back,
-  .supermax-demo-status,
-  .supermax-demo-status .supermax-demo-status-menu {
+  .supermax-demo-previous {
     display: block;
+  }
+
+  .supermax-demo-brand {
+    display: none;
   }
 
   .supermax-demo-content {
@@ -2019,14 +2021,6 @@ pre code {
 
   .standard-demo-tile {
     min-height: 3rem;
-  }
-
-  .supermax-demo-status .supermax-demo-status-menu {
-    display: none;
-  }
-
-  .supermax-demo-status .supermax-demo-status-menu-notes {
-    display: block;
   }
 
   .supermax-demo-content {
@@ -2051,14 +2045,6 @@ pre code {
 
   .standard-demo-tile.tall {
     min-height: 4.8rem;
-  }
-
-  .supermax-demo-status .supermax-demo-status-menu-notes {
-    display: none;
-  }
-
-  .supermax-demo-status .supermax-demo-status-menu-list-notes {
-    display: block;
   }
 
   .supermax-demo-content {
