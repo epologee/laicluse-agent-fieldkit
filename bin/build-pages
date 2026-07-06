@@ -1360,6 +1360,9 @@ const layout = cells.distribute(24, "article");`;
 										<span class="standard-demo-tile wide"></span>
 										<span class="standard-demo-tile"></span>
 										<span class="standard-demo-tile tall"></span>
+										<span class="standard-demo-tile"></span>
+										<span class="standard-demo-tile wide"></span>
+										<span class="standard-demo-tile"></span>
 									</div>
 								</div>
 							</div>
@@ -1378,7 +1381,11 @@ const layout = cells.distribute(24, "article");`;
 										<span class="supermax-demo-cell article">Article</span>
 										<span class="supermax-demo-cell notes">Notes</span>
 									</div>
-									<div class="supermax-demo-status">Hidden: Menu, List, Notes</div>
+									<div class="supermax-demo-status">
+										<span class="supermax-demo-status-menu">Hidden: Menu</span>
+										<span class="supermax-demo-status-menu-notes">Hidden: Menu, Notes</span>
+										<span class="supermax-demo-status-menu-list-notes">Hidden: Menu, List, Notes</span>
+									</div>
 								</div>
 							</div>
 						</article>

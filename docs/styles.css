@@ -1818,7 +1818,7 @@ pre code {
   background: #101311;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
   container-type: inline-size;
-  animation: demoViewportShrink 8s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
+  animation: demoViewportShrink 11s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
 }
 
 .standard-demo-content {
@@ -1827,7 +1827,7 @@ pre code {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
   padding: 0.55rem;
-  animation: standardPageDrift 8s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
+  animation: demoStandardBreakpoint 11s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
 }
 
 .standard-demo-tile {
@@ -1875,6 +1875,7 @@ pre code {
   min-height: 0;
   grid-template-columns: minmax(2.6rem, 3fr) minmax(3.4rem, 5fr) minmax(5rem, 10fr) minmax(4rem, 6fr);
   gap: 0.4rem;
+  animation: demoSupermaxFocus 11s linear infinite;
 }
 
 .supermax-demo-cell {
@@ -1919,15 +1920,34 @@ pre code {
   font-size: 0.68rem;
 }
 
+.supermax-demo-status span {
+  display: none;
+}
+
 @keyframes demoViewportShrink {
   0%,
-  16% {
+  10% {
     width: 100%;
   }
 
-  58%,
-  78% {
-    width: 44%;
+  22%,
+  30% {
+    width: 78%;
+  }
+
+  42%,
+  50% {
+    width: 62%;
+  }
+
+  62%,
+  70% {
+    width: 49%;
+  }
+
+  82%,
+  92% {
+    width: 40%;
   }
 
   100% {
@@ -1935,15 +1955,20 @@ pre code {
   }
 }
 
-@keyframes standardPageDrift {
+@keyframes demoStandardBreakpoint {
   0%,
-  48% {
+  34% {
     transform: translateY(0);
   }
 
-  68%,
-  78% {
-    transform: translateY(-5.2rem);
+  48%,
+  58% {
+    transform: translateY(-1.2rem);
+  }
+
+  72%,
+  92% {
+    transform: translateY(-8rem);
   }
 
   100% {
@@ -1951,9 +1976,71 @@ pre code {
   }
 }
 
-@container (max-width: 23rem) {
+@keyframes demoSupermaxFocus {
+  0%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@container (max-width: 26rem) {
   .standard-demo-content {
-    min-height: 24rem;
+    min-height: 18rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .standard-demo-tile.hero {
+    grid-column: 1 / -1;
+  }
+
+  .standard-demo-tile.wide {
+    grid-column: span 2;
+  }
+
+  .supermax-demo-back,
+  .supermax-demo-status,
+  .supermax-demo-status .supermax-demo-status-menu {
+    display: block;
+  }
+
+  .supermax-demo-content {
+    grid-template-columns: minmax(3.4rem, 5fr) minmax(5rem, 10fr) minmax(4rem, 6fr);
+  }
+
+  .supermax-demo-cell.menu {
+    display: none;
+  }
+}
+
+@container (max-width: 20rem) {
+  .standard-demo-content {
+    min-height: 22rem;
+  }
+
+  .standard-demo-tile {
+    min-height: 3rem;
+  }
+
+  .supermax-demo-status .supermax-demo-status-menu {
+    display: none;
+  }
+
+  .supermax-demo-status .supermax-demo-status-menu-notes {
+    display: block;
+  }
+
+  .supermax-demo-content {
+    grid-template-columns: minmax(3.4rem, 5fr) minmax(5rem, 10fr);
+  }
+
+  .supermax-demo-cell.notes {
+    display: none;
+  }
+}
+
+@container (max-width: 14rem) {
+  .standard-demo-content {
+    min-height: 28rem;
     grid-template-columns: 1fr;
   }
 
@@ -1962,16 +2049,15 @@ pre code {
     grid-column: auto;
   }
 
-  .standard-demo-tile {
-    min-height: 3rem;
-  }
-
   .standard-demo-tile.tall {
     min-height: 4.8rem;
   }
 
-  .supermax-demo-back,
-  .supermax-demo-status {
+  .supermax-demo-status .supermax-demo-status-menu-notes {
+    display: none;
+  }
+
+  .supermax-demo-status .supermax-demo-status-menu-list-notes {
     display: block;
   }
 
@@ -1979,9 +2065,7 @@ pre code {
     grid-template-columns: 1fr;
   }
 
-  .supermax-demo-cell.menu,
-  .supermax-demo-cell.list,
-  .supermax-demo-cell.notes {
+  .supermax-demo-cell.list {
     display: none;
   }
 }
