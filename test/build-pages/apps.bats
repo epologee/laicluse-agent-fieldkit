@@ -219,12 +219,12 @@ NODE
   [ "$status" -eq 0 ]
 }
 
-@test "the /supermax responsive demos scale their fixed canvas instead of clipping on narrow cards" {
+@test "the /supermax responsive demos fit without transform-scaling into narrow cards" {
   run node - <<'NODE' "$REPO/docs/supermax/index.html" "$REPO/docs/styles.css"
 const fs = require("fs");
 const html = fs.readFileSync(process.argv[2], "utf8");
 const css = fs.readFileSync(process.argv[3], "utf8");
-const canvasCount = (html.match(/class="responsive-demo-scale"/g) || []).length;
+const canvasCount = (html.match(/class="responsive-demo-canvas"/g) || []).length;
 const viewportBlocks = [...css.matchAll(/\.responsive-demo-viewport\s*\{([^}]*)\}/g)].map((match) => match[1]);
 
 if (canvasCount !== 2) {
@@ -233,8 +233,11 @@ if (canvasCount !== 2) {
 if (!/\.responsive-demo-stage\s*\{[^}]*container-type:\s*inline-size\s*;/s.test(css)) {
 	throw new Error("responsive demo stage must expose inline-size for fit scaling");
 }
-if (!/\.responsive-demo-scale\s*\{[^}]*width:\s*22rem\s*;[^}]*transform:\s*scale\(var\(--demo-fit-scale\)\)/s.test(css)) {
-	throw new Error("responsive demo canvas must keep a fixed 22rem design size and scale down");
+if (!/\.responsive-demo-canvas\s*\{[^}]*width:\s*min\(22rem,\s*100%\)\s*;/s.test(css)) {
+	throw new Error("responsive demo canvas must fit the card directly instead of using a transformed fixed width");
+}
+if (/responsive-demo-scale|--demo-fit-scale|transform:\s*scale/.test(css + html)) {
+	throw new Error("responsive demo must not use transform scaling; it miniaturizes the explanation");
 }
 if (viewportBlocks.some((block) => /min-width\s*:/.test(block))) {
 	throw new Error("responsive demo viewport must not force a minimum width that can clip inside the stage");
@@ -242,50 +245,31 @@ if (viewportBlocks.some((block) => /min-width\s*:/.test(block))) {
 if (/@media\s*\(max-width:[\s\S]*?\.responsive-demo-viewport\s*\{[\s\S]*?min-width\s*:/.test(css)) {
 	throw new Error("mobile CSS must not restore a clipping min-width on the demo viewport");
 }
-if (!/@container\s*\(max-width:[\s\S]*?\.responsive-demo-scale\s*\{[\s\S]*?--demo-fit-scale\s*:/.test(css)) {
-	throw new Error("responsive demo canvas needs container-query fit scales for narrow cards");
+if (!/@keyframes\s+demoViewportShrink\s*\{[\s\S]*width:\s*min\(100%,\s*max\(8\.75rem,\s*40%\)\)/.test(css)) {
+	throw new Error("viewport shrink must keep a readable floor inside narrow cards");
 }
 NODE
   [ "$status" -eq 0 ]
 }
 
-@test "the /supermax compact demos stay legible while scaled" {
+@test "the /supermax demos use one animation path across desktop and mobile" {
   run node - <<'NODE' "$REPO/docs/styles.css"
 const fs = require("fs");
 const css = fs.readFileSync(process.argv[2], "utf8");
+const forbiddenCompactPaths = [
+	"demoViewportShrinkCompact",
+	"demoStandardBreakpointCompact",
+	"demoStandardColumnsCompact",
+	"demoStandardHeroCompact",
+	"demoStandardWideCompact",
+	"demoStandardTallCompact",
+];
 
-function blockAfter(pattern) {
-	const match = pattern.exec(css);
-	if (!match) return null;
-	const open = css.indexOf("{", match.index);
-	let depth = 0;
-	for (let index = open; index < css.length; index += 1) {
-		if (css[index] === "{") depth += 1;
-		if (css[index] === "}") depth -= 1;
-		if (depth === 0) return css.slice(open + 1, index);
-	}
-	return null;
+for (const name of forbiddenCompactPaths) {
+	if (css.includes(name)) throw new Error(`${name} creates a different mobile animation path`);
 }
-
-const compactViewport = blockAfter(/@keyframes\s+demoViewportShrinkCompact/);
-const compactStandard = blockAfter(/@keyframes\s+demoStandardColumnsCompact/);
-
-if (!/@container\s*\(max-width:[\s\S]*?\.responsive-demo-viewport\s*\{[\s\S]*?animation-name:\s*demoViewportShrinkCompact/.test(css)) {
-	throw new Error("compact demos must switch to a narrower shrink animation instead of miniaturizing the desktop shrink");
-}
-if (!compactViewport) {
-	throw new Error("compact viewport shrink keyframes are missing");
-}
-
-const compactWidths = [...compactViewport.matchAll(/width:\s*(\d+(?:\.\d+)?)%/g)].map((match) => Number(match[1]));
-if (Math.min(...compactWidths) < 68) {
-	throw new Error(`compact viewport shrink is too small: ${Math.min(...compactWidths)}%`);
-}
-if (!compactStandard || !/58%,\s*92%\s*\{[\s\S]*?grid-template-columns:\s*1fr/.test(compactStandard)) {
-	throw new Error("compact standard demo must enter its stacked state before the final viewport shrink");
-}
-if (!/\.standard-demo-content\s*\{[\s\S]*?demoStandardColumnsCompact/.test(css)) {
-	throw new Error("compact standard demo must use the compact column timing");
+if (/@container\s*\(max-width:[\s\S]*?animation-name:\s*demo/.test(css)) {
+	throw new Error("container queries must not swap animation timelines on mobile");
 }
 NODE
   [ "$status" -eq 0 ]

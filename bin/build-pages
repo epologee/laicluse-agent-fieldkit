@@ -1351,7 +1351,7 @@ const layout = cells.distribute(24, "article");`;
 								<span>Columns stack into a page</span>
 							</header>
 							<div class="responsive-demo-stage" aria-hidden="true">
-								<div class="responsive-demo-scale">
+								<div class="responsive-demo-canvas">
 									<div class="responsive-demo-viewport standard-demo-viewport">
 										<div class="standard-demo-content">
 											<span class="standard-demo-tile hero"></span>
@@ -1375,7 +1375,7 @@ const layout = cells.distribute(24, "article");`;
 								<span>Cells stay intentional</span>
 							</header>
 							<div class="responsive-demo-stage" aria-hidden="true">
-								<div class="responsive-demo-scale">
+								<div class="responsive-demo-canvas">
 									<div class="responsive-demo-viewport supermax-demo-viewport">
 										<div class="supermax-demo-nav">
 											<div class="supermax-demo-previous">
