@@ -1630,7 +1630,7 @@ pre code {
   display: grid;
   min-width: 0;
   min-height: 16rem;
-  grid-template-columns: minmax(4.25rem, 3fr) minmax(5rem, 5fr) minmax(9rem, 10fr) minmax(6rem, 6fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 10fr) minmax(0, 6fr);
   gap: 0.55rem;
   align-items: stretch;
 }
@@ -1810,14 +1810,13 @@ pre code {
 .responsive-demo-viewport {
   position: relative;
   width: 100%;
-  min-width: 11rem;
+  min-width: 22rem;
   height: 14.5rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.26);
   border-radius: 7px;
   background: #101311;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
-  container-type: inline-size;
   animation: demoViewportShrink 11s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
 }
 
@@ -1827,7 +1826,9 @@ pre code {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
   padding: 0.55rem;
-  animation: demoStandardBreakpoint 11s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
+  animation:
+    demoStandardBreakpoint 11s cubic-bezier(0.2, 0.72, 0.2, 1) infinite,
+    demoStandardColumns 11s linear infinite;
 }
 
 .standard-demo-tile {
@@ -1840,16 +1841,19 @@ pre code {
   grid-column: 1 / -1;
   min-height: 4.1rem;
   background: #31d994;
+  animation: demoStandardHero 11s linear infinite;
 }
 
 .standard-demo-tile.wide {
   grid-column: span 2;
   background: #70a7ff;
+  animation: demoStandardWide 11s linear infinite;
 }
 
 .standard-demo-tile.tall {
   min-height: 6.5rem;
   background: #be123c;
+  animation: demoStandardTall 11s linear infinite;
 }
 
 .supermax-demo-viewport {
@@ -1880,21 +1884,28 @@ pre code {
 
 .supermax-demo-previous {
   display: none;
-  width: fit-content;
+  width: 5.6rem;
+  height: 1.42rem;
+  place-items: center;
   border: 1px solid rgba(49, 217, 148, 0.4);
   border-radius: 999px;
   color: var(--green);
   padding: 0.22rem 0.5rem;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .supermax-demo-previous span {
   display: none;
+  grid-area: 1 / 1;
+  opacity: 0;
+  white-space: nowrap;
 }
 
 .supermax-demo-content {
   display: grid;
   min-height: 0;
-  grid-template-columns: minmax(2.6rem, 3fr) minmax(3.4rem, 5fr) minmax(5rem, 10fr) minmax(4rem, 6fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 10fr) minmax(0, 6fr);
   gap: 0.4rem;
   animation: demoSupermaxFocus 11s linear infinite;
 }
@@ -1905,8 +1916,8 @@ pre code {
   align-items: flex-start;
   border-radius: 5px;
   color: #ffffff;
-  padding: 0.45rem;
-  font-size: 0.88rem;
+  padding: 0.35rem;
+  font-size: 0.72rem;
   font-weight: 780;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1981,6 +1992,66 @@ pre code {
   }
 }
 
+@keyframes demoStandardColumns {
+  0%,
+  34%,
+  100% {
+    min-height: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  48%,
+  58% {
+    min-height: 18rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  72%,
+  92% {
+    min-height: 28rem;
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes demoStandardHero {
+  0%,
+  58%,
+  100% {
+    grid-column: 1 / -1;
+  }
+
+  72%,
+  92% {
+    grid-column: auto;
+  }
+}
+
+@keyframes demoStandardWide {
+  0%,
+  58%,
+  100% {
+    grid-column: span 2;
+  }
+
+  72%,
+  92% {
+    grid-column: auto;
+  }
+}
+
+@keyframes demoStandardTall {
+  0%,
+  58%,
+  100% {
+    min-height: 6.5rem;
+  }
+
+  72%,
+  92% {
+    min-height: 4.8rem;
+  }
+}
+
 @keyframes demoSupermaxFocus {
   0%,
   100% {
@@ -1988,96 +2059,28 @@ pre code {
   }
 }
 
-@container (max-width: 26rem) {
+@media (prefers-reduced-motion: reduce) {
+  .responsive-demo-viewport,
+  .standard-demo-content,
+  .standard-demo-tile.hero,
+  .standard-demo-tile.wide,
+  .standard-demo-tile.tall,
+  .supermax-demo-content {
+    animation: none;
+  }
+
+  .responsive-demo-viewport {
+    width: 54%;
+  }
+
   .standard-demo-content {
     min-height: 18rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .standard-demo-tile.hero {
-    grid-column: 1 / -1;
-  }
-
-  .standard-demo-tile.wide {
-    grid-column: span 2;
-  }
-
-  .supermax-demo-nav {
-    justify-content: space-between;
-  }
-
-  .supermax-demo-previous {
-    display: block;
-  }
-
-  .supermax-demo-previous .supermax-demo-previous-menu {
-    display: inline;
+    transform: translateY(-1.2rem);
   }
 
   .supermax-demo-content {
-    grid-template-columns: minmax(3.4rem, 5fr) minmax(5rem, 10fr) minmax(4rem, 6fr);
-  }
-
-  .supermax-demo-cell.menu {
-    display: none;
-  }
-}
-
-@container (max-width: 20rem) {
-  .standard-demo-content {
-    min-height: 22rem;
-  }
-
-  .standard-demo-tile {
-    min-height: 3rem;
-  }
-
-  .supermax-demo-previous .supermax-demo-previous-menu {
-    display: none;
-  }
-
-  .supermax-demo-previous .supermax-demo-previous-list {
-    display: inline;
-  }
-
-  .supermax-demo-content {
-    grid-template-columns: minmax(5rem, 10fr) minmax(4rem, 6fr);
-  }
-
-  .supermax-demo-cell.list {
-    display: none;
-  }
-}
-
-@container (max-width: 14rem) {
-  .standard-demo-content {
-    min-height: 28rem;
-    grid-template-columns: 1fr;
-  }
-
-  .standard-demo-tile.hero,
-  .standard-demo-tile.wide {
-    grid-column: auto;
-  }
-
-  .standard-demo-tile.tall {
-    min-height: 4.8rem;
-  }
-
-  .supermax-demo-content {
-    grid-template-columns: 1fr;
-  }
-
-  .supermax-demo-previous .supermax-demo-previous-list {
-    display: none;
-  }
-
-  .supermax-demo-previous .supermax-demo-previous-article {
-    display: inline;
-  }
-
-  .supermax-demo-cell.article {
-    display: none;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 10fr) minmax(0, 6fr);
   }
 }
 
@@ -2481,8 +2484,9 @@ pre code {
   }
 
   .supermax-preview-grid {
-    min-height: auto;
-    grid-template-columns: 1fr;
+    min-height: 10rem;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 10fr) minmax(0, 6fr);
+    gap: 0.35rem;
   }
 
   .supermax-animation-grid {
@@ -2499,23 +2503,34 @@ pre code {
   }
 
   .supermax-preview-cell {
-    min-height: 4.8rem;
+    min-height: 0;
+    padding: 0.45rem;
+  }
+
+  .supermax-preview-cell strong {
+    font-size: 0.74rem;
+  }
+
+  .supermax-preview-cell span {
+    font-size: 0.58rem;
+  }
+
+  .responsive-demo-stage {
+    padding: 0.55rem;
+  }
+
+  .responsive-demo-viewport {
+    min-width: 18rem;
+  }
+
+  .supermax-demo-cell {
+    padding: 0.22rem;
+    font-size: 0.62rem;
   }
 
   .vocalist-command-examples li {
     grid-template-columns: 1fr;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .responsive-demo-viewport,
-  .standard-demo-content {
-    animation: none;
   }
-
-  .responsive-demo-viewport {
-    width: 54%;
-  }
-}
 
   .install-command-list li {
     grid-template-columns: 1fr;
