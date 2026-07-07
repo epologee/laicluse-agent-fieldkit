@@ -18,6 +18,15 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.8]
+
+### Fixed
+
+- **Speech context no longer guesses `main` or `master`.** saysay reads Git's
+  `origin/HEAD` metadata and falls back only to the current checkout when the
+  metadata is absent, so branch context follows Git instead of naming
+  conventions.
+
 ## [v2.0.7]
 
 ### Fixed

@@ -7,7 +7,7 @@ allowed-tools: Bash(git rev-parse:*), Bash(git ls-remote:*), Bash(git rebase:*),
 
 # /git-discipline:rebase-latest-default Skill
 
-Rebase the current branch on the latest version of the default branch. The target can be a local branch (e.g. `main`) or a remote tracking branch (e.g. `origin/main`), whichever is further ahead. This supports worktree setups where the main worktree has unpushed commits, and repos without a remote.
+Rebase the current branch on the latest version of the default branch. The default branch name comes from Git's `origin/HEAD` metadata, not from branch-name conventions. The target can be the local branch with that name or the matching remote tracking branch, whichever is further ahead. This supports worktree setups where the canonical checkout has unpushed default-branch commits.
 
 ## Step 0: Detect Default Branch and Rebase Target
 
@@ -15,9 +15,11 @@ Rebase the current branch on the latest version of the default branch. The targe
 
 Determine the default branch name (`$DEFAULT`):
 
-1. Try `git symbolic-ref refs/remotes/origin/HEAD` and extract the branch name (e.g. `main`).
-2. If that fails (no remote, or ref not set), check which of `main` or `master` exists locally via `git rev-parse --verify refs/heads/main` and `git rev-parse --verify refs/heads/master`. Prefer `main` if both exist.
-3. If neither exists, stop and ask the user.
+```bash
+DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+```
+
+If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD. Run git remote set-head origin --auto or pass an explicit target.`
 
 ### 0b: Determine the rebase target
 
@@ -39,7 +41,7 @@ Based on availability, determine `$TARGET`:
   Left count = commits in local not in origin (local ahead). Right count = commits in origin not in local (origin ahead). If origin is strictly ahead (right > 0, left = 0), use `origin/$DEFAULT`. If both have diverged (left > 0 AND right > 0), warn: `Local $DEFAULT and origin/$DEFAULT have diverged (<left> and <right> commits respectively). Rebasing on local. Consider fetching and fast-forwarding local $DEFAULT first.` Then use `$DEFAULT` (local). If local is ahead or equal, use `$DEFAULT` (local). Report which target was chosen and why.
 - **Only local exists:** Use `$DEFAULT`. No staleness check needed.
 - **Only remote exists:** Use `origin/$DEFAULT`. Proceed to Step 1 (staleness check).
-- **Neither exists:** Stop and ask the user.
+- **Neither exists:** Stop with the message: `Default branch $DEFAULT does not exist locally or as origin/$DEFAULT. Fetch or fix origin/HEAD, then retry.`
 
 ## Step 1: Staleness Check (remote targets only)
 

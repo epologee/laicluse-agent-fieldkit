@@ -180,9 +180,9 @@ function refExists(repo, ref) {
 
 function remoteDefaultBranch(repo, remote = 'origin') {
   try {
-    const ref = git(repo, ['symbolic-ref', '--quiet', `refs/remotes/${remote}/HEAD`]).trim();
-    const prefix = `refs/remotes/${remote}/`;
-    return ref.startsWith(prefix) ? ref.slice(prefix.length) : null;
+    const ref = git(repo, ['symbolic-ref', '--quiet', '--short', `refs/remotes/${remote}/HEAD`]).trim();
+    const prefix = `${remote}/`;
+    return ref.startsWith(prefix) ? ref.slice(prefix.length) : ref || null;
   } catch {
     return null;
   }
@@ -199,9 +199,6 @@ function localHeadBranch(repo) {
 export function defaultBranch(repo, { allowHeadFallback = false } = {}) {
   const remoteDefault = remoteDefaultBranch(repo);
   if (remoteDefault) return remoteDefault;
-  for (const candidate of ['main', 'master']) {
-    if (refExists(repo, `refs/heads/${candidate}`)) return candidate;
-  }
   return allowHeadFallback ? localHeadBranch(repo) : null;
 }
 
@@ -402,7 +399,7 @@ export function classifyTeardown({ repo, target }) {
     || worktrees.find((w) => canonPath(w.path) === guess);
   if (!entry) throw new Error(`no worktree or branch matching ${target} in ${repo}`);
   const { path: worktree, branch } = entry;
-  const def = defaultBranch(repo);
+  const def = defaultBranch(repo, { allowHeadFallback: true });
   const base = integrationBase(repo, def);
   const dirty = git(worktree, ['status', '--porcelain']).trim().length > 0;
   const mergedIntoBase = base && branch ? isAncestor(repo, branch, base) : false;

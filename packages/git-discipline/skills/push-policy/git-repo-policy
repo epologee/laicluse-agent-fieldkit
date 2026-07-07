@@ -86,12 +86,18 @@ main() {
       if [ "$push_access" != "write" ]; then
         default_policy="protected"
       else
-        default_policy="pushable"
-        [ -z "$def" ] && def="$(git -C "$repo" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#origin/##')"
-        prot="$(gh api "repos/$slug/branches/$def/protection" 2>/dev/null || true)"
-        if [ -n "$prot" ] && [ "$(printf '%s' "$prot" | _protection_meaningful)" = "true" ]; then
-          default_policy="protected"
-        fi
+	default_policy="pushable"
+	if [ -z "$def" ]; then
+	  def="$(git -C "$repo" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')"
+	fi
+	if [ -z "$def" ]; then
+	  default_policy="unknown"
+	else
+	  prot="$(gh api "repos/$slug/branches/$def/protection" 2>/dev/null || true)"
+	  if [ -n "$prot" ] && [ "$(printf '%s' "$prot" | _protection_meaningful)" = "true" ]; then
+	    default_policy="protected"
+	  fi
+	fi
       fi
     fi
 

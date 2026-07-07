@@ -63,4 +63,19 @@ TEXT
 grep -q '^example vault, Hello\.$' "$capture" \
   || fail "default branch context should use repo label, got: $(cat "$capture")"
 
+git -C "$repo" symbolic-ref --delete refs/remotes/origin/HEAD
+git -C "$repo" checkout -q -b main
+git -C "$repo" checkout -q trunk
+rm -f "$capture"
+
+(
+  cd "$repo"
+  PATH="$fakebin:$PATH" SAYSAY_CAPTURE="$capture" "$SAYSAY" <<'TEXT'
+Hello again.
+TEXT
+)
+
+grep -q '^example vault, Hello again\.$' "$capture" \
+  || fail "current HEAD fallback should use repo label, got: $(cat "$capture")"
+
 printf 'saysay context test passed\n'

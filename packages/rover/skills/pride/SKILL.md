@@ -103,7 +103,7 @@ ARG="${1:-}"
 case "$ARG" in
   "" )
     # No arg: "branch so far" plus any uncommitted work.
-    DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
+    DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
     if [ -z "$DEFAULT" ]; then
       echo "pride: cannot determine default branch (remote HEAD not set). Run 'git remote set-head origin -a' or invoke /rover:pride with an explicit range." >&2
       exit 1

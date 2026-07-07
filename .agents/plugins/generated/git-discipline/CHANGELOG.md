@@ -19,6 +19,17 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.43]
+
+### Fixed
+
+- **Default-branch helpers no longer guess `main` or `master`.** The
+  `rebase-latest-default`, `merge-to-default`, `push-policy`, and WIP gate
+  paths now read Git's `origin/HEAD` metadata and stop or fall back to tracked
+  upstreams instead of inventing a default branch from local branch names.
+  `push-policy` treats missing default-branch metadata as `unknown`, so it
+  stays conservative instead of assuming the default branch is pushable.
+
 ## [v2.0.42]
 
 ### Fixed

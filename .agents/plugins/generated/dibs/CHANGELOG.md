@@ -4,14 +4,22 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.37]
+
+### Fixed
+
+- **Occupancy descriptions no longer guess `main` or `master`.** The mutation
+  hook reads Git's `origin/HEAD` metadata and only falls back to the current
+  checkout when that metadata is absent, so branch descriptions follow Git
+  instead of naming conventions.
+
 ## [v2.0.36]
 
 ### Fixed
 
-- **Occupancy descriptions respect the Git default branch.** The hook now uses
-  `origin/HEAD` to decide whether the current branch is the default before it
-  falls back to local branch names, so a `trunk` checkout no longer records
-  `work: trunk`.
+- **Occupancy descriptions respect the Git default branch.** The hook started
+  using `origin/HEAD` to decide whether the current branch is the default, so a
+  `trunk` checkout no longer records `work: trunk`.
 
 ## [v2.0.34]
 

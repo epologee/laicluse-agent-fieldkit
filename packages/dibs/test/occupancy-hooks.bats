@@ -117,13 +117,16 @@ run_bash_hook() {
 @test "gate falls back to the current non-default git branch" {
   local repo="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$repo"
-  git -C "$repo" init >/dev/null
+  git -C "$repo" init -b main >/dev/null
   git -C "$repo" config user.email test@example.invalid
   git -C "$repo" config user.name Test
   echo root > "$repo/README.md"
   git -C "$repo" add README.md
   git -C "$repo" commit -m init >/dev/null
   git -C "$repo" checkout -b inspect-lock-work >/dev/null
+  git -C "$repo" remote add origin git@example.invalid:org/repo.git
+  git -C "$repo" update-ref refs/remotes/origin/main main
+  git -C "$repo" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
 
   export DIBS_HOLDER_PID=$$
   DIR="$repo"
@@ -149,6 +152,26 @@ run_bash_hook() {
   export DIBS_HOLDER_PID=$$
   DIR="$repo"
   run_bash_hook "touch default.txt"
+  [ "$status" -eq 0 ]
+  run dibs check "$repo" --json
+  ! echo "$output" | grep -q '"description": "trunk"'
+}
+
+@test "gate treats current HEAD as default when origin HEAD is absent" {
+  local repo="$BATS_TEST_TMPDIR/current-head-default-repo"
+  mkdir -p "$repo"
+  git -C "$repo" init -b main >/dev/null
+  git -C "$repo" config user.email test@example.invalid
+  git -C "$repo" config user.name Test
+  echo root > "$repo/README.md"
+  git -C "$repo" add README.md
+  git -C "$repo" commit -m init >/dev/null
+  git -C "$repo" checkout -b trunk >/dev/null
+  git -C "$repo" commit --allow-empty -m "trunk default" >/dev/null
+
+  export DIBS_HOLDER_PID=$$
+  DIR="$repo"
+  run_bash_hook "touch current-head.txt"
   [ "$status" -eq 0 ]
   run dibs check "$repo" --json
   ! echo "$output" | grep -q '"description": "trunk"'

@@ -189,3 +189,18 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -q '"removable": true'
   ! echo "$output" | grep -qiE 'orphan|unpushed|advanced|rebase'
 }
+
+@test "teardown uses current HEAD when origin HEAD is absent instead of local main" {
+  git -C "$FIX" checkout -q -b trunk
+  git -C "$FIX" commit -q --allow-empty -m "trunk base without remote head"
+
+  mkdir -p "$FIX/worktrees"
+  git -C "$FIX" worktree add -q -b trunk-current-wt "$FIX/worktrees/trunk-current-wt" trunk
+  git -C "$FIX/worktrees/trunk-current-wt" commit -q --allow-empty -m "feature work"
+  git -C "$FIX" merge -q --ff-only trunk-current-wt
+
+  run bonsai teardown trunk-current-wt --repo "$FIX" --dry-run --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"removable": true'
+  ! echo "$output" | grep -qiE 'orphan|unpushed|advanced|rebase'
+}

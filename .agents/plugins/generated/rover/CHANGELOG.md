@@ -5,6 +5,16 @@ once per machine whenever the installed `version` in
 `.claude-plugin/plugin.json` changes. Header version numbers are informational;
 the broadcast is positional.
 
+## [v2.0.23]
+
+### Fixed
+
+- **Pride review ranges no longer infer `main` or `master`.** The default
+  branch snippet reads Git's `origin/HEAD` metadata and requires an explicit
+  range when that metadata is absent.
+- **No-repo setup no longer names `main`.** Rover's prelaunch recovery now uses
+  plain `git init`, letting Git choose the repository's initial branch.
+
 ## [v2.0.22]
 
 ### Changed

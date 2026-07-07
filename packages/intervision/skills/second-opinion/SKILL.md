@@ -81,10 +81,8 @@ Pick by what just happened. All three run through `codex exec`, and they combine
 ```bash
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
 if [ -z "$DEFAULT" ]; then
-  if git rev-parse --verify --quiet refs/heads/main >/dev/null 2>&1; then DEFAULT=main
-  elif git rev-parse --verify --quiet refs/heads/master >/dev/null 2>&1; then DEFAULT=master
-  else echo "cannot determine default branch; pass an explicit --base" >&2; exit 1
-  fi
+  echo "cannot determine default branch from origin/HEAD; pass an explicit --base" >&2
+  exit 1
 fi
 codex exec --model "$CODEX_PEER_MODEL" review --uncommitted     # staged, unstaged, and untracked work
 codex exec --model "$CODEX_PEER_MODEL" review --base "$DEFAULT" # everything on this branch against default

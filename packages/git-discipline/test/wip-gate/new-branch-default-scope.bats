@@ -45,3 +45,24 @@ load helpers
   [[ "$output" == *"[git-discipline/push-body-gate]"* ]]
   [[ "$output" == *"missing-body"* ]]
 }
+
+@test "origin main is not used as a default branch when origin HEAD is absent" {
+  export GIT_DISCIPLINE_PUSH_BODY_GATE_DISABLED=0
+  export GIT_SHIM_ORIGIN_HEAD=""
+  export GIT_SHIM_VERIFY_REFS="origin/main"
+
+  wip_shim_set_revlist "feature/new-thing" $'oldnoncompliant1'
+  wip_shim_set_subject "oldnoncompliant1" "Old pre-discipline commit"
+  wip_shim_set_body "oldnoncompliant1" "Old pre-discipline commit"
+
+  wip_shim_set_revlist "origin/main..feature/new-thing" $'newcompliant1'
+  wip_shim_set_subject "newcompliant1" "Tiny scoped tweak"
+  wip_shim_set_body "newcompliant1" "Tiny scoped tweak"
+  wip_shim_set_show "newcompliant1" " 1 file changed, 1 insertion(+)" "a.rb"
+
+  run_dispatch 'git push -u origin feature/new-thing'
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"[git-discipline/push-body-gate]"* ]]
+  [[ "$output" == *"missing-body"* ]]
+}

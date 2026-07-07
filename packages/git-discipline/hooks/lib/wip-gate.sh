@@ -54,26 +54,16 @@ wip_gate_parse_range() {
   printf '%s..%s' "$upstream" "$local_ref"
 }
 
-# allow-comment: wip_gate_resolve_default_ref echoes the remote default branch
-# allow-comment: ref (e.g. origin/master) used to scope a bare push. Resolution
-# allow-comment: order: origin/HEAD symbolic-ref, then origin/main, origin/master,
-# allow-comment: then local main/master. Returns non-zero when none resolve so the
-# allow-comment: caller can fall back to the tracked upstream.
+# allow-comment: wip_gate_resolve_default_ref echoes origin/<default> from Git's
+# allow-comment: origin/HEAD metadata. Returns non-zero when none resolves so the
+# allow-comment: caller can fall back to the tracked upstream without guessing names.
 wip_gate_resolve_default_ref() {
   local sym
-  sym=$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null || true)
+  sym=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)
   if [[ -n "$sym" ]]; then
-    printf '%s' "${sym#refs/remotes/}"
+    printf '%s' "$sym"
     return 0
   fi
-
-  local ref
-  for ref in origin/main origin/master main master; do
-    if git rev-parse --verify --quiet "$ref" >/dev/null 2>&1; then
-      printf '%s' "$ref"
-      return 0
-    fi
-  done
 
   return 1
 }

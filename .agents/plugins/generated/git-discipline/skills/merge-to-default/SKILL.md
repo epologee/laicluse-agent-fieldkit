@@ -11,8 +11,8 @@ Land the current branch on the project's default branch with a real `--no-ff` me
 
 ## When
 
-- The current feature branch is done and needs to land on `main` (or `master`)
-- The user types `/git-discipline:merge-to-default` or says "merge naar default", "merge to main", or "merge this into main"
+- The current feature branch is done and needs to be merged into the Git default branch
+- The user types `/git-discipline:merge-to-default` or says "merge naar default", "merge to default", "merge to main", or "merge this into main"
 - Local workflow without a PR step: the project does trunk-based development or accepts direct merges on the default branch
 
 Not for remote merges: this skill never pushes the default branch, and landing the merge on the remote is a separate, explicit user action. (The one push this flow can trigger is the rebase precondition's own: `git-discipline:rebase-latest-default` force-pushes the rebased *feature* branch when it is already published.)
@@ -23,9 +23,11 @@ Not for remote merges: this skill never pushes the default branch, and landing t
 
 Determine the name of the default branch (`$DEFAULT`):
 
-1. Try `git symbolic-ref refs/remotes/origin/HEAD` and take the last path segment (e.g. `main`).
-2. If that fails (no remote, or the ref is not set), check locally: `git rev-parse --verify refs/heads/main` and `git rev-parse --verify refs/heads/master`. Prefer `main` if both exist.
-3. If neither exists, stop with the message: `Cannot determine the default branch. Set origin/HEAD via `git remote set-head origin --auto` or create a local main/master.`
+```bash
+DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+```
+
+If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD. Run git remote set-head origin --auto or merge an explicit branch manually.`
 
 ### 0b: Current branch
 

@@ -4,14 +4,22 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.31]
+
+### Fixed
+
+- **Default-branch lookup no longer guesses branch names.** `bonsai create`
+  and `bonsai teardown` read Git's `origin/HEAD` metadata instead of falling
+  back to local `main` or `master` branches. Repositories without `origin/HEAD`
+  use the current checkout only where Bonsai needs a local context fallback.
+
 ## [v2.0.30]
 
 ### Fixed
 
 - **Default branches come from Git metadata.** `bonsai create` and `bonsai
-  teardown` resolve `origin/HEAD` before considering local fallback branch names,
-  so repositories with a non-`main` default branch no longer start or classify
-  worktrees from the wrong base.
+  teardown` started reading `origin/HEAD`, so repositories with a non-`main`
+  default branch no longer start or classify worktrees from the wrong base.
 - **Vaultsync roots are not worktree factories.** `bonsai create` asks the
   vaultsync CLI whether the source checkout is managed and refuses to create a
   worktree there when it is.

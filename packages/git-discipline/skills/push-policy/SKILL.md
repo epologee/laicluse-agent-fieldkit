@@ -81,7 +81,7 @@ protected default.
 
 - no remote becomes `local-only`
 - no write becomes `external`
-- unknown protection becomes `pushable` when you have write, else `protected`
+- unknown default-branch metadata becomes `unknown`, which resolves to `pr-flow`
 - unknown visibility becomes `public` (strictest hygiene)
 
 ## Config and overrides

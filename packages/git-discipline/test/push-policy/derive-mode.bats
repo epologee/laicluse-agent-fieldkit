@@ -79,6 +79,33 @@ load helpers
   [ "$result" = "false" ]
 }
 
+@test "missing origin HEAD keeps default policy unknown instead of guessing pushable" {
+  local repo="$BATS_TEST_TMPDIR/no-default-metadata"
+  local fakebin="$BATS_TEST_TMPDIR/bin"
+  mkdir -p "$repo" "$fakebin"
+  git -C "$repo" init -b trunk >/dev/null
+  git -C "$repo" config user.email test@example.invalid
+  git -C "$repo" config user.name Test
+  git -C "$repo" config codingAgent.git.pushAccess write
+  git -C "$repo" config codingAgent.git.visibility private
+  git -C "$repo" config codingAgent.git.collaboration individual
+  git -C "$repo" remote add origin git@github.com:org/repo.git
+  echo root > "$repo/README.md"
+  git -C "$repo" add README.md
+  git -C "$repo" commit -m init >/dev/null
+  cat > "$fakebin/gh" <<'SH'
+#!/usr/bin/env bash
+exit 1
+SH
+  chmod +x "$fakebin/gh"
+
+  run env PATH="$fakebin:$PATH" "$HELPER_DIR/../../skills/push-policy/git-repo-policy" "$repo"
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"default_policy=unknown"* ]]
+  [[ "$output" == *"mode=pr-flow"* ]]
+}
+
 @test "one author name is individual" {
   run _classify_collaboration 1 private
   [ "$output" = "individual" ]

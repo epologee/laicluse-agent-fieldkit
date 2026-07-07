@@ -157,6 +157,10 @@ fi
 if [[ "${args[0]}" = "symbolic-ref" ]]; then
   if [[ "${args[*]}" =~ refs/remotes/origin/HEAD ]]; then
     if [[ -n "$GIT_SHIM_ORIGIN_HEAD" ]]; then
+      if [[ "${args[*]}" =~ --short ]]; then
+	printf '%s\n' "${GIT_SHIM_ORIGIN_HEAD#refs/remotes/}"
+	exit 0
+      fi
       printf '%s\n' "$GIT_SHIM_ORIGIN_HEAD"
       exit 0
     fi

@@ -202,11 +202,7 @@ occ_description() {
   [ -n "$branch" ] || return 1
   default_branch="$(git -C "$dir" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)"
   if [ -z "$default_branch" ]; then
-    if git -C "$dir" rev-parse --verify --quiet refs/heads/main >/dev/null 2>&1; then
-      default_branch=main
-    elif git -C "$dir" rev-parse --verify --quiet refs/heads/master >/dev/null 2>&1; then
-      default_branch=master
-    fi
+    default_branch="$(git -C "$dir" symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
   fi
   [ "$branch" = "$default_branch" ] && return 1
   printf '%s\n' "$branch"
