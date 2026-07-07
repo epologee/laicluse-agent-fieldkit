@@ -249,6 +249,48 @@ NODE
   [ "$status" -eq 0 ]
 }
 
+@test "the /supermax compact demos stay legible while scaled" {
+  run node - <<'NODE' "$REPO/docs/styles.css"
+const fs = require("fs");
+const css = fs.readFileSync(process.argv[2], "utf8");
+
+function blockAfter(pattern) {
+	const match = pattern.exec(css);
+	if (!match) return null;
+	const open = css.indexOf("{", match.index);
+	let depth = 0;
+	for (let index = open; index < css.length; index += 1) {
+		if (css[index] === "{") depth += 1;
+		if (css[index] === "}") depth -= 1;
+		if (depth === 0) return css.slice(open + 1, index);
+	}
+	return null;
+}
+
+const compactViewport = blockAfter(/@keyframes\s+demoViewportShrinkCompact/);
+const compactStandard = blockAfter(/@keyframes\s+demoStandardColumnsCompact/);
+
+if (!/@container\s*\(max-width:[\s\S]*?\.responsive-demo-viewport\s*\{[\s\S]*?animation-name:\s*demoViewportShrinkCompact/.test(css)) {
+	throw new Error("compact demos must switch to a narrower shrink animation instead of miniaturizing the desktop shrink");
+}
+if (!compactViewport) {
+	throw new Error("compact viewport shrink keyframes are missing");
+}
+
+const compactWidths = [...compactViewport.matchAll(/width:\s*(\d+(?:\.\d+)?)%/g)].map((match) => Number(match[1]));
+if (Math.min(...compactWidths) < 68) {
+	throw new Error(`compact viewport shrink is too small: ${Math.min(...compactWidths)}%`);
+}
+if (!compactStandard || !/58%,\s*92%\s*\{[\s\S]*?grid-template-columns:\s*1fr/.test(compactStandard)) {
+	throw new Error("compact standard demo must enter its stacked state before the final viewport shrink");
+}
+if (!/\.standard-demo-content\s*\{[\s\S]*?demoStandardColumnsCompact/.test(css)) {
+	throw new Error("compact standard demo must use the compact column timing");
+}
+NODE
+  [ "$status" -eq 0 ]
+}
+
 @test "the /vocalist route carries the public install and release links" {
   grep -q 'Install, connect, run' "$REPO/docs/vocalist/index.html"
   grep -q 'brew install --cask laicluse/tap/vocalist' "$REPO/docs/vocalist/index.html"
