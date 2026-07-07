@@ -50,6 +50,8 @@ run_bash_hook() {
   echo "$output" | grep -qi "since"
   echo "$output" | grep -qi "git worktree"
   echo "$output" | grep -qi "new branch"
+  echo "$output" | grep -qi "loose non-git copy"
+  echo "$output" | grep -qi "not a deliverable working tree"
 }
 
 @test "gate allows a different live pid of the SAME session (no self-lockout)" {

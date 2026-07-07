@@ -39,6 +39,8 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -qi "git worktree"
   echo "$output" | grep -qi "new branch"
   echo "$output" | grep -qi "claim that worktree path"
+  echo "$output" | grep -qi "loose non-git copy"
+  echo "$output" | grep -qi "not a deliverable working tree"
 }
 
 @test "refused claim under --json reports state refused and the holder" {
@@ -53,6 +55,7 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   echo "$output" | grep -q '"acquiredAt"'
   echo "$output" | grep -q '"suggestion"'
   echo "$output" | grep -qi "git worktree"
+  echo "$output" | grep -qi "loose non-git copy"
 }
 
 @test "re-claim by the same pid is idempotent (held-by-self)" {

@@ -189,7 +189,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.31",
+			"version": "2.0.33",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -599,6 +599,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
+			"plugin": "dibs",
+			"packageVersion": "2.0.33",
+			"detailPath": "agent-fieldkit/dibs/",
+			"version": "v2.0.31",
+			"type": "Added",
+			"summary": "Locks now carry a short work description.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
+		},
+		{
 			"plugin": "how-plugins-work",
 			"packageVersion": "2.0.32",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
@@ -606,15 +615,6 @@
 			"type": "Changed",
 			"summary": "Peer plugin dependencies now have an installed-layout test rule.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
-		},
-		{
-			"plugin": "dibs",
-			"packageVersion": "2.0.31",
-			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.31",
-			"type": "Added",
-			"summary": "Locks now carry a short work description.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "bonsai",

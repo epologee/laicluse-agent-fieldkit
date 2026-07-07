@@ -27,6 +27,12 @@ short; categories are Breaking, Added, Changed, Fixed.
   primary checkout while allowing linked worktrees. Default behavior is
   unchanged for repos that do not opt in.
 
+### Changed
+
+- **Occupancy refusals now reject loose repository copies.** The CLI, hook
+  suggestion, and skill text explicitly say to recover with `bonsai:bonsai` or
+  a real `git worktree`, not a copied non-git directory that cannot be delivered.
+
 ## [v2.0.28]
 
 ### Changed
