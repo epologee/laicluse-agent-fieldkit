@@ -1902,7 +1902,7 @@ pre code {
   display: flex;
   min-height: 1.42rem;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-bottom: 0.45rem;
 }
 
@@ -1916,10 +1916,11 @@ pre code {
 .supermax-demo-brand {
   color: #ffffff;
   font-weight: 780;
+  animation: demoSupermaxBrand 11s linear infinite;
 }
 
 .supermax-demo-previous {
-  display: none;
+  display: grid;
   width: 5.6rem;
   height: 1.42rem;
   place-items: center;
@@ -1929,25 +1930,41 @@ pre code {
   padding: 0.22rem 0.5rem;
   opacity: 0;
   visibility: hidden;
+  animation: demoSupermaxPrevious 11s linear infinite;
 }
 
 .supermax-demo-previous span {
-  display: none;
+  display: block;
   grid-area: 1 / 1;
   opacity: 0;
+  visibility: hidden;
   white-space: nowrap;
 }
 
+.supermax-demo-previous-menu {
+  animation: demoSupermaxPreviousMenu 11s linear infinite;
+}
+
+.supermax-demo-previous-list {
+  animation: demoSupermaxPreviousList 11s linear infinite;
+}
+
+.supermax-demo-previous-article {
+  animation: demoSupermaxPreviousArticle 11s linear infinite;
+}
+
 .supermax-demo-content {
-  display: grid;
+  position: relative;
+  display: block;
   min-height: 0;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 10fr) minmax(0, 6fr);
-  gap: 0.4rem;
-  animation: demoSupermaxFocus 11s linear infinite;
+  overflow: hidden;
 }
 
 .supermax-demo-cell {
   display: flex;
+  position: absolute;
+  top: 0;
+  bottom: 0;
   min-width: 0;
   align-items: flex-start;
   border-radius: 5px;
@@ -1961,19 +1978,31 @@ pre code {
 }
 
 .supermax-demo-cell.menu {
+  left: 0;
+  width: 12%;
   background: #0f766e;
+  animation: demoSupermaxMenuCell 11s linear infinite;
 }
 
 .supermax-demo-cell.list {
+  left: 14%;
+  width: 20%;
   background: #7c3aed;
+  animation: demoSupermaxListCell 11s linear infinite;
 }
 
 .supermax-demo-cell.article {
+  left: 36%;
+  width: 40%;
   background: #0b6bcb;
+  animation: demoSupermaxArticleCell 11s linear infinite;
 }
 
 .supermax-demo-cell.notes {
+  left: 78%;
+  width: 22%;
   background: #be123c;
+  animation: demoSupermaxNotesCell 11s linear infinite;
 }
 
 @keyframes demoViewportShrink {
@@ -2088,10 +2117,180 @@ pre code {
   }
 }
 
-@keyframes demoSupermaxFocus {
+@keyframes demoSupermaxPrevious {
   0%,
+  34%,
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  42%,
+  92% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes demoSupermaxBrand {
+  0%,
+  34%,
   100% {
     opacity: 1;
+    visibility: visible;
+  }
+
+  42%,
+  92% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes demoSupermaxPreviousMenu {
+  0%,
+  34%,
+  58%,
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  42%,
+  50% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes demoSupermaxPreviousList {
+  0%,
+  58%,
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  62%,
+  92% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes demoSupermaxPreviousArticle {
+  0%,
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes demoSupermaxMenuCell {
+  0%,
+  30%,
+  100% {
+    left: 0;
+    width: 12%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  42%,
+  92% {
+    left: -14%;
+    width: 12%;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes demoSupermaxListCell {
+  0%,
+  30%,
+  100% {
+    left: 14%;
+    width: 20%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  42%,
+  50% {
+    left: 0;
+    width: 22%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  62%,
+  92% {
+    left: -24%;
+    width: 22%;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes demoSupermaxArticleCell {
+  0%,
+  30%,
+  100% {
+    left: 36%;
+    width: 40%;
+  }
+
+  42%,
+  50% {
+    left: 24%;
+    width: 45%;
+  }
+
+  62%,
+  70% {
+    left: 0;
+    width: 62%;
+  }
+
+  82%,
+  92% {
+    left: 0;
+    width: 100%;
+  }
+}
+
+@keyframes demoSupermaxNotesCell {
+  0%,
+  30%,
+  100% {
+    left: 78%;
+    width: 22%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  42%,
+  50% {
+    left: 71%;
+    width: 29%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  62%,
+  70% {
+    left: 66%;
+    width: 34%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  82%,
+  92% {
+    left: 102%;
+    width: 0;
+    opacity: 0;
+    visibility: hidden;
   }
 }
 
@@ -2101,7 +2300,10 @@ pre code {
   .standard-demo-tile.hero,
   .standard-demo-tile.wide,
   .standard-demo-tile.tall,
-  .supermax-demo-content {
+  .supermax-demo-brand,
+  .supermax-demo-previous,
+  .supermax-demo-previous span,
+  .supermax-demo-cell {
     animation: none;
   }
 
@@ -2115,8 +2317,33 @@ pre code {
     transform: translateY(-1.2rem);
   }
 
-  .supermax-demo-content {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 10fr) minmax(0, 6fr);
+  .supermax-demo-previous,
+  .supermax-demo-previous-list {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .supermax-demo-brand {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .supermax-demo-cell.menu,
+  .supermax-demo-cell.list {
+    left: -24%;
+    width: 0;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .supermax-demo-cell.article {
+    left: 0;
+    width: 62%;
+  }
+
+  .supermax-demo-cell.notes {
+    left: 66%;
+    width: 34%;
   }
 }
 

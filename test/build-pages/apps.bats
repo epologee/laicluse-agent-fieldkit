@@ -169,7 +169,7 @@ HTML
   grep -q '&lsaquo; List' "$REPO/docs/supermax/index.html"
   grep -q '&lsaquo; Article' "$REPO/docs/supermax/index.html"
   grep -q 'demoViewportShrink' "$REPO/docs/styles.css"
-  grep -q 'demoSupermaxFocus' "$REPO/docs/styles.css"
+  grep -q 'demoSupermaxArticleCell' "$REPO/docs/styles.css"
   grep -q 'demoStandardBreakpoint' "$REPO/docs/styles.css"
 }
 
@@ -203,17 +203,19 @@ if (previewBlocks.some((block) => /grid-template-columns:\s*1fr\s*;/.test(block)
 if (containerBlocks.some((block) => /\.standard-demo-content\s*\{[\s\S]*?grid-template-columns:\s*(?:repeat\(2|1fr)/.test(block))) {
 	throw new Error("standard responsive demo changes state from container width instead of animation state");
 }
-if (containerBlocks.some((block) => /\.supermax-demo-cell\.(menu|list|article)\s*\{[\s\S]*?display:\s*none/.test(block))) {
-	throw new Error("Supermax demo hides cells from container width instead of animation state");
+if (containerBlocks.some((block) => /\.supermax-demo-cell\.(menu|list|article|notes)\s*\{[\s\S]*?(display|visibility|opacity|width|left)\s*:/.test(block))) {
+	throw new Error("Supermax demo changes pane visibility from container width instead of animation state");
 }
 if (!/demoStandardColumns/.test(css)) {
 	throw new Error("standard responsive demo needs deterministic animation-state keyframes");
 }
-if (/@keyframes\s+demoSupermaxColumns\s*\{[\s\S]*?0fr/.test(css)) {
-	throw new Error("Supermax animation collapses panes instead of keeping all four visible");
+for (const name of ["demoSupermaxMenuCell", "demoSupermaxListCell", "demoSupermaxArticleCell", "demoSupermaxNotesCell"]) {
+	if (!new RegExp(`@keyframes\\s+${name}\\s*\\{`).test(css)) {
+		throw new Error(`Supermax animation needs ${name} so panes change from animation state`);
+	}
 }
-if (/demoSupermax(?:Menu|List|Article)Cell/.test(css)) {
-	throw new Error("Supermax animation hides individual panes instead of preserving the illustration");
+if (!/@keyframes\s+demoSupermaxPrevious\s*\{[\s\S]*visibility:\s*visible/.test(css)) {
+	throw new Error("Supermax animation must reveal previous navigation while panes are hidden");
 }
 NODE
   [ "$status" -eq 0 ]
