@@ -28,7 +28,7 @@ Trim closes this gap by asking, at the end of INSPECT, the one question no other
 
 **Manually via `/rover:trim`:**
 - `/rover:trim` reviews the uncommitted changes plus commits on the current branch not yet on the default branch
-- `/rover:trim <ref>` reviews a specific commit range, for example `main..HEAD` or `HEAD~3..HEAD`
+- `/rover:trim <ref>` reviews a specific commit range, for example `<default>..HEAD` or `HEAD~3..HEAD`
 - `/rover:trim uncommitted` reviews only the uncommitted diff
 
 Useful outside a rover session whenever a diff feels heavier than the change required.

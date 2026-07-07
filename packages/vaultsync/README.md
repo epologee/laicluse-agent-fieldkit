@@ -16,6 +16,8 @@ The plugin ships a `vaultsync` CLI. If the command is not on `PATH`, run the ins
 ## Capabilities
 
 - Registers a Git checkout as a vaultsync target.
+- Reports whether a checkout is vaultsync-managed through `vaultsync managed`,
+  so other tools can ask the CLI instead of reading vaultsync storage directly.
 - Stores runtime state under `${LAICLUSE_HOME:-$HOME/.laicluse}/vaultsync`.
 - Installs a user-level macOS LaunchAgent for the daemon loop.
 - Debounces dirty Git state before committing.
@@ -30,6 +32,7 @@ The plugin ships a `vaultsync` CLI. If the command is not on `PATH`, run the ins
 
 ```bash
 vaultsync install [path] --llm-command '<json command>' [--verify '<command>']
+vaultsync managed [path] [--json]
 vaultsync status [path] [--json]
 vaultsync now [path] [--json]
 vaultsync pause [path] [--minutes <n> | --until <time>] [--reason <text>]
@@ -39,6 +42,11 @@ vaultsync daemon
 ```
 
 `install` resolves the requested path to the nearest Git worktree root and records that whole checkout. The current branch is the sync branch. The branch's upstream is recorded when present; missing upstream is allowed and means local-only mode.
+
+`managed` reports whether the requested path resolves to a vaultsync-managed
+checkout. It is the public integration point for tools that need to avoid
+operating inside vaultsync roots; they must call the CLI instead of depending on
+vaultsync's registration storage layout.
 
 vaultsync resolves `dibs` dynamically at runtime. `DIBS_BIN` remains an explicit override, otherwise vaultsync checks the installed plugin cache, `PATH`, and only then any legacy custom path in an older registration. New registrations do not pin versioned plugin-cache paths, so plugin updates do not leave vaultsync pointing at a removed `dibs` binary.
 

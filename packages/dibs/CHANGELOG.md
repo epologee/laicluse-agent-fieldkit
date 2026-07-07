@@ -4,6 +4,15 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.36]
+
+### Fixed
+
+- **Occupancy descriptions respect the Git default branch.** The hook now uses
+  `origin/HEAD` to decide whether the current branch is the default before it
+  falls back to local branch names, so a `trunk` checkout no longer records
+  `work: trunk`.
+
 ## [v2.0.34]
 
 ### Fixed

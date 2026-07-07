@@ -105,7 +105,7 @@ Examples:
 - Conversation about a calculator feature -> `--context "calculator"`
 - Conversation about hook configuration -> `--context "hook config"`
 
-Without `--context`, saysay falls back to git remote + branch (max 2 words). With `--no-context` the prefix is omitted entirely.
+Without `--context`, saysay falls back to git remote plus the current non-default branch, using Git's default-branch metadata to avoid announcing the default branch itself. With `--no-context` the prefix is omitted entirely.
 
 ## Language of the spoken text
 

@@ -196,13 +196,20 @@ occ_owner() {
 }
 
 occ_description() {
-  local dir="$1" branch
+  local dir="$1" branch default_branch
   if [ -n "${DIBS_DESCRIPTION:-}" ]; then printf '%s\n' "$DIBS_DESCRIPTION"; return 0; fi
   branch="$(git -C "$dir" branch --show-current 2>/dev/null || true)"
-  case "$branch" in
-    ""|main|master) return 1 ;;
-    *) printf '%s\n' "$branch" ;;
-  esac
+  [ -n "$branch" ] || return 1
+  default_branch="$(git -C "$dir" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)"
+  if [ -z "$default_branch" ]; then
+    if git -C "$dir" rev-parse --verify --quiet refs/heads/main >/dev/null 2>&1; then
+      default_branch=main
+    elif git -C "$dir" rev-parse --verify --quiet refs/heads/master >/dev/null 2>&1; then
+      default_branch=master
+    fi
+  fi
+  [ "$branch" = "$default_branch" ] && return 1
+  printf '%s\n' "$branch"
 }
 
 occ_legacy_codex_reclaim() {

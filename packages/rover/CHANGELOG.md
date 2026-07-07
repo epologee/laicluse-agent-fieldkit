@@ -5,6 +5,13 @@ once per machine whenever the installed `version` in
 `.claude-plugin/plugin.json` changes. Header version numbers are informational;
 the broadcast is positional.
 
+## [v2.0.22]
+
+### Changed
+
+- **Review range examples no longer assume `main`.** The pride and trim skills
+  use default-branch wording for branch-vs-HEAD examples.
+
 ## [v2.0.20]
 
 ### Fixed

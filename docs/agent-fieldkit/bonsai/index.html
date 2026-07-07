@@ -52,7 +52,7 @@
 					<p class="lede">Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.29</span>
+						<span>2.0.30</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -61,28 +61,28 @@
 			<section class="detail-content-section">
 				<article class="readme-content">
 <p>Worktree lifecycle as a small, cross-platform CLI. Bonsai owns one thing well: creating, priming, and tearing down git worktrees, git-natively, with a safety gate so work is never thrown away by accident.</p>
-<p>It is deliberately distinct from raw <code>git worktree</code>: bonsai resolves the freshest default branch, follows the <code>&lt;root&gt;/worktrees/&lt;dir&gt;</code> convention with a self-ignoring <code>.gitignore</code>, primes a tree from a <code>.bonsai</code> file list, and guards teardown. It emits facts (<code>--json</code>), never a start command or clipboard payload; whatever launches an agent in the worktree composes its own briefing.</p>
+<p>It is deliberately distinct from raw <code>git worktree</code>: bonsai resolves the freshest Git default branch, refuses to use a vaultsync-managed checkout as a worktree factory, follows the <code>&lt;root&gt;/worktrees/&lt;dir&gt;</code> convention with a self-ignoring <code>.gitignore</code>, primes a tree from a <code>.bonsai</code> file list, and guards teardown. It emits facts (<code>--json</code>), never a start command or clipboard payload; whatever launches an agent in the worktree composes its own briefing.</p>
 <p>Use <code>bonsai</code> when an agent needs isolated workspace state without inventing a repo-specific worktree ritual. It is especially useful before starting parallel agent work, handing a mission to another runtime, or cleaning up old worktrees without losing unmerged commits.</p>
 <h2 id="cli">CLI</h2>
 <pre><code>bonsai create &lt;branch&gt; --repo &lt;root&gt; [--base &lt;ref&gt;] [--json]
 bonsai setup  &lt;worktree&gt; --repo &lt;root&gt; [--no-install] [--json]
 bonsai teardown &lt;worktree|branch&gt; --repo &lt;root&gt; [--force] [--dry-run] [--json]</code></pre>
 <ul>
-<li><strong>create</strong> — resolve the freshest default, make the worktree + branch (slashes in the branch flatten to dashes in the dir), refuse an existing branch, and print <code>{ worktree, branch, base, baseSha, port }</code>. The port is a deterministic dev-server hint in 3100-3999.</li>
-<li><strong>setup</strong> — copy the <code>.bonsai</code>-listed files from the canonical checkout (<code>--repo</code>) and install dependencies per directory by the manager each lockfile names. Install is best-effort; failures warn rather than block.</li>
-<li><strong>teardown</strong> — remove a worktree only when it is integrated, or clean with nothing ahead of the default. Otherwise it is kept with a reason. Warns on orphaned unpushed commits and on a diverged default. <code>--dry-run</code> classifies without removing; <code>--force</code> overrides the gate.</li>
+<li><strong>create</strong>: resolve the freshest Git default branch from <code>origin/HEAD</code> when available, refuse a vaultsync-managed checkout through the vaultsync CLI, make the worktree + branch (slashes in the branch flatten to dashes in the dir), refuse an existing branch, and print <code>{ worktree, branch, base, baseSha, port }</code>. The port is a deterministic dev-server hint in 3100-3999.</li>
+<li><strong>setup</strong>: copy the <code>.bonsai</code>-listed files from the canonical checkout (<code>--repo</code>) and install dependencies per directory by the manager each lockfile names. Install is best-effort; failures warn rather than block.</li>
+<li><strong>teardown</strong>: remove a worktree only when it is integrated into the Git default branch, or clean with nothing ahead of that default. Otherwise it is kept with a reason. Warns on orphaned unpushed commits and on a diverged default. <code>--dry-run</code> classifies without removing; <code>--force</code> overrides the gate.</li>
 </ul>
 <h2 id="skills">Skills</h2>
 <ul>
-<li><code>bonsai</code> — make a ready worktree (create + setup).</li>
-<li><code>setup</code> — prime an existing worktree.</li>
-<li><code>prune</code> — tear down behind the safety gate.</li>
+<li><code>bonsai</code>: make a ready worktree (create + setup).</li>
+<li><code>setup</code>: prime an existing worktree.</li>
+<li><code>prune</code>: tear down behind the safety gate.</li>
 </ul>
 <h2 id="files">Files</h2>
 <ul>
-<li><code>bin/bonsai</code> — CLI dispatcher.</li>
-<li><code>bin/bonsai-lib.mjs</code> — pure functions (base resolution, port, copy, install detection, teardown classification).</li>
-<li><code>test/*.bats</code> — CLI contract tests.</li>
+<li><code>bin/bonsai</code>: CLI dispatcher.</li>
+<li><code>bin/bonsai-lib.mjs</code>: pure functions (base resolution, port, copy, install detection, teardown classification).</li>
+<li><code>test/*.bats</code>: CLI contract tests.</li>
 </ul>
 				</article>
 				<aside class="detail-sidebar" aria-label="Plugin links">

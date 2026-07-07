@@ -133,13 +133,13 @@ If you catch yourself thinking these thoughts, STOP:
 
 Minimize spec-level memoization/setup. Prefer local variables within the spec itself.
 
-## Main branch is always green
+## Default branch is always green
 
-Never assume a spec might fail on main. If it is on main, it passes. When verifying behavior:
+Never assume a spec might fail on the default branch. If it is on the default branch, it passes. When verifying behavior:
 - Write a spec that captures the expected behavior
 - When testing a fix, apply the fix locally, run the spec, then revert the fix to see the spec fail
-- Never check out main to "even checken of het op main ook faalt"
-- When referencing main, always use `origin/main` since local main may be stale
+- Never check out the default branch to "even checken of het daar ook faalt"
+- When referencing the default branch, prefer the remote ref resolved from `origin/HEAD` since a local default branch may be stale
 
 ## Modifying specs is forbidden
 
@@ -201,7 +201,7 @@ When the suite has failures, the only correct response is: fix them. Do not depl
 - "Seems unrelated to my changes" -> Irrelevant. It fails. Fix it.
 - "Let me verify it's pre-existing" / "Laat me verifiëren dat het pre-existing is" -> The goal is fixing, not assigning blame.
 - "This is a data issue, not [my thing]" -> Categorizing is not solving.
-- "Quick check whether it also fails on main" / "Even checken of het op main ook faalt" -> Even if it does, it is now your problem.
+- "Quick check whether it also fails on the default branch" / "Even checken of het op default ook faalt" -> Even if it does, it is now your problem.
 - git stash to prove it's "not yours" -> Wrong direction. Investigate the failure, not its origin.
 
 **On CI failures that break unexpectedly:** When you discover that your changes break specs in places you did not expect, that is a signal that there may be more unexpected breakages. In that situation, run the full suite before committing the fix. Definitely do not amend a previous commit before you know the full picture is correct.

@@ -163,3 +163,29 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   ! git -C "$FIX" show-ref --verify --quiet refs/heads/merged-wt
   ! echo "$output" | grep -qiE 'was not deleted'
 }
+
+@test "teardown judges integration against origin HEAD default before local main" {
+  ORIGIN="$BATS_TEST_TMPDIR/origin.git"
+  git init -q --bare -b trunk "$ORIGIN"
+  git -C "$FIX" checkout -q -b trunk
+  git -C "$FIX" commit -q --allow-empty -m "trunk base"
+  git -C "$FIX" remote add origin "$ORIGIN"
+  git -C "$FIX" push -q origin trunk
+  git -C "$FIX" fetch -q origin
+  git -C "$FIX" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
+  git -C "$FIX" checkout -q main
+
+  mkdir -p "$FIX/worktrees"
+  git -C "$FIX" worktree add -q -b trunk-wt "$FIX/worktrees/trunk-wt" trunk
+  git -C "$FIX/worktrees/trunk-wt" commit -q --allow-empty -m "feature work"
+  git -C "$FIX" checkout -q trunk
+  git -C "$FIX" merge -q --ff-only trunk-wt
+  git -C "$FIX" push -q origin trunk
+  git -C "$FIX" checkout -q main
+  git -C "$FIX" fetch -q origin
+
+  run bonsai teardown trunk-wt --repo "$FIX" --dry-run --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"removable": true'
+  ! echo "$output" | grep -qiE 'orphan|unpushed|advanced|rebase'
+}

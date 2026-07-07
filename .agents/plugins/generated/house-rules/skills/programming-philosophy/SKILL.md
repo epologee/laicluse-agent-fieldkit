@@ -313,14 +313,14 @@ you.
 new class, a new module, a new system) and a reviewer finds a flaw, then the fix
 is part of the introduction. "Plan" and "follow-up" are valid only for
 pre-existing code that falls outside the core of the PR. Code that did not exist
-before this branch is in scope by definition. "Touches callers on master" or
+before this branch is in scope by definition. "Touches callers on the default branch" or
 "makes the PR too big" are rationalizations: if you introduce something halfway,
 nobody else ever introduces the other half.
 
 ## Red tests are always a blocker
 
 A failing test suite is an active blocker, regardless of who caused the break or
-when. "Pre-existing on main" is no excuse to work around it. A codebase with red
+when. "Pre-existing on the default branch" is no excuse to work around it. A codebase with red
 tests is a codebase without a safety net: you can no longer see what your change
 breaks, because there is already red noise.
 

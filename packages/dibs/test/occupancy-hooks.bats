@@ -133,6 +133,27 @@ run_bash_hook() {
   echo "$output" | grep -q '"description": "inspect lock work"'
 }
 
+@test "gate does not record the actual default branch as work description" {
+  local repo="$BATS_TEST_TMPDIR/default-branch-repo"
+  mkdir -p "$repo"
+  git -C "$repo" init -b trunk >/dev/null
+  git -C "$repo" config user.email test@example.invalid
+  git -C "$repo" config user.name Test
+  echo root > "$repo/README.md"
+  git -C "$repo" add README.md
+  git -C "$repo" commit -m init >/dev/null
+  git -C "$repo" remote add origin git@example.invalid:org/repo.git
+  git -C "$repo" update-ref refs/remotes/origin/trunk HEAD
+  git -C "$repo" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
+
+  export DIBS_HOLDER_PID=$$
+  DIR="$repo"
+  run_bash_hook "touch default.txt"
+  [ "$status" -eq 0 ]
+  run dibs check "$repo" --json
+  ! echo "$output" | grep -q '"description": "trunk"'
+}
+
 @test "Bash read-only command does not claim or block" {
 	sleep 60 & local other=$!
 	dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null

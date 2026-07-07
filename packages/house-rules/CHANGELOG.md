@@ -18,6 +18,14 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.6]
+
+### Changed
+
+- **Testing doctrine now says default branch.** The examples point at Git's
+  default-branch metadata so the prose no longer trains agents to treat `main`
+  as universal.
+
 ## [v2.0.1]
 
 ### Breaking

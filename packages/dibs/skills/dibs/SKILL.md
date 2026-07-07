@@ -118,8 +118,9 @@ a compact phrase of a few words such as `dibs lock descriptions`; the CLI
 compacts whitespace, turns branch separators such as `-`, `_`, and `/` into
 spaces, and caps it at 80 characters. It can also come from `DIBS_DESCRIPTION`;
 the occupancy hook passes that through and otherwise uses the current
-non-default git branch rendered as words when one exists. `bonsai` records the
-branch name as words for the worktree it hands out.
+non-default git branch, resolved through Git's default-branch metadata, rendered
+as words when one exists. `bonsai` records the branch name as words for the
+worktree it hands out.
 
 ## Who calls dibs
 

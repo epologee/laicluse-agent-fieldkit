@@ -18,6 +18,14 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.7]
+
+### Fixed
+
+- **Default-branch speech context follows Git metadata.** Without an explicit
+  `--context`, saysay no longer announces a non-`main` default branch as the
+  session topic.
+
 ## [v2.0.1]
 
 ### Added

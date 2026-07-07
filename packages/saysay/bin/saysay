@@ -58,8 +58,16 @@ elif [ -z "$no_context" ]; then
     org=$(echo "$clean" | cut -d/ -f1)
     repo=$(echo "$clean" | cut -d/ -f2)
     branch=$(git branch --show-current 2>/dev/null || true)
+    default_branch=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)
+    if [ -z "$default_branch" ]; then
+      if git rev-parse --verify --quiet refs/heads/main >/dev/null 2>&1; then
+		default_branch=main
+      elif git rev-parse --verify --quiet refs/heads/master >/dev/null 2>&1; then
+		default_branch=master
+      fi
+    fi
 
-    if [ -n "$branch" ] && [ "$branch" != "main" ] && [ "$branch" != "master" ]; then
+    if [ -n "$branch" ] && [ "$branch" != "$default_branch" ]; then
       label=$(echo "$branch" | sed -E 's/[-_]take[0-9]+([-_]take[0-9]+)*$//' | tr -- '-_' '  ')
     else
       label="$repo"

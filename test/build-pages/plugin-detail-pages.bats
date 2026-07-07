@@ -14,6 +14,7 @@ setup() {
     "$REPO/packages/dibs/.claude-plugin" \
     "$REPO/packages/clipboard/.claude-plugin" \
     "$REPO/docs/agent-fieldkit/removed"
+  git -C "$REPO" init -q -b trunk
 
   cat > "$REPO/.claude-plugin/marketplace.json" <<'JSON'
 {
@@ -172,6 +173,21 @@ NODE
   grep -q '<link rel="canonical" href="https://laicluse.com/agent-fieldkit/dibs/">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dibs/">' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<meta property="og:title" content="dibs · l'\''Aicluse Agent Fieldkit">' "$REPO/docs/agent-fieldkit/dibs/index.html"
+}
+
+@test "source links use the repository default branch" {
+  run node - <<'NODE' "$REPO/docs/site-data.json"
+const data = require(process.argv[2]);
+const plugin = data.plugins.find((entry) => entry.name === "dibs");
+const change = data.changelog.find((entry) => entry.plugin === "dibs");
+if (!plugin.sourceUrl.includes("/tree/trunk/packages/dibs")) {
+  throw new Error(`plugin sourceUrl did not use default branch: ${plugin.sourceUrl}`);
+}
+if (change && !change.sourceUrl.includes("/blob/trunk/packages/dibs/CHANGELOG.md")) {
+  throw new Error(`changelog sourceUrl did not use default branch: ${change.sourceUrl}`);
+}
+NODE
+  [ "$status" -eq 0 ]
 }
 
 @test "detail pages link back to the Fieldkit landing" {

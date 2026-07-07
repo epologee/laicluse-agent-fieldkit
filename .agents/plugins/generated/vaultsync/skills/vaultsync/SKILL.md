@@ -61,6 +61,7 @@ Vaultsync only accepts repairs for files it included in the request. Verifier-re
 ## Operations
 
 - `vaultsync status [path]` shows registrations, branch/upstream state, dirty state, ahead/behind counts, pauses, and the last sync error.
+- `vaultsync managed [path]` reports whether the path resolves to a vaultsync-managed checkout. Other tools should use this CLI contract instead of reading vaultsync registration files.
 - `vaultsync pause [path]` pauses with an automatic resume deadline; default is 120 minutes. Use `--minutes <n>` or `--until <time>` for a different deadline.
 - `vaultsync resume [path]` clears a pause.
 - `vaultsync now [path]` runs one immediate cycle without bypassing safety gates.

@@ -92,7 +92,7 @@
 		"publicProjects": 3,
 		"codexPackages": 19,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 19,
+		"changelogEntries": 20,
 		"skillEntries": 74,
 		"hookFiles": 54
 	},
@@ -168,7 +168,7 @@
 		},
 		{
 			"name": "bonsai",
-			"version": "2.0.29",
+			"version": "2.0.30",
 			"category": "workflow",
 			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
 			"support": [
@@ -183,14 +183,14 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.29",
+				"version": "v2.0.30",
 				"type": "Fixed",
-				"summary": "Installed bonsai now finds the installed dibs peer."
+				"summary": "Default branches come from Git metadata."
 			}
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.35",
+			"version": "2.0.36",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -205,9 +205,9 @@
 			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.34",
+				"version": "v2.0.36",
 				"type": "Fixed",
-				"summary": "Read-only commands no longer take occupancy locks."
+				"summary": "Occupancy descriptions respect the Git default branch."
 			}
 		},
 		{
@@ -278,7 +278,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.11",
+			"version": "2.0.12",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -293,9 +293,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.10",
-				"type": "Changed",
-				"summary": "Claude-to-Codex second opinions resolve the cheap model dynamically."
+				"version": "v2.0.12",
+				"type": "Fixed",
+				"summary": "Branch-diff examples resolve the default branch first."
 			}
 		},
 		{
@@ -366,7 +366,7 @@
 		},
 		{
 			"name": "vaultsync",
-			"version": "2.0.3",
+			"version": "2.0.4",
 			"category": "feedback",
 			"summary": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha",
 			"support": [
@@ -380,7 +380,11 @@
 			"skillCount": 1,
 			"commandCount": 1,
 			"hookFileCount": 0,
-			"latestChange": null
+			"latestChange": {
+				"version": "v2.0.4",
+				"type": "Added",
+				"summary": "Managed-checkout status is now a CLI contract."
+			}
 		},
 		{
 			"name": "laicluse-agent-fieldkit",
@@ -471,7 +475,7 @@
 		},
 		{
 			"name": "rover",
-			"version": "2.0.21",
+			"version": "2.0.22",
 			"category": "autonomy",
 			"summary": "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
 			"support": [
@@ -486,14 +490,14 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.20",
-				"type": "Fixed",
-				"summary": "rover follows hook remediation during setup."
+				"version": "v2.0.22",
+				"type": "Changed",
+				"summary": "Review range examples no longer assume main."
 			}
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.5",
+			"version": "2.0.6",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -508,9 +512,9 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.1",
-				"type": "Breaking",
-				"summary": "naming-is-hard has moved into house-rules."
+				"version": "v2.0.6",
+				"type": "Changed",
+				"summary": "Testing doctrine now says default branch."
 			}
 		},
 		{
@@ -559,7 +563,7 @@
 		},
 		{
 			"name": "saysay",
-			"version": "2.0.6",
+			"version": "2.0.7",
 			"category": "feedback",
 			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
 			"support": [
@@ -574,9 +578,9 @@
 			"commandCount": 3,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.1",
-				"type": "Added",
-				"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace."
+				"version": "v2.0.7",
+				"type": "Fixed",
+				"summary": "Default-branch speech context follows Git metadata."
 			}
 		}
 	],
@@ -592,11 +596,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.35",
+			"packageVersion": "2.0.36",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.34",
+			"version": "v2.0.36",
 			"type": "Fixed",
-			"summary": "Read-only commands no longer take occupancy locks.",
+			"summary": "Occupancy descriptions respect the Git default branch.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
@@ -619,20 +623,20 @@
 		},
 		{
 			"plugin": "bonsai",
-			"packageVersion": "2.0.29",
+			"packageVersion": "2.0.30",
 			"detailPath": "agent-fieldkit/bonsai/",
-			"version": "v2.0.29",
+			"version": "v2.0.30",
 			"type": "Fixed",
-			"summary": "Installed bonsai now finds the installed dibs peer.",
+			"summary": "Default branches come from Git metadata.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
 		},
 		{
 			"plugin": "rover",
-			"packageVersion": "2.0.21",
+			"packageVersion": "2.0.22",
 			"detailPath": "agent-fieldkit/rover/",
-			"version": "v2.0.20",
-			"type": "Fixed",
-			"summary": "rover follows hook remediation during setup.",
+			"version": "v2.0.22",
+			"type": "Changed",
+			"summary": "Review range examples no longer assume main.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"
 		},
 		{
@@ -643,6 +647,15 @@
 			"type": "Changed",
 			"summary": "Codex-only background diagnosis resolves the cheap model dynamically.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
+		},
+		{
+			"plugin": "intervision",
+			"packageVersion": "2.0.12",
+			"detailPath": "agent-fieldkit/intervision/",
+			"version": "v2.0.12",
+			"type": "Fixed",
+			"summary": "Branch-diff examples resolve the default branch first.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
 			"plugin": "autonomous",
@@ -661,15 +674,6 @@
 			"type": "Fixed",
 			"summary": "Codex now gets its own /clipboard helper-resolution instructions.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/clipboard/CHANGELOG.md"
-		},
-		{
-			"plugin": "intervision",
-			"packageVersion": "2.0.11",
-			"detailPath": "agent-fieldkit/intervision/",
-			"version": "v2.0.10",
-			"type": "Changed",
-			"summary": "Claude-to-Codex second opinions resolve the cheap model dynamically.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
 			"plugin": "self-improvement",
@@ -691,20 +695,20 @@
 		},
 		{
 			"plugin": "saysay",
-			"packageVersion": "2.0.6",
+			"packageVersion": "2.0.7",
 			"detailPath": "agent-fieldkit/saysay/",
-			"version": "v2.0.1",
-			"type": "Added",
-			"summary": "saysay now ships from the public laicluse-agent-fieldkit marketplace.",
+			"version": "v2.0.7",
+			"type": "Fixed",
+			"summary": "Default-branch speech context follows Git metadata.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
 			"plugin": "house-rules",
-			"packageVersion": "2.0.5",
+			"packageVersion": "2.0.6",
 			"detailPath": "agent-fieldkit/house-rules/",
-			"version": "v2.0.1",
-			"type": "Breaking",
-			"summary": "naming-is-hard has moved into house-rules.",
+			"version": "v2.0.6",
+			"type": "Changed",
+			"summary": "Testing doctrine now says default branch.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{
@@ -715,6 +719,15 @@
 			"type": "Added",
 			"summary": "$whats-new now works in Codex.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
+		},
+		{
+			"plugin": "vaultsync",
+			"packageVersion": "2.0.4",
+			"detailPath": "agent-fieldkit/vaultsync/",
+			"version": "v2.0.4",
+			"type": "Added",
+			"summary": "Managed-checkout status is now a CLI contract.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
 		},
 		{
 			"plugin": "whywhy",

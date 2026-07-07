@@ -32,9 +32,10 @@ node "$BONSAI" teardown <worktree|branch> --repo "<root>" --dry-run --json   # c
 node "$BONSAI" teardown <worktree|branch> --repo "<root>" --json             # remove if safe
 ```
 
-A worktree is removed only when it is integrated into the default branch, or
-when it is clean with nothing ahead of the default. Otherwise teardown keeps it
-and returns `removed: false` with a reason. `--dry-run` reports the same
-classification and warnings without removing anything. `--force` overrides the
-gate and also deletes an unmerged branch; reach for it only on a deliberate
-throwaway, and never wire it into an unattended caller.
+A worktree is removed only when it is integrated into the Git default branch
+resolved from `origin/HEAD` when available, or when it is clean with nothing
+ahead of that default. Otherwise teardown keeps it and returns `removed: false`
+with a reason. `--dry-run` reports the same classification and warnings without
+removing anything. `--force` overrides the gate and also deletes an unmerged
+branch; reach for it only on a deliberate throwaway, and never wire it into an
+unattended caller.

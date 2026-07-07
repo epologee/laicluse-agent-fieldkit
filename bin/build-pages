@@ -697,12 +697,31 @@ function compareSemverDesc(a, b) {
 	return 0;
 }
 
+function gitOutput(repoRoot, args) {
+	try {
+		return execFileSync("git", ["-C", repoRoot, ...args], {
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+	} catch {
+		return "";
+	}
+}
+
+function defaultBranchName(repoRoot) {
+	const remoteHead = gitOutput(repoRoot, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"]);
+	if (remoteHead) return remoteHead.replace(/^origin\//, "");
+	const localHead = gitOutput(repoRoot, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
+	return localHead || "main";
+}
+
 function build(repoRoot) {
 	const claudeMarketplace = readJson(path.join(repoRoot, ".claude-plugin", "marketplace.json"));
 	const codexMarketplace = maybeReadJson(path.join(repoRoot, ".agents", "plugins", "marketplace.json"), {
 		plugins: [],
 	});
 	const codexNames = new Set((codexMarketplace.plugins || []).map((plugin) => plugin.name));
+	const defaultBranch = defaultBranchName(repoRoot);
 
 	const plugins = (claudeMarketplace.plugins || []).map((entry) => {
 		const sourcePath = entry.source.replace(/^\.\//, "");
@@ -722,7 +741,7 @@ function build(repoRoot) {
 			codex: codexNames.has(entry.name),
 			detailPath,
 			sourcePath,
-			sourceUrl: `${REPO_URL}/tree/main/${sourcePath}`,
+			sourceUrl: `${REPO_URL}/tree/${defaultBranch}/${sourcePath}`,
 			skillCount: countSkillDirs(pluginDir),
 			commandCount: commandCount(pluginDir),
 			hookFileCount: countFiles(path.join(pluginDir, "hooks")),
@@ -737,7 +756,7 @@ function build(repoRoot) {
 			packageVersion: plugin.version,
 			detailPath: plugin.detailPath,
 			...plugin.latestChange,
-			sourceUrl: `${REPO_URL}/blob/main/${plugin.sourcePath}/CHANGELOG.md`,
+			sourceUrl: `${REPO_URL}/blob/${defaultBranch}/${plugin.sourcePath}/CHANGELOG.md`,
 		}))
 		.sort((a, b) => compareSemverDesc(a.packageVersion, b.packageVersion) || a.plugin.localeCompare(b.plugin));
 

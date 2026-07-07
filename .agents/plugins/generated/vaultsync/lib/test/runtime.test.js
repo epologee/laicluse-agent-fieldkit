@@ -85,6 +85,49 @@ it('allows repository preflight without a branch upstream', () => {
   assert.equal(preflight.upstream, null);
 });
 
+it('reports whether a checkout is managed through the public CLI', () => {
+  const managed = createRepo('managed-query-managed');
+  const unmanaged = createRepo('managed-query-unmanaged');
+  const fakeDibs = join(tmp, 'managed-query-dibs.mjs');
+  writeFileSync(fakeDibs, [
+    '#!/usr/bin/env node',
+    'const command = process.argv[2];',
+    'if (command === "claim") process.stdout.write(JSON.stringify({ state: "claimed", holder: { nonce: "abc" } }));',
+    'else if (command === "release") process.stdout.write(JSON.stringify({ state: "released" }));',
+    'else if (command === "check") process.stdout.write(JSON.stringify({ state: "free" }));',
+    'else process.exit(2);',
+    '',
+  ].join('\n'), { mode: 0o755 });
+  const llm = join(tmp, 'managed-query-llm.mjs');
+  writeFileSync(llm, [
+    '#!/usr/bin/env node',
+    'let input = "";',
+    'process.stdin.on("data", (chunk) => input += chunk);',
+    'process.stdin.on("end", () => {',
+    '  const payload = JSON.parse(input);',
+    '  if (payload.task === "resolve_conflict") process.stdout.write(JSON.stringify({ resolved: "Remote truth line.\\n" }));',
+    '  else if (payload.task === "commit_message") process.stdout.write(JSON.stringify({ message: "Record managed query\\n\\nExercise the managed query contract.\\n\\nSlice: docs-only" }));',
+    '  else process.exit(2);',
+    '});',
+    '',
+  ].join('\n'), { mode: 0o755 });
+  const cli = fileURLToPath(new URL('../../bin/vaultsync', import.meta.url));
+  const env = {
+    LAICLUSE_HOME: join(tmp, 'managed-query-home'),
+    DIBS_BIN: fakeDibs,
+    HOME: tmp,
+  };
+  runNode([cli, 'install', managed, '--llm-command', `${process.execPath} ${llm}`, '--no-launchd'], { env });
+
+  const managedResult = JSON.parse(runNode([cli, 'managed', managed, '--json'], { env }).stdout);
+  const unmanagedResult = JSON.parse(runNode([cli, 'managed', unmanaged, '--json'], { env }).stdout);
+
+  assert.equal(managedResult.managed, true);
+  assert.equal(managedResult.root, realpathSync(managed));
+  assert.equal(unmanagedResult.managed, false);
+  assert.equal(unmanagedResult.root, realpathSync(unmanaged));
+});
+
 it('formats a git-discipline-friendly fallback commit message', () => {
   const message = fallbackCommitMessage('debounce');
   assert.match(message, /^Sync vault content\n\n/);

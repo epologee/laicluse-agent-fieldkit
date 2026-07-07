@@ -5,7 +5,7 @@ runtime-specific adapters are generated from the package sources.
 
 The GitHub Pages source for a public overview of the repository and changelog
 lives in [docs/index.html](docs/index.html). Publish GitHub Pages from the
-`main` branch's `/docs` folder to serve it as a project page.
+default branch's `/docs` folder to serve it as a project page.
 
 ## Installation
 

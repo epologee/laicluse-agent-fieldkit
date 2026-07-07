@@ -897,6 +897,19 @@ function registrationForDir(dir, env = process.env) {
   return readJsonFile(path);
 }
 
+function managedStatusForDir(dir, env = process.env) {
+  const root = resolveGitRoot(dir || env.PWD || process.cwd(), env);
+  const path = registrationPathForRoot(root, env);
+  if (!existsSync(path)) return { managed: false, root };
+  const registration = readJsonFile(path);
+  return {
+    managed: registration.enabled !== false,
+    root,
+    enabled: registration.enabled !== false,
+    pausedUntil: registration.pausedUntil || null,
+  };
+}
+
 function parseCommonTarget(args, env = process.env) {
   const parsed = parseArgs({
     args,
@@ -972,6 +985,11 @@ async function commandInstall(args, env = process.env) {
     registration: registrationPathForKey(savedRegistration.key, env),
     launchd,
   }, parsed.values.json);
+}
+
+function commandManaged(args, env = process.env) {
+  const target = parseCommonTarget(args, env);
+  emit(managedStatusForDir(target.dir, env), target.json);
 }
 
 function numberOption(value, fallback, name) {
@@ -1214,6 +1232,7 @@ export function installLaunchAgent(env = process.env) {
 export async function runCommand(command, args, env = process.env) {
   switch (command) {
     case 'install': return commandInstall(args, env);
+    case 'managed': return commandManaged(args, env);
     case 'status': return commandStatus(args, env);
     case 'pause': return commandPause(args, env);
     case 'resume': return commandResume(args, env);

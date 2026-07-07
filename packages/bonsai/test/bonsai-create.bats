@@ -68,6 +68,50 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -q "$FIX/worktrees/second"
 }
 
+@test "create uses origin HEAD as the default branch before local main" {
+  ORIGIN="$BATS_TEST_TMPDIR/origin.git"
+  git init -q --bare -b trunk "$ORIGIN"
+  main_sha="$(git -C "$FIX" rev-parse main)"
+  git -C "$FIX" checkout -q -b trunk
+  git -C "$FIX" commit -q --allow-empty -m "trunk base"
+  trunk_sha="$(git -C "$FIX" rev-parse trunk)"
+  git -C "$FIX" checkout -q main
+  git -C "$FIX" remote add origin "$ORIGIN"
+  git -C "$FIX" push -q origin trunk
+  git -C "$FIX" fetch -q origin
+  git -C "$FIX" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
+
+  run run_bonsai create from-origin-head --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'trunk'
+  [ "$(git -C "$FIX" rev-parse from-origin-head)" = "$trunk_sha" ]
+  [ "$(git -C "$FIX" rev-parse from-origin-head)" != "$main_sha" ]
+}
+
+@test "create refuses a vaultsync managed checkout through the vaultsync CLI" {
+  fake_vaultsync="$BATS_TEST_TMPDIR/vaultsync"
+  cat > "$fake_vaultsync" <<'SH'
+#!/bin/sh
+if [ "$1" = "managed" ]; then
+  printf '{"managed":true,"root":"%s"}\n' "$2"
+  exit 0
+fi
+exit 2
+SH
+  chmod +x "$fake_vaultsync"
+
+  VAULTSYNC_BIN="$fake_vaultsync" run run_bonsai create should-block --repo "$FIX" --json
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -qi 'vaultsync'
+  [ ! -d "$FIX/worktrees/should-block" ]
+  ! git -C "$FIX" show-ref --verify --quiet refs/heads/should-block
+}
+
+@test "bonsai has no vaultsync storage-path knowledge" {
+  run rg -n 'vaultsync.*registrations|registrations.*vaultsync|LAICLUSE_HOME|createHash|repoKey|sha256' "$REPO_ROOT/packages/bonsai/bin"
+  [ "$status" -ne 0 ]
+}
+
 @test "create rejects a .. branch name as invalid" {
   run run_bonsai create .. --repo "$FIX" --json
   [ "$status" -ne 0 ]

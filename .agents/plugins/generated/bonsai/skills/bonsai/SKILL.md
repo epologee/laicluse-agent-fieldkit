@@ -10,9 +10,11 @@ description: >-
 Worktree lifecycle as a small CLI. ("Worktree" is sometimes transcribed as two
 words, "work tree", when dictated; the two mean the same thing.) This skill
 makes a ready-to-use worktree:
-it creates the branch off the freshest default and primes the tree from the
-repo's `.bonsai` file list. It does not launch an agent and does not write a
-start command anywhere; it returns facts and stops.
+it creates the branch off the freshest Git default branch and primes the tree
+from the repo's `.bonsai` file list. It refuses a checkout that vaultsync reports
+as managed, because a vaultsync root is a sync target rather than a worktree
+factory. It does not launch an agent and does not write a start command anywhere;
+it returns facts and stops.
 
 ## Resolve the bin (cross-agent)
 
@@ -39,11 +41,13 @@ node "$BONSAI" create <branch> --repo "<canonical checkout root>" --json
 node "$BONSAI" setup  "<worktree path from create>" --repo "<canonical checkout root>" --json
 ```
 
-`create` resolves the freshest default branch, makes `<root>/worktrees/<dir>`
-(slashes in the branch flatten to dashes in the dir), refuses a branch that
-already exists, and prints `{ worktree, branch, base, baseSha, port }`. `setup`
-copies the `.bonsai`-listed files from the canonical checkout and installs
-dependencies per directory using the package manager each lockfile names.
+`create` resolves the freshest Git default branch from `origin/HEAD` when
+available, asks the vaultsync CLI whether the source checkout is managed, makes
+`<root>/worktrees/<dir>` (slashes in the branch flatten to dashes in the dir),
+refuses a branch that already exists, and prints `{ worktree, branch, base,
+baseSha, port }`. `setup` copies the `.bonsai`-listed files from the canonical
+checkout and installs dependencies per directory using the package manager each
+lockfile names.
 
 Relay the worktree path and the dev-server port to the operator. The port is a
 deterministic hint in 3100-3999; use it for a dev server in the worktree so it

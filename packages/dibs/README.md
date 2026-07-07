@@ -89,8 +89,8 @@ Use this for quick inspection of old locks: when the described work is visibly
 complete and the holder is stale, the next session can clear the leftover lock
 with more confidence. The CLI also reads `DIBS_DESCRIPTION`; the occupancy hook
 passes it through when set and otherwise falls back to the current non-default
-git branch rendered as words. `bonsai` records the branch name as words for
-worktrees it hands out.
+git branch, resolved through Git's default-branch metadata, rendered as words.
+`bonsai` records the branch name as words for worktrees it hands out.
 
 ## How it works
 

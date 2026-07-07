@@ -100,6 +100,40 @@ export async function claimWorktreeLock(dir, description) {
   }
 }
 
+function executableOnPath(name, env = process.env) {
+  const pathValue = env.PATH || '';
+  for (const dir of pathValue.split(sep === '\\' ? ';' : ':')) {
+    if (!dir) continue;
+    const candidate = join(dir, name);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+function vaultsyncCliCandidates(env = process.env) {
+  return [
+    env.VAULTSYNC_BIN,
+    ...sourcePeerFiles('vaultsync', ['bin', 'vaultsync']),
+    ...installedPeerFiles('vaultsync', ['bin', 'vaultsync']),
+    executableOnPath('vaultsync', env),
+  ].filter(Boolean);
+}
+
+export function vaultsyncManagedStatus(root, env = process.env) {
+  for (const candidate of vaultsyncCliCandidates(env)) {
+    if (!existsSync(candidate)) continue;
+    try {
+      const output = execFileSync(candidate, ['managed', root, '--json'], {
+		encoding: 'utf8',
+		env: { ...process.env, ...env },
+		stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      return JSON.parse(output);
+    } catch {}
+  }
+  return { managed: false, root, unavailable: true };
+}
+
 export function git(repo, args) {
   return execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
@@ -144,24 +178,51 @@ function refExists(repo, ref) {
   }
 }
 
+function remoteDefaultBranch(repo, remote = 'origin') {
+  try {
+    const ref = git(repo, ['symbolic-ref', '--quiet', `refs/remotes/${remote}/HEAD`]).trim();
+    const prefix = `refs/remotes/${remote}/`;
+    return ref.startsWith(prefix) ? ref.slice(prefix.length) : null;
+  } catch {
+    return null;
+  }
+}
+
+function localHeadBranch(repo) {
+  try {
+    return git(repo, ['symbolic-ref', '--quiet', '--short', 'HEAD']).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export function defaultBranch(repo, { allowHeadFallback = false } = {}) {
+  const remoteDefault = remoteDefaultBranch(repo);
+  if (remoteDefault) return remoteDefault;
+  for (const candidate of ['main', 'master']) {
+    if (refExists(repo, `refs/heads/${candidate}`)) return candidate;
+  }
+  return allowHeadFallback ? localHeadBranch(repo) : null;
+}
+
 // Freshest default branch: prefer origin/<default> only when origin is strictly
 // ahead of the local ref; otherwise the local ref. Falls back to HEAD.
 export function resolveBase(repo) {
-  let local = null;
-  for (const candidate of ['main', 'master']) {
-    if (refExists(repo, `refs/heads/${candidate}`)) {
-      local = candidate;
-      break;
-    }
-  }
-  if (!local) return 'HEAD';
-  if (!refExists(repo, `refs/remotes/origin/${local}`)) return local;
+  const def = defaultBranch(repo, { allowHeadFallback: true });
+  if (!def) return 'HEAD';
+  const localRef = `refs/heads/${def}`;
+  const remoteRef = `refs/remotes/origin/${def}`;
+  const hasLocal = refExists(repo, localRef);
+  const hasRemote = refExists(repo, remoteRef);
+  if (!hasLocal && hasRemote) return `origin/${def}`;
+  if (!hasLocal) return 'HEAD';
+  if (!hasRemote) return def;
   try {
-    const counts = git(repo, ['rev-list', '--left-right', '--count', `refs/heads/${local}...refs/remotes/origin/${local}`]).trim();
+    const counts = git(repo, ['rev-list', '--left-right', '--count', `${localRef}...${remoteRef}`]).trim();
     const [ahead, behind] = counts.split(/\s+/).map((n) => parseInt(n, 10));
-    return ahead === 0 && behind > 0 ? `origin/${local}` : local;
+    return ahead === 0 && behind > 0 ? `origin/${def}` : def;
   } catch {
-    return local;
+    return def;
   }
 }
 
@@ -177,6 +238,10 @@ export async function createWorktree({ repo, branch, base, dir }) {
     throw new Error(`invalid worktree dir name ${JSON.stringify(dir)}`);
   }
   const root = mainWorktree(repo);
+  const vaultsyncStatus = vaultsyncManagedStatus(root);
+  if (vaultsyncStatus.managed) {
+    throw new Error(`vaultsync manages ${root}; bonsai does not create worktrees for vaultsync checkouts`);
+  }
   const resolvedBase = base || resolveBase(root);
   const baseSha = git(root, ['rev-parse', resolvedBase]).trim();
   const worktreesDir = join(root, 'worktrees');
@@ -267,17 +332,11 @@ export function setupWorktree({ repo, worktree, install = true, exec = execFileS
   return { worktree, copied, installs, warnings };
 }
 
-export function defaultBranch(repo) {
-  for (const candidate of ['main', 'master']) {
-    if (refExists(repo, `refs/heads/${candidate}`)) return candidate;
-  }
-  return null;
-}
-
 // allow-comment: deliberately NOT resolveBase; resolveBase keeps the local ref unless origin is strictly ahead, which a stray local-ahead commit defeats, letting an already-merged branch read as unmerged at teardown.
 function integrationBase(repo, def) {
   if (!def) return null;
-  return refExists(repo, `refs/remotes/origin/${def}`) ? `origin/${def}` : def;
+  if (refExists(repo, `refs/remotes/origin/${def}`)) return `origin/${def}`;
+  return refExists(repo, `refs/heads/${def}`) ? def : null;
 }
 
 function parseWorktrees(repo) {
@@ -347,7 +406,7 @@ export function classifyTeardown({ repo, target }) {
   const base = integrationBase(repo, def);
   const dirty = git(worktree, ['status', '--porcelain']).trim().length > 0;
   const mergedIntoBase = base && branch ? isAncestor(repo, branch, base) : false;
-  const mergedIntoLocalDefault = base !== def && branch ? isAncestor(repo, branch, def) : false;
+  const mergedIntoLocalDefault = base !== def && branch && def && refExists(repo, `refs/heads/${def}`) ? isAncestor(repo, branch, def) : false;
   const integrated = mergedIntoBase || mergedIntoLocalDefault;
   const ahead = base && branch ? countRange(repo, `${base}..${branch}`) : 0;
   const behind = base && branch ? countRange(repo, `${branch}..${base}`) : 0;

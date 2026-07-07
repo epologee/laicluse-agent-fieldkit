@@ -1,5 +1,6 @@
 export const COMMANDS = [
   'install',
+  'managed',
   'status',
   'pause',
   'resume',
@@ -10,6 +11,7 @@ export const COMMANDS = [
 
 const SUMMARIES = {
   install: 'register the current Git checkout and install the user-level daemon',
+  managed: 'report whether a checkout is managed by vaultsync',
   status: 'show registered checkouts and sync state',
   pause: 'pause one checkout with an automatic resume deadline',
   resume: 'clear a pause for one checkout',

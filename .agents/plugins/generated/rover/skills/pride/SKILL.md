@@ -33,7 +33,7 @@ The pride check injects an independent skeptic before the loop transitions to it
 
 **Manually via `/rover:pride`:**
 - `/rover:pride` reviews the uncommitted changes plus commits on the current branch not yet on the default branch
-- `/rover:pride <ref>` reviews a specific commit range, for example `main..HEAD` or `HEAD~3..HEAD`
+- `/rover:pride <ref>` reviews a specific commit range, for example `<default>..HEAD` or `HEAD~3..HEAD`
 - `/rover:pride uncommitted` reviews only the uncommitted diff
 
 ## How
@@ -131,7 +131,7 @@ if [ "$INCLUDE_UNCOMMITTED" = true ]; then
 fi
 ```
 
-`*...*` matches the symmetric-difference form (`main...HEAD`) which git treats differently from `main..HEAD`. Passing it through to git is correct.
+`*...*` matches the symmetric-difference form (`<default>...HEAD`) which git treats differently from `<default>..HEAD`. Passing it through to git is correct.
 
 Pass the collected diff to the reviewer. Large diffs: `git diff --stat "$RANGE"` first, pick hot files, truncate per-file reads to 300 lines with a note, rather than dumping a 5000-line blob.
 

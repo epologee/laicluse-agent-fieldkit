@@ -20,6 +20,14 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.12]
+
+### Fixed
+
+- **Branch-diff examples resolve the default branch first.** The second-opinion
+  snippets now read `origin/HEAD` before local fallback branch names instead of
+  assuming `main`.
+
 ## [v2.0.10]
 
 ### Changed
