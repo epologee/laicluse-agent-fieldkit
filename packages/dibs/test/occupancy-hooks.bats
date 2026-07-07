@@ -39,13 +39,14 @@ run_bash_hook() {
 
 @test "gate hard-denies a write when a live other-session agent holds the dir" {
   sleep 60 & local other=$!
-  dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
+  dibs claim "$DIR" --pid "$other" --agent codex --session other-sess --description "stale dibs lock cleanup" >/dev/null
   export DIBS_HOLDER_PID=$$
   run_hook PreToolUse Write
   kill "$other" 2>/dev/null || true
   [ "$status" -eq 2 ]
   echo "$output" | grep -q '\[dibs/occupancy\]'
   echo "$output" | grep -qi "held by codex"
+  echo "$output" | grep -qi "work: stale dibs lock cleanup"
   echo "$output" | grep -qi "since"
   echo "$output" | grep -qi "git worktree"
   echo "$output" | grep -qi "new branch"
@@ -101,6 +102,33 @@ run_bash_hook() {
   [ "$status" -eq 0 ]
   run dibs check "$DIR" --json
   echo "$output" | grep -q "\"pid\": $$"
+}
+
+@test "gate records DIBS_DESCRIPTION on hook claims" {
+  export DIBS_HOLDER_PID=$$ DIBS_DESCRIPTION="Fix Dibs Lock Labels"
+  run_hook PreToolUse Write
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"description": "Fix Dibs Lock Labels"'
+}
+
+@test "gate falls back to the current non-default git branch" {
+  local repo="$BATS_TEST_TMPDIR/repo"
+  mkdir -p "$repo"
+  git -C "$repo" init >/dev/null
+  git -C "$repo" config user.email test@example.invalid
+  git -C "$repo" config user.name Test
+  echo root > "$repo/README.md"
+  git -C "$repo" add README.md
+  git -C "$repo" commit -m init >/dev/null
+  git -C "$repo" checkout -b inspect-lock-work >/dev/null
+
+  export DIBS_HOLDER_PID=$$
+  DIR="$repo"
+  run_bash_hook "touch branch.txt"
+  [ "$status" -eq 0 ]
+  run dibs check "$repo" --json
+  echo "$output" | grep -q '"description": "inspect lock work"'
 }
 
 @test "Bash read-only command does not claim or block" {

@@ -18,7 +18,7 @@ the resolved occupancy root realpath:
 target directory is inside a git worktree, the occupancy root is the nearest
 ancestor with a `.git` marker; outside git, it is the target directory itself.
 The record holds that realpath, holder pid, agent, session id, stable owner id,
-hostname, a nonce, and an acquired-at timestamp. Liveness is pid-based
+short work description, hostname, a nonce, and an acquired-at timestamp. Liveness is pid-based
 (`process.kill(pid, 0)` on the same host), not a heartbeat: a lock whose holder
 process is gone is taken over by the next claimer, while a live holder is
 refused. No external binary, no `flock`, no native dependency.
@@ -44,7 +44,7 @@ DIBS="${DIBS_BIN:-$ROOT/bin/dibs}"
 ## Use the lock
 
 ```bash
-node "$DIBS" claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
+node "$DIBS" claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--description <text>] [--max-age-hours <n>] [--json]
 node "$DIBS" release     <dir> [--pid <n>] [--json]
 node "$DIBS" release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
 node "$DIBS" check       <dir> [--max-age-hours <n>] [--json]
@@ -59,9 +59,12 @@ node "$DIBS" excludes    [--json]         # list defaults + configured
   reclaims one with the same stable owner (`reclaimed-by-owner`), or takes over
   a stale lock whose holder is dead (`took-over-stale`). It exits non-zero and
   names the holder (`refused: held by <agent> (pid <pid>) since <acquired-at>`)
-  when a live holder exists. A refusal suggests creating a separate git worktree
-  on a new branch (for example with `bonsai:bonsai`, or plain `git worktree` if
-  you do not have it) and claiming that worktree path.
+  when a live holder exists. When the holder recorded a description, refusal
+  and `check` output include it as `work: <text>`, so a blocked session can
+  inspect whether an old stale lock's work has already been completed. A refusal
+  suggests creating a separate git worktree on a new branch (for example with
+  `bonsai:bonsai`, or plain `git worktree` if you do not have it) and claiming
+  that worktree path.
 - **release** deletes the lock only if you are the holder; releasing a lock held
   by someone else is refused and exits non-zero, releasing an unheld directory
   is a no-op.
@@ -106,6 +109,14 @@ prints the full result record for machine consumers.
 from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
 `CODEX_THREAD_ID`, or the hook session id, so a Codex resume can reclaim its own
 old lock even when pid, host, or thread id changed.
+
+`--description` is the short human work description stored in the lock. Prefer
+a compact phrase of a few words such as `dibs lock descriptions`; the CLI
+compacts whitespace, turns branch separators such as `-`, `_`, and `/` into
+spaces, and caps it at 80 characters. It can also come from `DIBS_DESCRIPTION`;
+the occupancy hook passes that through and otherwise uses the current
+non-default git branch rendered as words when one exists. `bonsai` records the
+branch name as words for the worktree it hands out.
 
 ## Who calls dibs
 

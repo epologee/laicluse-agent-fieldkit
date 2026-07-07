@@ -23,6 +23,7 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -q '"state": "claimed"'
   [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
   "$NODE_BIN" "$DIBS" check "$FIX/worktrees/my-feature" --json | grep -q '"state": "held"'
+  "$NODE_BIN" "$DIBS" check "$FIX/worktrees/my-feature" --json | grep -q '"description": "my feature"'
 }
 
 @test "the claimed lock records the caller pid, not the short-lived bonsai pid" {

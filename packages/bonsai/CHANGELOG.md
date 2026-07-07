@@ -4,6 +4,14 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.28]
+
+### Added
+
+- **Worktree locks now carry the branch as a work description.** The dibs lock
+  created by `bonsai create` records the branch name as words, so later
+  inspection shows what work the lock represented.
+
 ## [v2.0.21]
 
 ### Fixed

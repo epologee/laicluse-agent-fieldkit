@@ -20,14 +20,21 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
   [ "$(ls "$LAICLUSE_HOME/locks" | wc -l)" -eq 1 ]
 }
 
+@test "claim records a normalized short work description" {
+  run dibs claim "$DIR" --pid $$ --agent claude --description "Fix Dibs Lock Labels!" --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"description": "Fix Dibs Lock Labels!"'
+}
+
 @test "a second live claimer is refused and told who holds it and since when" {
-  dibs claim "$DIR" --pid $$ --agent claude --json
+  dibs claim "$DIR" --pid $$ --agent claude --description "stale dibs lock cleanup" --json
   sleep 120 & local other=$!
   run dibs claim "$DIR" --pid "$other" --agent codex
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]
   echo "$output" | grep -qi "refused"
   echo "$output" | grep -qi "held by claude"
+  echo "$output" | grep -qi "work: stale dibs lock cleanup"
   echo "$output" | grep -qi "since"
   echo "$output" | grep -qi "git worktree"
   echo "$output" | grep -qi "new branch"
@@ -35,13 +42,14 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
 }
 
 @test "refused claim under --json reports state refused and the holder" {
-  dibs claim "$DIR" --pid $$ --agent claude --json
+  dibs claim "$DIR" --pid $$ --agent claude --description "stale dibs lock cleanup" --json
   sleep 120 & local other=$!
   run dibs claim "$DIR" --pid "$other" --agent codex --json
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]
   echo "$output" | grep -q '"state": "refused"'
   echo "$output" | grep -q '"agent": "claude"'
+  echo "$output" | grep -q '"description": "stale dibs lock cleanup"'
   echo "$output" | grep -q '"acquiredAt"'
   echo "$output" | grep -q '"suggestion"'
   echo "$output" | grep -qi "git worktree"

@@ -193,6 +193,16 @@ occ_owner() {
   [ -n "$sid" ] && printf '%s\n' "$sid"
 }
 
+occ_description() {
+  local dir="$1" branch
+  if [ -n "${DIBS_DESCRIPTION:-}" ]; then printf '%s\n' "$DIBS_DESCRIPTION"; return 0; fi
+  branch="$(git -C "$dir" branch --show-current 2>/dev/null || true)"
+  case "$branch" in
+    ""|main|master) return 1 ;;
+    *) printf '%s\n' "$branch" ;;
+  esac
+}
+
 occ_legacy_codex_reclaim() {
   local input="$1"
   [ "$(occ_agent_label)" = "codex" ] || return 1
@@ -204,7 +214,7 @@ occ_legacy_codex_reclaim() {
 occ_holder_pid() { dibs_holder_pid "$@"; }
 
 occ_holder_line() {
-  jq -r 'if .holder then "held by \(.holder.agent) (pid \(.holder.pid)) on \(.holder.hostname) since \(.holder.acquiredAt)" else "another live agent holds this directory" end' 2>/dev/null
+  jq -r 'if .holder then "held by \(.holder.agent) (pid \(.holder.pid)) on \(.holder.hostname) since \(.holder.acquiredAt)" + (if .holder.description then "; work: \(.holder.description)" else "" end) else "another live agent holds this directory" end' 2>/dev/null
 }
 
 occ_refusal_suggestion() {
@@ -250,7 +260,7 @@ occ_enforce_worktree_requirement() {
 }
 
 occ_claim_output() {
-  local input="$1" dir="${2:-}" dibs pid agent sid owner
+  local input="$1" dir="${2:-}" dibs pid agent sid owner description
   dibs="$(occ_dibs_bin)" || return 2
   command -v node >/dev/null 2>&1 || return 2
   [ -n "$dir" ] || dir="$(occ_cwd "$input")"
@@ -259,9 +269,11 @@ occ_claim_output() {
   agent="$(occ_agent_label)"
   sid="$(occ_session "$input")"
   owner="$(occ_owner "$input")"
+  description="$(occ_description "$dir")"
   set -- claim "$dir" --pid "$pid" --agent "$agent"
   [ -n "$sid" ] && set -- "$@" --session "$sid"
   [ -n "$owner" ] && set -- "$@" --owner "$owner"
+  [ -n "$description" ] && set -- "$@" --description "$description"
   occ_legacy_codex_reclaim "$input" && set -- "$@" --legacy-codex-resume
   node "$dibs" "$@" --json 2>/dev/null
 }

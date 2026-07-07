@@ -11,6 +11,7 @@ export const BLOCKED_DIRECTORY_SUGGESTION = [
   '(for example with bonsai:bonsai, or plain git worktree if you do not have it),',
   'then claim that worktree path.',
 ].join(' ');
+const MAX_DESCRIPTION_LENGTH = 80;
 
 function agentHomeDir() {
   return process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
@@ -169,8 +170,21 @@ function isAlive(pid) {
   }
 }
 
+export function normalizeDescription(description) {
+  if (description == null) return null;
+  const compact = String(description)
+    .trim()
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/[-_/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, MAX_DESCRIPTION_LENGTH)
+    .trim();
+  return compact || null;
+}
+
 export function formatHolder(record) {
-  return `held by ${record.agent} (pid ${record.pid}) on ${record.hostname} since ${record.acquiredAt}`;
+  const work = record.description ? `; work: ${record.description}` : '';
+  return `held by ${record.agent} (pid ${record.pid}) on ${record.hostname} since ${record.acquiredAt}${work}`;
 }
 
 function refusalResult(path, holder, reason) {
@@ -184,13 +198,14 @@ function refusalResult(path, holder, reason) {
   };
 }
 
-function buildRecord({ realpath, pid, agent, session, owner }) {
+function buildRecord({ realpath, pid, agent, session, owner, description }) {
   return {
     realpath,
     pid,
     agent: agent || 'unknown',
     session: session || null,
     owner: owner || null,
+    description: normalizeDescription(description),
     hostname: hostname(),
     nonce: randomBytes(8).toString('hex'),
     acquiredAt: new Date().toISOString(),
@@ -279,12 +294,12 @@ function inspectExisting(path, incoming, maxAgeHours, legacyCodexResumeEnabled) 
     : { action: 'refuse', reason: decision.reason, holder: existing };
 }
 
-export function claim({ dir, pid, agent, session, owner, maxAgeHours, legacyCodexResume: legacyCodexResumeEnabled }) {
+export function claim({ dir, pid, agent, session, owner, description, maxAgeHours, legacyCodexResume: legacyCodexResumeEnabled }) {
   const realpath = occupancyRoot(dir);
   if (isExcluded(realpath)) return { ok: true, state: 'excluded', path: null, realpath };
   const path = lockPathForRealpath(realpath);
   ensureLocksDir();
-  const record = buildRecord({ realpath, pid, agent, session, owner });
+  const record = buildRecord({ realpath, pid, agent, session, owner, description });
   const json = JSON.stringify(record, null, 2);
   let displaced = null;
   let displacedState = null;

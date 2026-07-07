@@ -4,6 +4,16 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.31]
+
+### Added
+
+- **Locks now carry a short work description.** `dibs claim --description <text>`
+  and `DIBS_DESCRIPTION` store a compact human `description` in the lock record;
+  `check`, refused claims, and occupancy denials show it as `work: <text>`.
+  Branch fallbacks are rendered as words, and `bonsai` records the branch name
+  as words for the worktrees it hands out.
+
 ## [v2.0.30]
 
 ### Added

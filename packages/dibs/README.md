@@ -24,7 +24,7 @@ codex plugin add dibs@laicluse-agent-fieldkit
 ## CLI
 
 ```
-dibs claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--max-age-hours <n>] [--json]
+dibs claim       <dir> [--pid <n>] [--agent <name>] [--session <id>] [--owner <id>] [--description <text>] [--max-age-hours <n>] [--json]
 dibs release     <dir> [--pid <n>] [--nonce <hex>] [--json]
 dibs release-all [--pid <n>] [--session <id>] [--owner <id> --agent <name>] [--json]
 dibs check       <dir> [--max-age-hours <n>] [--json]
@@ -80,6 +80,18 @@ the lock to the new pid/host instead of self-locking. The occupancy hook sets it
 from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
 `CODEX_THREAD_ID`, or finally the hook session id.
 
+`--description` stores a short human work description in the lock record. Use a
+compact phrase of a few words, for example `stale dibs lock cleanup` or `finish
+plugin install`. dibs compacts whitespace, turns branch separators such as `-`,
+`_`, and `/` into spaces, caps the field at 80 characters, and shows it by
+`check`, refused `claim` output, and occupancy hook denials as `work: <text>`.
+Use this for quick inspection of old locks: when the described work is visibly
+complete and the holder is stale, the next session can clear the leftover lock
+with more confidence. The CLI also reads `DIBS_DESCRIPTION`; the occupancy hook
+passes it through when set and otherwise falls back to the current non-default
+git branch rendered as words. `bonsai` records the branch name as words for
+worktrees it hands out.
+
 ## How it works
 
 A lock is a file written with an atomic exclusive create (`open(O_CREAT|O_EXCL)`,
@@ -87,7 +99,8 @@ the node `wx` flag) at
 `${LAICLUSE_HOME:-$HOME/.laicluse}/locks/<sha256-of-realpath>.lock`. The
 realpath is the resolved occupancy root: a git worktree root when the requested
 directory is inside one, otherwise the requested directory itself. The record is
-JSON: realpath, holder pid, agent, session, owner, hostname, nonce, acquired-at.
+JSON: realpath, holder pid, agent, session, owner, description, hostname, nonce,
+acquired-at.
 
 To acquire, dibs tries the atomic create. On collision it reads the record and
 checks liveness with `process.kill(pid, 0)` on the same host. A dead holder
@@ -215,6 +228,6 @@ if (!result.ok) console.warn(`held by ${result.holder.agent}`);
 An embedder that hands out a directory on behalf of a long-lived caller (as
 `bonsai` does) records that caller's pid, not its own short-lived process.
 `bonsai` reads `DIBS_HOLDER_PID`, `DIBS_AGENT`, and `DIBS_SESSION` to label the
-holder, `DIBS_OWNER` to preserve identity across resumes, and `DIBS_LIB` to
-point at an alternate lib path. The CLI honours `DIBS_BIN` for a fixed binary
-path.
+holder, `DIBS_OWNER` to preserve identity across resumes, `DIBS_DESCRIPTION` to
+override the recorded work description, and `DIBS_LIB` to point at an alternate
+lib path. The CLI honours `DIBS_BIN` for a fixed binary path.

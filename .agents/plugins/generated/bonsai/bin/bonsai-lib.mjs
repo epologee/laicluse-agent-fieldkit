@@ -16,7 +16,7 @@ async function loadDibs() {
   }
 }
 
-export async function claimWorktreeLock(dir) {
+export async function claimWorktreeLock(dir, description) {
   const { mod: dibs, error } = await loadDibs();
   if (!dibs) {
     const warning = error
@@ -26,7 +26,7 @@ export async function claimWorktreeLock(dir) {
   }
   const pid = process.env.DIBS_HOLDER_PID ? Number(process.env.DIBS_HOLDER_PID) : process.ppid;
   try {
-    const result = dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION });
+    const result = dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION, description: process.env.DIBS_DESCRIPTION || description });
     if (!result.ok && result.holder) {
       return { ...result, warning: `worktree directory already ${dibs.formatHolder(result.holder)}` };
     }
@@ -124,7 +124,7 @@ export async function createWorktree({ repo, branch, base, dir }) {
     throw new Error(`branch ${branch} already exists in ${root}; wrap and tear down that work first, never a numbered branch`);
   }
   git(root, ['worktree', 'add', '-b', branch, worktree, resolvedBase]);
-  const lock = await claimWorktreeLock(worktree);
+  const lock = await claimWorktreeLock(worktree, branch);
   return { worktree, branch, base: resolvedBase, baseSha, port: computePort(dirName), lock };
 }
 

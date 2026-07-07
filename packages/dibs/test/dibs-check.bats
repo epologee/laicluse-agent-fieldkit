@@ -19,20 +19,22 @@ dibs() { "$NODE_BIN" "$DIBS" "$@"; }
 }
 
 @test "check reports the holder, pid and acquired-at for a held dir" {
-  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  dibs claim "$DIR" --pid $$ --agent claude --description "stale dibs lock cleanup" --json >/dev/null
   run dibs check "$DIR" --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"state": "held"'
   echo "$output" | grep -q '"agent": "claude"'
+  echo "$output" | grep -q '"description": "stale dibs lock cleanup"'
   echo "$output" | grep -q '"acquiredAt"'
   echo "$output" | grep -q '"alive": true'
 }
 
 @test "check human output names the holder and since-when" {
-  dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
+  dibs claim "$DIR" --pid $$ --agent claude --description "stale dibs lock cleanup" --json >/dev/null
   run dibs check "$DIR"
   [ "$status" -eq 0 ]
   echo "$output" | grep -qi "held by claude"
+  echo "$output" | grep -qi "work: stale dibs lock cleanup"
   echo "$output" | grep -qi "alive"
 }
 
