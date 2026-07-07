@@ -19,6 +19,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.42]
+
+### Fixed
+
+- **`merge-to-default` now writes hook-compliant merge commits itself.** The
+  workflow uses `git merge --no-commit` followed by an explicit `Slice: merge`
+  commit body, so repositories with commit-body or PII trailer hooks no longer
+  get stuck after a clean no-ff merge.
+
 ## [v2.0.32]
 
 ### Changed

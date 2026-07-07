@@ -233,7 +233,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.41",
+			"version": "2.0.42",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -248,9 +248,9 @@
 			"commandCount": 2,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.32",
-				"type": "Changed",
-				"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks."
+				"version": "v2.0.42",
+				"type": "Fixed",
+				"summary": "merge-to-default now writes hook-compliant merge commits itself."
 			}
 		},
 		{
@@ -582,11 +582,11 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.41",
+			"packageVersion": "2.0.42",
 			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.32",
-			"type": "Changed",
-			"summary": "After updating git-discipline, re-run /git-discipline:install-hooks --force to refresh the git-native hooks.",
+			"version": "v2.0.42",
+			"type": "Fixed",
+			"summary": "merge-to-default now writes hook-compliant merge commits itself.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
