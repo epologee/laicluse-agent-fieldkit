@@ -30,7 +30,7 @@ Install from the directory the operator means to sync, or pass an explicit path:
 vaultsync install [path] --llm-command '<command that reads JSON stdin and writes JSON stdout>' [--verify '<lint command>']
 ```
 
-Before installing, vaultsync prints and stores the requested CWD, resolved Git root, current branch, and upstream when one exists. Installation must not require a remote or upstream: a local-only repository still gets debounced auto-commit cycles. Installation must fail when `dibs` is unavailable or when the LLM conflict resolver probe fails. The LLM command is required because unresolved conflicts are serious sync failures; commit-message generation may fall back to a built-in message, but conflict resolution may not.
+Before installing, vaultsync prints and stores the requested CWD, resolved Git root, current branch, and upstream when one exists. Installation must not require a remote or upstream: a local-only repository still gets debounced auto-commit cycles. Installation must fail when `dibs` is unavailable or when the LLM conflict resolver probe fails. `dibs` is resolved dynamically at runtime from `DIBS_BIN`, the local plugin cache, `PATH`, and only then legacy custom registration paths; do not pin versioned plugin-cache paths in registrations. The LLM command is required because unresolved conflicts are serious sync failures; commit-message generation may fall back to a built-in message, but conflict resolution may not.
 
 ## LLM Command Contract
 

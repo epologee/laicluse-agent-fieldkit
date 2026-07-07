@@ -224,21 +224,102 @@ function isExecutable(path) {
 }
 
 export function findDibsBin(env = process.env) {
-  if (env.DIBS_BIN && isExecutable(env.DIBS_BIN)) return env.DIBS_BIN;
+  return findDibsBinForRegistration(null, env);
+}
+
+function childDirectoryNames(path) {
+  try {
+    return readdirSync(path, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+  } catch {
+    return [];
+  }
+}
+
+function dibsPluginCacheRoots(env = process.env) {
+  const home = env.HOME || homedir();
+  return [
+    join(home, '.codex', 'plugins', 'cache'),
+    join(home, '.claude', 'plugins', 'cache'),
+  ];
+}
+
+function versionSegmentForDibsPath(path) {
+  const parts = String(path).split(/[\\/]/);
+  return parts[parts.length - 3] || '';
+}
+
+function compareVersionSegments(left, right) {
+  const leftMatch = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(left);
+  const rightMatch = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(right);
+  if (leftMatch && rightMatch) {
+    for (let i = 1; i <= 3; i += 1) {
+      const diff = Number(leftMatch[i]) - Number(rightMatch[i]);
+      if (diff !== 0) return diff;
+    }
+    return 0;
+  }
+  if (leftMatch) return 1;
+  if (rightMatch) return -1;
+  return left.localeCompare(right);
+}
+
+function dibsCandidatesInCacheRoot(cacheRoot) {
+  return childDirectoryNames(cacheRoot).flatMap((marketplace) => {
+    const dibsRoot = join(cacheRoot, marketplace, 'dibs');
+    return childDirectoryNames(dibsRoot).map((version) => join(dibsRoot, version, 'bin', 'dibs'));
+  });
+}
+
+function dibsPluginCacheCandidates(env = process.env) {
+  const candidates = dibsPluginCacheRoots(env).flatMap(dibsCandidatesInCacheRoot);
+  return candidates.sort((left, right) => {
+    const byVersion = compareVersionSegments(versionSegmentForDibsPath(right), versionSegmentForDibsPath(left));
+    if (byVersion !== 0) return byVersion;
+    return left.localeCompare(right);
+  });
+}
+
+function isPluginCacheDibsPath(path) {
+  const normalized = String(path).replace(/\\/g, '/');
+  return normalized.includes('/plugins/cache/') && normalized.includes('/dibs/') && normalized.endsWith('/bin/dibs');
+}
+
+function findDibsBinForRegistration(registration, env = process.env) {
+  const candidates = [];
+  if (env.DIBS_BIN) candidates.push(env.DIBS_BIN);
+  candidates.push(...dibsPluginCacheCandidates(env));
   for (const dir of (env.PATH || '').split(':').filter(Boolean)) {
-    const candidate = join(dir, 'dibs');
+    candidates.push(join(dir, 'dibs'));
+  }
+  if (registration?.dibsBin) candidates.push(registration.dibsBin);
+  const seen = new Set();
+  for (const candidate of candidates) {
+    if (!candidate || seen.has(candidate)) continue;
+    seen.add(candidate);
     if (isExecutable(candidate)) return candidate;
   }
   return null;
 }
 
+function registrationDibsBinForInstall(dibsBin) {
+  if (!dibsBin || isPluginCacheDibsPath(dibsBin)) return null;
+  return dibsBin;
+}
+
 function runDibs(registration, command, args = [], env = process.env) {
-  const dibsBin = registration.dibsBin || findDibsBin(env);
+  const dibsBin = findDibsBinForRegistration(registration, env);
   if (!dibsBin) throw new Error('dibs executable not found; put dibs on PATH or set DIBS_BIN');
   const result = spawnSync(dibsBin, [command, registration.rootRealpath, '--json', ...args], {
     encoding: 'utf8',
     env,
   });
+  if (result.error) {
+    const err = new Error(`failed to start dibs at ${dibsBin}: ${result.error.message}`);
+    err.exitCode = result.status || 1;
+    throw err;
+  }
   let json = null;
   try {
     json = result.stdout ? JSON.parse(result.stdout) : null;
@@ -246,7 +327,7 @@ function runDibs(registration, command, args = [], env = process.env) {
     json = null;
   }
   if (result.status !== 0) {
-    const err = new Error((json && json.error) || result.stderr.trim() || result.stdout.trim() || `dibs ${command} failed`);
+    const err = new Error((json && json.error) || (result.stderr || '').trim() || (result.stdout || '').trim() || `dibs ${command} failed`);
     err.exitCode = result.status || 1;
     err.result = json;
     throw err;
@@ -857,7 +938,7 @@ async function commandInstall(args, env = process.env) {
   if (!llmCommand) throw new Error('--llm-command is required; vaultsync must have a conflict resolver');
   probeLlmCommand(llmCommand, preflight.rootRealpath);
   ensureRuntimeDirs(env);
-  const registration = saveRegistration({
+  const registration = {
     version: REGISTRATION_VERSION,
     key: preflight.key,
     requestedCwd: preflight.requestedCwd,
@@ -867,7 +948,6 @@ async function commandInstall(args, env = process.env) {
     upstreamAtInstall: preflight.upstream,
     llmCommand,
     verifyCommand: parsed.values.verify || null,
-    dibsBin,
     debounceSeconds: numberOption(parsed.values['debounce-seconds'], DEFAULT_DEBOUNCE_SECONDS, 'debounce-seconds'),
     idlePollSeconds: numberOption(parsed.values['idle-poll-seconds'], DEFAULT_IDLE_POLL_SECONDS, 'idle-poll-seconds'),
     enabled: true,
@@ -878,7 +958,10 @@ async function commandInstall(args, env = process.env) {
     lastPollAt: null,
     lastError: null,
     createdAt: nowIso(),
-  }, env);
+  };
+  const registrationDibsBin = registrationDibsBinForInstall(dibsBin);
+  if (registrationDibsBin) registration.dibsBin = registrationDibsBin;
+  const savedRegistration = saveRegistration(registration, env);
   const launchd = parsed.values['no-launchd'] ? { skipped: true } : installLaunchAgent(env);
   emit({
     installed: true,
@@ -886,7 +969,7 @@ async function commandInstall(args, env = process.env) {
     gitRoot: preflight.rootRealpath,
     branch: preflight.branch,
     upstream: preflight.upstream,
-    registration: registrationPathForKey(registration.key, env),
+    registration: registrationPathForKey(savedRegistration.key, env),
     launchd,
   }, parsed.values.json);
 }
