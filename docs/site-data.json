@@ -471,7 +471,7 @@
 		},
 		{
 			"name": "rover",
-			"version": "2.0.20",
+			"version": "2.0.21",
 			"category": "autonomy",
 			"summary": "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
 			"support": [
@@ -486,7 +486,7 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.19",
+				"version": "v2.0.20",
 				"type": "Fixed",
 				"summary": "rover follows hook remediation during setup."
 			}
@@ -628,9 +628,9 @@
 		},
 		{
 			"plugin": "rover",
-			"packageVersion": "2.0.20",
+			"packageVersion": "2.0.21",
 			"detailPath": "agent-fieldkit/rover/",
-			"version": "v2.0.19",
+			"version": "v2.0.20",
 			"type": "Fixed",
 			"summary": "rover follows hook remediation during setup.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"

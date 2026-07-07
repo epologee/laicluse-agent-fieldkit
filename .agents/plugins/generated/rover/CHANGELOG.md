@@ -5,7 +5,7 @@ once per machine whenever the installed `version` in
 `.claude-plugin/plugin.json` changes. Header version numbers are informational;
 the broadcast is positional.
 
-## [v2.0.19]
+## [v2.0.20]
 
 ### Fixed
 
