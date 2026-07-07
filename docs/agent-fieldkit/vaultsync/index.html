@@ -52,7 +52,7 @@
 					<p class="lede">Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.1</span>
+						<span>2.0.3</span>
 						<span>1 skill</span>
 					</div>
 				</div>
@@ -84,6 +84,7 @@ vaultsync resume [path]
 vaultsync doctor [path] --llm-command '&lt;json command&gt;'
 vaultsync daemon</code></pre>
 <p><code>install</code> resolves the requested path to the nearest Git worktree root and records that whole checkout. The current branch is the sync branch. The branch's upstream is recorded when present; missing upstream is allowed and means local-only mode.</p>
+<p>vaultsync resolves <code>dibs</code> dynamically at runtime. <code>DIBS_BIN</code> remains an explicit override, otherwise vaultsync checks the installed plugin cache, <code>PATH</code>, and only then any legacy custom path in an older registration. New registrations do not pin versioned plugin-cache paths, so plugin updates do not leave vaultsync pointing at a removed <code>dibs</code> binary.</p>
 <p><code>pause</code> always has an automatic resume deadline. The default is 120 minutes. If a pause expires while another live <code>dibs</code> holder still owns the checkout, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears.</p>
 <h2 id="llm-command-contract">LLM Command Contract</h2>
 <p>The configured LLM command reads one JSON object from stdin and writes one JSON object to stdout. The protocol field is <code>vaultsync.llm.v1</code>.</p>

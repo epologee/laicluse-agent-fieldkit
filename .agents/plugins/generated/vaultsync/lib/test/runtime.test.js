@@ -1,7 +1,7 @@
 import { after, before, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -100,6 +100,18 @@ it('finds dibs through DIBS_BIN first', () => {
   assert.equal(findDibsBin({ DIBS_BIN: fake, PATH: '' }), fake);
 });
 
+it('finds the newest dibs executable in the local plugin cache', () => {
+  const home = join(tmp, 'plugin-cache-home');
+  const oldDibs = join(home, '.codex', 'plugins', 'cache', 'laicluse-agent-fieldkit', 'dibs', '2.0.30', 'bin', 'dibs');
+  const currentDibs = join(home, '.codex', 'plugins', 'cache', 'laicluse-agent-fieldkit', 'dibs', '2.0.31', 'bin', 'dibs');
+  mkdirSync(dirname(oldDibs), { recursive: true });
+  mkdirSync(dirname(currentDibs), { recursive: true });
+  writeFileSync(oldDibs, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+  writeFileSync(currentDibs, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+  assert.equal(findDibsBin({ HOME: home, PATH: '' }), currentDibs);
+});
+
 it('probes the mandatory conflict resolver contract', () => {
   const helper = join(tmp, 'llm-helper.mjs');
   writeFileSync(helper, [
@@ -118,6 +130,67 @@ it('probes the mandatory conflict resolver contract', () => {
 
 it('keeps the default pause window at two hours', () => {
   assert.equal(DEFAULT_PAUSE_MINUTES, 120);
+});
+
+it('ignores a stale registered dibs path when a current dibs is discoverable', () => {
+  const local = createRepo('stale-dibs');
+
+  const installDibs = join(tmp, 'stale-install-dibs.mjs');
+  writeFileSync(installDibs, [
+    '#!/usr/bin/env node',
+    'const command = process.argv[2];',
+    'if (command === "claim") process.stdout.write(JSON.stringify({ state: "claimed", holder: { nonce: "abc" } }));',
+    'else if (command === "release") process.stdout.write(JSON.stringify({ state: "released" }));',
+    'else if (command === "check") process.stdout.write(JSON.stringify({ state: "free" }));',
+    'else process.exit(2);',
+    '',
+  ].join('\n'), { mode: 0o755 });
+  const pathDibsDir = join(tmp, 'stale-path-bin');
+  mkdirSync(pathDibsDir);
+  const pathDibs = join(pathDibsDir, 'dibs');
+  writeFileSync(pathDibs, readFileSync(installDibs, 'utf8'), { mode: 0o755 });
+  const llm = join(tmp, 'stale-llm.mjs');
+  writeFileSync(llm, [
+    '#!/usr/bin/env node',
+    'let input = "";',
+    'process.stdin.on("data", (chunk) => input += chunk);',
+    'process.stdin.on("end", () => {',
+    '  const payload = JSON.parse(input);',
+    '  if (payload.task === "commit_message") process.stdout.write(JSON.stringify({ message: "Record stale dibs recovery\\n\\nCapture the vault edit after resolving dibs dynamically.\\n\\nSlice: docs-only" }));',
+    '  else if (payload.task === "resolve_conflict") process.stdout.write(JSON.stringify({ resolved: "Remote truth line.\\n" }));',
+    '  else process.exit(2);',
+    '});',
+    '',
+  ].join('\n'), { mode: 0o755 });
+  const cli = fileURLToPath(new URL('../../bin/vaultsync', import.meta.url));
+  const env = {
+    LAICLUSE_HOME: join(tmp, 'stale-home'),
+    DIBS_BIN: installDibs,
+    HOME: tmp,
+    GIT_AUTHOR_NAME: 'Vaultsync Test',
+    GIT_AUTHOR_EMAIL: 'vaultsync@example.invalid',
+    GIT_COMMITTER_NAME: 'Vaultsync Test',
+    GIT_COMMITTER_EMAIL: 'vaultsync@example.invalid',
+  };
+  runNode([cli, 'install', local, '--llm-command', `${process.execPath} ${llm}`, '--no-launchd'], { env });
+
+  const registrationPath = registrationPathForRoot(realpathSync(local), env);
+  const registration = JSON.parse(readFileSync(registrationPath, 'utf8'));
+  writeFileSync(registrationPath, JSON.stringify({ ...registration, dibsBin: join(tmp, 'missing-dibs') }, null, 2));
+  writeFileSync(join(local, 'README.md'), '# Test\n\nChanged with stale dibs registration.\n');
+
+  runNode([cli, 'now', local, '--json'], {
+    env: {
+      ...env,
+      DIBS_BIN: '',
+      PATH: `${pathDibsDir}:${process.env.PATH}`,
+    },
+  });
+
+  const saved = JSON.parse(readFileSync(registrationPath, 'utf8'));
+  assert.equal(git(local, ['status', '--porcelain']), '');
+  assert.equal(saved.lastError, null);
+  assert.match(git(local, ['log', '-1', '--pretty=%s']), /Record stale dibs recovery/);
 });
 
 it('installs and runs one dirty checkout sync cycle against a bare remote', () => {
