@@ -9,7 +9,8 @@ const STABLE_READ_SLEEP_MS = 15;
 export const BLOCKED_DIRECTORY_SUGGESTION = [
   'Create a separate git worktree on a new branch',
   '(for example with bonsai:bonsai, or plain git worktree if you do not have it),',
-  'then claim that worktree path.',
+  'then claim that worktree path. Do not make a loose non-git copy as a substitute;',
+  'it is only a spike, not a deliverable working tree.',
 ].join(' ');
 const MAX_DESCRIPTION_LENGTH = 80;
 

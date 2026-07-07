@@ -61,10 +61,12 @@ node "$DIBS" excludes    [--json]         # list defaults + configured
   names the holder (`refused: held by <agent> (pid <pid>) since <acquired-at>`)
   when a live holder exists. When the holder recorded a description, refusal
   and `check` output include it as `work: <text>`, so a blocked session can
-  inspect whether an old stale lock's work has already been completed. A refusal
-  suggests creating a separate git worktree on a new branch (for example with
-  `bonsai:bonsai`, or plain `git worktree` if you do not have it) and claiming
-  that worktree path.
+  inspect whether an old stale lock's work has already been completed. A
+  refusal means the current checkout is not your working tree: create a separate
+  git worktree on a new branch (prefer `bonsai:bonsai`, or plain `git worktree`
+  when bonsai is unavailable), then claim and work in that path. Do not copy the
+  repository to a loose non-git directory as a substitute; that is only a spike
+  and must not be presented as integrated work.
 - **release** deletes the lock only if you are the holder; releasing a lock held
   by someone else is refused and exits non-zero, releasing an unheld directory
   is a no-op.
@@ -128,9 +130,11 @@ acquisition points are:
   starts. Read-only questions and read-only shell commands in an occupied
   directory stay quiet; the refusal and worktree recovery suggestion appear only
   when another live session already holds the directory and this session tries
-  to mutate it. Claude and Codex call the same CLI; the on-disk lock is the
-  shared artifact. Repos that should only be mutated through linked worktrees
-  can set local git config `laicluse.requireWorktree=true`; the hook then denies
+  to mutate it. Treat that suggestion as the recovery path, not as advice: use
+  `bonsai:bonsai` or `git worktree`, never a loose filesystem copy, before
+  editing. Claude and Codex call the same CLI; the on-disk lock is the shared
+  artifact. Repos that should only be mutated through linked worktrees can set
+  local git config `laicluse.requireWorktree=true`; the hook then denies
   mutating the primary checkout while allowing linked worktrees.
 - **Directory handout.** `bonsai` claims the lock for a worktree it hands out
   (it consumes this one implementation; there is no second lock anywhere). The
