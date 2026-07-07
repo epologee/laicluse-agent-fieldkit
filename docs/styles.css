@@ -1796,10 +1796,12 @@ pre code {
 }
 
 .responsive-demo-stage {
+  --demo-fit-scale: 1;
   display: flex;
   min-height: 17rem;
   align-items: center;
   justify-content: center;
+  container-type: inline-size;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -1807,17 +1809,66 @@ pre code {
   padding: 0.9rem;
 }
 
+.responsive-demo-scale {
+  flex: 0 0 auto;
+  width: 22rem;
+  height: 14.5rem;
+  transform: scale(var(--demo-fit-scale));
+  transform-origin: center;
+}
+
 .responsive-demo-viewport {
   position: relative;
   width: 100%;
-  min-width: 22rem;
-  height: 14.5rem;
+  height: 100%;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.26);
   border-radius: 7px;
   background: #101311;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
   animation: demoViewportShrink 11s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
+}
+
+@container (max-width: 22rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.9;
+  }
+}
+
+@container (max-width: 20rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.82;
+  }
+}
+
+@container (max-width: 18rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.73;
+  }
+}
+
+@container (max-width: 16rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.64;
+  }
+}
+
+@container (max-width: 14rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.56;
+  }
+}
+
+@container (max-width: 12rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.44;
+  }
+}
+
+@container (max-width: 10rem) {
+  .responsive-demo-scale {
+    --demo-fit-scale: 0.4;
+  }
 }
 
 .standard-demo-content {
@@ -2516,11 +2567,8 @@ pre code {
   }
 
   .responsive-demo-stage {
+    min-height: clamp(10rem, 68vw, 17rem);
     padding: 0.55rem;
-  }
-
-  .responsive-demo-viewport {
-    min-width: 18rem;
   }
 
   .supermax-demo-cell {
