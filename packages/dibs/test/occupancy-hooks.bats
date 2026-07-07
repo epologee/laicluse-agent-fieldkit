@@ -522,3 +522,20 @@ PS
   run dibs check "$other_repo" --json
   echo "$output" | grep -q '"state": "free"'
 }
+
+@test "bogus path tokens from heredoc content do not claim the filesystem root" {
+  # A mutating bash command whose embedded heredoc holds XML like </w:p> yields a
+  # bogus "/w:p" candidate that walks up to "/". Before the guard this claimed the
+  # filesystem root and collided with any session holding "/". The gate must stay at
+  # real directory level and fall back to cwd instead.
+  sleep 60 & local other=$!
+  dibs claim / --pid "$other" --agent codex --session other-sess >/dev/null
+  export DIBS_HOLDER_PID=$$
+  run_bash_hook 'python3 - <<PY
+re.compile(r"</w:p>")
+PY
+cp a.docx b.docx'
+  kill "$other" 2>/dev/null || true
+  [ "$status" -eq 0 ]
+  ! echo "$output" | grep -q '\[dibs/occupancy\]'
+}

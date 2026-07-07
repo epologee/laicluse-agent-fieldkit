@@ -53,10 +53,13 @@ occ_git_root_for_dir() {
 }
 
 occ_target_dir_for_path() {
-  local input="$1" path="$2" abs dir
+  local input="$1" path="$2" abs dir root
   abs="$(occ_abs_path "$input" "$path")" || return 1
   dir="$(occ_existing_dir_for_path "$abs")" || return 1
-  occ_git_root_for_dir "$dir"
+  root="$(occ_git_root_for_dir "$dir")" || return 1
+  # allow-comment: load-bearing. The filesystem root is never a working tree. Outside a git repo, bogus path tokens scraped from heredoc/inline command content (e.g. "/w:p" from "</w:p>") walk up to "/" and would otherwise be claimed, colliding with any session that legitimately holds "/". Keep occupancy at real directory level.
+  [ "$root" = "/" ] && return 1
+  printf '%s\n' "$root"
 }
 
 occ_json_tool_paths() {
