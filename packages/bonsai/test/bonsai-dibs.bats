@@ -51,6 +51,22 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   echo "$output" | grep -qi "already held by other"
 }
 
+@test "claimWorktreeLock discovers dibs from an installed peer plugin cache" {
+  local cache="$BATS_TEST_TMPDIR/cache/laicluse-agent-fieldkit"
+  mkdir -p "$cache/bonsai/2.0.29/.codex-plugin" "$cache/bonsai/2.0.29/bin" "$cache/dibs/2.0.31/bin"
+  cp "$REPO_ROOT/.agents/plugins/generated/bonsai/.codex-plugin/plugin.json" "$cache/bonsai/2.0.29/.codex-plugin/plugin.json"
+  cp "$REPO_ROOT/packages/bonsai/bin/bonsai-lib.mjs" "$cache/bonsai/2.0.29/bin/bonsai-lib.mjs"
+  cp "$REPO_ROOT/packages/dibs/bin/dibs-lib.mjs" "$cache/dibs/2.0.31/bin/dibs-lib.mjs"
+  local dir="$BATS_TEST_TMPDIR/cache-lock"
+  mkdir -p "$dir"
+
+  run "$NODE_BIN" -e 'import(process.argv[1]).then(m=>m.claimWorktreeLock(process.argv[2], "cache sibling lock")).then(r=>console.log(JSON.stringify(r,null,2)))' "$cache/bonsai/2.0.29/bin/bonsai-lib.mjs" "$dir"
+
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"state": "claimed"'
+  "$NODE_BIN" "$DIBS" check "$dir" --json | grep -q '"description": "cache sibling lock"'
+}
+
 @test "create surfaces a load error when dibs is present but broken" {
   local broken="$BATS_TEST_TMPDIR/broken-dibs.mjs"
   printf 'export function claim( {{{ broken\n' > "$broken"

@@ -4,6 +4,14 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.29]
+
+### Fixed
+
+- **Installed bonsai now finds the installed dibs peer.** `bonsai create`
+  keeps claiming dibs locks when the plugins run from separate installed cache
+  directories, instead of silently falling back to an unlocked worktree.
+
 ## [v2.0.28]
 
 ### Added

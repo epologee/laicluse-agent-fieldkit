@@ -1,19 +1,83 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync, statSync, realpathSync } from 'node:fs';
-import { join, resolve, dirname, sep } from 'node:path';
+import { basename, join, resolve, dirname, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+function parseVersionName(name) {
+  const match = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(name);
+  if (!match) return null;
+  return match.slice(1).map((part) => Number(part));
+}
+
+function compareVersionNames(left, right) {
+  const leftParts = parseVersionName(left);
+  const rightParts = parseVersionName(right);
+  if (!leftParts || !rightParts) return left.localeCompare(right);
+  for (let index = 0; index < leftParts.length; index += 1) {
+    const diff = leftParts[index] - rightParts[index];
+    if (diff) return diff;
+  }
+  return left.localeCompare(right);
+}
+
+function currentPluginRoot() {
+  try {
+    let dir = dirname(fileURLToPath(import.meta.url));
+    while (true) {
+      const hasManifest = existsSync(join(dir, '.claude-plugin', 'plugin.json')) || existsSync(join(dir, '.codex-plugin', 'plugin.json'));
+      if (hasManifest) return dir;
+      const parent = dirname(dir);
+      if (parent === dir) return null;
+      dir = parent;
+    }
+  } catch {
+    return null;
+  }
+}
+
+function sourcePeerFiles(peerName, relativeParts) {
+  const pluginRoot = currentPluginRoot();
+  if (!pluginRoot || parseVersionName(basename(pluginRoot))) return [];
+  const file = join(dirname(pluginRoot), peerName, ...relativeParts);
+  return existsSync(file) ? [file] : [];
+}
+
+function installedPeerFiles(peerName, relativeParts) {
+  try {
+    const pluginRoot = currentPluginRoot();
+    if (!pluginRoot || !parseVersionName(basename(pluginRoot))) return [];
+    const marketplaceDir = dirname(dirname(pluginRoot));
+    const peerRoot = join(marketplaceDir, peerName);
+    if (!existsSync(peerRoot)) return [];
+    return readdirSync(peerRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && parseVersionName(entry.name))
+      .map((entry) => ({ version: entry.name, file: join(peerRoot, entry.name, ...relativeParts) }))
+      .filter((candidate) => existsSync(candidate.file))
+      .sort((left, right) => compareVersionNames(right.version, left.version))
+      .map((candidate) => candidate.file);
+  } catch {
+    return [];
+  }
+}
+
+function dibsLibCandidates() {
+  if (process.env.DIBS_LIB) return [process.env.DIBS_LIB];
+  return [
+    ...sourcePeerFiles('dibs', ['bin', 'dibs-lib.mjs']),
+    ...installedPeerFiles('dibs', ['bin', 'dibs-lib.mjs']),
+  ];
+}
 
 async function loadDibs() {
-  const override = process.env.DIBS_LIB;
-  const target = override
-    ? pathToFileURL(override).href
-    : new URL('../../dibs/bin/dibs-lib.mjs', import.meta.url).href;
-  try {
-    return { mod: await import(target) };
-  } catch (err) {
-    if (err.code === 'ERR_MODULE_NOT_FOUND') return { mod: null };
-    return { mod: null, error: err };
+  for (const candidate of dibsLibCandidates()) {
+    if (!existsSync(candidate)) continue;
+    try {
+      return { mod: await import(pathToFileURL(candidate).href) };
+    } catch (err) {
+      return { mod: null, error: err };
+    }
   }
+  return { mod: null };
 }
 
 export async function claimWorktreeLock(dir, description) {

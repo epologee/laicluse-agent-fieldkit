@@ -259,6 +259,34 @@ If a file is a generated target, the repo should expose the usual three verbs:
 
 `build` rewrites adapter files from the source, `check` exits non-zero on drift, and `diff` shows the exact generated change. This is the minimum contract that makes metadata duplication acceptable: a reviewer can tell whether the duplicate is another truth or a projection.
 
+### Peer plugin runtime dependencies
+
+When one public plugin calls another plugin's runtime files, treat that as a
+packaged dependency boundary, not as a source-tree convenience. The source
+checkout, generated Codex root, Claude cache, and Codex cache can all have
+different shapes. A path that works under `packages/<plugin>/` is not evidence
+that the installed plugin can find its peer.
+
+Hardening rules:
+
+- Keep explicit overrides such as an environment variable for tests or host
+  wiring, but do not make regular users provide local paths to connect first-
+  party plugins.
+- Discover peers from the current runtime artifact, for example from the
+  running helper's own file or plugin root, and preserve the public package
+  boundary. Do not shell out to `claude`, `codex`, or a private helper at
+  runtime just to find a sibling plugin.
+- Do not hard-code `~/.claude`, `~/.codex`, a local clone path, a personal
+  marketplace alias, or one agent's cache layout into shipped plugin code.
+- Add a regression test that copies only shipped runtime files into a fake
+  installed marketplace/cache layout and runs from that copied artifact without
+  source-checkout paths. The RED result should be a real missed peer
+  dependency, such as `module not found` or graceful fallback to "unavailable";
+  the GREEN result should prove the user-visible behavior through the peer.
+- If the peer is optional, test both the optional fallback and the installed
+  peer path. Graceful degradation is not a substitute for proving the normal
+  packaged path.
+
 ### Generated Codex target payloads
 
 When Codex needs sanitized skills or agent-specific skill sources, the

@@ -20,6 +20,15 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.32]
+
+### Changed
+
+- **Peer plugin dependencies now have an installed-layout test rule.** The
+  reference tells plugin authors to prove plugin-to-plugin runtime lookups from
+  copied installed artifacts, without hard-coded harness cache paths or private
+  helper routes.
+
 ## [v2.0.29]
 
 ### Changed
