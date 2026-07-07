@@ -1865,9 +1865,31 @@ pre code {
   }
 }
 
-@container (max-width: 10rem) {
+@container (max-width: 8rem) {
   .responsive-demo-scale {
     --demo-fit-scale: 0.4;
+  }
+}
+
+@container (max-width: 18rem) {
+  .responsive-demo-viewport {
+    animation-name: demoViewportShrinkCompact;
+  }
+
+  .standard-demo-content {
+    animation-name: demoStandardBreakpointCompact, demoStandardColumnsCompact;
+  }
+
+  .standard-demo-tile.hero {
+    animation-name: demoStandardHeroCompact;
+  }
+
+  .standard-demo-tile.wide {
+    animation-name: demoStandardWideCompact;
+  }
+
+  .standard-demo-tile.tall {
+    animation-name: demoStandardTallCompact;
   }
 }
 
@@ -2022,6 +2044,37 @@ pre code {
   }
 }
 
+@keyframes demoViewportShrinkCompact {
+  0%,
+  10% {
+    width: 100%;
+  }
+
+  22%,
+  30% {
+    width: 92%;
+  }
+
+  42%,
+  50% {
+    width: 84%;
+  }
+
+  62%,
+  70% {
+    width: 76%;
+  }
+
+  82%,
+  92% {
+    width: 70%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
 @keyframes demoStandardBreakpoint {
   0%,
   34% {
@@ -2034,6 +2087,27 @@ pre code {
   }
 
   72%,
+  92% {
+    transform: translateY(-8rem);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes demoStandardBreakpointCompact {
+  0%,
+  30% {
+    transform: translateY(0);
+  }
+
+  42%,
+  52% {
+    transform: translateY(-1.2rem);
+  }
+
+  58%,
   92% {
     transform: translateY(-8rem);
   }
@@ -2064,6 +2138,27 @@ pre code {
   }
 }
 
+@keyframes demoStandardColumnsCompact {
+  0%,
+  30%,
+  100% {
+    min-height: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  42%,
+  52% {
+    min-height: 18rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  58%,
+  92% {
+    min-height: 28rem;
+    grid-template-columns: 1fr;
+  }
+}
+
 @keyframes demoStandardHero {
   0%,
   58%,
@@ -2072,6 +2167,19 @@ pre code {
   }
 
   72%,
+  92% {
+    grid-column: auto;
+  }
+}
+
+@keyframes demoStandardHeroCompact {
+  0%,
+  52%,
+  100% {
+    grid-column: 1 / -1;
+  }
+
+  58%,
   92% {
     grid-column: auto;
   }
@@ -2090,6 +2198,19 @@ pre code {
   }
 }
 
+@keyframes demoStandardWideCompact {
+  0%,
+  52%,
+  100% {
+    grid-column: span 2;
+  }
+
+  58%,
+  92% {
+    grid-column: auto;
+  }
+}
+
 @keyframes demoStandardTall {
   0%,
   58%,
@@ -2098,6 +2219,19 @@ pre code {
   }
 
   72%,
+  92% {
+    min-height: 4.8rem;
+  }
+}
+
+@keyframes demoStandardTallCompact {
+  0%,
+  52%,
+  100% {
+    min-height: 6.5rem;
+  }
+
+  58%,
   92% {
     min-height: 4.8rem;
   }
