@@ -173,6 +173,34 @@ HTML
   grep -q 'demoStandardBreakpoint' "$REPO/docs/styles.css"
 }
 
+@test "the /supermax visual demos keep the same composition on mobile" {
+  run node - <<'NODE' "$REPO/docs/styles.css"
+const fs = require("fs");
+const css = fs.readFileSync(process.argv[2], "utf8");
+const previewBlocks = [...css.matchAll(/\.supermax-preview-grid\s*\{([^}]*)\}/g)].map((match) => match[1]);
+
+if (previewBlocks.some((block) => /grid-template-columns:\s*1fr\s*;/.test(block))) {
+	throw new Error("Supermax preview grid stacks on mobile instead of preserving its column proportions");
+}
+if (/@container\s*\(max-width:[\s\S]*?\.standard-demo-content\s*\{[\s\S]*?grid-template-columns:\s*(?:repeat\(2|1fr)/.test(css)) {
+	throw new Error("standard responsive demo changes state from container width instead of animation state");
+}
+if (/@container\s*\(max-width:[\s\S]*?\.supermax-demo-cell\.(menu|list|article)\s*\{[\s\S]*?display:\s*none/.test(css)) {
+	throw new Error("Supermax demo hides cells from container width instead of animation state");
+}
+if (!/demoStandardColumns/.test(css)) {
+	throw new Error("standard responsive demo needs deterministic animation-state keyframes");
+}
+if (/@keyframes\s+demoSupermaxColumns\s*\{[\s\S]*?0fr/.test(css)) {
+	throw new Error("Supermax animation collapses panes instead of keeping all four visible");
+}
+if (/demoSupermax(?:Menu|List|Article)Cell/.test(css)) {
+	throw new Error("Supermax animation hides individual panes instead of preserving the illustration");
+}
+NODE
+  [ "$status" -eq 0 ]
+}
+
 @test "the /vocalist route carries the public install and release links" {
   grep -q 'Install, connect, run' "$REPO/docs/vocalist/index.html"
   grep -q 'brew install --cask laicluse/tap/vocalist' "$REPO/docs/vocalist/index.html"

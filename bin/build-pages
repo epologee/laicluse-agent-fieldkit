@@ -1342,7 +1342,7 @@ const layout = cells.distribute(24, "article");`;
 							<p class="eyebrow">Responsive behavior comparison</p>
 							<h2 id="comparison-title">Same shrink, different outcome.</h2>
 						</div>
-						<p>Both viewports shrink in sync. One layout turns columns into a long page; Supermax keeps the current responsibility in focus and reports the hidden cells.</p>
+						<p>Both viewports shrink in sync. One layout turns columns into a long page; the Supermax illustration keeps the same four cell responsibilities visible so the distribution stays readable at every page width.</p>
 					</div>
 					<div class="supermax-animation-grid">
 						<article class="supermax-animation-card">
