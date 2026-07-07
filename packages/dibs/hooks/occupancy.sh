@@ -109,6 +109,8 @@ occ_bash_mutates() {
 	local command="$1" stripped
 	[ -n "$command" ] || return 1
 	stripped="$(occ_command_without_strings "$command")"
+	# allow-comment: load-bearing. A redirect to the /dev device tree (the ubiquitous 2>/dev/null, or >/dev/null) writes to no working tree, so it must not classify a read-only command as mutating. Strip those redirects before the write-detection below, otherwise every grep/find/cat with suppressed stderr claims occupancy on its path arguments.
+	stripped="$(printf '%s' "$stripped" | sed -E 's#[0-9]*>>?[[:space:]]*/dev/[^[:space:];&|)]*##g')"
 	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])(cp|mv|rm|mkdir|rmdir|touch|tee|ln|unlink|truncate|install)([[:space:]\;\&\|\)]|$) ]] && return 0
 	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?(add|stage|commit|checkout|switch|merge|rebase|reset|restore|clean|mv|rm|am|cherry-pick|revert)([[:space:]\;\&\|\)]|$) ]] && return 0
 	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?stash[[:space:]]+(push|pop|apply|drop|clear|save)([[:space:]\;\&\|\)]|$) ]] && return 0

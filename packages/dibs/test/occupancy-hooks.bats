@@ -435,3 +435,46 @@ PS
   [ "$status" -eq 0 ]
   [ "$output" = "codex" ]
 }
+
+@test "a 2>/dev/null stderr redirect does not mark a read-only command as mutating" {
+  source "$HOOK"
+  run occ_bash_mutates "grep -r needle app 2>/dev/null"
+  [ "$status" -eq 1 ]
+  run occ_bash_mutates "find . -name '*.rb' 2>/dev/null"
+  [ "$status" -eq 1 ]
+  run occ_bash_mutates "echo written > out.txt"
+  [ "$status" -eq 0 ]
+}
+
+@test "dibs never locks the /dev device tree" {
+  run dibs claim /dev --pid $$ --agent claude --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"state": "excluded"'
+}
+
+@test "a 2>/dev/null redirect never contends the global /dev lock" {
+  sleep 60 & local other=$!
+  dibs claim /dev --pid "$other" --agent codex --session other-sess >/dev/null 2>&1 || true
+  export DIBS_HOLDER_PID=$$
+  run_bash_hook "grep -r needle . 2>/dev/null"
+  kill "$other" 2>/dev/null || true
+  [ "$status" -eq 0 ]
+  ! echo "$output" | grep -q '\[dibs/occupancy\]'
+}
+
+@test "a read-only command that references another repo path does not claim it" {
+  local other_repo="$BATS_TEST_TMPDIR/other"
+  mkdir -p "$other_repo"
+  git -C "$other_repo" init >/dev/null
+  git -C "$other_repo" config user.email test@example.invalid
+  git -C "$other_repo" config user.name Test
+  echo root > "$other_repo/README.md"
+  git -C "$other_repo" add README.md
+  git -C "$other_repo" commit -m init >/dev/null
+
+  export DIBS_HOLDER_PID=$$
+  run_bash_hook "grep -r needle $other_repo 2>/dev/null"
+  [ "$status" -eq 0 ]
+  run dibs check "$other_repo" --json
+  echo "$output" | grep -q '"state": "free"'
+}

@@ -26,8 +26,8 @@ function ensureLocksDir() {
   mkdirSync(locksDir(), { recursive: true });
 }
 
-// allow-comment: load-bearing default. Locked out of dibs everywhere: the agent-config homes, where two sessions editing their own runtime config must not steer each other aside (the git-native backstop covers those repos), plus /tmp, transient scratch that no agent should ever contend over. Additions live in the excludes file; these ship with every install.
-export const DEFAULT_EXCLUDES = ['/tmp', '~/.claude', '~/.codex', '~/.config/opencode'];
+// allow-comment: load-bearing default. Locked out of dibs everywhere: the agent-config homes, where two sessions editing their own runtime config must not steer each other aside (the git-native backstop covers those repos), plus /tmp, transient scratch that no agent should ever contend over, plus /dev, the device tree that is never a working tree and is where the ubiquitous 2>/dev/null stderr-suppression resolves. Without this every agent contends a single global /dev lock. Additions live in the excludes file; these ship with every install.
+export const DEFAULT_EXCLUDES = ['/dev', '/tmp', '~/.claude', '~/.codex', '~/.config/opencode'];
 
 function excludesFile() {
   return join(agentHomeDir(), 'dibs', 'excludes');

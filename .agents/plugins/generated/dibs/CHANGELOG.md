@@ -4,6 +4,16 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.34]
+
+### Fixed
+
+- **Read-only commands no longer take occupancy locks.** A `2>/dev/null` (or any
+  `>/dev/...`) stderr redirect no longer counts as a mutation, and `/dev` is now
+  a default exclude. Previously every agent serialised on a single global `/dev`
+  lock, and a suppressed-stderr `grep`/`find` claimed occupancy on the paths it
+  merely read, blocking other agents (and itself) on unrelated directories.
+
 ## [v2.0.31]
 
 ### Added

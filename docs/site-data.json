@@ -190,7 +190,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.33",
+			"version": "2.0.35",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -205,9 +205,9 @@
 			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.31",
-				"type": "Added",
-				"summary": "Locks now carry a short work description."
+				"version": "v2.0.34",
+				"type": "Fixed",
+				"summary": "Read-only commands no longer take occupancy locks."
 			}
 		},
 		{
@@ -591,6 +591,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
+			"plugin": "dibs",
+			"packageVersion": "2.0.35",
+			"detailPath": "agent-fieldkit/dibs/",
+			"version": "v2.0.34",
+			"type": "Fixed",
+			"summary": "Read-only commands no longer take occupancy locks.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
+		},
+		{
 			"plugin": "dont-do-that",
 			"packageVersion": "2.0.34",
 			"detailPath": "agent-fieldkit/dont-do-that/",
@@ -598,15 +607,6 @@
 			"type": "Changed",
 			"summary": "no-remote-create verstaat nu ook Nederlandse remote-toestemmingen.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
-		},
-		{
-			"plugin": "dibs",
-			"packageVersion": "2.0.33",
-			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.31",
-			"type": "Added",
-			"summary": "Locks now carry a short work description.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "how-plugins-work",
