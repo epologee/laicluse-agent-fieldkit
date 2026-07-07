@@ -178,14 +178,32 @@ HTML
 const fs = require("fs");
 const css = fs.readFileSync(process.argv[2], "utf8");
 const previewBlocks = [...css.matchAll(/\.supermax-preview-grid\s*\{([^}]*)\}/g)].map((match) => match[1]);
+const containerBlocks = [];
+let searchFrom = 0;
+
+while (true) {
+	const at = css.indexOf("@container", searchFrom);
+	if (at === -1) break;
+	const open = css.indexOf("{", at);
+	if (open === -1) break;
+	let depth = 0;
+	let end = open;
+	for (; end < css.length; end += 1) {
+		if (css[end] === "{") depth += 1;
+		if (css[end] === "}") depth -= 1;
+		if (depth === 0) break;
+	}
+	containerBlocks.push(css.slice(open + 1, end));
+	searchFrom = end + 1;
+}
 
 if (previewBlocks.some((block) => /grid-template-columns:\s*1fr\s*;/.test(block))) {
 	throw new Error("Supermax preview grid stacks on mobile instead of preserving its column proportions");
 }
-if (/@container\s*\(max-width:[\s\S]*?\.standard-demo-content\s*\{[\s\S]*?grid-template-columns:\s*(?:repeat\(2|1fr)/.test(css)) {
+if (containerBlocks.some((block) => /\.standard-demo-content\s*\{[\s\S]*?grid-template-columns:\s*(?:repeat\(2|1fr)/.test(block))) {
 	throw new Error("standard responsive demo changes state from container width instead of animation state");
 }
-if (/@container\s*\(max-width:[\s\S]*?\.supermax-demo-cell\.(menu|list|article)\s*\{[\s\S]*?display:\s*none/.test(css)) {
+if (containerBlocks.some((block) => /\.supermax-demo-cell\.(menu|list|article)\s*\{[\s\S]*?display:\s*none/.test(block))) {
 	throw new Error("Supermax demo hides cells from container width instead of animation state");
 }
 if (!/demoStandardColumns/.test(css)) {
@@ -196,6 +214,36 @@ if (/@keyframes\s+demoSupermaxColumns\s*\{[\s\S]*?0fr/.test(css)) {
 }
 if (/demoSupermax(?:Menu|List|Article)Cell/.test(css)) {
 	throw new Error("Supermax animation hides individual panes instead of preserving the illustration");
+}
+NODE
+  [ "$status" -eq 0 ]
+}
+
+@test "the /supermax responsive demos scale their fixed canvas instead of clipping on narrow cards" {
+  run node - <<'NODE' "$REPO/docs/supermax/index.html" "$REPO/docs/styles.css"
+const fs = require("fs");
+const html = fs.readFileSync(process.argv[2], "utf8");
+const css = fs.readFileSync(process.argv[3], "utf8");
+const canvasCount = (html.match(/class="responsive-demo-scale"/g) || []).length;
+const viewportBlocks = [...css.matchAll(/\.responsive-demo-viewport\s*\{([^}]*)\}/g)].map((match) => match[1]);
+
+if (canvasCount !== 2) {
+	throw new Error(`expected two scalable demo canvases, found ${canvasCount}`);
+}
+if (!/\.responsive-demo-stage\s*\{[^}]*container-type:\s*inline-size\s*;/s.test(css)) {
+	throw new Error("responsive demo stage must expose inline-size for fit scaling");
+}
+if (!/\.responsive-demo-scale\s*\{[^}]*width:\s*22rem\s*;[^}]*transform:\s*scale\(var\(--demo-fit-scale\)\)/s.test(css)) {
+	throw new Error("responsive demo canvas must keep a fixed 22rem design size and scale down");
+}
+if (viewportBlocks.some((block) => /min-width\s*:/.test(block))) {
+	throw new Error("responsive demo viewport must not force a minimum width that can clip inside the stage");
+}
+if (/@media\s*\(max-width:[\s\S]*?\.responsive-demo-viewport\s*\{[\s\S]*?min-width\s*:/.test(css)) {
+	throw new Error("mobile CSS must not restore a clipping min-width on the demo viewport");
+}
+if (!/@container\s*\(max-width:[\s\S]*?\.responsive-demo-scale\s*\{[\s\S]*?--demo-fit-scale\s*:/.test(css)) {
+	throw new Error("responsive demo canvas needs container-query fit scales for narrow cards");
 }
 NODE
   [ "$status" -eq 0 ]
