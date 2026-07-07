@@ -5,6 +5,12 @@ once per machine whenever the installed `version` in
 `.claude-plugin/plugin.json` changes. Header version numbers are informational;
 the broadcast is positional.
 
+## [v2.0.19]
+
+### Fixed
+
+- **`rover` follows hook remediation during setup.** A setup hook that blocks a command while telling the rover how to proceed is now treated as recoverable setup friction, not a prelaunch question for the operator.
+
 ## [v2.0.9]
 
 ### Fixed

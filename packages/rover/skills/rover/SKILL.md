@@ -382,6 +382,8 @@ The first tool calls after this skill loads are:
 
    Any uncommitted changes in the working tree ride along regardless of which path runs; step 3 handles them. That is the whole ceremony.
 
+   **A hook refuses a setup command with its own remediation.** If a hook blocks a setup step and its message describes how to proceed, that is not a prelaunch question and not a stop; it is friction to drive through. Follow the hook's own remediation with the rover's reasoning and continue the mission from wherever that leaves it. The rover does not need the remediation spelled out here, and hard-coding one hook's mechanics into this skill would couple the rover to that tool's interface; the guidance lives with the hook that fires. Surfacing a block the hook already told you how to clear, instead of clearing it, is the failure this rule exists to stop.
+
    When the context does NOT call for git ceremony (no repo present, or the work is prose/visual/audio/generated media that does not live as code commits), skip this step entirely: record `branch: none (not a git repo)` or `branch: none (medium not code)` in step 5 and proceed. Never `git init` to satisfy the ceremony; the absence of a repo means the operator did not bring one. Step 5 stays unconditional regardless of which branch path runs here.
 3. Commit any leftover working tree changes on the mission branch. If `git status --short` is empty, skip. Otherwise invoke `commit-all-the-things` via the Skill tool to group the leftovers into logical commits with descriptive messages in the project's commit style, and log one line: `[HH:MM] ⚠️ Leftovers in the working tree, committed on mission branch: <one-line summary>.` That is the whole ceremony.
 4. Ensure `.autonomous/.gitignore` exists. One Write call: write `*` to `.autonomous/.gitignore`. Write creates the `.autonomous/` directory automatically and the content is fixed (`*`), so this is idempotent whether the file was already there or not. Do not use `mkdir`; the `block-bad-paths` hook rejects it because Write covers the directory-creation case.
@@ -692,7 +694,7 @@ These are project-specific and not hardcoded in this skill.
 ## What the loop should never do
 
 - Ask the operator anything mid-mission. Not "A or B?", not "is this in scope?", not "are you ok with this reject?", not any phrasing. The rover decides; the tooling catches.
-- Stop the mission during setup because the tree was dirty or the starting branch was not what the rover expected. Both are autonomous: step 2 either creates a fresh mission branch or continues on the operator's existing branch when the mission extends it, step 3 commits any leftover changes, and the rest of setup proceeds.
+- Stop the mission during setup because the tree was dirty, the starting branch was not what the rover expected, or a hook refused a setup command while telling the rover how to proceed. All are autonomous: step 2 creates or continues the mission branch and follows any blocking hook's own remediation with the rover's reasoning; step 3 commits any leftover changes, and the rest of setup proceeds.
 - Post a question or request into `## Input`. That section is operator-to-rover only.
 - Defer, postpone, plan, or down-scope any finding. Every finding goes through one of the three fates in this session (fix, cost-value-skip with structured rationale, reject-as-non-issue with pride second-pass evidence).
 - Push without explicit user approval (pushes are an external action outside the autonomy directive)
