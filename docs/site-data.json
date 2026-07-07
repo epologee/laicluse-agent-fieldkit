@@ -89,6 +89,7 @@
 	],
 	"counts": {
 		"sourcePackages": 20,
+		"publicProjects": 3,
 		"codexPackages": 19,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 19,
