@@ -11,6 +11,10 @@ setup() {
   export DIBS_BIN="$REPO_ROOT/packages/dibs/bin/dibs"
   export CLAUDE_PLUGIN_ROOT="$REPO_ROOT/packages/dibs"
   export LAICLUSE_HOME="$BATS_TEST_TMPDIR/laicluse"
+  # A claim needs a work description; the hook reads it from DIBS_DESCRIPTION.
+  # Provide one by default so cases that exercise claim/refuse behaviour are not
+  # every one of them blocked; cases that test the no-description block unset it.
+  export DIBS_DESCRIPTION="occupancy hook test work"
   DIR="$BATS_TEST_TMPDIR/work"
   mkdir -p "$DIR"
 }
@@ -114,26 +118,16 @@ run_bash_hook() {
   echo "$output" | grep -q '"description": "Fix Dibs Lock Labels"'
 }
 
-@test "gate falls back to the current non-default git branch" {
-  local repo="$BATS_TEST_TMPDIR/repo"
-  mkdir -p "$repo"
-  git -C "$repo" init -b main >/dev/null
-  git -C "$repo" config user.email test@example.invalid
-  git -C "$repo" config user.name Test
-  echo root > "$repo/README.md"
-  git -C "$repo" add README.md
-  git -C "$repo" commit -m init >/dev/null
-  git -C "$repo" checkout -b inspect-lock-work >/dev/null
-  git -C "$repo" remote add origin git@example.invalid:org/repo.git
-  git -C "$repo" update-ref refs/remotes/origin/main main
-  git -C "$repo" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
-
+@test "gate blocks a write when no dibs and no description are administered" {
+  unset DIBS_DESCRIPTION
   export DIBS_HOLDER_PID=$$
-  DIR="$repo"
-  run_bash_hook "touch branch.txt"
-  [ "$status" -eq 0 ]
-  run dibs check "$repo" --json
-  echo "$output" | grep -q '"description": "inspect lock work"'
+  run_hook PreToolUse Write
+  [ "$status" -eq 2 ]
+  echo "$output" | grep -qi 'no dibs registered for you'
+  echo "$output" | grep -qi 'dibs claim'
+  echo "$output" | grep -qi 'description'
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "free"'
 }
 
 @test "gate does not record the actual default branch as work description" {

@@ -93,7 +93,7 @@
 		"codexPackages": 19,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 20,
-		"skillEntries": 74,
+		"skillEntries": 75,
 		"hookFiles": 54
 	},
 	"install": {
@@ -190,7 +190,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.38",
+			"version": "2.0.39",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -205,9 +205,9 @@
 			"commandCount": 3,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.37",
-				"type": "Fixed",
-				"summary": "Occupancy descriptions no longer guess main or master."
+				"version": "v2.0.39",
+				"type": "Breaking",
+				"summary": "A work description is now mandatory to create a lock."
 			}
 		},
 		{
@@ -366,7 +366,7 @@
 		},
 		{
 			"name": "vaultsync",
-			"version": "2.0.4",
+			"version": "2.0.5",
 			"category": "feedback",
 			"summary": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha",
 			"support": [
@@ -508,7 +508,7 @@
 			"detailPath": "agent-fieldkit/house-rules/",
 			"sourcePath": "packages/house-rules",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/house-rules",
-			"skillCount": 3,
+			"skillCount": 4,
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
@@ -596,11 +596,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.38",
+			"packageVersion": "2.0.39",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.37",
-			"type": "Fixed",
-			"summary": "Occupancy descriptions no longer guess main or master.",
+			"version": "v2.0.39",
+			"type": "Breaking",
+			"summary": "A work description is now mandatory to create a lock.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
@@ -722,7 +722,7 @@
 		},
 		{
 			"plugin": "vaultsync",
-			"packageVersion": "2.0.4",
+			"packageVersion": "2.0.5",
 			"detailPath": "agent-fieldkit/vaultsync/",
 			"version": "v2.0.4",
 			"type": "Added",

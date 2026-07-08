@@ -113,14 +113,20 @@ from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
 `CODEX_THREAD_ID`, or the hook session id, so a Codex resume can reclaim its own
 old lock even when pid, host, or thread id changed.
 
-`--description` is the short human work description stored in the lock. Prefer
-a compact phrase of a few words such as `dibs lock descriptions`; the CLI
-compacts whitespace, turns branch separators such as `-`, `_`, and `/` into
-spaces, and caps it at 80 characters. It can also come from `DIBS_DESCRIPTION`;
-the occupancy hook passes that through and otherwise uses the current
-non-default git branch, resolved through Git's default-branch metadata, rendered
-as words when one exists. `bonsai` records the branch name as words for the
-worktree it hands out.
+`--description` is the short human work description stored in the lock, and it
+is **required**: `claim` refuses to create a lock without one, so no lock is
+ever anonymous and a blocked agent can always tell the operator which session a
+lock belongs to. The claiming agent composes it itself, the way it would name a
+branch: a compact phrase of a few words describing what it is doing in this
+directory, such as `dibs lock descriptions`. The CLI compacts whitespace, turns
+separators such as `-`, `_`, and `/` into spaces, and caps it at 80 characters.
+Re-claiming a lock you already hold (`held-by-self`) keeps the existing
+description and needs no new one. It can also come from `DIBS_DESCRIPTION`; the
+occupancy hook passes that through, and when it is unset the hook does not
+invent one from the git branch or anywhere else, so an agent that has not
+administered a dibs is told to run `dibs claim --description` at its first
+write. `bonsai` supplies the branch name as words for the worktree it hands
+out.
 
 ## Who calls dibs
 
@@ -128,16 +134,22 @@ The lock only helps if it is acquired before mutation, so the reliable
 acquisition points are:
 
 - **Pre-mutation hook.** A coding agent claims the directory at its first
-  mutating file edit or recognised mutating shell command, not when the session
-  starts. Read-only questions and read-only shell commands in an occupied
-  directory stay quiet; the refusal and worktree recovery suggestion appear only
-  when another live session already holds the directory and this session tries
-  to mutate it. Treat that suggestion as the recovery path, not as advice: use
-  `bonsai:bonsai` or `git worktree`, never a loose filesystem copy, before
-  editing. Claude and Codex call the same CLI; the on-disk lock is the shared
-  artifact. Repos that should only be mutated through linked worktrees can set
-  local git config `laicluse.requireWorktree=true`; the hook then denies
-  mutating the primary checkout while allowing linked worktrees.
+  mutating file edit (`Edit`/`Write`/`MultiEdit`/`apply_patch`) or a `Bash`
+  command it detects as writing, not when the session starts. Occupancy only
+  gates the write-output: several agents may read, think, and run commands from
+  the same directory, and dibs only arbitrates who may write. Because a claim needs a description, an
+  agent that writes before administering a dibs is told to run
+  `dibs claim <dir> --description "<what you are doing>"` and retry; once it
+  holds the lock, later writes pass as `held-by-self`. When a *different* live
+  session already holds the directory, the write is refused with the holder and
+  the worktree recovery suggestion. Treat that suggestion as the recovery path,
+  not as advice: use `bonsai:bonsai` or `git worktree`, never a loose filesystem
+  copy, before editing.
+  Claude and Codex call the same CLI; the on-disk lock is the shared artifact.
+  Repos that should only be mutated through linked worktrees can set local git
+  config `laicluse.requireWorktree=true`; the hook then denies mutating the
+  primary checkout while allowing linked worktrees. Opt occupancy off for a
+  whole session with `DIBS_OCCUPANCY=off`.
 - **Directory handout.** `bonsai` claims the lock for a worktree it hands out
   (it consumes this one implementation; there is no second lock anywhere). The
   git-native commit hook in the branch-worktree-discipline order remains the

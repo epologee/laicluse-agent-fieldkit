@@ -13,7 +13,12 @@ setup() {
   mkdir -p "$A" "$B" "$C"
 }
 
-dibs() { "$NODE_BIN" "$DIBS" "$@"; }
+dibs() {
+  if [ "${1:-}" = "claim" ]; then
+    case " $* " in *" --description "*) : ;; *) set -- "$@" --description "test claim" ;; esac
+  fi
+  "$NODE_BIN" "$DIBS" "$@"
+}
 lockcount() { ls "$LAICLUSE_HOME/locks" 2>/dev/null | wc -l | tr -d ' '; }
 
 @test "release-all by pid removes every lock that pid holds across directories" {

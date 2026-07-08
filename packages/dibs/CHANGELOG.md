@@ -4,22 +4,22 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
-## [v2.0.37]
+## [v2.0.39]
 
-### Fixed
+### Breaking
 
-- **Occupancy descriptions no longer guess `main` or `master`.** The mutation
-  hook reads Git's `origin/HEAD` metadata and only falls back to the current
-  checkout when that metadata is absent, so branch descriptions follow Git
-  instead of naming conventions.
+- **A work description is now mandatory to create a lock.** `dibs claim` refuses
+  a new lock without `--description` (or `DIBS_DESCRIPTION`), so no lock is ever
+  anonymous and a blocked agent can always tell the operator whose work a lock
+  is. Re-claiming a lock you already hold (`held-by-self`) still needs nothing.
 
-## [v2.0.36]
+### Changed
 
-### Fixed
-
-- **Occupancy descriptions respect the Git default branch.** The hook started
-  using `origin/HEAD` to decide whether the current branch is the default, so a
-  `trunk` checkout no longer records `work: trunk`.
+- **The occupancy description is the agent's own label, never the git branch.**
+  The hook reads it only from `DIBS_DESCRIPTION`; the branch-name derivation is
+  gone (it was wrong on the default branch and absent outside a repo). A write
+  with no administered dibs is denied with instructions to run
+  `dibs claim <dir> --description ...`.
 
 ## [v2.0.34]
 
@@ -38,8 +38,7 @@ short; categories are Breaking, Added, Changed, Fixed.
 - **Locks now carry a short work description.** `dibs claim --description <text>`
   and `DIBS_DESCRIPTION` store a compact human `description` in the lock record;
   `check`, refused claims, and occupancy denials show it as `work: <text>`.
-  Branch fallbacks are rendered as words, and `bonsai` records the branch name
-  as words for the worktrees it hands out.
+  `bonsai` records the branch name as words for the worktrees it hands out.
 
 ## [v2.0.30]
 

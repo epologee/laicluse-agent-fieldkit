@@ -10,7 +10,12 @@ setup() {
   mkdir -p "$DIR"
 }
 
-dibs() { "$NODE_BIN" "$DIBS" "$@"; }
+dibs() {
+  if [ "${1:-}" = "claim" ]; then
+    case " $* " in *" --description "*) : ;; *) set -- "$@" --description "test claim" ;; esac
+  fi
+  "$NODE_BIN" "$DIBS" "$@"
+}
 
 @test "check reports a free dir as free" {
   run dibs check "$DIR" --json

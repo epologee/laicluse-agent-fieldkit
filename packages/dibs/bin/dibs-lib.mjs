@@ -299,6 +299,14 @@ export function claim({ dir, pid, agent, session, owner, description, maxAgeHour
   const realpath = occupancyRoot(dir);
   if (isExcluded(realpath)) return { ok: true, state: 'excluded', path: null, realpath };
   const path = lockPathForRealpath(realpath);
+  // allow-comment: re-claiming a lock this same process already holds keeps its original description, so the mandatory-description gate must skip held-by-self; only creating or taking over a lock demands a fresh description.
+  const priorHold = readRecordStable(path);
+  if (priorHold && priorHold.hostname === hostname() && priorHold.pid === pid) {
+    return { ok: true, state: 'held-by-self', path, holder: priorHold };
+  }
+  if (!normalizeDescription(description)) {
+    throw new Error('a work description is required: run `dibs claim <dir> --description "<short summary of what you are doing here>"` (or set DIBS_DESCRIPTION). dibs will not create an anonymous lock.');
+  }
   ensureLocksDir();
   const record = buildRecord({ realpath, pid, agent, session, owner, description });
   const json = JSON.stringify(record, null, 2);

@@ -69,3 +69,15 @@ Vaultsync only accepts repairs for files it included in the request. Verifier-re
 - `vaultsync doctor [path] --llm-command '<command>'` runs preflight checks without registering the checkout.
 
 During a mutating cycle, vaultsync claims `dibs` for the target worktree root, commits Git-visible local changes after the debounce window, runs the optional verification command, asks the configured LLM to repair bounded verifier failures, commits those repairs, and releases its dibs claim. When the current branch has an upstream, the same cycle also fetches, pulls with rebase, resolves conflicts through the configured LLM command, verifies again, and pushes the current branch. Without an upstream, fetch/rebase/push are skipped and the repo remains a local auto-commit vault until an upstream is configured. When a pause expires while another dibs holder is still active, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears. Pure remote polling fetches do not claim dibs unless local checkout state must change.
+
+## Editing a managed vault: no git theater
+
+If a checkout is vaultsync-managed (confirm once with `vaultsync managed [path]`), an agent that edits notes there does NOT own git. The whole point of the daemon is that committing, verifying, PII-stripping, rebasing, and pushing cost the editing agent zero tokens. Your entire job is: write the files, then release your own `dibs` claim on the vault (for example `dibs release <vault> --pid <your-agent-pid>`). That release is the signal the daemon waits for; it commits on its next cycle.
+
+Do NOT, after writing to a managed vault:
+
+- poll `git log` or `git status` waiting for the commit to appear,
+- tail or read the daemon logs to confirm it is working,
+- run `git add`/`git commit`/`git push` by hand.
+
+The debounce window is intentional (commonly ~300s): a commit that has not appeared "yet" is the daemon working as designed, not a failure. Manual git in a managed vault fights the daemon's own commit, verify, and conflict-resolution cycle. Write, release dibs, move on. Only reach for `vaultsync status` or `vaultsync now` if the operator reports the sync is actually broken.

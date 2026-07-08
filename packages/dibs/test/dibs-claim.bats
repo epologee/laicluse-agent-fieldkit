@@ -11,7 +11,33 @@ setup() {
   mkdir -p "$DIR"
 }
 
-dibs() { "$NODE_BIN" "$DIBS" "$@"; }
+dibs_raw() { "$NODE_BIN" "$DIBS" "$@"; }
+
+# A work description is mandatory on claim; inject a default for the many tests
+# that exercise claim/refuse/takeover logic rather than the description itself.
+dibs() {
+  if [ "${1:-}" = "claim" ]; then
+    case " $* " in
+      *" --description "*) : ;;
+      *) set -- "$@" --description "test claim" ;;
+    esac
+  fi
+  "$NODE_BIN" "$DIBS" "$@"
+}
+
+@test "claim without a work description is rejected" {
+  run dibs_raw claim "$DIR" --pid $$ --agent claude --json
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q 'work description is required'
+  [ ! -d "$LAICLUSE_HOME/locks" ] || [ "$(ls "$LAICLUSE_HOME/locks" 2>/dev/null | wc -l)" -eq 0 ]
+}
+
+@test "re-claiming a lock this process already holds needs no new description" {
+  dibs claim "$DIR" --pid $$ --agent claude --description "first claim with a label" --json >/dev/null
+  run dibs_raw claim "$DIR" --pid $$ --agent claude --json
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"state": "held-by-self"'
+}
 
 @test "claim on a free dir succeeds and writes a lock file" {
   run dibs claim "$DIR" --pid $$ --agent claude --json

@@ -352,6 +352,7 @@ function claimDibs(registration, env = process.env) {
     '--agent', 'vaultsync',
     '--session', `vaultsync-${registration.key}`,
     '--owner', registration.key,
+    '--description', 'vaultsync auto-commit cycle',
   ], env);
 }
 

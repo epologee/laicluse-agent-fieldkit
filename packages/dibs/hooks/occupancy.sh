@@ -1,5 +1,5 @@
 #!/bin/bash
-# allow-comment: load-bearing contract. dibs occupancy enforcement: claim the working directory only at the first mutating file edit (PreToolUse), hard-deny that edit when a different live agent session already holds it, and release at SessionEnd (Claude only; Codex has no session-end event and relies on dibs pid-liveness self-heal). Read-only sessions never take occupancy and never get steered aside. No lock logic lives here; every verb shells out to this plugin's own dibs CLI. The decision is driven off `dibs claim --json` state, and the gate fails open on anything that is not a positive cross-session refusal, so a broken or missing lock never blocks an agent. Opt out per session with DIBS_OCCUPANCY=off.
+# allow-comment: load-bearing contract. dibs occupancy enforcement gates the write-output at PreToolUse: a file edit (Edit/Write/MultiEdit/apply_patch) always, and a Bash command that occ_bash_mutates classifies as writing. Several agents may read and think in the same directory; dibs only arbitrates who writes. A claim needs a work description the agent composes (from DIBS_DESCRIPTION); a write with no administered dibs is hard-denied telling the agent to run `dibs claim <dir> --description ...`, and a write into a directory a DIFFERENT live session holds is hard-denied with the holder. Read-only work passes untouched. Released at SessionEnd (Claude only; Codex relies on dibs pid-liveness self-heal). No lock logic lives here; every verb shells out to this plugin's own dibs CLI, and the gate fails open on infra faults (missing dibs binary, unresolvable dir) so a broken lock never blocks. Opt out per session with DIBS_OCCUPANCY=off.
 
 OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # allow-comment: load-bearing. Share one holder-pid walk with the undibs skill so claim and release agree on the recorded pid.
@@ -198,17 +198,9 @@ occ_owner() {
   [ -n "$sid" ] && printf '%s\n' "$sid"
 }
 
+# allow-comment: load-bearing. The description is the agent's OWN one-line answer to "what am I doing in this directory", set in DIBS_DESCRIPTION. Never derive it from the git branch (wrong on the default branch, absent outside a repo) or the cmux title (host dependency); the claiming agent composes it. When it is unset the claim carries no description, dibs refuses the anonymous lock, and occ_gate fails open (no lock) rather than inventing a label.
 occ_description() {
-  local dir="$1" branch default_branch
-  if [ -n "${DIBS_DESCRIPTION:-}" ]; then printf '%s\n' "$DIBS_DESCRIPTION"; return 0; fi
-  branch="$(git -C "$dir" branch --show-current 2>/dev/null || true)"
-  [ -n "$branch" ] || return 1
-  default_branch="$(git -C "$dir" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)"
-  if [ -z "$default_branch" ]; then
-    default_branch="$(git -C "$dir" symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
-  fi
-  [ "$branch" = "$default_branch" ] && return 1
-  printf '%s\n' "$branch"
+  [ -n "${DIBS_DESCRIPTION:-}" ] && printf '%s\n' "$DIBS_DESCRIPTION"
 }
 
 occ_legacy_codex_reclaim() {
@@ -273,17 +265,16 @@ occ_claim_output() {
   command -v node >/dev/null 2>&1 || return 2
   [ -n "$dir" ] || dir="$(occ_cwd "$input")"
   [ -n "$dir" ] || return 3
+  description="$(occ_description)"
   pid="$(occ_holder_pid "${OCC_PPID:-$PPID}")"
   agent="$(occ_agent_label)"
   sid="$(occ_session "$input")"
   owner="$(occ_owner "$input")"
-  description="$(occ_description "$dir")"
-  set -- claim "$dir" --pid "$pid" --agent "$agent"
+  set -- claim "$dir" --pid "$pid" --agent "$agent" --description "$description"
   [ -n "$sid" ] && set -- "$@" --session "$sid"
   [ -n "$owner" ] && set -- "$@" --owner "$owner"
-  [ -n "$description" ] && set -- "$@" --description "$description"
   occ_legacy_codex_reclaim "$input" && set -- "$@" --legacy-codex-resume
-  node "$dibs" "$@" --json 2>/dev/null
+  node "$dibs" "$@" --json 2>&1
 }
 
 # allow-comment: load-bearing. Return 0 only when a DIFFERENT live session holds the directory. dibs matches self on exact pid; keying self-recognition on the session id makes a drifted worker pid harmless. An unidentifiable self (no session id) fails open.
@@ -301,22 +292,32 @@ occ_refused_by_other() {
   return 0
 }
 
+occ_block_no_dibs() {
+  local dir="$1"
+  printf '[dibs/occupancy] %s has no dibs registered for you, so this write is refused. Administer one first: run '\''dibs claim %s --description "<one line: what you are doing here>"'\'' with a description you compose yourself, then retry.\n' "$dir" "$dir" >&2
+}
+
 occ_gate() {
   local input="$1" out rc dir dirs
   dirs="$(occ_gate_dirs "$input")"
-  if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then
-    dirs="$(occ_cwd "$input")"
-  fi
+  if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then dirs="$(occ_cwd "$input")"; fi
   [ -n "$dirs" ] || return 0
   while IFS= read -r dir; do
     [ -n "$dir" ] || continue
     occ_enforce_worktree_requirement "$dir"
     out="$(occ_claim_output "$input" "$dir")"
     rc=$?
-    case "$rc" in 0 | 2 | 3) continue ;; esac
-    occ_refused_by_other "$input" "$out" || continue
-    printf '[dibs/occupancy] %s; another live agent occupies this directory. %s If that holder is stale, inspect it with '\''dibs check %s'\'' and clear it with '\''dibs release %s'\''.\n' "$(printf '%s' "$out" | occ_holder_line)" "$(printf '%s' "$out" | occ_refusal_suggestion)" "$dir" "$dir" >&2
-    exit 2
+    # allow-comment: load-bearing. A cross-session refusal and a missing-description error both exit non-zero, so branch on the payload not rc: a refusal carries state:refused, the description error an error naming "work description".
+    case "$rc" in 2 | 3) continue ;; esac
+    if occ_refused_by_other "$input" "$out"; then
+      printf '[dibs/occupancy] %s; another live agent occupies this directory. %s If that holder is stale, inspect it with '\''dibs check %s'\'' and clear it with '\''dibs release %s'\''.\n' "$(printf '%s' "$out" | occ_holder_line)" "$(printf '%s' "$out" | occ_refusal_suggestion)" "$dir" "$dir" >&2
+      exit 2
+    fi
+    if printf '%s' "$out" | grep -q 'work description is required'; then
+      occ_block_no_dibs "$dir"
+      exit 2
+    fi
+    continue
   done <<< "$dirs"
 }
 

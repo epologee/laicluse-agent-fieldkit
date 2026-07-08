@@ -14,7 +14,12 @@ setup() {
   BETA="$WORKTREE/packages/beta"
 }
 
-dibs() { "$NODE_BIN" "$DIBS" "$@"; }
+dibs() {
+  if [ "${1:-}" = "claim" ]; then
+    case " $* " in *" --description "*) : ;; *) set -- "$@" --description "test claim" ;; esac
+  fi
+  "$NODE_BIN" "$DIBS" "$@"
+}
 
 @test "claims from different subdirectories in one git worktree contend for one lock" {
   dibs claim "$ALPHA" --pid $$ --agent claude --json >/dev/null

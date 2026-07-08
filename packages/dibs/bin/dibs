@@ -5,7 +5,7 @@ import { claim, release, releaseAll, check, formatHolder, listExcludes, excludeD
 const USAGE = `usage: dibs <command> <dir> [options]
 
 commands:
-  claim <dir>     take exclusive occupancy of a directory (refused if a live holder exists)
+  claim <dir>     take exclusive occupancy of a directory (needs --description; refused if a live holder exists)
   release <dir>   release a directory you hold
   release-all     release every lock this session holds, across all directories
   release-all     selectors: --pid / --session / --owner with --agent; no <dir>
@@ -21,7 +21,8 @@ options:
   --agent <name>       label the holder (e.g. claude, codex)
   --session <id>       holder session id
   --owner <id>         stable owner id across resumed sessions
-  --description <text> short work description stored in the lock
+  --description <text> short work description stored in the lock; REQUIRED on claim
+                       (or via DIBS_DESCRIPTION) unless re-claiming a lock you hold
   --legacy-codex-resume  allow a Codex resume to reclaim older ownerless Codex locks
   --nonce <hex>        on release, require this claim nonce to match the holder
   --max-age-hours <n>  treat a lock older than this as breakable (last-resort cap)

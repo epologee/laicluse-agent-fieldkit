@@ -10,7 +10,12 @@ setup() {
   mkdir -p "$DIR"
 }
 
-dibs() { "$NODE_BIN" "$DIBS" "$@"; }
+dibs() {
+  if [ "${1:-}" = "claim" ]; then
+    case " $* " in *" --description "*) : ;; *) set -- "$@" --description "test claim" ;; esac
+  fi
+  "$NODE_BIN" "$DIBS" "$@"
+}
 
 @test "the holder can release and the lock file is removed" {
   dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null

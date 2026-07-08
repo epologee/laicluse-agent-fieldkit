@@ -284,6 +284,8 @@ directories with `.gitkeep`, placeholder files, and scaffolding for a future
 layout are premature structure. Let tooling (`mkdir_p`, `FileUtils`) create
 directories when the first content lands in them.
 
+The self-inflicted species of cruft, the residue your own iterative fixing leaves behind across code, changelogs, commits, PRs, and tests, is scar tissue; cut it in a deliberate pass before you hand work over. The scar-tissue skill carries that discipline.
+
 ## Later does not exist
 
 If it is worth noting, it is worth doing now. "First iteration, improve later",

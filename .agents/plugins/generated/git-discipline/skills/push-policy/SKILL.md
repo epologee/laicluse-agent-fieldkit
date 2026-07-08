@@ -16,6 +16,16 @@ Resolve the repo's mode, then act in the way that mode allows. Do not invent a
 ceremony where the repo does not need one, and do not push where another person
 is affected without the operator's go.
 
+## A commit is not a push, and never a gate
+
+A local commit captures your own finished work; it is expected, not asked for.
+Leaving that work uncommitted while calling it "operator territory" is the
+error, not the caution: it is dirty state handed off as a to-do. "Never commit
+to main" is a team-repo rule about a shared or protected branch, not a universal
+one; on a solo or personal repo, committing to main is the normal flow. The
+operator's go is owed by the push or merge that reaches other people, or a
+publish, per the mode below, never by the commit itself.
+
 ## The resolver
 
 ```bash
