@@ -256,7 +256,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.34",
+			"version": "2.0.35",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -271,9 +271,9 @@
 			"commandCount": 2,
 			"hookFileCount": 25,
 			"latestChange": {
-				"version": "v2.0.32",
-				"type": "Changed",
-				"summary": "no-remote-create verstaat nu ook Nederlandse remote-toestemmingen."
+				"version": "v2.0.35",
+				"type": "Fixed",
+				"summary": "dash now catches HTML entity forms for em/en-dashes."
 			}
 		},
 		{
@@ -605,11 +605,11 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.34",
+			"packageVersion": "2.0.35",
 			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.32",
-			"type": "Changed",
-			"summary": "no-remote-create verstaat nu ook Nederlandse remote-toestemmingen.",
+			"version": "v2.0.35",
+			"type": "Fixed",
+			"summary": "dash now catches HTML entity forms for em/en-dashes.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{

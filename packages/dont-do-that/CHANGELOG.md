@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.35]
+
+### Fixed
+
+- **`dash` now catches HTML entity forms for em/en-dashes.** Persisted text that contains `&mdash;`, `&ndash;`, `&#8212;`, `&#8211;`, `&#x2014;`, or `&#x2013;` now gets the same rewrite context as a literal U+2014 or U+2013 character, while fenced code and patch context lines still pass.
+
 ## [v2.0.32]
 
 ### Changed

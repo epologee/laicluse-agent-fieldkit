@@ -52,7 +52,7 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.34</span>
+						<span>2.0.35</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -95,7 +95,7 @@
 </ul>
 <p>PostToolUse context guards surface rewrite instructions after persisted text or shell text is created:</p>
 <ul>
-<li><code>dash</code>: catches em-dash or en-dash in persisted Markdown, text, MDX, patch additions, or shell text. Claude, Codex.</li>
+<li><code>dash</code>: catches em-dash or en-dash characters and HTML entity forms in persisted Markdown, text, MDX, patch additions, or shell text. Claude, Codex.</li>
 <li><code>land</code>: catches vague <code>land</code> / <code>landing</code> / <code>landed</code> / <code>geland</code> / <code>landt</code> wording in persisted text or shell text. Claude, Codex.</li>
 </ul>
 <p>Stop guards block weak final answers and make the agent continue:</p>
@@ -155,7 +155,7 @@
 <p>Pass condition: rewrite the code for clarity by naming, extracting, or shaping the code better, or use one of the explicit allow rules.</p>
 <h2 id="posttooluse-context-guards">PostToolUse context guards</h2>
 <h3 id="dash"><code>dash</code></h3>
-<p>Surfaces additional context when em-dash (U+2014) or en-dash (U+2013) appears in <code>.md</code>, <code>.txt</code>, or <code>.mdx</code> files outside fenced code blocks, in persisted file content, in added <code>apply_patch</code> lines, or in shell command text such as clipboard pipes. Chat is not checked. This guard never blocks; it only asks for a rewrite.</p>
+<p>Surfaces additional context when em-dash (U+2014), en-dash (U+2013), or their HTML entity forms (<code>&amp;mdash;</code>, <code>&amp;ndash;</code>, <code>&amp;#8212;</code>, <code>&amp;#8211;</code>, <code>&amp;#x2014;</code>, <code>&amp;#x2013;</code>) appear in <code>.md</code>, <code>.txt</code>, or <code>.mdx</code> files outside fenced code blocks, in persisted file content, in added <code>apply_patch</code> lines, or in shell command text such as clipboard pipes. Chat is not checked. This guard never blocks; it only asks for a rewrite.</p>
 <h3 id="land"><code>land</code></h3>
 <p>Surfaces additional context when the vague <code>land</code> metaphor (<code>land</code>, <code>landing</code>, <code>landed</code>, <code>geland</code>, <code>landt</code>) appears in persisted file content, added <code>apply_patch</code> lines, or shell command text outside fenced code blocks. The match is a plain case-insensitive substring, so ordinary words such as <code>Nederland</code>, <code>landscape</code>, and <code>landing page</code> can trip it. That is deliberate: this is a gentle reminder to choose a concrete verb, never a hard gate.</p>
 <h2 id="stop-guards">Stop guards</h2>

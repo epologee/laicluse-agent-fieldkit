@@ -70,8 +70,8 @@ PreToolUse file-edit denies unclear code edits:
 PostToolUse context guards surface rewrite instructions after persisted text or
 shell text is created:
 
-- `dash`: catches em-dash or en-dash in persisted Markdown, text, MDX, patch
-  additions, or shell text. Claude, Codex.
+- `dash`: catches em-dash or en-dash characters and HTML entity forms in
+  persisted Markdown, text, MDX, patch additions, or shell text. Claude, Codex.
 - `land`: catches vague `land` / `landing` / `landed` / `geland` / `landt`
   wording in persisted text or shell text. Claude, Codex.
 
@@ -231,11 +231,12 @@ the code better, or use one of the explicit allow rules.
 
 ### `dash`
 
-Surfaces additional context when em-dash (U+2014) or en-dash (U+2013) appears in
-`.md`, `.txt`, or `.mdx` files outside fenced code blocks, in persisted file
-content, in added `apply_patch` lines, or in shell command text such as
-clipboard pipes. Chat is not checked. This guard never blocks; it only asks for
-a rewrite.
+Surfaces additional context when em-dash (U+2014), en-dash (U+2013), or their
+HTML entity forms (`&mdash;`, `&ndash;`, `&#8212;`, `&#8211;`, `&#x2014;`,
+`&#x2013;`) appear in `.md`, `.txt`, or `.mdx` files outside fenced code
+blocks, in persisted file content, in added `apply_patch` lines, or in shell
+command text such as clipboard pipes. Chat is not checked. This guard never
+blocks; it only asks for a rewrite.
 
 ### `land`
 

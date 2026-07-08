@@ -32,13 +32,14 @@ guard_dash() {
   esac
   [ -z "$content" ] && return 0
 
-  local dash_class
+  local dash_class dash_entity_pattern
   dash_class=$(printf '[\xe2\x80\x94\xe2\x80\x93]')
+  dash_entity_pattern='(&mdash;|&ndash;|&#821[12];|&#[xX]201[34];)'
   local violation
-  violation=$(awk -v pat="$dash_class" '
+  violation=$(awk -v pat="$dash_class" -v entity_pat="$dash_entity_pattern" '
     /^```/ { in_code = !in_code; next }
     in_code { next }
-    $0 ~ pat { print NR": "$0; exit }
+    $0 ~ pat || $0 ~ entity_pat { print NR": "$0; exit }
   ' <<< "$content")
 
   [ -z "$violation" ] && return 0

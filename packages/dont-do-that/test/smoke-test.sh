@@ -721,8 +721,29 @@ EMDASH="$(printf '\xe2\x80\x94')"
 expect_context "dash: em-dash in Edit new_string" \
   "$(posttool_edit "/tmp/x.md" "Some prose with ${EMDASH} dash here")"
 
+expect_context "dash: mdash entity in Edit new_string" \
+  "$(posttool_edit "/tmp/x.md" "Some prose with &mdash; dash here")"
+
+expect_context "dash: ndash entity in Edit new_string" \
+  "$(posttool_edit "/tmp/x.md" "Some prose with &ndash; dash here")"
+
+expect_context "dash: numeric em-dash entity in Edit new_string" \
+  "$(posttool_edit "/tmp/x.md" "Some prose with &#8212; dash here")"
+
+expect_context "dash: numeric en-dash entity in Edit new_string" \
+  "$(posttool_edit "/tmp/x.md" "Some prose with &#8211; dash here")"
+
+expect_context "dash: lowercase hex em-dash entity in Edit new_string" \
+  "$(posttool_edit "/tmp/x.md" "Some prose with &#x2014; dash here")"
+
+expect_context "dash: uppercase hex en-dash entity in Edit new_string" \
+  "$(posttool_edit "/tmp/x.md" "Some prose with &#X2013; dash here")"
+
 expect_allow "dash: clean Edit new_string passes silent" \
   "$(posttool_edit "/tmp/x.md" "No dash here.")"
+
+expect_allow "dash: mdash entity in fenced code passes silent" \
+  "$(posttool_edit "/tmp/x.md" $'```html\n<span>&mdash;</span>\n```')"
 
 expect_context "dash: em-dash in apply_patch added line" \
   "$(posttool_apply_patch $'*** Begin Patch\n*** Update File: /tmp/x.ts\n@@\n const oldMessage = "No dash here.";\n+const newMessage = "Some prose with '"${EMDASH}"$' dash here.";\n*** End Patch\n')"
