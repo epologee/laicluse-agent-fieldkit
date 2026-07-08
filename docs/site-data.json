@@ -366,7 +366,7 @@
 		},
 		{
 			"name": "vaultsync",
-			"version": "2.0.5",
+			"version": "2.0.6",
 			"category": "feedback",
 			"summary": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha",
 			"support": [
@@ -712,6 +712,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{
+			"plugin": "vaultsync",
+			"packageVersion": "2.0.6",
+			"detailPath": "agent-fieldkit/vaultsync/",
+			"version": "v2.0.4",
+			"type": "Added",
+			"summary": "Managed-checkout status is now a CLI contract.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
+		},
+		{
 			"plugin": "laicluse-agent-fieldkit",
 			"packageVersion": "2.0.5",
 			"detailPath": "agent-fieldkit/laicluse-agent-fieldkit/",
@@ -719,15 +728,6 @@
 			"type": "Added",
 			"summary": "$whats-new now works in Codex.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
-		},
-		{
-			"plugin": "vaultsync",
-			"packageVersion": "2.0.5",
-			"detailPath": "agent-fieldkit/vaultsync/",
-			"version": "v2.0.4",
-			"type": "Added",
-			"summary": "Managed-checkout status is now a CLI contract.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
 		},
 		{
 			"plugin": "whywhy",
