@@ -44,7 +44,7 @@ The spec bounds the work. If there is no spec for it, it does not exist as a req
 
 ## Scar tissue
 
-Umbrella term for defensive test material that exists because of a past wound rather than a present requirement. A scar is justified while the wound can reopen; once the anatomy has changed so it cannot, the scar is bloat that the suite drags along forever. Species under this umbrella:
+The general discipline, cutting the residue of iterative fixing from any deliverable, lives in the scar-tissue skill; this section is its test-specific species: defensive test material that exists because of a past wound rather than a present requirement. A scar is justified while the wound can reopen; once the anatomy has changed so it cannot, the scar is bloat that the suite drags along forever. Species under this umbrella:
 
 - **Absence pinning** (see below): asserting that something removed stays removed.
 - **Test case hoarding**: every bug, incident, or review remark becomes a permanent test, with no pruning judgment, until the suite is too noisy to mean anything.
