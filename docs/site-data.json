@@ -234,7 +234,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.43",
+			"version": "2.0.44",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -587,7 +587,7 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.43",
+			"packageVersion": "2.0.44",
 			"detailPath": "agent-fieldkit/git-discipline/",
 			"version": "v2.0.43",
 			"type": "Fixed",

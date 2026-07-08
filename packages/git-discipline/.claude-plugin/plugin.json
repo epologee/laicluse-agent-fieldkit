@@ -1,5 +1,5 @@
 {
   "name": "git-discipline",
   "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
-  "version": "2.0.43"
+  "version": "2.0.44"
 }
