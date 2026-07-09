@@ -36,6 +36,14 @@ Claude writes CSS and only looks at the result at the end. And when Claude looks
 
 The solution is not more rules. The solution is looking more often, and looking differently.
 
+## Interpreting user-provided screenshots
+
+Treat a user-provided screenshot as visual feedback, not as a design comp. Screenshot-tool markup such as CleanShot callouts, arrows, red circles, numbered stickers, highlighter strokes, hand-drawn boxes, and labels is a fat-marker sketch unless the user explicitly says to match it exactly.
+
+Extract the complaint, target area, direction, content, and constraints from annotations. Do not copy the annotation style into product UI: not the colors, bubbles, arrows, shadows, fonts, casing, z-layer, spacing, or composition. The operator is not acting as the designer by drawing the marks; they are pointing at what feels wrong. Your job is to translate that signal into a design that fits the existing product language, then inspect the rendered result.
+
+Only treat a screenshot as a visual reference when the user names a real product element, Figma frame, brand asset, or exact-match intent ("pixel-perfect", "match this", "precies zo", "exact zo"). When the screenshot contains both product UI and annotation UI, separate them before judging: product pixels are evidence, annotation pixels are commentary.
+
 ## The core: observation before explanation
 
 **After every layout change: screenshot. Describe what you see BEFORE looking back at the CSS.**
@@ -399,6 +407,7 @@ The chain over time: art-director once (for a new product, brand refresh, first 
 | What Claude does | What goes wrong |
 |-----------------|----------------|
 | Writing `padding: 0.6rem 0` | The 0 is zero space left/right. Read every value. |
+| Treating CleanShot or marker annotations as product design | The marks are feedback scaffolding. Extract the intent and ignore the screenshot-tool visual style unless exact-match intent is explicit. |
 | Placing an element outside the main container | That element inherits no padding. It needs its own spacing. |
 | Looking at the center, not the edges | The center always looks fine. The errors live at the edges. |
 | Measuring only perimeter padding, not sibling gaps | Container has 32px all around, but a paragraph touches the table below. Collapsed padding. Walk explicitly through each sibling pair inside the container. |

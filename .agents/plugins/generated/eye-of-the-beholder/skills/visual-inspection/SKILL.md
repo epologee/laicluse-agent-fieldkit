@@ -18,6 +18,8 @@ This skill activates when two things come together:
 1. **A reference**. The user explicitly points to an existing element or another existing UI ("zoals de favicon", "zoals de header", "zoals deze button", a screenshot, a Figma frame).
 2. **A match intent or a visual axis**. "Exact hetzelfde", "match", "zelfde uiterlijk", "precies zo", "identiek aan", "dezelfde look als", OR a specific visual property as criterion: padding, margin, space, ruimte, gap, align, alignment, grootte, size, pixels, corner radius, border radius, font, color, kleur.
 
+"A screenshot" means product pixels that the user wants matched, not screenshot-tool markup. Annotated screenshots with arrows, labels, numbered circles, highlighter strokes, or CleanShot callouts are feedback sketches by default: they identify the target and the axes, but their own colors, typography, bubbles, arrows, shadows, and layout are not reference style. Only promote annotated marks to reference pixels when the user explicitly says the annotation itself is the design to match.
+
 "In lijn met" alone is not a trigger. That phrase in Dutch is usually non-visual ("in lijn met de sprint planning", "in lijn met de API response"). Only when the object is demonstrably a UI element ("in lijn met de header-button") does it count as match intent.
 
 When both are present: this skill leads the work, not eye-of-the-beholder's open scan. The axes are given; the question is "klopt het met de referentie", not "what do I see".
@@ -74,6 +76,7 @@ Eye-of-the-beholder is open diagnosis: look at what is there and name what is wr
 | What Claude does | What goes wrong |
 |-----------------|----------------|
 | Reading the reference CSS and assuming "padding 8px" | The rendered padding can be affected by box-sizing, line-height, or a nested element. Measure the rendered result. |
+| Treating annotated screenshot markup as the reference | The operator's arrows and callouts are fat-marker feedback, not UI direction. Match product pixels and named axes, not CleanShot's visual language. |
 | Taking one screenshot after all changes | Without before/after you cannot see which change moved which axis. A fresh screenshot per iteration. |
 | Including extra axes the user did not name | Scope creep dressed as thoroughness. The user named three axes; work on those three. |
 | "Looks the same" without a table | No table = no evidence. A person can find two elements "the same" that measure 2px apart. |
