@@ -26,6 +26,8 @@ The exception (treat the image as a literal visual reference to match) is earned
 
 Absent one of those, the image is feedback. This holds even when the pixels are sharp, even when the layout looks deliberate, even when the user clearly spent time on it. Effort in the sketch is not permission to copy it. When the image contains both product UI and annotation markup, split them: product pixels can be evidence, annotation pixels are commentary.
 
+The one genuinely ambiguous case is a clean image with no annotation and no accompanying words: no marks were needed, which can itself mean "this is the thing" (an actual comp), especially from a design-fluent user. Do not silently apply the sketch default there. Ask one short question before the first edit ("is this a reference to match, or a direction to take from?"), because that is the single case where a pause is cheaper than a wrong full round. A marked-up or word-accompanied image is not this case; that is feedback, and the default holds.
+
 If match-intent is present, this is not the skill. Hand off to visual-inspection, which runs the screenshot-plus-measurement loop against the named axes.
 
 ## What to extract, what to ignore
@@ -48,6 +50,8 @@ A fat marker sketch carries five things worth extracting. It also carries a laye
 - Hand-drawn boxes and their stroke. A scribbled rectangle marks a region, not a bordered container.
 - Screenshot-tool chrome: CleanShot toolbars, Preview markup styling, macOS window frames, drop shadows the tool added, the tool's own fonts and casing.
 - The compositional accidents of the capture: crop tightness, where the user happened to stop the screenshot, the aspect ratio of the grab.
+
+One exception on color. If the user uses two or more distinct annotation colors to separate two or more groups (a red set here, a blue set there), the color is encoding a distinction, not decorating. That is a channel-semantics question, not a color-value question: apply eye-of-the-beholder's one-meaning-per-channel read (what does this mark distinguish, if anything?) before discarding it. Blanket-ignoring color is right for a lone arrow or a single highlight; it is wrong when different colors are doing the separating.
 
 The test for each mark: does this pixel tell me *what the user wants*, or *what tool the user drew with*? The first is signal. The second is noise, and copying it is the failure this skill prevents.
 
@@ -73,6 +77,10 @@ I am going to:
 ```
 
 Then act. You do not wait for approval on the readback in an autonomous flow; you write it, act, and render. But the readback is on record, so when the result is wrong the miss is visible and localized (wrong complaint? wrong target? or right reading, wrong execution?) instead of a silent full-round loss.
+
+**Carry the readback, not the raw image, into any delegated step.** If you hand the actual implementation to a subagent or a fresh session, pass the readback (the extracted intent), not the raw annotated screenshot. A subagent handed the raw image with no framing reproduces exactly the literal-copy failure this skill exists to prevent, and the failure looks intermittent because it depends on whether a given run happened to delegate.
+
+**When the direction is open, do not invent one.** A common case is an arrow that pins the target plus a contentless gut-word ("off", "feels wrong", "cheap"): the mark says WHERE, the word gives no WHICH-WAY. Write `Direction: open` rather than guessing, and resolve it from the complaint, not from the annotation. Two routes: if the gut-word maps to a defect axis, use eye-of-the-beholder's complaint-to-axis table to derive the axis and scan the target area for the concrete problem ("off" points at the odd-one-out scan, "cheap" at the credibility scan); if the direction is genuinely wide open (the user dislikes it but no axis is implied), that is a taste-test case, so show a small fan of directions for the target area rather than committing to one guessed move. A guessed direction on a contentless complaint is the second most common way an upload goes wrong, after copying the annotation style.
 
 ## The reference-scope check
 
@@ -106,6 +114,8 @@ Copying more than the named axis is scope creep dressed as thoroughness. Copying
 | Takes the easy axes, misses the named one | "Borrow the grid" and returning everything-but-the-grid is the most common reference miss. |
 | Skips the readback and builds straight off the image | A wrong reading then costs a full round. The three-list readback localizes the miss up front. |
 | Waits for the user to re-explain in words | The user uploaded an image *because* words were failing them. Extract from the sketch; do not push the burden back. |
+| Hands the raw annotated image to a subagent to implement | The subagent has no framing and copies it literally. Pass the readback and extracted intent, not the raw image. |
+| Blanket-ignores annotation color when colors separate groups | Distinct colors marking distinct referents encode a distinction. Read it via one-meaning-per-channel; ignore color only for a lone mark. |
 
 ## Output
 

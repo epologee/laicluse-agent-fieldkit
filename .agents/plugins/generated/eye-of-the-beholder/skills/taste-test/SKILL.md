@@ -9,7 +9,7 @@ description: Elicit a visual direction from someone who has taste but cannot des
 
 The user knows what they like when they see it and cannot draw it or name it. Asking them to describe the direction ("what feel are you going for? what colors? what typography?") pushes the burden onto the exact skill they lack, and the answer comes back in gut-words: "cleaner", "not so busy", "more 2026", "less cheap". Those words are real signal, but they are a reaction, not a spec, and building straight off them produces the generic default the model reaches for when under-directed. That default is AI slop, and it is precisely what the user will bounce.
 
-The design field solved this a long time ago, and the solution is never "ask the client to describe it". It is to *show* options and read the reaction. The 20-second gut test (show samples, score on instinct, the time pressure forces the honest answer), style tiles (Samantha Warren: the deliverable for when a moodboard is too vague and a mockup too literal), and desirability reaction cards (offer a controlled vocabulary of words and have the person point, instead of producing words themselves) all invert the language direction: the person selects, they do not compose. This skill brings that inversion to the agent. You show; the user points; the direction falls out of what they point at.
+The standard design move here is to show, not ask. Several established methods work this way: a timed gut test (show samples, score on instinct, and the time pressure surfaces the honest reaction), style tiles (Samantha Warren's deliverable for when a moodboard is too vague and a mockup too literal), and desirability reaction cards (offer a controlled vocabulary and have the person point instead of producing words themselves). All invert the language direction: the person selects, they do not compose. This skill brings that inversion to the agent. You show; the user points; the direction falls out of what they point at.
 
 ## When
 
@@ -17,7 +17,7 @@ The design field solved this a long time ago, and the solution is never "ask the
 
 - The user reacts to something with a gut-word and no specification: "I don't like it", "it looks off", "too busy", "make it nicer", "more modern", "feels cheap".
 - A new screen, page, or feature has no established visual direction yet and the user cannot describe one.
-- Two or three rounds of pixel-level iteration have not converged and the work needs a direction reset (eye-of-the-beholder's convergence guard routes here).
+- The same complaint has survived a second unimproved round of pixel-level iteration and the work needs a direction reset (eye-of-the-beholder's convergence guard routes here).
 
 **Do not activate:**
 
@@ -25,6 +25,7 @@ The design field solved this a long time ago, and the solution is never "ask the
 - The user uploaded an image as a cue. That is fat-marker-sketch (which may then route here for the direction it points at).
 - This is a whole new product or brand with no identity at all, and the ask is brand-level. That is art-director, which works one level up and once.
 - The change is a single measurable tweak on an existing, agreed direction ("this gap is too tight"). That is eye-of-the-beholder plus the build-time discipline.
+- The complaint is "cheap", "generic", or "looks AI-made" about an existing rendered result. Run eye-of-the-beholder's credibility scan first: removing the vibe-coded tells (gradients, bordered-card grids, status dots, one-font defaults) is cheap and often enough. Escalate to a variant fan only when that scan does not converge, or when there is no rendered starting point yet to scan. A full fan is the expensive move; do not reach for it before the cheap one when a render already exists.
 
 ## The core: show, do not ask
 
@@ -38,6 +39,7 @@ Render 3 to 5 genuinely divergent directions of the same thing, side by side, an
 - **Each variant is a position, not a compromise.** Do not hedge. One variant leans editorial and quiet, one leans dense and technical, one leans warm and soft. The point is to span the space so the user's pick is informative. A safe middle option in every slot wastes the fan.
 - **Label each with its stance in a few words**, so the reaction attaches to a nameable thing: "A: quiet editorial", "B: dense technical", "C: warm consumer". When the user says "B, but calmer", you have learned two coordinates at once.
 - **Render, do not describe.** A fan the user cannot see is not a fan. Produce the actual rendered options (real components, real type, real color) and show them. If you cannot render, that is the same blocker as any other unrendered visual work: arrange a way to render before continuing.
+- **Budget the operator's attention, not only your compute.** Rendering is cheap for you; forming and voicing a judgment is the operator's scarce resource, and that scarcity was the whole premise. When the direction is only slightly uncertain, show one best-guess render plus a light reaction prompt instead of a full fan. Reserve the 3-to-5 fan for when the direction is genuinely absent. And if a fan round does not produce a confident pick, do not spin another fan: that is the signal to stop and ask one direct question, not to keep generating.
 
 The user's pick, plus their one-line reaction to it, is worth more direction than a paragraph of interview answers.
 
@@ -64,13 +66,13 @@ To make something read as current without it reading as generic, gather how real
 
 - **Gather exemplars.** Look at how respected products in the adjacent category handle the same problem today. The session's research tools (web search, fetching real product pages) surface current work; the model's memory does not, because "current" changes and memory lags.
 - **Extract moves, not pixels.** A move is a transferable decision: "they group with whitespace and a hairline instead of boxed cards", "values are set in tabular mono", "one accent color, used only on the primary action". Name the move. Do not copy the exemplar's exact hue, type, or layout; that is plagiarism and it will not fit.
-- **Name the slop tells to avoid explicitly.** Current, credible restraint is defined as much by what it refuses as what it does. The 2026 AI-slop fingerprint is well documented and must be actively avoided (see the guardrails below).
+- **Name the slop tells to avoid explicitly.** Current, credible restraint is defined as much by what it refuses as what it does. The generated-interface fingerprint is recognizable on sight and must be actively avoided (see the guardrails below).
 
 The harvest is what lets you answer "make it more modern" with a direction that is genuinely of-the-moment and specific, rather than the timeless-looking default that reads as generated.
 
 ## Anti-slop guardrails
 
-"Current" done by reflex produces the exact sameness the user is bouncing. The generated-interface fingerprint, treat each as a defect to avoid, not a style to reach for:
+"Current" done by reflex produces the exact sameness the user is bouncing. These are the same vibe-coded tells catalogued (with source) in eye-of-the-beholder's credibility axis; the ones that bite hardest when choosing a fresh direction, each a defect to avoid, not a style to reach for:
 
 - Inter (or a system sans) as the only typographic choice. Typography is the fastest way out of slop: a typeface with a point of view changes everything. Pick type as a deliberate stance.
 - Purple-to-blue gradients on heroes, buttons, and accents.
@@ -81,7 +83,7 @@ The harvest is what lets you answer "make it more modern" with a direction that 
 - Vague hero copy ("Build the future of X", "Your all-in-one platform").
 - Generic stock imagery and plastic AI illustration in place of real content.
 
-The credible-restraint idiom to reach for instead (shared by Stripe, Linear, Vercel): group with type and whitespace not boxes, color as a meaning-carrying accent on text and values not as fills, one dominant plus one accent plus one neutral, values in tabular mono, status as a word or a check glyph in the accent color rather than a colored box. The win condition is the same as eye-of-the-beholder's credibility axis: when a box, a ribbon, a dot, or a gradient is removed and the meaning survives in the typography, the interface moved from generated toward designed.
+The credible-restraint idiom to reach for instead (the kind you see in products like Stripe, Linear, and Vercel): group with type and whitespace not boxes, color as a meaning-carrying accent on text and values not as fills, one dominant plus one accent plus one neutral, values in tabular mono, status as a word or a check glyph in the accent color rather than a colored box. The win condition is the same as eye-of-the-beholder's credibility axis: when a box, a ribbon, a dot, or a gradient is removed and the meaning survives in the typography, the interface moved from generated toward designed.
 
 ## The output: a growing visual-language.md
 
@@ -90,6 +92,8 @@ A direction that lives only in a chat transcript evaporates by the next session.
 This is deliberately lighter than art-director's full brand artifact set. Art-director runs once and produces brand, visual language, and design-system architecture from stakeholder research. Taste-test produces one section at a time, from a gut reaction, as decisions get made. The two can meet: a project that accumulates enough taste-test decisions has effectively grown a visual-language.md that a later art-director pass can formalize. Until then, the growing file is the standard that eye-of-the-beholder verifies against and the build-time discipline builds from, so the same direction does not get re-litigated every session.
 
 Record each decision as: what was decided, the reaction that drove it (the user's own gut-words, kept verbatim, because they are the calibration for next time), the move chosen, and the slop tell it avoids.
+
+Two guards on the write. First, if the file already exists, read its current shape before writing and extend it; do not overwrite a different structure (art-director may have produced a fuller version of the same file). Second, the reaction you are recording is your decode of a non-verbal signal (a pointed finger, a gut-word), so confirm it in one line before it becomes a recorded decision ("recording: you picked B for its calm density, dropping the boxed-card grid, yes?"). A wrong decode carries the false authority of a written decision and is harder to overturn later than a fresh guess would have been. When a new decision contradicts an earlier entry, supersede the old one rather than appending a silent conflict.
 
 ## Positioning
 
@@ -112,8 +116,9 @@ Taste-test sits between art-director's one-time identity work and eye-of-the-beh
 | Answers "more modern" from memory | Memory lags; "current" changes. Harvest real current exemplars, extract moves. |
 | Copies an exemplar's colors and type | That is plagiarism and it will not fit. Extract the transferable move, not the pixels. |
 | Reaches for the timeless-safe default | That default is the slop the user is bouncing. Take a position; avoid the named tells. |
-| Lets the decision live only in chat | It evaporates next session. Land it in visual-language.md, grown per decision. |
-| Keeps pixel-iterating past two failed rounds | Non-convergence is the signal to reset direction with a fan, not to push more pixels. |
+| Lets the decision live only in chat | It evaporates next session. Record it in visual-language.md, grown per decision. |
+| Keeps pixel-iterating past the second unimproved round | Non-convergence is the signal to reset direction with a fan, not to push more pixels. |
+| Renders a full fan when the direction is only slightly uncertain | The operator's judgment is the scarce resource. One best-guess render plus a light reaction fits a small uncertainty; reserve the fan for an absent direction. |
 
 ## Output
 

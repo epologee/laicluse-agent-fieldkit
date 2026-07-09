@@ -211,7 +211,7 @@ Add these questions to the scan in "How to look":
 
 13. **Can you read secondary text without squinting?** Metadata, timestamps, captions. If you instinctively enlarge it or lean closer, it fails WCAG AA. That is not a matter of taste but a structural error.
 
-14. **Warning and status colors.** Are "red for error" and "green for ok" clear enough? Failure text on a white background must pass AA, just like body text. Tailwind's `red-500` and `green-500` usually just barely fail on white. Darker (`red-700`, `green-700`) passes.
+14. **Warning and status colors.** Are "red for error" and "green for ok" clear enough? Failure text on a white background must pass AA, just like body text. Tailwind's `red-500` sits just under AA on white (about 3.8:1) and `green-500` fails badly (about 2.3:1). Darker (`red-700`, `green-700`) passes.
 
 ### Looking beneath the screenshot: the token system
 
