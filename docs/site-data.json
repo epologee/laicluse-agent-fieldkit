@@ -93,7 +93,7 @@
 		"codexPackages": 20,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 21,
-		"skillEntries": 78,
+		"skillEntries": 80,
 		"hookFiles": 54
 	},
 	"install": {
@@ -280,7 +280,7 @@
 		},
 		{
 			"name": "eye-of-the-beholder",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "review",
 			"summary": "Makes visual work observable: screenshot, describe, measure, and compare layout, color, animation, and reference matches before declaring done.",
 			"support": [
@@ -291,13 +291,13 @@
 			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
 			"sourcePath": "packages/eye-of-the-beholder",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/eye-of-the-beholder",
-			"skillCount": 3,
+			"skillCount": 5,
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.1",
-				"type": "Breaking",
-				"summary": "eye-of-the-beholder now ships from the public laicluse-agent-fieldkit marketplace."
+				"version": "v2.1.0",
+				"type": "Added",
+				"summary": "/taste-test: elicit a visual direction without having to describe it."
 			}
 		},
 		{
@@ -773,11 +773,11 @@
 		},
 		{
 			"plugin": "eye-of-the-beholder",
-			"packageVersion": "2.0.2",
+			"packageVersion": "2.0.3",
 			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
-			"version": "v2.0.1",
-			"type": "Breaking",
-			"summary": "eye-of-the-beholder now ships from the public laicluse-agent-fieldkit marketplace.",
+			"version": "v2.1.0",
+			"type": "Added",
+			"summary": "/taste-test: elicit a visual direction without having to describe it.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
 		},
 		{
