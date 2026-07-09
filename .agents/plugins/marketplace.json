@@ -77,6 +77,18 @@
       "category": "Productivity"
     },
     {
+      "name": "eye-of-the-beholder",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/generated/eye-of-the-beholder"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
       "name": "intervision",
       "source": {
         "source": "local",

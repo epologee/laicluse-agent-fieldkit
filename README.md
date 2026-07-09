@@ -47,6 +47,9 @@ The marketplace currently ships:
 - `dibs`: single-occupancy locks so one coding agent owns a working directory
   at a time.
 - `dont-do-that`: guardrail hooks for Claude Code plus `/duh`, `/just-a-question`, and `/not-your-monkey` correction skills for Claude Code and Codex.
+- `eye-of-the-beholder`: visual layout review, art-direction foundation, and
+  reference-matching discipline for screens, print, responsive layouts, color
+  systems, and animation.
 - `intervision`: bring another coding agent in as a peer to review work just
   done or just discussed. Claude hands work to Codex; Codex hands work to
   Claude.

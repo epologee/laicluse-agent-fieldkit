@@ -88,12 +88,12 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 20,
+		"sourcePackages": 21,
 		"publicProjects": 3,
-		"codexPackages": 19,
+		"codexPackages": 20,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 20,
-		"skillEntries": 75,
+		"changelogEntries": 21,
+		"skillEntries": 78,
 		"hookFiles": 54
 	},
 	"install": {
@@ -105,6 +105,7 @@
 			"claude plugins install self-improvement@laicluse-agent-fieldkit",
 			"claude plugins install git-discipline@laicluse-agent-fieldkit",
 			"claude plugins install dont-do-that@laicluse-agent-fieldkit",
+			"claude plugins install eye-of-the-beholder@laicluse-agent-fieldkit",
 			"claude plugins install intervision@laicluse-agent-fieldkit",
 			"claude plugins install anger-management@laicluse-agent-fieldkit",
 			"claude plugins install drydry@laicluse-agent-fieldkit",
@@ -128,6 +129,7 @@
 			"codex plugin add self-improvement@laicluse-agent-fieldkit",
 			"codex plugin add git-discipline@laicluse-agent-fieldkit",
 			"codex plugin add dont-do-that@laicluse-agent-fieldkit",
+			"codex plugin add eye-of-the-beholder@laicluse-agent-fieldkit",
 			"codex plugin add intervision@laicluse-agent-fieldkit",
 			"codex plugin add anger-management@laicluse-agent-fieldkit",
 			"codex plugin add drydry@laicluse-agent-fieldkit",
@@ -274,6 +276,28 @@
 				"version": "v2.0.35",
 				"type": "Fixed",
 				"summary": "dash now catches HTML entity forms for em/en-dashes."
+			}
+		},
+		{
+			"name": "eye-of-the-beholder",
+			"version": "2.0.1",
+			"category": "review",
+			"summary": "Makes visual work observable: screenshot, describe, measure, and compare layout, color, animation, and reference matches before declaring done.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
+			"sourcePath": "packages/eye-of-the-beholder",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/eye-of-the-beholder",
+			"skillCount": 3,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Breaking",
+				"summary": "eye-of-the-beholder now ships from the public laicluse-agent-fieldkit marketplace."
 			}
 		},
 		{
@@ -764,6 +788,15 @@
 			"type": "Changed",
 			"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/pattern-memory/CHANGELOG.md"
+		},
+		{
+			"plugin": "eye-of-the-beholder",
+			"packageVersion": "2.0.1",
+			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
+			"version": "v2.0.1",
+			"type": "Breaking",
+			"summary": "eye-of-the-beholder now ships from the public laicluse-agent-fieldkit marketplace.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
 		}
 	]
 }

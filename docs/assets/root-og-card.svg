@@ -23,6 +23,6 @@
 		<rect x="592" y="444" width="254" height="66" rx="33" fill="rgba(247,247,242,0.055)" stroke="rgba(255,255,255,0.20)" stroke-width="2"/>
 		<text x="719" y="486" text-anchor="middle" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="25" font-weight="850" fill="#f7f7f2">1 open source</text>
 		<rect x="874" y="444" width="200" height="66" rx="33" fill="rgba(246,180,75,0.11)" stroke="rgba(246,180,75,0.58)" stroke-width="2"/>
-		<text x="974" y="486" text-anchor="middle" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="25" font-weight="850" fill="#f6b44b">20 plugins</text>
+		<text x="974" y="486" text-anchor="middle" font-family="'SFMono-Regular', Menlo, Consolas, monospace" font-size="25" font-weight="850" fill="#f6b44b">21 plugins</text>
 	</g>
 </svg>

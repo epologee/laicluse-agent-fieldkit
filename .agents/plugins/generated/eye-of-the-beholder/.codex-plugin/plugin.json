@@ -1,0 +1,26 @@
+{
+  "name": "eye-of-the-beholder",
+  "version": "2.0.1",
+  "description": "Visual review and art-direction skills for layout, color, animation, reference matching, and design-system foundations. Skills: eye-of-the-beholder, art-director, visual-inspection.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "eye-of-the-beholder"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Eye Of The Beholder",
+    "shortDescription": "Visual review and art-direction skills for layout, color, animation, reference matching, and design-system foundation...",
+    "longDescription": "Visual review and art-direction skills for layout, color, animation, reference matching, and design-system foundations. Skills: eye-of-the-beholder, art-director, visual-inspection.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Eye Of The Beholder plugin."
+    ]
+  }
+}
