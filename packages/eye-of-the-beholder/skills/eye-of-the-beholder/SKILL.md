@@ -59,7 +59,7 @@ A user rarely reports a defect in the vocabulary of the fix. They report a feeli
 | "the motion is weird", "it snaps" | time (animation) | out-of-sync elements, teleporting content, wrong speed for the distance |
 | "doesn't fit us", "wrong feel" | direction | there is no documented standard to fit; this is a taste-test or art-director gap, not a single-view fix |
 
-The translation is a hypothesis. State it ("you said it feels busy, so I am scanning density and hierarchy") so that if you mapped it to the wrong axis, the user corrects the axis, not the pixels. A gut-word plus a named axis is a far stronger starting point than either alone, and treating the gut-word as noise (or as a literal instruction) is how image-free feedback goes wrong the way an over-literal screenshot does.
+The translation is a hypothesis: state it ("you said it feels busy, so I am scanning density and hierarchy") so a wrong mapping gets corrected at the axis, not the pixels.
 
 ## The core: observation before explanation
 
@@ -268,7 +268,7 @@ Color is the most abused encoding channel, but the rule is general: each visual 
 - **A channel carrying two meanings.** If hue already means "which campaign", it cannot also mean "which status". The viewer cannot tell which reading applies to a given mark, so the encoding collapses; the result is both ugly and unreadable. When a second dimension needs encoding, reach for a second channel, not a second meaning on the first.
 - **A channel carrying no meaning.** A color, a dot, a ribbon, or a hatching that varies without encoding anything is decoration pretending to be information. If removing it loses nothing, it was noise.
 
-The observation questions: how many distinct meanings does each channel carry here? For every color, pattern, and stroke on screen, can you state the one thing it encodes? Is there a written channel-to-meaning map? When the project has a `visual-language.md`, that map lives there (taste-test and art-director both record it); when it does not, the absence is itself a finding, because an unwritten mapping drifts every session. A channel used consistently for one documented meaning reads as a system; the same channel used ad hoc reads as chaos, however considered each individual choice.
+The observation questions: how many distinct meanings does each channel carry here? For every color, pattern, and stroke on screen, can you state the one thing it encodes? Is there a written channel-to-meaning map? When the project has a `visual-language.md`, that map lives there (taste-test and art-director both record it); when it does not, the absence is itself a finding, because an unwritten mapping drifts every session.
 
 ## Credibility: the vibe-coded fingerprint
 
@@ -422,7 +422,7 @@ Apply these across a state change (hover, focus, load, expand, content update, v
 
 - Elements that occupy space only when present (`display: none` toggled to block, conditionally rendered nodes) shift everything after them. Prefer reserving the space: `visibility: hidden` with the box retained, a `min-height`, a fixed-size slot, or a skeleton placeholder.
 - Intrinsic-size containers (width or height auto to content) move their neighbors whenever the content changes. When the neighbor relationship matters, give the container a stable size.
-- Cumulative layout shift is the formal web name for the load-time case; the same discipline fixes it (reserve space for async content: images with explicit dimensions, fonts with fallback metrics, late values with placeholders).
+- The load-time form has a name, cumulative layout shift, and its own specifics: reserve space for async content with explicit image dimensions, font fallback metrics, and placeholders for late values.
 - The fix is almost always "reserve the space the state will need", not "animate the jump". Animating an unwanted jump only produces a smooth unwanted jump.
 
 ## Foundation
@@ -460,7 +460,7 @@ Stop the loop. Do not start a third round of the same adjustment. Two routes out
 - **If there is no agreed direction to verify against**, the gap is upstream: switch to **taste-test**, which elicits a direction by showing divergent options and reading the reaction, instead of guessing at the one the user is holding but cannot describe. eye-of-the-beholder verifies against a standard; if the standard does not exist, the standard has to be produced first.
 - **If the current attempt has accumulated too many patches to reason about**, reset from first principles: set the current version aside and rebuild the one screen from the direction, rather than adjusting a version whose problems compound. This is usually cheaper than the third, fourth, and fifth round it replaces.
 
-The tell that you are in a non-converging loop: you are making the same *kind* of change again ("a bit more spacing", "a little calmer") and the reaction is not improving. Same change, same reaction, is the definition of stuck. Change the level, not the pixels.
+The tell: you are making the same *kind* of change again ("a bit more spacing", "a little calmer") and the reaction is not improving. Change the level, not the pixels.
 
 ## Common blind spots
 

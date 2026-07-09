@@ -72,18 +72,7 @@ The harvest is what lets you answer "make it more modern" with a direction that 
 
 ## Anti-slop guardrails
 
-"Current" done by reflex produces the exact sameness the user is bouncing. These are the same vibe-coded tells catalogued (with source) in eye-of-the-beholder's credibility axis; the ones that bite hardest when choosing a fresh direction, each a defect to avoid, not a style to reach for:
-
-- Inter (or a system sans) as the only typographic choice. Typography is the fastest way out of slop: a typeface with a point of view changes everything. Pick type as a deliberate stance.
-- Purple-to-blue gradients on heroes, buttons, and accents.
-- Everything in bordered cards, cards nested in cards, identical padding and radius everywhere.
-- Decorative glow, aurora, and radial bloom that serve no function.
-- Emoji as UI (nav, bullets, status).
-- Meaningless status dots and thin colored left-ribbons that encode nothing.
-- Vague hero copy ("Build the future of X", "Your all-in-one platform").
-- Generic stock imagery and plastic AI illustration in place of real content.
-
-The credible-restraint idiom to reach for instead (the kind you see in products like Stripe, Linear, and Vercel): group with type and whitespace not boxes, color as a meaning-carrying accent on text and values not as fills, one dominant plus one accent plus one neutral, values in tabular mono, status as a word or a check glyph in the accent color rather than a colored box. The win condition is the same as eye-of-the-beholder's credibility axis: when a box, a ribbon, a dot, or a gradient is removed and the meaning survives in the typography, the interface moved from generated toward designed.
+"Current" done by reflex produces the exact sameness the user is bouncing. The generated-interface tells to avoid (gradients, bordered-card grids, decorative glow, emoji-as-UI, meaningless status dots, vague hero copy, stock imagery) and the restraint idiom to reach for instead (group with type and whitespace, color only as a meaning-carrying accent, one dominant plus one accent plus one neutral) are catalogued with their source in eye-of-the-beholder's credibility axis; scan against that list rather than restating it here. The one point worth adding for direction-setting: typography is the fastest way out of slop, so pick type as a deliberate stance rather than defaulting to a system sans.
 
 ## The output: a growing visual-language.md
 
@@ -103,8 +92,6 @@ Four skills, four moments:
 - **taste-test**: find a direction for a screen or feature by showing options and reading reactions, when the user cannot describe it. Light, repeatable.
 - **eye-of-the-beholder**: verify a rendered result against the direction, per change. Diagnostic.
 - **visual-inspection**: prove a result matches a named reference on named axes. Directed.
-
-Taste-test sits between art-director's one-time identity work and eye-of-the-beholder's per-change verification. It is the skill for the common case that art-director is too heavy for and eye-of-the-beholder is too late for: "I need a direction and I cannot describe it."
 
 ## Common blind spots
 

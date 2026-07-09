@@ -11,7 +11,7 @@ The user uploads a PNG to show what they mean. The reflex is to treat those pixe
 
 Almost every image a non-designer uploads is a *fat marker sketch*: a low-fidelity pointer at intent, drawn with whatever tool was at hand, carrying a complaint and a direction but not a design. Reading it literally is the single most common way image-driven design work goes wrong. This skill exists to make the low-fidelity reading the default and the literal reading the exception that has to be earned.
 
-The name comes from Shape Up (Basecamp): a fat marker sketch is drawn with a pen so thick that detail is impossible on purpose. The low fidelity is a feature. It keeps the conversation on structure and intent, and it stops fine detail in the sketch from anchoring the people who read it afterward. When a user hands you a screenshot with a red arrow and a scribbled note, they are handing you a fat marker sketch even if the underlying pixels happen to be crisp.
+The name comes from Shape Up (Basecamp): a fat marker sketch is drawn with a pen so thick that detail is impossible on purpose. The low fidelity is deliberate, and that is the point here too: the marks carry intent, not specification, even when the underlying pixels happen to be crisp.
 
 ## Default classification
 
@@ -77,9 +77,9 @@ I am going to:
 
 Then act. You do not wait for approval on the readback in an autonomous flow; you write it, act, and render. But the readback is on record, so when the result is wrong the miss is visible and localized (wrong complaint? wrong target? or right reading, wrong execution?) instead of a silent full-round loss.
 
-**Carry the readback, not the raw image, into any delegated step.** If you hand the actual implementation to a subagent or a fresh session, pass the readback (the extracted intent), not the raw annotated screenshot. A subagent handed the raw image with no framing reproduces exactly the literal-copy failure this skill exists to prevent, and the failure looks intermittent because it depends on whether a given run happened to delegate.
+**Carry the readback, not the raw image, into any delegated step.** If you hand the actual implementation to a subagent or a fresh session, pass the readback (the extracted intent), not the raw annotated screenshot. A subagent handed the raw image with no framing reproduces exactly the literal-copy failure this skill exists to prevent.
 
-**When the direction is open, do not invent one.** A common case is an arrow that pins the target plus a contentless gut-word ("off", "feels wrong", "cheap"): the mark says WHERE, the word gives no WHICH-WAY. Write `Direction: open` rather than guessing, and resolve it from the complaint, not from the annotation. Two routes: if the gut-word maps to a defect axis, use eye-of-the-beholder's complaint-to-axis table to derive the axis and scan the target area for the concrete problem ("off" points at the odd-one-out scan, "cheap" at the credibility scan); if the direction is genuinely wide open (the user dislikes it but no axis is implied), that is a taste-test case, so show a small fan of directions for the target area rather than committing to one guessed move. A guessed direction on a contentless complaint is the second most common way an upload goes wrong, after copying the annotation style.
+**When the direction is open, do not invent one.** A common case is an arrow that pins the target plus a contentless gut-word ("off", "feels wrong", "cheap"): the mark says WHERE, the word gives no WHICH-WAY. Write `Direction: open` rather than guessing, and resolve it from the complaint, not from the annotation. Two routes: if the gut-word maps to a defect axis, use eye-of-the-beholder's complaint-to-axis table to derive the axis and scan the target area for the concrete problem ("off" points at the odd-one-out scan, "cheap" at the credibility scan); if the direction is genuinely wide open (the user dislikes it but no axis is implied), that is a taste-test case, so show a small fan of directions for the target area rather than committing to one guessed move.
 
 ## The reference-scope check
 
