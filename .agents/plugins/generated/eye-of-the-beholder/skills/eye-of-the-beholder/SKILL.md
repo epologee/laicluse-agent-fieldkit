@@ -37,11 +37,28 @@ The solution is not more rules. The solution is looking more often, and looking 
 
 ## Interpreting user-provided screenshots
 
-Treat a user-provided screenshot as visual feedback, not as a design comp. Screenshot-tool markup such as CleanShot callouts, arrows, red circles, numbered stickers, highlighter strokes, hand-drawn boxes, and labels is a fat-marker sketch unless the user explicitly says to match it exactly.
+Treat a user-provided screenshot as visual feedback, not as a design comp. An uploaded image is a fat-marker sketch (a low-fidelity pointer at intent) unless the user states match-intent. Extract the complaint, target, direction, content, and topology; ignore the annotation layer (arrow colors, callout bubbles, CleanShot or Preview chrome, hand-drawn boxes, highlighter strokes). Never copy the annotation style into product UI.
 
-Extract the complaint, target area, direction, content, and constraints from annotations. Do not copy the annotation style into product UI: not the colors, bubbles, arrows, shadows, fonts, casing, z-layer, spacing, or composition. The operator is not acting as the designer by drawing the marks; they are pointing at what feels wrong. Your job is to translate that signal into a design that fits the existing product language, then inspect the rendered result.
+The full reading protocol (the interpretation readback before the first edit, the extract-versus-ignore split, the reference-scope check) lives in the sister skill **fat-marker-sketch**. When a user shares any image as a design cue, that skill leads; route to it and do not re-derive the protocol here. Treat the screenshot as a literal reference only when the user names match-intent ("pixel-perfect", "match this", "precies zo", "exact zo") or points at a real product element or Figma frame, which is **visual-inspection**'s job.
 
-Only treat a screenshot as a visual reference when the user names a real product element, Figma frame, brand asset, or exact-match intent ("pixel-perfect", "match this", "precies zo", "exact zo"). When the screenshot contains both product UI and annotation UI, separate them before judging: product pixels are evidence, annotation pixels are commentary.
+## From complaint to axis
+
+A user rarely reports a defect in the vocabulary of the fix. They report a feeling: "too busy", "it jumps", "looks cheap", "off", "cramped". That feeling is data, not noise. It names which axis to scan; it does not name the cause. Translate the complaint into an axis, run that axis's observation questions, and say which axis you are scanning so a wrong translation surfaces before you spend a round on it.
+
+| Complaint (the feeling) | Axis to scan | What to look for |
+|-------------------------|--------------|-----------------|
+| "too busy", "cluttered", "heavy", "noisy" | density / hierarchy | many competing accents, no dominant element, missing whitespace, everything the same weight |
+| "it jumps", "it shifts", "things move around" | layout stability | position change on a state change, reflow, hover jitter, a container that resizes to its content |
+| "cramped", "tight", "squished" | space (x/y) | padding below the comfortable ratio, sibling gaps collapsed, text pressing an edge |
+| "empty", "sparse", "lost" | space (x/y) | voids without purpose, weak grouping, no anchor for the eye |
+| "cheap", "generic", "looks AI-made", "template" | credibility | the vibe-coded tells: gradients, bordered-card grids, status dots, one-font defaults, decorative glow |
+| "off", "odd", "something's wrong" | odd-one-out | one element slightly different from its siblings: a stray radius, weight, color, or gap |
+| "hard to read", "can't tell them apart" | color / contrast | luminance delta below threshold, secondary text failing AA, adjacent surfaces too close |
+| "what do the colors mean?", "why is this one different?" | channel semantics | a visual channel carrying more than one meaning, or decoration masquerading as encoding |
+| "the motion is weird", "it snaps" | time (animation) | out-of-sync elements, teleporting content, wrong speed for the distance |
+| "doesn't fit us", "wrong feel" | direction | there is no documented standard to fit; this is a taste-test or art-director gap, not a single-view fix |
+
+The translation is a hypothesis: state it ("you said it feels busy, so I am scanning density and hierarchy") so a wrong mapping gets corrected at the axis, not the pixels.
 
 ## The core: observation before explanation
 
@@ -193,7 +210,7 @@ Add these questions to the scan in "How to look":
 
 13. **Can you read secondary text without squinting?** Metadata, timestamps, captions. If you instinctively enlarge it or lean closer, it fails WCAG AA. That is not a matter of taste but a structural error.
 
-14. **Warning and status colors.** Are "red for error" and "green for ok" clear enough? Failure text on a white background must pass AA, just like body text. Tailwind's `red-500` and `green-500` usually just barely fail on white. Darker (`red-700`, `green-700`) passes.
+14. **Warning and status colors.** Are "red for error" and "green for ok" clear enough? Failure text on a white background must pass AA, just like body text. Tailwind's `red-500` sits just under AA on white (about 3.8:1) and `green-500` fails badly (about 2.3:1). Darker (`red-700`, `green-700`) passes.
 
 ### Looking beneath the screenshot: the token system
 
@@ -242,6 +259,15 @@ A small script in Ruby, Python, or JavaScript saves hours of visual doubt. Run i
 This is especially a trap in dark mode. Absolute luminance values are small there (typically 0.003 - 0.02), so an absolute delta of 0.004 looks substantial in a spreadsheet but is perceptually zero. Always check the ratio, not the difference.
 
 **Light and dark are two designs, not one.** If you fill a role (`surface-1`) correctly in light and then make dark mode "somewhere dark", you have two different semantic systems that happen to share a name. Every role must carry the same meaning in both modes: if `surface-1` is the most prominent reading surface in light, it must be that in dark too. Use `light-dark(light, dark)` in CSS custom properties so both values live side by side in the same rule and do not drift apart.
+
+### One meaning per channel
+
+Color is the most abused encoding channel, but the rule is general: each visual channel (hue, fill pattern or hatching, stroke, opacity, position, size, shape) should carry exactly one meaning, and that meaning should be written down. Two failures recur, and both read as "I don't understand what I'm looking at":
+
+- **A channel carrying two meanings.** If hue already means "which campaign", it cannot also mean "which status". The viewer cannot tell which reading applies to a given mark, so the encoding collapses; the result is both ugly and unreadable. When a second dimension needs encoding, reach for a second channel, not a second meaning on the first.
+- **A channel carrying no meaning.** A color, a dot, a ribbon, or a hatching that varies without encoding anything is decoration pretending to be information. If removing it loses nothing, it was noise.
+
+The observation questions: how many distinct meanings does each channel carry here? For every color, pattern, and stroke on screen, can you state the one thing it encodes? Is there a written channel-to-meaning map? When the project has a `visual-language.md`, that map lives there (taste-test and art-director both record it); when it does not, the absence is itself a finding, because an unwritten mapping drifts every session.
 
 ## Credibility: the vibe-coded fingerprint
 
@@ -375,6 +401,29 @@ for (let n = 0; n < 50; n++) {
 
 **Rule of thumb**: if the user says "there is still a flicker/retreat/jitter" twice and you cannot see it, move from visual inspection to pixel sampling. Image view simply does not have the resolution for sub-5% movements.
 
+## Layout stability: the axis of unwanted motion
+
+Animation is intended motion. Layout stability is the absence of *unintended* motion, and it is a distinct axis with its own observation discipline. "It jumps", "it shifts", "things move around" is one of the most common defect reports, and it almost never means the animation is wrong; it means something moved that should have stayed put.
+
+The reflex is to treat a jump as a one-off positioning bug. It is usually structural: a layout that reserves no space for a state it will later enter. Scan for it deliberately.
+
+### Visual layout-stability observation
+
+Apply these across a state change (hover, focus, load, expand, content update, validation), not to a single resting screenshot:
+
+- **Does anything move that is not the thing being acted on?** Hovering a button should not shift its neighbors. A sibling that reflows on an unrelated interaction is the defect.
+- **Does a container resize to its content instead of reserving space?** A field that grows when an error appears, a card that changes height when a badge loads, a row that widens with longer text: each pushes everything after it. Reserve the space up front.
+- **On load, does content arrive in stages that reflow?** Text, then image, then the real values, each shoving the layout as it arrives. The final state can look perfect while the sequence to reach it jumps repeatedly.
+- **Does a control appear and disappear rather than enable and disable?** A button that is absent until valid, then present, changes the layout at the worst moment. Keep it present and toggle its enabled state so the geometry holds.
+- **Do equivalent siblings hold the same dimensions?** Nav bars, cells, headers that must read as one set: if their heights vary with content, they stop reading as a set and the row jitters.
+
+### Looking beneath: what reserves space and what does not
+
+- Elements that occupy space only when present (`display: none` toggled to block, conditionally rendered nodes) shift everything after them. Prefer reserving the space: `visibility: hidden` with the box retained, a `min-height`, a fixed-size slot, or a skeleton placeholder.
+- Intrinsic-size containers (width or height auto to content) move their neighbors whenever the content changes. When the neighbor relationship matters, give the container a stable size.
+- The load-time form has a name, cumulative layout shift, and its own specifics: reserve space for async content with explicit image dimensions, font fallback metrics, and placeholders for late values.
+- The fix is almost always "reserve the space the state will need", not "animate the jump". Animating an unwanted jump only produces a smooth unwanted jump.
+
 ## Foundation
 
 **Robin Williams (CRAP):** Contrast (make differences unmistakable or make them equal), Repetition (repeat visual choices for coherence), Alignment (everything must be visually connected to something else), Proximity (nearness implies relation).
@@ -400,6 +449,17 @@ Eye-of-the-beholder is diagnostic. It looks at what IS there and compares it to 
 **Build-time design discipline** (whichever skill in the session governs this) uses the standard while building. Per feature. The normative rules (transform/opacity-only for animations, WCAG contrast ratios, spacing scale) come from there or from canonical sources (WCAG, OKLCH, framework docs). Eye-of-the-beholder refers to those rules; the build-time discipline refers to art-director's artifacts for the concrete brand choices within those rules.
 
 The chain over time: art-director once (for a new product, brand refresh, first DS foundation), the build-time discipline per feature while building, eye-of-the-beholder per change afterward to verify visually. When eye-of-the-beholder signals a problem that does not sit in a single view but occurs system-wide (e.g. an uncoordinated spacing scale), that is a signal that art-director work is incomplete or missing.
+
+## When iteration does not converge
+
+Observation, fix, rescan is the right loop for a located defect. It is the wrong loop when the direction itself is wrong. When the same complaint survives two rounds of fixes ("still too busy", "still feels off", "nog steeds niet"), that is the signal that the problem is not a pixel value but the direction itself, and more pixel-pushing will not find it.
+
+Stop the loop. Do not start a third round of the same adjustment. Two routes out:
+
+- **If there is no agreed direction to verify against**, the gap is upstream: switch to **taste-test**, which elicits a direction by showing divergent options and reading the reaction, instead of guessing at the one the user is holding but cannot describe. eye-of-the-beholder verifies against a standard; if the standard does not exist, the standard has to be produced first.
+- **If the current attempt has accumulated too many patches to reason about**, reset from first principles: set the current version aside and rebuild the one screen from the direction, rather than adjusting a version whose problems compound. This is usually cheaper than the third, fourth, and fifth round it replaces.
+
+The tell: you are making the same *kind* of change again ("a bit more spacing", "a little calmer") and the reaction is not improving. Change the level, not the pixels.
 
 ## Common blind spots
 

@@ -20,6 +20,17 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.1.0]
+
+### Added
+
+- **`/taste-test`: elicit a visual direction without having to describe it.** For when you know what you like when you see it but cannot put it into words. It shows 3 to 5 genuinely divergent options side by side and reads which one you point at, offers reaction-card word-axes (calm vs energetic, warm vs clinical) to select from instead of composing your own, harvests current genre exemplars for transferable moves rather than copied pixels, and actively avoids the documented AI-slop tells. Each decision is recorded in a growing `visual-language.md` so the direction survives between sessions. It sits between `/art-director` (heavy, once) and `/eye-of-the-beholder` (diagnostic, per change).
+- **`/fat-marker-sketch`: read an uploaded screenshot as feedback, not as a literal design.** An uploaded image is treated as a low-fidelity sketch by default. It extracts the complaint, target, direction, content, and topology, and ignores the annotation layer (arrow colors, callout bubbles, CleanShot or Preview chrome, hand-drawn boxes). It writes an interpretation readback before the first edit and pins the single axis when a reference is being borrowed. Literal reproduction is the earned exception, reserved for stated match-intent, which routes to `/visual-inspection`.
+
+### Changed
+
+- **`/eye-of-the-beholder` gained a complaint-to-axis table, a layout-stability axis, a one-meaning-per-channel rule, and a convergence guard.** Gut-word complaints ("too busy", "it jumps", "looks cheap") now map to the axis to scan. Layout shift between states ("it jumps") is a first-class axis. Every visual channel (color, hatching, stroke, opacity) is expected to carry one documented meaning. When the same complaint survives two rounds, the skill routes to `/taste-test` or a first-principles reset instead of pushing more pixels. The screenshot-interpretation section now defers to `/fat-marker-sketch` as the single source for that protocol.
+
 ## [v2.0.1]
 
 ### Breaking
