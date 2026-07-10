@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.44]
+
+### Added
+
+- **Generated build-output can opt out of the Visual-trailer gate.** Mark generated files (a built docs site, adapter mirrors) with `git-discipline-generated=true` in `.gitattributes`, and a commit that only regenerates them no longer demands a fresh screenshot. Hand-authored UI (a component, a stylesheet) still requires the Visual trailer, so the gate keeps its teeth where a human designed the pixels. Repos without the attribute are unaffected.
+
 ## [v2.0.43]
 
 ### Fixed

@@ -236,7 +236,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.44",
+			"version": "2.0.45",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -251,9 +251,9 @@
 			"commandCount": 2,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.43",
-				"type": "Fixed",
-				"summary": "Default-branch helpers no longer guess main or master."
+				"version": "v2.0.44",
+				"type": "Added",
+				"summary": "Generated build-output can opt out of the Visual-trailer gate."
 			}
 		},
 		{
@@ -611,11 +611,11 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.44",
+			"packageVersion": "2.0.45",
 			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.43",
-			"type": "Fixed",
-			"summary": "Default-branch helpers no longer guess main or master.",
+			"version": "v2.0.44",
+			"type": "Added",
+			"summary": "Generated build-output can opt out of the Visual-trailer gate.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{

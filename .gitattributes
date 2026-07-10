@@ -1,0 +1,9 @@
+# Generated build-output. git-discipline treats these as generated, so a
+# content change that regenerates them does not demand a fresh Visual
+# screenshot. Hand-authored UI (docs/styles.css, docs/*.js) still counts.
+.agents/plugins/generated/** git-discipline-generated=true
+docs/agent-fieldkit/** git-discipline-generated=true
+docs/index.html git-discipline-generated=true
+docs/site-data.json git-discipline-generated=true
+docs/assets/og-card.svg git-discipline-generated=true
+docs/assets/og-image.png git-discipline-generated=true

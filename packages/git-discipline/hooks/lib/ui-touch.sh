@@ -43,6 +43,16 @@ if ! declare -F _vb_delta_files >/dev/null 2>&1; then
   . "$_VB_UI_LIB_DIR_CTX/vb-context.sh"
 fi
 
+# allow-comment: load-bearing WHY. Build-output marked git-discipline-generated in .gitattributes is exempt from the Visual/UI gate so regenerating it does not demand a fresh screenshot; hand-authored UI still counts. Opt-in per repo, backward-compatible when the attribute is absent.
+_vb_is_generated() {
+  local f="$1" attr
+  attr=$(git check-attr git-discipline-generated -- "$f" 2>/dev/null) || return 1
+  case "$attr" in
+    *": git-discipline-generated: true"|*": git-discipline-generated: set") return 0 ;;
+  esac
+  return 1
+}
+
 _vb_ui_touched_files() {
   local staged
   staged=$(_vb_delta_files)
@@ -54,6 +64,7 @@ _vb_ui_touched_files() {
   local matches=""
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
+    _vb_is_generated "$f" && continue  # allow-comment: generated output exempt from UI gate
     case "$f" in
       *.tsx|*.jsx|*.vue|*.svelte|*.html|*.htm) matches+="${matches:+$'\n'}$f" ;;
       *.css|*.scss|*.sass|*.less)              matches+="${matches:+$'\n'}$f" ;;

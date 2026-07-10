@@ -22,6 +22,7 @@ export GIT_SHIM_LOG_BODY=""                   # what "git log -1 --pretty=format
 export GIT_SHIM_HEAD_ABBREV="abc1234"         # what "git rev-parse --abbrev-ref HEAD" returns
 export GIT_SHIM_HEAD_SHORT="abc1234"          # what "git rev-parse --short HEAD" returns
 export GIT_SHIM_STAGED_BLOB_DIR=""            # directory containing files keyed by path; "git show :<path>" reads from here
+export GIT_SHIM_GENERATED_PATHS=""
 
 setup() {
   TMPDIR_TEST="$(mktemp -d)"
@@ -119,6 +120,16 @@ if [[ "${args[0]}" = "show" && "${args[1]}" =~ ^: ]]; then
     exit 0
   fi
   exit 128
+fi
+
+if [[ "${args[0]}" = "check-attr" ]]; then
+  attr_path="${args[*]: -1}"
+  if [[ " $GIT_SHIM_GENERATED_PATHS " == *" $attr_path "* ]]; then
+    printf '%s: git-discipline-generated: true\n' "$attr_path"
+  else
+    printf '%s: git-discipline-generated: unspecified\n' "$attr_path"
+  fi
+  exit 0
 fi
 
 # Fallback: real git (for anything not shimmed).

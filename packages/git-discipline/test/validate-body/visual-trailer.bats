@@ -91,6 +91,26 @@ Verified: operator-confirmed'
   [ "$status" -eq 0 ]
 }
 
+@test "_vb_is_ui_touch: plain .html file is UI-touched" {
+  export GIT_SHIM_DIFF_CACHED_OUTPUT="docs/page/index.html"
+  run bash -c "source '$VALIDATOR'; _vb_is_ui_touch"
+  [ "$status" -eq 0 ]
+}
+
+@test "_vb_is_ui_touch: generated .html (git-discipline-generated) is NOT UI-touched" {
+  export GIT_SHIM_DIFF_CACHED_OUTPUT="docs/page/index.html"
+  export GIT_SHIM_GENERATED_PATHS="docs/page/index.html"
+  run bash -c "source '$VALIDATOR'; _vb_is_ui_touch"
+  [ "$status" -eq 1 ]
+}
+
+@test "_vb_is_ui_touch: generated mark exempts only marked files; real UI still counts" {
+  export GIT_SHIM_DIFF_CACHED_OUTPUT="docs/page/index.html"$'\n'"src/App.tsx"
+  export GIT_SHIM_GENERATED_PATHS="docs/page/index.html"
+  run bash -c "source '$VALIDATOR'; _vb_is_ui_touch"
+  [ "$status" -eq 0 ]
+}
+
 @test "_vb_is_ui_touch: .erb file is UI-touched" {
   export GIT_SHIM_DIFF_CACHED_OUTPUT="app/views/layouts/application.html.erb"
   run bash -c "source '$VALIDATOR'; _vb_is_ui_touch"
