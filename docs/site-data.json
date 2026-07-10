@@ -587,7 +587,7 @@
 		},
 		{
 			"name": "saysay",
-			"version": "2.0.8",
+			"version": "2.0.9",
 			"category": "feedback",
 			"summary": "Speaks every response aloud on macOS, summarizing screen content into spoken language with a per-user phonetic dictionary and serialized, ducked playback across sessions.",
 			"support": [
@@ -604,7 +604,7 @@
 			"latestChange": {
 				"version": "v2.0.8",
 				"type": "Fixed",
-				"summary": "Speech context no longer guesses main or master."
+				"summary": "Codex speech now survives the tool call."
 			}
 		}
 	],
@@ -701,11 +701,11 @@
 		},
 		{
 			"plugin": "saysay",
-			"packageVersion": "2.0.8",
+			"packageVersion": "2.0.9",
 			"detailPath": "agent-fieldkit/saysay/",
 			"version": "v2.0.8",
 			"type": "Fixed",
-			"summary": "Speech context no longer guesses main or master.",
+			"summary": "Codex speech now survives the tool call.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{

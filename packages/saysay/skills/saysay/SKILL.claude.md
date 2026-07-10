@@ -1,5 +1,6 @@
 ---
 name: saysay
+user-invocable: true
 description: >-
   Speech mode: speak every response aloud via macOS say. /saysay off to exit.
 allowed-tools:
@@ -8,6 +9,7 @@ allowed-tools:
   - Bash(say-phonetic add *)
   - Bash(say-phonetic remove *)
   - Bash(say-phonetic list*)
+disable-model-invocation: true
 ---
 
 <post-update-broadcast>
@@ -90,7 +92,7 @@ source; direct `say` bypasses the serializer and violates this skill.
 
 Default speed is `-r 240`. Overridable: `echo "text" | saysay -r 180 --context "label"`.
 
-`saysay` blocks the shell until the message has finished speaking. In Codex, run it as the foreground command in an exec tool call and configure that call to yield after roughly 250 milliseconds (for example, `yield_time_ms: 250`). Once the tool returns a live session ID, continue the turn without polling or waiting for playback to finish. Do not append `&` and do not use shell backgrounding: Codex can terminate descendants when the shell call returns, which cuts off the audio before playback. The live foreground tool session keeps ownership of the speaker process while text output and the next prompt continue.
+`saysay` blocks the shell until the message has finished speaking, so ALWAYS run it without blocking your turn: background it however your runtime does that. In Claude Code, pass `run_in_background: true` on the Bash tool call; in a plain shell or any other agent, append `&` and do not wait on it. Either way, text output and the next prompt continue while speech plays, and the speaker process exits on its own when done.
 
 ### Session context
 

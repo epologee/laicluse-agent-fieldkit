@@ -22,6 +22,7 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 
 ### Fixed
 
+- **Codex speech now survives the tool call.** The Codex runtime keeps `saysay` attached to a live foreground tool session and yields control instead of launching it with shell `&`, which Codex can clean up before audio playback starts.
 - **Speech context no longer guesses `main` or `master`.** saysay reads Git's
   `origin/HEAD` metadata and falls back only to the current checkout when the
   metadata is absent, so branch context follows Git instead of naming

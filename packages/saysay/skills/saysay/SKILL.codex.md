@@ -1,5 +1,6 @@
 ---
 name: saysay
+user-invocable: true
 description: >-
   Speech mode: speak every response aloud via macOS say. /saysay off to exit.
 allowed-tools:
@@ -8,6 +9,7 @@ allowed-tools:
   - Bash(say-phonetic add *)
   - Bash(say-phonetic remove *)
   - Bash(say-phonetic list*)
+disable-model-invocation: true
 ---
 
 <post-update-broadcast>

@@ -48,7 +48,7 @@ chmod +x "$fakebin/afplay"
 git -C "$repo" init -q -b trunk
 git -C "$repo" config user.email t@t.t
 git -C "$repo" config user.name t
-git -C "$repo" commit -q --allow-empty -m init
+git -C "$repo" -c core.hooksPath=/dev/null commit -q --allow-empty -m init
 git -C "$repo" remote add origin git@github.com:example/vault.git
 git -C "$repo" update-ref refs/remotes/origin/trunk HEAD
 git -C "$repo" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
