@@ -52,7 +52,7 @@
 					<p class="lede">Makes visual work observable: screenshot, describe, measure, and compare layout, color, animation, and reference matches before declaring done.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.5</span>
+						<span>2.0.6</span>
 						<span>5 skills</span>
 					</div>
 				</div>
@@ -83,7 +83,7 @@
 <p>Compares a reference element and the result side by side. The user names the axis; the skill records the reference value, result value, match verdict, and screenshot evidence. It is stricter than an open visual review: every named axis stays open until it matches or the user accepts the deviation.</p>
 <h2 id="auto-trigger">Auto-trigger</h2>
 <p><code>/eye-of-the-beholder</code> activates DURING and AFTER layout CSS, color token, contrast, layout-stability, or animation work, to scan the rendered result. Also activates when a gut-word complaint (&quot;too busy&quot;, &quot;it jumps&quot;, &quot;looks cheap&quot;, &quot;off&quot;) needs translating into an axis to scan.</p>
-<p><code>/fat-marker-sketch</code> activates when the user shares an image (screenshot, mockup, capture) as a design cue, and especially when annotation markup (arrows, callouts, numbered circles, highlighter, CleanShot or Preview markup) is present. It governs how the incoming image is read as intent; after the resulting change is rendered, <code>/eye-of-the-beholder</code> scans the render.</p>
+<p><code>/fat-marker-sketch</code> is the reading discipline for any image shared as a design cue: treat it as feedback, not a literal design. Auto-selection is unreliable here, because a message that is only a dropped image has no text for the skill description to match, and no hook can detect an attachment to fire on. So the discipline is best kept primed as an always-on default rather than relied on to auto-load; on a wordless image, invoke <code>/fat-marker-sketch</code> explicitly. Accompanying text, and especially annotation markup (arrows, callouts, CleanShot or Preview chrome), makes auto-selection more likely. Once the resulting change is rendered, <code>/eye-of-the-beholder</code> scans the render.</p>
 <p><code>/taste-test</code> activates when the user reacts with a gut-word and no specification, when a new screen has no established direction and they cannot describe one, or when two rounds of pixel iteration have not converged. It is not for &quot;make it match this reference&quot; (that is visual-inspection) or full brand work (that is art-director).</p>
 <p><code>/art-director</code> activates only on explicit brand / art-direction / design-system-architecture requests, or at the start of a new product or brand refresh. Strict triage: it does NOT auto-fire on per-component or per-view design work.</p>
 <p><code>/visual-inspection</code> activates when a user points at a reference element and asks for the result to match it on one or more visual axes, with match-intent stated. It is not for general &quot;make it better&quot; review (that remains eye-of-the-beholder) or for reading an uploaded image as feedback (that is fat-marker-sketch).</p>

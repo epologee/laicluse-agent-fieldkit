@@ -45,7 +45,7 @@ Compares a reference element and the result side by side. The user names the axi
 
 `/eye-of-the-beholder` activates DURING and AFTER layout CSS, color token, contrast, layout-stability, or animation work, to scan the rendered result. Also activates when a gut-word complaint ("too busy", "it jumps", "looks cheap", "off") needs translating into an axis to scan.
 
-`/fat-marker-sketch` activates when the user shares an image (screenshot, mockup, capture) as a design cue, and especially when annotation markup (arrows, callouts, numbered circles, highlighter, CleanShot or Preview markup) is present. It governs how the incoming image is read as intent; after the resulting change is rendered, `/eye-of-the-beholder` scans the render.
+`/fat-marker-sketch` is the reading discipline for any image shared as a design cue: treat it as feedback, not a literal design. Auto-selection is unreliable here, because a message that is only a dropped image has no text for the skill description to match, and no hook can detect an attachment to fire on. So the discipline is best kept primed as an always-on default rather than relied on to auto-load; on a wordless image, invoke `/fat-marker-sketch` explicitly. Accompanying text, and especially annotation markup (arrows, callouts, CleanShot or Preview chrome), makes auto-selection more likely. Once the resulting change is rendered, `/eye-of-the-beholder` scans the render.
 
 `/taste-test` activates when the user reacts with a gut-word and no specification, when a new screen has no established direction and they cannot describe one, or when two rounds of pixel iteration have not converged. It is not for "make it match this reference" (that is visual-inspection) or full brand work (that is art-director).
 
