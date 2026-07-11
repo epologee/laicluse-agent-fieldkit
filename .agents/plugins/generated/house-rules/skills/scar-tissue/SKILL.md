@@ -16,6 +16,7 @@ A meandering, corrected path generates it. Watch for it in every artifact, not j
 - **Changelogs**: an entry that undoes the entry above it; several versions churning one misfeature.
 - **Commit history**: the tried-X, reverted, tried-Y trail instead of one clean atomic commit that delivers the capability.
 - **PR descriptions**: a narration of the fight instead of the capability delivered.
+- **Specs, issues, design docs**: a section that narrates your own deliberation or catalogues the decisions you deliberately left open ("what I did not decide, and why"). It is the cowboy novel whose preface explains it is not about an astronaut who never went to the moon. Leaving a choice open means omitting it; the reader silently fills that space. Enumerated non-decisions read as scope and send the next reader down a track that was never real.
 - **Tests**: a spec bent to accommodate churn, or pinning behaviour a past wound left behind.
 
 ## Invoked on a suspected scar: look before you cut

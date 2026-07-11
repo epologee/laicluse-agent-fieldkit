@@ -521,7 +521,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.7",
+			"version": "2.0.8",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -709,6 +709,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
+			"plugin": "house-rules",
+			"packageVersion": "2.0.8",
+			"detailPath": "agent-fieldkit/house-rules/",
+			"version": "v2.0.6",
+			"type": "Changed",
+			"summary": "Testing doctrine now says default branch.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
+		},
+		{
 			"plugin": "self-improvement",
 			"packageVersion": "2.0.8",
 			"detailPath": "agent-fieldkit/self-improvement/",
@@ -725,15 +734,6 @@
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
-		},
-		{
-			"plugin": "house-rules",
-			"packageVersion": "2.0.7",
-			"detailPath": "agent-fieldkit/house-rules/",
-			"version": "v2.0.6",
-			"type": "Changed",
-			"summary": "Testing doctrine now says default branch.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{
 			"plugin": "eye-of-the-beholder",
