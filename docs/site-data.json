@@ -170,7 +170,7 @@
 		},
 		{
 			"name": "bonsai",
-			"version": "2.0.31",
+			"version": "2.0.32",
 			"category": "workflow",
 			"summary": "Creates, sets up, and tears down git worktrees with explicit safety checks around unmerged work.",
 			"support": [
@@ -185,9 +185,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.31",
+				"version": "v2.0.32",
 				"type": "Fixed",
-				"summary": "Default-branch lookup no longer guesses branch names."
+				"summary": "Local-only repositories use their configured default branch."
 			}
 		},
 		{
@@ -236,7 +236,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.45",
+			"version": "2.0.46",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -251,9 +251,9 @@
 			"commandCount": 2,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.44",
-				"type": "Added",
-				"summary": "Generated build-output can opt out of the Visual-trailer gate."
+				"version": "v2.0.46",
+				"type": "Fixed",
+				"summary": "Local-only repositories can merge and rebase to their configured default branch."
 			}
 		},
 		{
@@ -302,7 +302,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.13",
+			"version": "2.0.14",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -317,9 +317,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.13",
+				"version": "v2.0.14",
 				"type": "Fixed",
-				"summary": "Branch-diff snippets no longer guess main or master."
+				"summary": "Branch review works without a remote."
 			}
 		},
 		{
@@ -499,7 +499,7 @@
 		},
 		{
 			"name": "rover",
-			"version": "2.0.23",
+			"version": "2.0.24",
 			"category": "autonomy",
 			"summary": "Dispatches autonomous work with a phase machine, decision framework, review gates, and verification evidence.",
 			"support": [
@@ -514,9 +514,9 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.23",
+				"version": "v2.0.24",
 				"type": "Fixed",
-				"summary": "Pride review ranges no longer infer main or master."
+				"summary": "Pride review works without a remote."
 			}
 		},
 		{
@@ -611,11 +611,11 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.45",
+			"packageVersion": "2.0.46",
 			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.44",
-			"type": "Added",
-			"summary": "Generated build-output can opt out of the Visual-trailer gate.",
+			"version": "v2.0.46",
+			"type": "Fixed",
+			"summary": "Local-only repositories can merge and rebase to their configured default branch.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
@@ -637,6 +637,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
+			"plugin": "bonsai",
+			"packageVersion": "2.0.32",
+			"detailPath": "agent-fieldkit/bonsai/",
+			"version": "v2.0.32",
+			"type": "Fixed",
+			"summary": "Local-only repositories use their configured default branch.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
+		},
+		{
 			"plugin": "how-plugins-work",
 			"packageVersion": "2.0.32",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
@@ -646,21 +655,12 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{
-			"plugin": "bonsai",
-			"packageVersion": "2.0.31",
-			"detailPath": "agent-fieldkit/bonsai/",
-			"version": "v2.0.31",
-			"type": "Fixed",
-			"summary": "Default-branch lookup no longer guesses branch names.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
-		},
-		{
 			"plugin": "rover",
-			"packageVersion": "2.0.23",
+			"packageVersion": "2.0.24",
 			"detailPath": "agent-fieldkit/rover/",
-			"version": "v2.0.23",
+			"version": "v2.0.24",
 			"type": "Fixed",
-			"summary": "Pride review ranges no longer infer main or master.",
+			"summary": "Pride review works without a remote.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"
 		},
 		{
@@ -674,11 +674,11 @@
 		},
 		{
 			"plugin": "intervision",
-			"packageVersion": "2.0.13",
+			"packageVersion": "2.0.14",
 			"detailPath": "agent-fieldkit/intervision/",
-			"version": "v2.0.13",
+			"version": "v2.0.14",
 			"type": "Fixed",
-			"summary": "Branch-diff snippets no longer guess main or master.",
+			"summary": "Branch review works without a remote.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{

@@ -715,8 +715,10 @@ function gitOutput(repoRoot, args) {
 function defaultBranchName(repoRoot) {
 	const remoteHead = gitOutput(repoRoot, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"]);
 	if (remoteHead) return remoteHead.replace(/^origin\//, "");
+	const configured = gitOutput(repoRoot, ["config", "--get", "init.defaultBranch"]);
+	if (configured && gitOutput(repoRoot, ["rev-parse", "--verify", `refs/heads/${configured}`])) return configured;
 	const localHead = gitOutput(repoRoot, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
-	return localHead || "main";
+	return localHead || configured || "HEAD";
 }
 
 function build(repoRoot) {

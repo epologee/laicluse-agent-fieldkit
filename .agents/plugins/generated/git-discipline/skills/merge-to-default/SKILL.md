@@ -2,7 +2,7 @@
 name: merge-to-default
 description: >-
   Merge the current branch to the repo's default branch with git-discipline checks and a no-ff merge commit.
-allowed-tools: Bash(git symbolic-ref:*), Bash(git rev-parse:*), Bash(git status:*), Bash(git checkout:*), Bash(git merge:*), Bash(git commit:*), Bash(git rebase:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-remote:*), Bash(git remote:*), Bash(git branch:*), Bash(git worktree:*), Skill(git-discipline:commit-all-the-things), Skill(git-discipline:rebase-latest-default)
+allowed-tools: Bash(git symbolic-ref:*), Bash(git config:*), Bash(git rev-parse:*), Bash(git status:*), Bash(git checkout:*), Bash(git merge:*), Bash(git commit:*), Bash(git rebase:*), Bash(git log:*), Bash(git diff:*), Bash(git ls-remote:*), Bash(git remote:*), Bash(git branch:*), Bash(git worktree:*), Skill(git-discipline:commit-all-the-things), Skill(git-discipline:rebase-latest-default)
 ---
 
 # /git-discipline:merge-to-default
@@ -25,9 +25,17 @@ Determine the name of the default branch (`$DEFAULT`):
 
 ```bash
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+if [ -z "$DEFAULT" ]; then
+  CONFIGURED_DEFAULT=$(git config --get init.defaultBranch 2>/dev/null || true)
+  if [ -n "$CONFIGURED_DEFAULT" ] && git rev-parse --verify "refs/heads/$CONFIGURED_DEFAULT" >/dev/null 2>&1; then
+    DEFAULT=$CONFIGURED_DEFAULT
+  fi
+fi
 ```
 
-If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD. Run git remote set-head origin --auto or merge an explicit branch manually.`
+This preserves repository metadata as the first authority while still supporting a local-only repository: `init.defaultBranch` is Git configuration, not a hard-coded `main` or `master` guess, and it is accepted only when the corresponding local branch exists.
+
+If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD or init.defaultBranch. Configure Git's default branch or merge an explicit branch manually.`
 
 ### 0b: Current branch
 

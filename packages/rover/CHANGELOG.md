@@ -5,6 +5,12 @@ once per machine whenever the installed `version` in
 `.claude-plugin/plugin.json` changes. Header version numbers are informational;
 the broadcast is positional.
 
+## [v2.0.24]
+
+### Fixed
+
+- **Pride review works without a remote.** Its default range now falls back from `origin/HEAD` to an existing local `init.defaultBranch` and uses the correct local ref in the diff range.
+
 ## [v2.0.23]
 
 ### Fixed

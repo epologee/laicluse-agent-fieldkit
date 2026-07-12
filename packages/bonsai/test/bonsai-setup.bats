@@ -10,6 +10,7 @@ setup() {
   FIX="$BATS_TEST_TMPDIR/proj"
   mkdir -p "$FIX"
   git -C "$FIX" init -q -b main
+  git -C "$FIX" config init.defaultBranch main
   git -C "$FIX" config user.email t@t.t
   git -C "$FIX" config user.name t
   git -C "$FIX" commit -q --allow-empty -m init

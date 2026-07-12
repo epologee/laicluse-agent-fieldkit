@@ -33,7 +33,7 @@ node "$BONSAI" teardown <worktree|branch> --repo "<root>" --json             # r
 ```
 
 A worktree is removed only when it is integrated into the Git default branch
-resolved from `origin/HEAD` when available, or when it is clean with nothing
+resolved from `origin/HEAD`, or from `init.defaultBranch` when that branch exists only locally, or when it is clean with nothing
 ahead of that default. Otherwise teardown keeps it and returns `removed: false`
 with a reason. `--dry-run` reports the same classification and warnings without
 removing anything. `--force` overrides the gate and also deletes an unmerged

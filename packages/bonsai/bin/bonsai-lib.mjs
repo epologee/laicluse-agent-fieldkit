@@ -188,25 +188,25 @@ function remoteDefaultBranch(repo, remote = 'origin') {
   }
 }
 
-function localHeadBranch(repo) {
+function configuredDefaultBranch(repo) {
+  let configured;
   try {
-    return git(repo, ['symbolic-ref', '--quiet', '--short', 'HEAD']).trim() || null;
+    configured = git(repo, ['config', '--get', 'init.defaultBranch']).trim();
   } catch {
     return null;
   }
+  return configured && refExists(repo, `refs/heads/${configured}`) ? configured : null;
 }
 
-export function defaultBranch(repo, { allowHeadFallback = false } = {}) {
+export function defaultBranch(repo) {
   const remoteDefault = remoteDefaultBranch(repo);
   if (remoteDefault) return remoteDefault;
-  return allowHeadFallback ? localHeadBranch(repo) : null;
+  return configuredDefaultBranch(repo);
 }
 
-// Freshest default branch: prefer origin/<default> only when origin is strictly
-// ahead of the local ref; otherwise the local ref. Falls back to HEAD.
 export function resolveBase(repo) {
-  const def = defaultBranch(repo, { allowHeadFallback: true });
-  if (!def) return 'HEAD';
+  const def = defaultBranch(repo);
+  if (!def) throw new Error(`cannot determine the default branch for ${repo} from origin/HEAD or init.defaultBranch`);
   const localRef = `refs/heads/${def}`;
   const remoteRef = `refs/remotes/origin/${def}`;
   const hasLocal = refExists(repo, localRef);
@@ -399,7 +399,8 @@ export function classifyTeardown({ repo, target }) {
     || worktrees.find((w) => canonPath(w.path) === guess);
   if (!entry) throw new Error(`no worktree or branch matching ${target} in ${repo}`);
   const { path: worktree, branch } = entry;
-  const def = defaultBranch(repo, { allowHeadFallback: true });
+  const def = defaultBranch(repo);
+  if (!def) throw new Error(`cannot determine the default branch for ${repo} from origin/HEAD or init.defaultBranch`);
   const base = integrationBase(repo, def);
   const dirty = git(worktree, ['status', '--porcelain']).trim().length > 0;
   const mergedIntoBase = base && branch ? isAncestor(repo, branch, base) : false;
