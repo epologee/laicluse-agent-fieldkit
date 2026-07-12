@@ -8,6 +8,7 @@ setup() {
   FIX="$BATS_TEST_TMPDIR/proj"
   mkdir -p "$FIX"
   git -C "$FIX" init -q -b main
+  git -C "$FIX" config init.defaultBranch main
   git -C "$FIX" config user.email t@t.t
   git -C "$FIX" config user.name t
   git -C "$FIX" commit -q --allow-empty -m init
@@ -88,17 +89,18 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   [ "$(git -C "$FIX" rev-parse from-origin-head)" != "$main_sha" ]
 }
 
-@test "create uses current HEAD when origin HEAD is absent instead of local main" {
+@test "create uses configured local default when origin HEAD is absent" {
   main_sha="$(git -C "$FIX" rev-parse main)"
   git -C "$FIX" checkout -q -b trunk
   git -C "$FIX" commit -q --allow-empty -m "trunk base without remote head"
   trunk_sha="$(git -C "$FIX" rev-parse trunk)"
+  git -C "$FIX" config init.defaultBranch main
 
-  run run_bonsai create from-current-head --repo "$FIX" --json
+  run run_bonsai create from-configured-default --repo "$FIX" --json
   [ "$status" -eq 0 ]
-  echo "$output" | grep -q 'trunk'
-  [ "$(git -C "$FIX" rev-parse from-current-head)" = "$trunk_sha" ]
-  [ "$(git -C "$FIX" rev-parse from-current-head)" != "$main_sha" ]
+  echo "$output" | grep -q 'main'
+  [ "$(git -C "$FIX" rev-parse from-configured-default)" = "$main_sha" ]
+  [ "$(git -C "$FIX" rev-parse from-configured-default)" != "$trunk_sha" ]
 }
 
 @test "create refuses a vaultsync managed checkout through the vaultsync CLI" {

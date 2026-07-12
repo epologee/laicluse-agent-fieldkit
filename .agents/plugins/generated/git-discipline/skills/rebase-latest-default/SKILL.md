@@ -17,9 +17,17 @@ Determine the default branch name (`$DEFAULT`):
 
 ```bash
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+if [ -z "$DEFAULT" ]; then
+  CONFIGURED_DEFAULT=$(git config --get init.defaultBranch 2>/dev/null || true)
+  if [ -n "$CONFIGURED_DEFAULT" ] && git rev-parse --verify "refs/heads/$CONFIGURED_DEFAULT" >/dev/null 2>&1; then
+    DEFAULT=$CONFIGURED_DEFAULT
+  fi
+fi
 ```
 
-If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD. Run git remote set-head origin --auto or pass an explicit target.`
+This preserves repository metadata as the first authority while still supporting a local-only repository: `init.defaultBranch` is Git configuration, not a hard-coded `main` or `master` guess, and it is accepted only when the corresponding local branch exists.
+
+If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD or init.defaultBranch. Configure Git's default branch or pass an explicit target.`
 
 ### 0b: Determine the rebase target
 

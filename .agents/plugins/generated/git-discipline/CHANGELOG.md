@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.46]
+
+### Fixed
+
+- **Local-only repositories can merge and rebase to their configured default branch.** `merge-to-default` and `rebase-latest-default` still prefer `origin/HEAD`, then fall back to Git's `init.defaultBranch` when that branch exists locally. This restores repositories without a remote without reviving hard-coded `main` or `master` guesses.
+
 ## [v2.0.44]
 
 ### Added

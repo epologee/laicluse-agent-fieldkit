@@ -60,9 +60,12 @@ For a branch or single commit, replace the diff block with the concrete range:
 ```bash
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
 if [ -z "$DEFAULT" ]; then
-  echo "cannot determine default branch from origin/HEAD; pass an explicit range" >&2
-  exit 1
+  CONFIGURED_DEFAULT=$(git config --get init.defaultBranch 2>/dev/null || true)
+  if [ -n "$CONFIGURED_DEFAULT" ] && git rev-parse --verify "refs/heads/$CONFIGURED_DEFAULT" >/dev/null 2>&1; then
+    DEFAULT=$CONFIGURED_DEFAULT
+  fi
 fi
+[ -n "$DEFAULT" ] || { echo "cannot determine default branch from origin/HEAD or init.defaultBranch; pass an explicit range" >&2; exit 1; }
 {
   printf 'Peer review this branch diff. Report findings first and do not edit files.\n\n'
   git diff --no-ext-diff "$DEFAULT"...HEAD

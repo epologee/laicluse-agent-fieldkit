@@ -42,8 +42,8 @@ node "$BONSAI" create <branch> --repo "<canonical checkout root>" --json
 node "$BONSAI" setup  "<worktree path from create>" --repo "<canonical checkout root>" --json
 ```
 
-`create` resolves the freshest Git default branch from `origin/HEAD` when
-available, asks the vaultsync CLI whether the source checkout is managed, makes
+`create` resolves the freshest Git default branch from `origin/HEAD`, or from
+`init.defaultBranch` when the configured branch exists only locally. It asks the vaultsync CLI whether the source checkout is managed, makes
 `<root>/worktrees/<dir>` (slashes in the branch flatten to dashes in the dir),
 refuses a branch that already exists, and prints `{ worktree, branch, base,
 baseSha, port }`. `setup` copies the `.bonsai`-listed files from the canonical

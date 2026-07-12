@@ -81,9 +81,12 @@ Pick by what just happened. All three run through `codex exec`, and they combine
 ```bash
 DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
 if [ -z "$DEFAULT" ]; then
-  echo "cannot determine default branch from origin/HEAD; pass an explicit --base" >&2
-  exit 1
+  CONFIGURED_DEFAULT=$(git config --get init.defaultBranch 2>/dev/null || true)
+  if [ -n "$CONFIGURED_DEFAULT" ] && git rev-parse --verify "refs/heads/$CONFIGURED_DEFAULT" >/dev/null 2>&1; then
+    DEFAULT=$CONFIGURED_DEFAULT
+  fi
 fi
+[ -n "$DEFAULT" ] || { echo "cannot determine default branch from origin/HEAD or init.defaultBranch; pass an explicit --base" >&2; exit 1; }
 codex exec --model "$CODEX_PEER_MODEL" review --uncommitted     # staged, unstaged, and untracked work
 codex exec --model "$CODEX_PEER_MODEL" review --base "$DEFAULT" # everything on this branch against default
 codex exec --model "$CODEX_PEER_MODEL" review --commit <sha>    # the changes in one commit

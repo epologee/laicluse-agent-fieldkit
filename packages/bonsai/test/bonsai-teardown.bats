@@ -9,6 +9,7 @@ setup() {
   FIX="$BATS_TEST_TMPDIR/proj"
   mkdir -p "$FIX"
   git -C "$FIX" init -q -b main
+  git -C "$FIX" config init.defaultBranch main
   git -C "$FIX" config user.email t@t.t
   git -C "$FIX" config user.name t
   git -C "$FIX" commit -q --allow-empty -m init
@@ -190,14 +191,18 @@ bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   ! echo "$output" | grep -qiE 'orphan|unpushed|advanced|rebase'
 }
 
-@test "teardown uses current HEAD when origin HEAD is absent instead of local main" {
+@test "teardown uses configured local default when origin HEAD is absent" {
   git -C "$FIX" checkout -q -b trunk
   git -C "$FIX" commit -q --allow-empty -m "trunk base without remote head"
+  git -C "$FIX" config init.defaultBranch trunk
+  git -C "$FIX" checkout -q main
 
   mkdir -p "$FIX/worktrees"
   git -C "$FIX" worktree add -q -b trunk-current-wt "$FIX/worktrees/trunk-current-wt" trunk
   git -C "$FIX/worktrees/trunk-current-wt" commit -q --allow-empty -m "feature work"
+  git -C "$FIX" checkout -q trunk
   git -C "$FIX" merge -q --ff-only trunk-current-wt
+  git -C "$FIX" checkout -q main
 
   run bonsai teardown trunk-current-wt --repo "$FIX" --dry-run --json
   [ "$status" -eq 0 ]
