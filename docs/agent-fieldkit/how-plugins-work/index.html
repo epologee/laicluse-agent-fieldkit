@@ -52,7 +52,7 @@
 					<p class="lede">Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.32</span>
+						<span>2.0.33</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -66,7 +66,7 @@
 <h3 id="how-plugins-work"><code>/how-plugins-work</code></h3>
 <p>Loads the reference: how slash-command names map to plugins, how sub-skills resolve, when the <code>plugin:skill</code> form is required, how shared skills can be packaged for multiple agents, and where plugin caches fit.</p>
 <h3 id="test-before-push"><code>/test-before-push</code></h3>
-<p>Canonical procedure for rolling multi-agent marketplace changes out to Claude Code and Codex locally before pushing to GitHub.</p>
+<p>Canonical procedure for rolling multi-agent marketplace changes out to Claude Code and Codex locally before declaring the work complete, whether or not a push follows.</p>
 <h3 id="restart-claude-agents-claude-code"><code>/restart-claude-agents</code> (Claude Code)</h3>
 <p>Restarts running Claude Code background agents so a fresh process loads updated plugins, preserving each agent's conversation, permissions, and goal. The companion to <code>/test-before-push</code>: where that tests plugin changes before pushing, this rolls them into agents already running the old version. Lists the running background agents first, restarts the idle ones by default, takes agent ids to target specific ones, and never touches interactive sessions.</p>
 <h2 id="auto-trigger">Auto-trigger</h2>

@@ -148,7 +148,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.32",
+			"version": "2.0.33",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -163,9 +163,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.32",
+				"version": "v2.0.33",
 				"type": "Changed",
-				"summary": "Peer plugin dependencies now have an installed-layout test rule."
+				"summary": "Multi-agent plugin work now closes both runtime loops before completion."
 			}
 		},
 		{
@@ -647,11 +647,11 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.32",
+			"packageVersion": "2.0.33",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
-			"version": "v2.0.32",
+			"version": "v2.0.33",
 			"type": "Changed",
-			"summary": "Peer plugin dependencies now have an installed-layout test rule.",
+			"summary": "Multi-agent plugin work now closes both runtime loops before completion.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{

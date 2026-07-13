@@ -20,6 +20,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.33]
+
+### Changed
+
+- **Multi-agent plugin work now closes both runtime loops before completion.** The general reference and `/test-before-push` require local installation and payload verification in both Claude Code and Codex even when no push is planned; intentional single-agent packages remain the only exception.
+
 ## [v2.0.32]
 
 ### Changed

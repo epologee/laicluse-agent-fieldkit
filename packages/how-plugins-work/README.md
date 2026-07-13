@@ -24,8 +24,7 @@ packaged for multiple agents, and where plugin caches fit.
 
 ### `/test-before-push`
 
-Canonical procedure for rolling multi-agent marketplace changes out to Claude
-Code and Codex locally before pushing to GitHub.
+Canonical procedure for rolling multi-agent marketplace changes out to Claude Code and Codex locally before declaring the work complete, whether or not a push follows.
 
 ### `/restart-claude-agents` (Claude Code)
 

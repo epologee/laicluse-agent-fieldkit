@@ -1,22 +1,19 @@
 ---
 name: test-before-push
 description: >-
-  Test multi-agent plugin marketplace changes locally in Claude Code and Codex before pushing.
+  Activate and verify multi-agent plugin changes locally in Claude Code and Codex before completion or push.
 ---
 
 # Test before push
 
-One way, always. No choices, no options, no "option 1 or option 2". When you
-want to test a marketplace plugin in a fresh agent session before pushing, run
-the procedure below exactly.
+One way, always. No choices, no options, no "option 1 or option 2". Run this procedure after every multi-agent marketplace plugin change before declaring it complete, whether or not a push is planned.
 
 ## When to use
 
 - You are in a marketplace repo with `.claude-plugin/marketplace.json` in the root.
 - The repo has generated Codex adapters under `.agents/plugins/`.
-- You want the current committed plugin version loadable in another Claude Code
-  or Codex session.
-- Pushing is not on the table yet.
+- You want the current plugin version loadable in another Claude Code or Codex session.
+- You are completing the change locally or preparing it for a later push.
 
 Do not use for user-level skills in `~/.claude/skills/` or `~/.codex/skills`;
 those load through the user-level skill path, not a marketplace install.
@@ -33,8 +30,7 @@ git status --short
 [ ! -x bin/plugin-adapters ] || bin/plugin-adapters check .
 ```
 
-All checks must pass. If `git status --short` prints unrelated work, stop and
-commit or isolate it first; the install snapshots the working tree.
+All checks must pass. If `git status --short` prints unrelated work, stop and isolate it first; the install snapshots the working tree. The current task's own changes may remain when repo policy requires runtime activation before the final commit.
 
 ## Claude Code install
 

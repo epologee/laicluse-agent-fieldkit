@@ -119,6 +119,19 @@ Important differences from Claude:
   newer generated manifest while the installed version still reports the old
   value; refresh the install before treating the new skill text as live.
 
+## Multi-agent runtime closeout
+
+A change to a plugin that ships to both Claude Code and Codex is not complete when only the host performing the edit sees it. Run this closeout after every such change, whether or not a push is planned; updating only the current agent runtime is incomplete.
+
+1. Build and check generated adapters before installing either runtime.
+2. Refresh Claude Code with `claude plugins update <plugin>@<marketplace>` when installed, or `claude plugins install <plugin>@<marketplace>` on first install.
+3. Refresh Codex with `codex plugin add <plugin>@<marketplace>`.
+4. Verify Claude's version and active `installPath` in `~/.claude/plugins/installed_plugins.json`, and verify Codex's version, enabled state, and active source with `codex plugin list --json`.
+5. Compare at least one changed runtime file in each active install with its source or generated artifact; matching manifest versions alone do not prove the payload arrived.
+6. Report that already-running Claude sessions need `/reload-plugins` or a restart and that already-running Codex sessions need a restart before they use the refreshed plugin.
+
+The only exception is a plugin that is intentionally single-agent. Prove that exception from the adapter check and the relevant marketplace catalog instead of inferring it from the agent running the current session. The `test-before-push` skill owns the complete command sequence; despite its historical name, use it for every multi-agent runtime closeout, not only when a push is imminent.
+
 ## Skills CLI versus plugin installs
 
 The `skills` CLI and the native plugin systems solve different problems. The `skills` CLI, for example `npx skills add <repo>`, can install plain `SKILL.md` files for Codex when Codex is selected as the target agent; the install may be project-local, such as under `.agents/skills/`, or user-level through the CLI's global install option. That is the lean path when the workflow is pure instructions and the active agent already has every tool it needs.
