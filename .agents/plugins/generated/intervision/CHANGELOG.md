@@ -20,6 +20,14 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.16]
+
+### Fixed
+
+- **Codex now gives Claude enough time to finish peer reviews.** A silent but
+  live Claude process is treated as working, gets at least 20 minutes, and is
+  never interrupted or declared blocked on elapsed time alone.
+
 ## [v2.0.14]
 
 ### Fixed

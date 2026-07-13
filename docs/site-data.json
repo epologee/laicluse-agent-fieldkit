@@ -302,7 +302,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.15",
+			"version": "2.0.16",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -317,9 +317,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.14",
+				"version": "v2.0.16",
 				"type": "Fixed",
-				"summary": "Branch review works without a remote."
+				"summary": "Codex now gives Claude enough time to finish peer reviews."
 			}
 		},
 		{
@@ -674,11 +674,11 @@
 		},
 		{
 			"plugin": "intervision",
-			"packageVersion": "2.0.15",
+			"packageVersion": "2.0.16",
 			"detailPath": "agent-fieldkit/intervision/",
-			"version": "v2.0.14",
+			"version": "v2.0.16",
 			"type": "Fixed",
-			"summary": "Branch review works without a remote.",
+			"summary": "Codex now gives Claude enough time to finish peer reviews.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
