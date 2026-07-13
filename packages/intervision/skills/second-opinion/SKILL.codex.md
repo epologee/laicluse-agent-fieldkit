@@ -31,6 +31,19 @@ If `claude` is missing, say so plainly and stop. There is no peer to ask, and
 pretending otherwise wastes the operator's time. This is the one hard
 precondition.
 
+## Give Claude time to think
+
+Claude is materially slower than Codex on substantial reviews and may produce
+no partial output for many minutes. A silent but live `claude -p` process is
+working, not stalled. Let it run to completion and keep polling the same process
+session without interrupting it.
+
+Allow at least 20 minutes before investigating a timeout. After 20 minutes,
+continue waiting while the process is alive unless there is concrete failure
+evidence such as a non-zero exit, an authentication or network error, or a dead
+process. Silence and elapsed time alone are never failure evidence. Keep the
+operator informed during the wait at the host's normal progress-update cadence.
+
 ## Three ways to get the second opinion
 
 Pick by what just happened. All three run through `claude -p`, and they
@@ -115,7 +128,9 @@ The round-trip only earns its cost if the handoff is honest.
   on a sentence, paragraph, PR body, or release note, hand the whole text to the
   peer. Do not narrow a failed peer call to one suspicious word and then report
   the result as a second opinion on the full wording. If the full-scope peer
-  call cannot produce a usable answer, say the second opinion is blocked.
+  call exits with concrete failure evidence and cannot produce a usable answer,
+  say the second opinion is blocked. A live process that has not answered yet
+  is not blocked.
 - **Read for the disagreement, not the agreement.** The peer agreeing is cheap
   and tells you little. The signal is where its independent read diverges from
   yours.

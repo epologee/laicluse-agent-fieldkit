@@ -280,7 +280,7 @@
 		},
 		{
 			"name": "eye-of-the-beholder",
-			"version": "2.0.6",
+			"version": "2.0.8",
 			"category": "review",
 			"summary": "Makes visual work observable: screenshot, describe, measure, and compare layout, color, animation, and reference matches before declaring done.",
 			"support": [
@@ -302,7 +302,7 @@
 		},
 		{
 			"name": "intervision",
-			"version": "2.0.15",
+			"version": "2.0.17",
 			"category": "review",
 			"summary": "Brings another coding agent in as a peer reviewer for code, plans, wording, or design choices.",
 			"support": [
@@ -317,9 +317,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.14",
+				"version": "v2.0.16",
 				"type": "Fixed",
-				"summary": "Branch review works without a remote."
+				"summary": "Codex now gives Claude enough time to finish peer reviews."
 			}
 		},
 		{
@@ -521,7 +521,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.7",
+			"version": "2.0.9",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -664,6 +664,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"
 		},
 		{
+			"plugin": "intervision",
+			"packageVersion": "2.0.17",
+			"detailPath": "agent-fieldkit/intervision/",
+			"version": "v2.0.16",
+			"type": "Fixed",
+			"summary": "Codex now gives Claude enough time to finish peer reviews.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
+		},
+		{
 			"plugin": "anger-management",
 			"packageVersion": "2.0.16",
 			"detailPath": "agent-fieldkit/anger-management/",
@@ -671,15 +680,6 @@
 			"type": "Changed",
 			"summary": "Codex-only background diagnosis resolves the cheap model dynamically.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
-		},
-		{
-			"plugin": "intervision",
-			"packageVersion": "2.0.15",
-			"detailPath": "agent-fieldkit/intervision/",
-			"version": "v2.0.14",
-			"type": "Fixed",
-			"summary": "Branch review works without a remote.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
 			"plugin": "autonomous",
@@ -700,6 +700,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/clipboard/CHANGELOG.md"
 		},
 		{
+			"plugin": "house-rules",
+			"packageVersion": "2.0.9",
+			"detailPath": "agent-fieldkit/house-rules/",
+			"version": "v2.0.6",
+			"type": "Changed",
+			"summary": "Testing doctrine now says default branch.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
+		},
+		{
 			"plugin": "saysay",
 			"packageVersion": "2.0.9",
 			"detailPath": "agent-fieldkit/saysay/",
@@ -707,6 +716,15 @@
 			"type": "Fixed",
 			"summary": "Codex speech now survives the tool call.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
+		},
+		{
+			"plugin": "eye-of-the-beholder",
+			"packageVersion": "2.0.8",
+			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
+			"version": "v2.1.0",
+			"type": "Added",
+			"summary": "/taste-test: elicit a visual direction without having to describe it.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
 		},
 		{
 			"plugin": "self-improvement",
@@ -725,24 +743,6 @@
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
-		},
-		{
-			"plugin": "house-rules",
-			"packageVersion": "2.0.7",
-			"detailPath": "agent-fieldkit/house-rules/",
-			"version": "v2.0.6",
-			"type": "Changed",
-			"summary": "Testing doctrine now says default branch.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
-		},
-		{
-			"plugin": "eye-of-the-beholder",
-			"packageVersion": "2.0.6",
-			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
-			"version": "v2.1.0",
-			"type": "Added",
-			"summary": "/taste-test: elicit a visual direction without having to describe it.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
 		},
 		{
 			"plugin": "vaultsync",
