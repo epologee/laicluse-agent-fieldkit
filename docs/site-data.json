@@ -280,7 +280,7 @@
 		},
 		{
 			"name": "eye-of-the-beholder",
-			"version": "2.0.6",
+			"version": "2.0.7",
 			"category": "review",
 			"summary": "Makes visual work observable: screenshot, describe, measure, and compare layout, color, animation, and reference matches before declaring done.",
 			"support": [
@@ -727,6 +727,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
 		},
 		{
+			"plugin": "eye-of-the-beholder",
+			"packageVersion": "2.0.7",
+			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
+			"version": "v2.1.0",
+			"type": "Added",
+			"summary": "/taste-test: elicit a visual direction without having to describe it.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
+		},
+		{
 			"plugin": "gurus",
 			"packageVersion": "2.0.7",
 			"detailPath": "agent-fieldkit/gurus/",
@@ -734,15 +743,6 @@
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
-		},
-		{
-			"plugin": "eye-of-the-beholder",
-			"packageVersion": "2.0.6",
-			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
-			"version": "v2.1.0",
-			"type": "Added",
-			"summary": "/taste-test: elicit a visual direction without having to describe it.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
 		},
 		{
 			"plugin": "vaultsync",

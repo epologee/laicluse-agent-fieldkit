@@ -64,6 +64,8 @@ The translation is a hypothesis: state it ("you said it feels busy, so I am scan
 
 **After every layout change: screenshot. Describe what you see BEFORE looking back at the CSS.**
 
+**Creating an image file is not the screenshot checkpoint. Immediately open every PNG produced for visual work with the host's image viewer and surface that rendered image to the user in the same turn. A local path, attachment link, or note that the file exists does not count as showing it. Do not continue iterating or hand off the work until the newly generated PNG itself has been opened and inspected.**
+
 Not: "the padding should be 0.6rem, I see space, correct."
 Instead: "I see text pressing against the top edge." Only then: why? Which CSS causes this?
 
