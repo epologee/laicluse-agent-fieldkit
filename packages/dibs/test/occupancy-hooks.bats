@@ -41,6 +41,17 @@ run_bash_hook() {
 	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
 }
 
+init_bash_target_repo() {
+	local repo="$1"
+	mkdir -p "$repo"
+	git -C "$repo" init -q
+	git -C "$repo" config user.email test@example.invalid
+	git -C "$repo" config user.name Test
+	printf 'root\n' > "$repo/README.md"
+	git -C "$repo" add README.md
+	git -C "$repo" commit -qm init
+}
+
 @test "gate hard-denies a write when a live other-session agent holds the dir" {
   sleep 60 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess --description "stale dibs lock cleanup" >/dev/null
@@ -52,6 +63,7 @@ run_bash_hook() {
   echo "$output" | grep -qi "held by codex"
   echo "$output" | grep -qi "work: stale dibs lock cleanup"
   echo "$output" | grep -qi "since"
+  echo "$output" | grep -qi "surface this to the operator"
   echo "$output" | grep -qi "git worktree"
   echo "$output" | grep -qi "new branch"
   echo "$output" | grep -qi "loose non-git copy"
@@ -532,4 +544,220 @@ cp a.docx b.docx'
   kill "$other" 2>/dev/null || true
   [ "$status" -eq 0 ]
   ! echo "$output" | grep -q '\[dibs/occupancy\]'
+}
+
+@test "Bash rm expands a tilde target without gating an occupied cwd" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	export HOME="$BATS_TEST_TMPDIR/home"
+	local target_repo="$HOME/other"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	run_bash_hook 'rm ~/other/f'
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	run dibs check "$cwd_repo" --json
+	local cwd_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+	echo "$cwd_lock" | grep -q '"agent": "codex"'
+}
+
+@test "Bash git -C expands a tilde repo without gating an occupied cwd" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	export HOME="$BATS_TEST_TMPDIR/home"
+	local target_repo="$HOME/other"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	run_bash_hook 'git -C ~/other commit'
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+}
+
+@test "Bash git commit ignores message-file and heredoc path text" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	local decoy_repo="$BATS_TEST_TMPDIR/decoy"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$decoy_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$decoy_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	local command="git commit -F - <<'MSG'
+Paths are text here: $decoy_repo/file and \$HOME/other/file.
+MSG"
+	run_bash_hook "$command"
+	local hook_status=$status hook_output="$output"
+	run dibs check "$cwd_repo" --json
+	local cwd_lock="$output"
+	run dibs check "$decoy_repo" --json
+	local decoy_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$cwd_lock" | grep -q "\"pid\": $$"
+	echo "$decoy_lock" | grep -q '"agent": "codex"'
+}
+
+@test "Bash git ignores a message-file path outside its write target" {
+	local target_repo="$BATS_TEST_TMPDIR/target"
+	local message_repo="$BATS_TEST_TMPDIR/messages"
+	init_bash_target_repo "$target_repo"
+	init_bash_target_repo "$message_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$message_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$BATS_TEST_TMPDIR"
+	run_bash_hook "git -C $target_repo commit -F $message_repo/message.txt"
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+}
+
+@test "Bash git --git-dir expands HOME and gates that repository" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	export HOME="$BATS_TEST_TMPDIR/home"
+	local target_repo="$HOME/other"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	run_bash_hook 'git --git-dir="$HOME/other/.git" commit'
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+}
+
+@test "Bash rm expands an exported variable target without gating cwd" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	local target_repo="$BATS_TEST_TMPDIR/target"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$target_repo"
+	export TARGET_REPO="$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	run_bash_hook 'rm "$TARGET_REPO/file"'
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+}
+
+@test "Bash redirect expands HOME and gates only its output target" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	export HOME="$BATS_TEST_TMPDIR/home"
+	local target_repo="$HOME/other"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	run_bash_hook 'printf done > "$HOME/other/output.txt"'
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+}
+
+@test "Bash copy gates a relative destination in cwd instead of its source" {
+	local cwd_repo="$BATS_TEST_TMPDIR/cwd"
+	local source_repo="$BATS_TEST_TMPDIR/source"
+	init_bash_target_repo "$cwd_repo"
+	init_bash_target_repo "$source_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$cwd_repo"
+	run_bash_hook "cp $source_repo/README.md local-copy"
+	local hook_status=$status hook_output="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 2 ]
+	echo "$hook_output" | grep -q '\[dibs/occupancy\]'
+}
+
+@test "Bash copy does not gate its occupied read-only source" {
+	local source_repo="$BATS_TEST_TMPDIR/source"
+	local target_repo="$BATS_TEST_TMPDIR/target"
+	init_bash_target_repo "$source_repo"
+	init_bash_target_repo "$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$source_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$BATS_TEST_TMPDIR"
+	run_bash_hook "cp $source_repo/README.md $target_repo/copied.md"
+	local hook_status=$status hook_output="$output"
+	run dibs check "$target_repo" --json
+	local target_lock="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
+	echo "$target_lock" | grep -q "\"pid\": $$"
+}
+
+@test "Bash read-only git with a path never claims or blocks that repository" {
+	local target_repo="$BATS_TEST_TMPDIR/target"
+	init_bash_target_repo "$target_repo"
+
+	sleep 60 & local other_pid=$!
+	dibs claim "$target_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
+	export DIBS_HOLDER_PID=$$
+	DIR="$BATS_TEST_TMPDIR"
+	run_bash_hook "git -C $target_repo status --short"
+	local hook_status=$status hook_output="$output"
+	kill "$other_pid" 2>/dev/null || true
+
+	[ "$hook_status" -eq 0 ]
+	[ -z "$hook_output" ]
 }

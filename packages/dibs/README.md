@@ -153,9 +153,7 @@ plugin's own CLI, so there is no second lock path.
   `Write` / `MultiEdit` / `apply_patch`) and conservative shell mutations
   (`Bash`) such as `cp`, `mv`, `rm`, `touch`, mutating `git` subcommands,
   package installs, and shell redirection. Read-only shell commands stay quiet.
-  When a shell command names absolute or relative path operands, dibs gates
-  those target worktrees; otherwise it falls back to the hook cwd only for
-  commands it recognised as mutating. It hard-denies (exit 2) when a *different*
+  Bash targets are resolved from shell structure and command semantics: heredoc and message bodies are ignored, redirects gate their output, Git mutations gate their `-C` / `--git-dir` context, copy-like commands distinguish sources from destinations, and `~` / environment-backed paths are expanded without evaluating the command. The cwd is gated only when the parsed write target is relative to it. It hard-denies (exit 2) when a *different*
   live session holds the target, reporting the holder and how to recover. The
   recovery text points the blocked agent at a separate git worktree on a new
   branch, so the safe next move is visible at the denial point.

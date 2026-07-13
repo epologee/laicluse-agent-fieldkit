@@ -192,7 +192,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.39",
+			"version": "2.0.40",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -204,12 +204,12 @@
 			"sourcePath": "packages/dibs",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs",
 			"skillCount": 2,
-			"commandCount": 3,
+			"commandCount": 4,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.39",
-				"type": "Breaking",
-				"summary": "A work description is now mandatory to create a lock."
+				"version": "v2.0.40",
+				"type": "Changed",
+				"summary": "Cross-session occupancy refusals now tell the blocked agent to surface the holder, pid, and work to the operator before choosing a recovery path."
 			}
 		},
 		{
@@ -620,11 +620,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.39",
+			"packageVersion": "2.0.40",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.39",
-			"type": "Breaking",
-			"summary": "A work description is now mandatory to create a lock.",
+			"version": "v2.0.40",
+			"type": "Changed",
+			"summary": "Cross-session occupancy refusals now tell the blocked agent to surface the holder, pid, and work to the operator before choosing a recovery path.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{

@@ -20,6 +20,8 @@ occ_abs_path() {
   [ -n "$path" ] || return 1
   case "$path" in
     /*) printf '%s\n' "$path" ;;
+    "~/"*) printf '%s\n' "$HOME/${path#"~/"}" ;;
+    "~") printf '%s\n' "$HOME" ;;
     *)
       cwd="$(occ_cwd "$input")"
       [ -n "$cwd" ] || return 1
@@ -104,50 +106,29 @@ occ_bash_command() {
 	jq -r '.tool_input.command // empty' <<< "$1" 2>/dev/null
 }
 
-occ_command_without_strings() {
-	printf '%s' "$1" | sed -E "s/'[^']*'//g; s/\"([^\"\\\\]|\\\\.)*\"//g"
+occ_bash_write_targets() {
+	local command="$1" cwd="$2" parser="$OCC_DIR/bin/bash-write-targets"
+	[ -f "$parser" ] || return 1
+	command -v node >/dev/null 2>&1 || return 1
+	printf '%s' "$command" | node "$parser" "$cwd" 2>/dev/null
 }
 
 occ_bash_mutates() {
-	local command="$1" stripped
+	local command="$1" cwd="$2"
 	[ -n "$command" ] || return 1
-	stripped="$(occ_command_without_strings "$command")"
-	# allow-comment: load-bearing. A redirect to the /dev device tree (the ubiquitous 2>/dev/null, or >/dev/null) writes to no working tree, so it must not classify a read-only command as mutating. Strip those redirects before the write-detection below, otherwise every grep/find/cat with suppressed stderr claims occupancy on its path arguments.
-	stripped="$(printf '%s' "$stripped" | sed -E 's#[0-9]*>>?[[:space:]]*/dev/[^[:space:];&|)]*##g')"
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])(cp|mv|rm|mkdir|rmdir|touch|tee|ln|unlink|truncate|install)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?(add|stage|commit|checkout|switch|merge|rebase|reset|restore|clean|mv|rm|am|cherry-pick|revert)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?stash[[:space:]]+(push|pop|apply|drop|clear|save)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?worktree[[:space:]]+(add|remove|move|prune|repair)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?branch[[:space:]]+(-d|-D|-m|-M|-c|-C|--delete|--move|--copy)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])git[[:space:]]+([^;\&\|]*[[:space:]])?tag[[:space:]]+(-a|-s|-u|-d|--annotate|--sign|--delete)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])(npm|pnpm|yarn|bun)[[:space:]]+(install|add|remove|update|link|unlink)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|\(])bundle[[:space:]]+(install|add|remove|update)([[:space:]\;\&\|\)]|$) ]] && return 0
-	[[ "$stripped" =~ (^|[[:space:]\;\&\|])[0-9]*\>\>?[[:space:]]*[^[:space:]\&] ]] && return 0
-	return 1
-}
-
-occ_bash_path_candidates() {
-	printf '%s\n' "$1" | awk '
-		{
-			while (match($0, /(^|[[:space:];&|<>()])((\/|\.{1,2}\/)[^[:space:];&|<>()"]+)/)) {
-				token = substr($0, RSTART, RLENGTH)
-				sub(/^[[:space:];&|<>()]+/, "", token)
-				print token
-				$0 = substr($0, RSTART + RLENGTH)
-			}
-		}
-	'
+	[ -n "$cwd" ] || cwd="$(pwd -P)"
+	[ -n "$(occ_bash_write_targets "$command" "$cwd")" ]
 }
 
 occ_bash_dirs() {
-	local input="$1" command path emitted=0
+	local input="$1" command cwd path
 	command="$(occ_bash_command "$input")"
-	occ_bash_mutates "$command" || return 0
+	cwd="$(occ_cwd "$input")"
+	[ -n "$cwd" ] || return 0
 	while IFS= read -r path; do
 		[ -n "$path" ] || continue
-		occ_target_dir_for_path "$input" "$path" && emitted=1
-	done < <(occ_bash_path_candidates "$command")
-	[ "$emitted" -eq 1 ] || occ_cwd "$input"
+		occ_target_dir_for_path "$input" "$path"
+	done < <(occ_bash_write_targets "$command" "$cwd")
 }
 
 occ_gate_dirs() {
@@ -310,7 +291,7 @@ occ_gate() {
     # allow-comment: load-bearing. A cross-session refusal and a missing-description error both exit non-zero, so branch on the payload not rc: a refusal carries state:refused, the description error an error naming "work description".
     case "$rc" in 2 | 3) continue ;; esac
     if occ_refused_by_other "$input" "$out"; then
-      printf '[dibs/occupancy] %s; another live agent occupies this directory. %s If that holder is stale, inspect it with '\''dibs check %s'\'' and clear it with '\''dibs release %s'\''.\n' "$(printf '%s' "$out" | occ_holder_line)" "$(printf '%s' "$out" | occ_refusal_suggestion)" "$dir" "$dir" >&2
+      printf '[dibs/occupancy] %s; another live agent occupies this directory. Surface this to the operator now (which agent, its pid, and its work, shown above) so they know another of their agents is active here; report it, do not silently route around it. %s If that holder is stale, inspect it with '\''dibs check %s'\'' and clear it with '\''dibs release %s'\''.\n' "$(printf '%s' "$out" | occ_holder_line)" "$(printf '%s' "$out" | occ_refusal_suggestion)" "$dir" "$dir" >&2
       exit 2
     fi
     if printf '%s' "$out" | grep -q 'work description is required'; then

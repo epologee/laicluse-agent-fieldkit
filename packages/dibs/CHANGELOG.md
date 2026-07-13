@@ -4,6 +4,16 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.40]
+
+### Changed
+
+- **Cross-session occupancy refusals now tell the blocked agent to surface the holder, pid, and work to the operator before choosing a recovery path.**
+
+### Fixed
+
+- **Bash occupancy now gates command-specific write targets instead of path-like text.** The shell lexer excludes heredoc bodies, separates flag values and read-only operands from write destinations, resolves Git `-C`/`--git-dir` context and output redirects, expands `~`, `$HOME`, and exported path variables, and uses cwd only when the parsed command actually writes there.
+
 ## [v2.0.39]
 
 ### Breaking

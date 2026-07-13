@@ -1,0 +1,508 @@
+#!/usr/bin/env node
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+
+const command = fs.readFileSync(0, "utf8");
+const cwd = path.resolve(process.argv[2] || process.cwd());
+const environment = { ...process.env, PWD: cwd };
+
+function heredocOpeners(line) {
+	const openers = [];
+	const returnModes = [];
+	let mode = "normal";
+	let index = 0;
+
+	while (index < line.length) {
+		const character = line[index];
+		const next = line[index + 1] || "";
+
+		if (mode === "single") {
+			if (character === "'") mode = "normal";
+			index += 1;
+			continue;
+		}
+
+		if (mode === "double") {
+			if (character === "\\") {
+				index += 2;
+				continue;
+			}
+			if (character === '"') {
+				mode = "normal";
+				index += 1;
+				continue;
+			}
+			if (character === "$" && next === "(") {
+				returnModes.push("double");
+				mode = "normal";
+				index += 2;
+				continue;
+			}
+			index += 1;
+			continue;
+		}
+
+		if (character === "\\") {
+			index += 2;
+			continue;
+		}
+		if (character === "'") {
+			mode = "single";
+			index += 1;
+			continue;
+		}
+		if (character === '"') {
+			mode = "double";
+			index += 1;
+			continue;
+		}
+		if (character === "$" && next === "(") {
+			returnModes.push("normal");
+			index += 2;
+			continue;
+		}
+		if (character === ")" && returnModes.length > 0) {
+			mode = returnModes.pop();
+			index += 1;
+			continue;
+		}
+		if (character !== "<" || next !== "<" || line[index + 2] === "<") {
+			index += 1;
+			continue;
+		}
+
+		let cursor = index + 2;
+		let stripTabs = false;
+		if (line[cursor] === "-") {
+			stripTabs = true;
+			cursor += 1;
+		}
+		while (/\s/.test(line[cursor] || "")) cursor += 1;
+		const quote = line[cursor] === "'" || line[cursor] === '"' ? line[cursor++] : "";
+		const start = cursor;
+		if (quote) {
+			while (cursor < line.length && line[cursor] !== quote) cursor += 1;
+		} else {
+			while (/[A-Za-z0-9_]/.test(line[cursor] || "")) cursor += 1;
+		}
+		const delimiter = line.slice(start, cursor);
+		if (delimiter) openers.push({ delimiter, stripTabs });
+		index = cursor + (quote && line[cursor] === quote ? 1 : 0);
+	}
+
+	return openers;
+}
+
+function stripHeredocBodies(source) {
+	const pending = [];
+	const kept = [];
+	for (const line of source.split("\n")) {
+		if (pending.length > 0) {
+			const active = pending[0];
+			const candidate = active.stripTabs ? line.replace(/^\t+/, "") : line;
+			if (candidate === active.delimiter) pending.shift();
+			continue;
+		}
+		kept.push(line);
+		pending.push(...heredocOpeners(line));
+	}
+	return kept.join("\n");
+}
+
+function tokenize(source) {
+	const tokens = [];
+	const returnModes = [];
+	let mode = "normal";
+	let word = null;
+	let index = 0;
+
+	function append(text, expandsVariables, quoted) {
+		if (!word) word = { type: "word", parts: [], tildeEligible: !quoted && text === "~" };
+		const previous = word.parts[word.parts.length - 1];
+		if (previous && previous.expandsVariables === expandsVariables) previous.text += text;
+		else word.parts.push({ text, expandsVariables });
+	}
+
+	function flushWord() {
+		if (!word) return;
+		tokens.push(word);
+		word = null;
+	}
+
+	function separator() {
+		flushWord();
+		if (tokens[tokens.length - 1]?.type !== "separator") tokens.push({ type: "separator" });
+	}
+
+	while (index < source.length) {
+		const character = source[index];
+		const next = source[index + 1] || "";
+		const third = source[index + 2] || "";
+
+		if (mode === "single") {
+			if (character === "'") mode = "normal";
+			else append(character, false, true);
+			index += 1;
+			continue;
+		}
+
+		if (mode === "double") {
+			if (character === "\\" && /[$"\\\n]/.test(next)) {
+				append(next, false, true);
+				index += 2;
+				continue;
+			}
+			if (character === '"') {
+				mode = "normal";
+				index += 1;
+				continue;
+			}
+			if (character === "$" && next === "(") {
+				separator();
+				returnModes.push("double");
+				mode = "normal";
+				index += 2;
+				continue;
+			}
+			append(character, true, true);
+			index += 1;
+			continue;
+		}
+
+		if (character === "\\") {
+			if (next) append(next, false, false);
+			index += next ? 2 : 1;
+			continue;
+		}
+		if (character === "'") {
+			if (!word) word = { type: "word", parts: [], tildeEligible: false };
+			mode = "single";
+			index += 1;
+			continue;
+		}
+		if (character === '"') {
+			if (!word) word = { type: "word", parts: [], tildeEligible: false };
+			mode = "double";
+			index += 1;
+			continue;
+		}
+		if (character === "$" && next === "(") {
+			separator();
+			returnModes.push("normal");
+			index += 2;
+			continue;
+		}
+		if (character === ")" && returnModes.length > 0) {
+			separator();
+			mode = returnModes.pop();
+			index += 1;
+			continue;
+		}
+		if (/\s/.test(character)) {
+			flushWord();
+			if (character === "\n") separator();
+			index += 1;
+			continue;
+		}
+		if (character === "#" && !word) {
+			while (index < source.length && source[index] !== "\n") index += 1;
+			continue;
+		}
+		if (character === "&" && next === ">") {
+			flushWord();
+			const operator = third === ">" ? "&>>" : "&>";
+			tokens.push({ type: "redirect", operator });
+			index += operator.length;
+			continue;
+		}
+		if (character === ">" || character === "<") {
+			if (word && word.parts.every((part) => /^\d+$/.test(part.text))) word = null;
+			else flushWord();
+			let operator = character;
+			if (next === character) {
+				operator += next;
+				if (character === "<" && third === "<") operator += third;
+			} else if (character === ">" && next === "|") {
+				operator += next;
+			}
+			if (operator === "<<" && source[index + operator.length] === "-") operator += "-";
+			tokens.push({ type: "redirect", operator });
+			index += operator.length;
+			continue;
+		}
+		if (/[;&|()]/.test(character)) {
+			separator();
+			index += next === character && /[&|]/.test(character) ? 2 : 1;
+			continue;
+		}
+		append(character, true, false);
+		index += 1;
+	}
+	flushWord();
+	return tokens;
+}
+
+function expandWord(word, activeEnvironment) {
+	let unresolved = false;
+	let text = word.parts.map((part) => {
+		if (!part.expandsVariables) return part.text;
+		return part.text.replace(/\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))/g, (match, braced, bare) => {
+			const name = braced || bare;
+			if (!Object.prototype.hasOwnProperty.call(activeEnvironment, name)) {
+				unresolved = true;
+				return match;
+			}
+			return activeEnvironment[name];
+		});
+	}).join("");
+	if (word.tildeEligible && (text === "~" || text.startsWith("~/"))) {
+		if (activeEnvironment.HOME) text = path.join(activeEnvironment.HOME, text.slice(2));
+		else unresolved = true;
+	}
+	return { text, unresolved };
+}
+
+function targetPath(expanded, base) {
+	if (!expanded || expanded.text === "-" || /^&?\d+$/.test(expanded.text)) return null;
+	if (expanded.unresolved) return base;
+	return path.resolve(base, expanded.text);
+}
+
+function splitSegments(tokens) {
+	const segments = [];
+	let segment = [];
+	for (const token of tokens) {
+		if (token.type === "separator") {
+			if (segment.length > 0) segments.push(segment);
+			segment = [];
+		} else {
+			segment.push(token);
+		}
+	}
+	if (segment.length > 0) segments.push(segment);
+	return segments;
+}
+
+function parseOperands(argumentsList, valueOptions = new Set(), attachedValueOptions = new Set()) {
+	const operands = [];
+	let optionsEnded = false;
+	for (let index = 0; index < argumentsList.length; index += 1) {
+		const argument = argumentsList[index];
+		if (!optionsEnded && argument.text === "--") {
+			optionsEnded = true;
+			continue;
+		}
+		if (!optionsEnded && valueOptions.has(argument.text)) {
+			index += 1;
+			continue;
+		}
+		if (!optionsEnded && [...attachedValueOptions].some((option) => argument.text.startsWith(option) && argument.text !== option)) continue;
+		if (!optionsEnded && argument.text.startsWith("-")) continue;
+		operands.push(argument);
+	}
+	return operands;
+}
+
+function gitTargets(words, base) {
+	let gitCwd = base;
+	let gitDir = null;
+	let workTree = null;
+	let index = 1;
+
+	while (index < words.length) {
+		const argument = words[index].text;
+		if (argument === "--") {
+			index += 1;
+			break;
+		}
+		if (argument === "-C" && words[index + 1]) {
+			gitCwd = targetPath(words[index + 1], gitCwd) || gitCwd;
+			index += 2;
+			continue;
+		}
+		if (argument === "--git-dir" && words[index + 1]) {
+			gitDir = targetPath(words[index + 1], gitCwd);
+			index += 2;
+			continue;
+		}
+		if (argument.startsWith("--git-dir=")) {
+			gitDir = targetPath({ text: argument.slice(10), unresolved: words[index].unresolved }, gitCwd);
+			index += 1;
+			continue;
+		}
+		if (argument === "--work-tree" && words[index + 1]) {
+			workTree = targetPath(words[index + 1], gitCwd);
+			index += 2;
+			continue;
+		}
+		if (argument.startsWith("--work-tree=")) {
+			workTree = targetPath({ text: argument.slice(12), unresolved: words[index].unresolved }, gitCwd);
+			index += 1;
+			continue;
+		}
+		if (["-c", "--config-env", "--exec-path", "--namespace"].includes(argument) && words[index + 1]) {
+			index += 2;
+			continue;
+		}
+		if (argument.startsWith("-")) {
+			index += 1;
+			continue;
+		}
+		break;
+	}
+
+	const subcommand = words[index]?.text || "";
+	const subcommandArguments = words.slice(index + 1);
+	const directMutators = new Set(["add", "stage", "commit", "checkout", "switch", "merge", "rebase", "reset", "restore", "clean", "mv", "rm", "am", "cherry-pick", "revert"]);
+	const stashMutators = new Set(["push", "pop", "apply", "drop", "clear", "save"]);
+	const worktreeMutators = new Set(["add", "remove", "move", "prune", "repair"]);
+	const branchMutationFlags = new Set(["-d", "-D", "-m", "-M", "-c", "-C", "--delete", "--move", "--copy"]);
+	const tagMutationFlags = new Set(["-a", "-s", "-u", "-d", "--annotate", "--sign", "--delete"]);
+	let mutates = directMutators.has(subcommand);
+	if (subcommand === "stash") mutates = stashMutators.has(subcommandArguments[0]?.text);
+	if (subcommand === "worktree") mutates = worktreeMutators.has(subcommandArguments[0]?.text);
+	if (subcommand === "branch") mutates = subcommandArguments.some((argument) => branchMutationFlags.has(argument.text));
+	if (subcommand === "tag") mutates = subcommandArguments.some((argument) => tagMutationFlags.has(argument.text));
+	if (["init", "clone"].includes(subcommand)) mutates = true;
+	if (!mutates) return [];
+
+	if (subcommand === "init") {
+		const operands = parseOperands(subcommandArguments, new Set(["--separate-git-dir", "--object-format", "--ref-format", "-b", "--initial-branch"]));
+		return [targetPath(operands[0], gitCwd) || gitCwd];
+	}
+	if (subcommand === "clone") {
+		const operands = parseOperands(subcommandArguments, new Set(["-o", "--origin", "-b", "--branch", "-u", "--upload-pack", "--reference", "--reference-if-able", "--separate-git-dir", "--depth", "--shallow-since", "--shallow-exclude", "--jobs", "-j", "--filter", "--server-option"]));
+		if (operands[1]) return [targetPath(operands[1], gitCwd)].filter(Boolean);
+		if (!operands[0]) return [];
+		const inferred = path.basename(operands[0].text.replace(/\/$/, "")).replace(/\.git$/, "");
+		return [path.resolve(gitCwd, inferred)];
+	}
+
+	const contextTargets = [workTree, gitDir].filter(Boolean);
+	if (contextTargets.length === 0) contextTargets.push(gitCwd);
+	if (subcommand !== "worktree") return contextTargets;
+	const action = subcommandArguments[0]?.text;
+	const operands = parseOperands(subcommandArguments.slice(1), new Set(["-b", "-B", "--detach", "--checkout", "--lock", "--reason"]));
+	if (action === "add" && operands[0]) contextTargets.push(targetPath(operands[0], gitCwd));
+	if (["remove", "repair"].includes(action)) contextTargets.push(...operands.map((operand) => targetPath(operand, gitCwd)));
+	if (action === "move") contextTargets.push(...operands.slice(0, 2).map((operand) => targetPath(operand, gitCwd)));
+	return contextTargets.filter(Boolean);
+}
+
+function fileCommandTargets(commandName, argumentsList, base) {
+	const resolved = (operands) => operands.map((operand) => targetPath(operand, base)).filter(Boolean);
+	if (["rm", "rmdir", "unlink"].includes(commandName)) return resolved(parseOperands(argumentsList));
+	if (commandName === "mkdir") return resolved(parseOperands(argumentsList, new Set(["-m", "--mode"]), new Set(["-m"])));
+	if (commandName === "touch") return resolved(parseOperands(argumentsList, new Set(["-d", "--date", "-r", "--reference", "-t"]), new Set(["-d", "-r", "-t"])));
+	if (commandName === "truncate") return resolved(parseOperands(argumentsList, new Set(["-s", "--size", "-r", "--reference"]), new Set(["-s", "-r"])));
+	if (commandName === "tee") return resolved(parseOperands(argumentsList));
+
+	let targetDirectory = null;
+	const remaining = [];
+	const valueOptions = new Set(["-t", "--target-directory"]);
+	const installValueOptions = new Set(["-m", "--mode", "-o", "--owner", "-g", "--group", "--strip-program", "--suffix", "--context"]);
+	for (let index = 0; index < argumentsList.length; index += 1) {
+		const argument = argumentsList[index];
+		if (valueOptions.has(argument.text) && argumentsList[index + 1]) {
+			targetDirectory = targetPath(argumentsList[index + 1], base);
+			index += 1;
+			continue;
+		}
+		if (argument.text.startsWith("--target-directory=")) {
+			targetDirectory = targetPath({ text: argument.text.slice(19), unresolved: argument.unresolved }, base);
+			continue;
+		}
+		if (commandName === "install" && installValueOptions.has(argument.text)) {
+			index += 1;
+			continue;
+		}
+		if (argument.text === "--") {
+			remaining.push(...argumentsList.slice(index + 1));
+			break;
+		}
+		if (argument.text.startsWith("-")) continue;
+		remaining.push(argument);
+	}
+	if (commandName === "mv") return [...resolved(remaining), targetDirectory].filter(Boolean);
+	if (commandName === "install" && argumentsList.some((argument) => argument.text === "-d" || argument.text === "--directory")) return [...resolved(remaining), targetDirectory].filter(Boolean);
+	if (targetDirectory) return [targetDirectory];
+	return remaining.length > 0 ? resolved([remaining[remaining.length - 1]]) : [];
+}
+
+function packageManagerTargets(commandName, argumentsList, base) {
+	const actions = commandName === "bundle" ? new Set(["install", "add", "remove", "update"]) : new Set(["install", "add", "remove", "update", "link", "unlink"]);
+	let packageCwd = base;
+	let action = "";
+	for (let index = 0; index < argumentsList.length; index += 1) {
+		const argument = argumentsList[index];
+		if (["--prefix", "--cwd", "--dir"].includes(argument.text) && argumentsList[index + 1]) {
+			packageCwd = targetPath(argumentsList[index + 1], base) || packageCwd;
+			index += 1;
+			continue;
+		}
+		if (!argument.text.startsWith("-")) {
+			action = argument.text;
+			break;
+		}
+	}
+	return actions.has(action) ? [packageCwd] : [];
+}
+
+function commandTargets(words, base) {
+	if (words.length === 0) return [];
+	let commandIndex = 0;
+	while (/^[A-Za-z_][A-Za-z0-9_]*=/.test(words[commandIndex]?.text || "")) commandIndex += 1;
+	while (["command", "builtin", "nohup"].includes(path.basename(words[commandIndex]?.text || ""))) commandIndex += 1;
+	if (["env", "sudo"].includes(path.basename(words[commandIndex]?.text || ""))) {
+		commandIndex += 1;
+		while (words[commandIndex] && (words[commandIndex].text.startsWith("-") || /^[A-Za-z_][A-Za-z0-9_]*=/.test(words[commandIndex].text))) commandIndex += 1;
+	}
+	const commandName = path.basename(words[commandIndex]?.text || "");
+	const argumentsList = words.slice(commandIndex + 1);
+	if (commandName === "git") return gitTargets(words.slice(commandIndex), base);
+	if (["rm", "rmdir", "unlink", "mkdir", "touch", "truncate", "tee", "cp", "mv", "ln", "install"].includes(commandName)) return fileCommandTargets(commandName, argumentsList, base);
+	if (["npm", "pnpm", "yarn", "bun", "bundle"].includes(commandName)) return packageManagerTargets(commandName, argumentsList, base);
+	return [];
+}
+
+function extractTargets(source) {
+	const activeEnvironment = { ...environment };
+	const targets = [];
+	for (const segment of splitSegments(tokenize(stripHeredocBodies(source)))) {
+		const words = [];
+		for (let index = 0; index < segment.length; index += 1) {
+			const token = segment[index];
+			if (token.type !== "redirect") {
+				words.push(expandWord(token, activeEnvironment));
+				continue;
+			}
+			const targetToken = segment[index + 1];
+			if (!targetToken || targetToken.type !== "word") continue;
+			const target = targetPath(expandWord(targetToken, activeEnvironment), cwd);
+			if ([">", ">>", ">|", "&>", "&>>"].includes(token.operator) && target && target !== "/dev" && !target.startsWith("/dev/")) targets.push(target);
+			index += 1;
+		}
+
+		if (words[0]?.text === "export") {
+			for (const assignment of words.slice(1)) {
+				const match = assignment.text.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+				if (match) activeEnvironment[match[1]] = match[2];
+			}
+			continue;
+		}
+		if (words.length > 0 && words.every((word) => /^[A-Za-z_][A-Za-z0-9_]*=/.test(word.text))) {
+			for (const assignment of words) {
+				const separator = assignment.text.indexOf("=");
+				activeEnvironment[assignment.text.slice(0, separator)] = assignment.text.slice(separator + 1);
+			}
+			continue;
+		}
+		targets.push(...commandTargets(words, cwd));
+	}
+	return [...new Set(targets.filter(Boolean))];
+}
+
+const targets = extractTargets(command);
+if (targets.length > 0) process.stdout.write(targets.join("\n") + "\n");
