@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run the git-discipline BATS test suites (validate-body + shadow-mode + block-mode +
 # migrated-hooks + install-hooks + wip-gate + template-fill + cross-layer +
-# session-toggle + repo-deny + push-policy + merge-conflict-markers).
+# session-toggle + repo-deny + push-policy + merge-conflict-markers + skill-docs).
 # Must be executed from the repo root (laicluse-agent-fieldkit/).
 
 set -euo pipefail
@@ -30,4 +30,5 @@ exec bats \
   packages/git-discipline/test/push-policy/*.bats \
   packages/git-discipline/test/cd-target/*.bats \
   packages/git-discipline/test/merge-conflict-markers/*.bats \
+  packages/git-discipline/test/skill-docs/*.bats \
   "$@"

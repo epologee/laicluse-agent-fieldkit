@@ -74,9 +74,7 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
 - **commit-snipe** stages only the files (or hunks) that belong to the
   current conversation's work and leaves the rest untouched. Auto-fires
   on the word "snipe".
-- **rebase-latest-default** rebases the current branch on the freshest
-  default branch (local or `origin/<default>`), resolves trivial conflicts
-  where safe, and stops on non-trivial conflicts.
+- **rebase-latest-default** rebases the current branch on the freshest default branch (local or `origin/<default>`), resolves trivial conflicts where safe, and stops on non-trivial conflicts. When the remote-tracking ref is stale, it asks before fetching and continues the same invocation after approval.
 - **merge-to-default** lands the current branch on the project's default
   with a github-style `--no-ff` merge commit. It rebases the source branch
   onto the latest default *before* merging whenever the default is ahead, so

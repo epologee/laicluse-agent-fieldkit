@@ -52,7 +52,7 @@
 					<p class="lede">Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.47</span>
+						<span>2.0.48</span>
 						<span>13 skills</span>
 					</div>
 				</div>
@@ -93,7 +93,7 @@
 <ul>
 <li><strong>commit-all-the-things</strong> inspects <code>git status</code> plus <code>git diff</code>, groups changes by intent (feature, fix, refactor, docs, config), and creates one commit per group. Trigger phrases include &quot;commit everything&quot;, &quot;clean up the working tree&quot;, and &quot;commit what's left&quot;.</li>
 <li><strong>commit-snipe</strong> stages only the files (or hunks) that belong to the current conversation's work and leaves the rest untouched. Auto-fires on the word &quot;snipe&quot;.</li>
-<li><strong>rebase-latest-default</strong> rebases the current branch on the freshest default branch (local or <code>origin/&lt;default&gt;</code>), resolves trivial conflicts where safe, and stops on non-trivial conflicts.</li>
+<li><strong>rebase-latest-default</strong> rebases the current branch on the freshest default branch (local or <code>origin/&lt;default&gt;</code>), resolves trivial conflicts where safe, and stops on non-trivial conflicts. When the remote-tracking ref is stale, it asks before fetching and continues the same invocation after approval.</li>
 <li><strong>merge-to-default</strong> lands the current branch on the project's default with a github-style <code>--no-ff</code> merge commit. It rebases the source branch onto the latest default <em>before</em> merging whenever the default is ahead, so the merge is a clean commit and a branch falling behind no longer opens a conflict-marker window in the default checkout; a reactive rebase fallback remains for the narrow race where the default advances mid-merge. It deletes the local source branch after the merge is confirmed and no-ops with a TUI warning when invoked on the default branch itself. Push remains an explicit user action.</li>
 <li><strong>push-policy</strong> decides whether and when a push fits the current repo. It ships a resolver (<code>skills/push-policy/git-repo-policy</code>) that reads per-repo facts (collaboration, visibility, default-branch protection, push access) and derives one of five modes (<code>local-only</code>, <code>solo-trunk</code>, <code>team-trunk</code>, <code>pr-flow</code>, <code>external</code>), each with its own push behavior. Per-repo overrides live under git-local <code>codingAgent.git.*</code>. <code>rebase-latest-default</code> and <code>merge-to-default</code> consult it; the push hooks gate content and are orthogonal to this context decision.</li>
 <li><strong>commit-discipline</strong> is the canonical reference for the body schema, error-codes, opt-out enum, and escape-hatches.</li>

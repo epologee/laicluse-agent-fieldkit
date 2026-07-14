@@ -236,7 +236,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.47",
+			"version": "2.0.48",
 			"category": "workflow",
 			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
 			"support": [
@@ -251,9 +251,9 @@
 			"commandCount": 2,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.46",
-				"type": "Fixed",
-				"summary": "Local-only repositories can merge and rebase to their configured default branch."
+				"version": "v2.0.47",
+				"type": "Changed",
+				"summary": "A stale default-branch ref no longer forces a manual fetch and second invocation."
 			}
 		},
 		{
@@ -611,11 +611,11 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.47",
+			"packageVersion": "2.0.48",
 			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.46",
-			"type": "Fixed",
-			"summary": "Local-only repositories can merge and rebase to their configured default branch.",
+			"version": "v2.0.47",
+			"type": "Changed",
+			"summary": "A stale default-branch ref no longer forces a manual fetch and second invocation.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{

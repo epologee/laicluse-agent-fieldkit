@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.47]
+
+### Changed
+
+- **A stale default-branch ref no longer forces a manual fetch and second invocation.** `rebase-latest-default` asks before fetching `origin`, then re-determines the target and continues the same rebase flow after approval. `merge-to-default` inherits that continuation when its rebase precondition encounters a stale ref.
+
 ## [v2.0.46]
 
 ### Fixed

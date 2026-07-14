@@ -2,7 +2,7 @@
 name: rebase-latest-default
 description: >-
   Rebase the current branch onto the freshest local or remote default branch.
-allowed-tools: Bash(git rev-parse:*), Bash(git ls-remote:*), Bash(git rebase:*), Bash(git rev-list:*), Bash(git add:*), Bash(git diff:*), Bash(git status:*), Bash(git symbolic-ref:*), Bash(git remote:*), Bash(git log:*), Bash(git push:*), Bash(git config:*)
+allowed-tools: Bash(git rev-parse:*), Bash(git ls-remote:*), Bash(git fetch:*), Bash(git rebase:*), Bash(git rev-list:*), Bash(git add:*), Bash(git diff:*), Bash(git status:*), Bash(git symbolic-ref:*), Bash(git remote:*), Bash(git log:*), Bash(git push:*), Bash(git config:*)
 ---
 
 # /git-discipline:rebase-latest-default Skill
@@ -67,12 +67,22 @@ git ls-remote origin refs/heads/$DEFAULT
 Compare the SHAs:
 
 - **If they match:** proceed to Step 2.
-- **If they differ:** show a warning and **stop**:
+- **If they differ:** show the stale SHAs:
   ```
   origin/$DEFAULT is stale (local: <short-sha>, remote: <short-sha>).
-  Run `git fetch origin` first, then invoke /git-discipline:rebase-latest-default again.
+  Fetching origin updates all remote-tracking refs. A later --force-with-lease can use those refreshed refs as its overwrite baseline.
+  Fetch origin and continue?
   ```
-  Do NOT proceed with the rebase. Do NOT fetch. The user must fetch explicitly because fetching updates all remote tracking refs, which affects `--force-with-lease` behavior on other branches.
+
+Ask the operator exactly once through the active host's user-input mechanism. If approved, remember that approval for the rest of this invocation and fetch explicitly:
+
+```bash
+git fetch origin
+```
+
+If the fetch succeeds, return to Step 0b in the same invocation. Re-determine `$TARGET` from the refreshed refs, repeat this staleness check when the target is remote, and then continue to Step 2. If the remote advances again before that repeated check, reuse the recorded approval and fetch again without asking a second time. If a fetch fails, stop with the command's error; do not rebase against the stale ref.
+
+If declined, stop without fetching or rebasing.
 
 ## Step 2: Pre-rebase Guards
 
@@ -191,7 +201,7 @@ git rev-parse --verify refs/remotes/origin/$BRANCH 2>/dev/null
 
 Decide:
 
-- **Remote branch exists AND `push_access` is not `external`:** force-with-lease push the rebased tip so CI re-runs. `--force-with-lease` is safe by construction here: it compares against the remote-tracking ref and refuses if the remote moved beyond what you last fetched, so it cannot clobber a teammate's push.
+- **Remote branch exists AND `push_access` is not `external`:** force-with-lease push the rebased tip so CI re-runs. `--force-with-lease` compares against the remote-tracking ref and refuses if the remote moved beyond what you last fetched. When Step 1 fetched after operator approval, the refreshed remote-tracking SHAs are the new lease baselines; that explicit consequence is why Step 1 asks before fetching.
   - Upstream configured (`@{u}` resolves): `git push --force-with-lease`
   - Upstream NOT configured: push explicitly against the published branch and repair tracking, do NOT defer:
     ```bash
