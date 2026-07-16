@@ -1,5 +1,5 @@
 #!/bin/bash
-# allow-comment: PostToolUse guard. Soft nudge (never blocks) when the vague "land" metaphor appears in persisted content or a Bash command; mirrors the dash guard's shape and reuses its patch-additions helper.
+# allow-comment: PostToolUse guard. Soft nudge (never blocks) when the vague "land" metaphor appears in persisted content; mirrors the dash guard's shape and reuses its patch-additions helper.
 
 guard_land() {
   local input="$1"
@@ -17,10 +17,6 @@ guard_land() {
     MultiEdit)
       content=$(jq -r '.tool_input.edits[]?.new_string // empty' <<< "$input" 2>/dev/null)
       source=$(jq -r '.tool_input.file_path // "unknown file"' <<< "$input" 2>/dev/null)
-      ;;
-    Bash)
-      content=$(jq -r '.tool_input.command // empty' <<< "$input" 2>/dev/null)
-      source="bash command"
       ;;
     apply_patch)
       content=$(dd_dash_patch_additions "$(dd_tool_patch "$input")")

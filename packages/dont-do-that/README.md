@@ -48,7 +48,7 @@ Every other registered guard runs for Codex.
 
 ## Guard catalog
 
-PreToolUse Bash denies risky command attempts before they run:
+PreToolUse Bash denies invalid or risky command attempts before they run:
 
 - `no-osascript`: blocks `osascript` and common wrapper forms. Claude, Codex.
 - `no-remote`: blocks `git push` with no remote or an unknown named remote.
@@ -59,6 +59,7 @@ PreToolUse Bash denies risky command attempts before they run:
   read-only flags are used. Claude, Codex.
 - `pr-discipline`: blocks weak `gh pr create` / `gh pr edit` titles and
   template or tooling-attribution bodies. Claude, Codex.
+- `dash-bash`: denies Bash commands containing a real em-dash or en-dash before any side effect occurs. Claude, Codex.
 - `followup`: blocks `gh api` bodies that quietly defer work without
   `Bewust uitgesteld:`. Claude, Codex.
 
@@ -67,13 +68,11 @@ PreToolUse file-edit denies unclear code edits:
 - `no-code-comments`: blocks new code comments in programming-language files
   unless explicitly allowed. Claude, Codex.
 
-PostToolUse context guards surface rewrite instructions after persisted text or
-shell text is created:
+PostToolUse context guards surface rewrite instructions after persisted text is created:
 
-- `dash`: catches em-dash or en-dash characters and HTML entity forms in
-  persisted Markdown, text, MDX, patch additions, or shell text. Claude, Codex.
+- `dash`: catches em-dash or en-dash characters and HTML entity forms in persisted Markdown, text, MDX, or patch additions. Claude, Codex.
 - `land`: catches vague `land` / `landing` / `landed` / `geland` / `landt`
-  wording in persisted text or shell text. Claude, Codex.
+  wording in persisted text. Claude, Codex.
 
 Stop guards block weak final answers and make the agent continue:
 
@@ -229,23 +228,17 @@ the code better, or use one of the explicit allow rules.
 
 ## PostToolUse context guards
 
+### `dash-bash`
+
+Denies Bash commands containing em-dash (U+2014) or en-dash (U+2013) before execution. HTML entity text remains allowed so search and migration commands can inspect it.
+
 ### `dash`
 
-Surfaces additional context when em-dash (U+2014), en-dash (U+2013), or their
-HTML entity forms (`&mdash;`, `&ndash;`, `&#8212;`, `&#8211;`, `&#x2014;`,
-`&#x2013;`) appear in `.md`, `.txt`, or `.mdx` files outside fenced code
-blocks, in persisted file content, in added `apply_patch` lines, or in shell
-command text such as clipboard pipes. Chat is not checked. This guard never
-blocks; it only asks for a rewrite.
+Surfaces additional context when em-dash (U+2014), en-dash (U+2013), or an HTML entity form (`&mdash;`, `&ndash;`, `&#8212;`, `&#8211;`, `&#x2014;`, `&#x2013;`) appears in `.md`, `.txt`, or `.mdx` files outside fenced code blocks, in persisted file content, or in added `apply_patch` lines. Chat and completed shell commands are not checked.
 
 ### `land`
 
-Surfaces additional context when the vague `land` metaphor (`land`, `landing`,
-`landed`, `geland`, `landt`) appears in persisted file content, added
-`apply_patch` lines, or shell command text outside fenced code blocks. The match
-is a plain case-insensitive substring, so ordinary words such as `Nederland`,
-`landscape`, and `landing page` can trip it. That is deliberate: this is a
-gentle reminder to choose a concrete verb, never a hard gate.
+Surfaces additional context when the vague `land` metaphor (`land`, `landing`, `landed`, `geland`, `landt`) appears in persisted file content or added `apply_patch` lines outside fenced code blocks. Completed shell commands are not inspected because a post-execution rewrite could repeat their side effects. The match is a plain case-insensitive substring, so ordinary words such as `Nederland`, `landscape`, and `landing page` can trip it. That is deliberate: this is a gentle reminder to choose a concrete verb, never a hard gate.
 
 ## Stop guards
 

@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.36]
+
+### Fixed
+
+- **Shell text is never asked to rewrite after the command already ran.** The `dash-bash` guard now denies a Bash command containing a real em- or en-dash during PreToolUse, while PostToolUse rewrite context remains limited to persisted file edits. HTML entity text remains searchable from Bash. The Unicode matcher compares complete codepoints, so arrows and curly apostrophes no longer trigger as dashes in byte-oriented locales. The soft `land` nudge likewise no longer inspects completed Bash commands.
+
 ## [v2.0.35]
 
 ### Fixed

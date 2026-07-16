@@ -48,6 +48,12 @@
       "function": "guard_pr_discipline",
       "contract": "tool-call"
     },
+    "dash-bash": {
+      "lane": "pre-bash",
+      "order": 45,
+      "function": "guard_dash_bash",
+      "contract": "tool-call"
+    },
     "followup": {
       "lane": "pre-bash",
       "order": 50,

@@ -66,6 +66,12 @@ posttool_apply_patch() {
     '{hook_event_name:"PostToolUse", tool_name:"apply_patch", tool_input:{patch:$p}}'
 }
 
+posttool_bash() {
+  local cmd="$1"
+  jq -cn --arg c "$cmd" \
+    '{hook_event_name:"PostToolUse", tool_name:"Bash", tool_input:{command:$c}}'
+}
+
 pretool_edit() {
   local file="$1" old="$2" new="$3"
   jq -cn --arg f "$file" --arg o "$old" --arg n "$new" \
@@ -190,6 +196,21 @@ expect_context() {
     fi
   else
     echo "FAIL [additionalContext expected]: ${description}"
+    echo "  output: ${out:-<empty>}"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
+expect_silent() {
+  local description="$1" payload="$2"
+  local out exit_code
+  out=$(printf '%s' "$payload" | bash "$DISPATCH" 2>/dev/null)
+  exit_code=$?
+  if [ "$exit_code" -eq 0 ] && [ -z "$out" ]; then
+    PASS=$((PASS + 1))
+  else
+    echo "FAIL [silence expected]: ${description}"
+    echo "  exit: ${exit_code}"
     echo "  output: ${out:-<empty>}"
     FAIL=$((FAIL + 1))
   fi
@@ -718,6 +739,36 @@ rm -rf "$NON_GIT"
 # The awk dash-detect needs an em-dash in a non-code line. We use printf
 # to inject the raw byte so the literal stays out of the file.
 EMDASH="$(printf '\xe2\x80\x94')"
+ENDASH="$(printf '\xe2\x80\x93')"
+RIGHT_ARROW="$(printf '\xe2\x86\x92')"
+CURLY_APOSTROPHE="$(printf '\xe2\x80\x99')"
+expect_deny "dash: em-dash in Bash is denied before execution" \
+  "$(pretool_bash "eywa checkpoint 'red${EMDASH}green'")" \
+  "dont-do-that/dash-bash"
+
+expect_deny "dash: en-dash in Bash is denied before execution" \
+  "$(pretool_bash "eywa checkpoint 'red${ENDASH}green'")" \
+  "dont-do-that/dash-bash"
+
+expect_allow "dash: HTML entity text in Bash remains searchable" \
+  "$(pretool_bash "rg '&mdash;' src")"
+
+expect_deny "dash: a shell heredoc cannot hide a literal dash after a code fence marker" \
+  "$(pretool_bash $'printf \'```\nred'"${EMDASH}"$'green\n\'')" \
+  "dont-do-that/dash-bash"
+
+expect_allow "dash: right arrow in Bash is not an em-dash" \
+  "$(pretool_bash "eywa checkpoint 'red${RIGHT_ARROW}green'")"
+
+expect_allow "dash: curly apostrophe in Bash is not an em-dash" \
+  "$(pretool_bash "eywa checkpoint 'commando${CURLY_APOSTROPHE}s'")"
+
+expect_silent "dash: Bash is never asked to rewrite after execution" \
+  "$(posttool_bash "eywa checkpoint 'red${EMDASH}green'")"
+
+expect_silent "land: Bash is never asked to rewrite after execution" \
+  "$(posttool_bash "eywa checkpoint 'the change lands now'")"
+
 expect_context "dash: em-dash in Edit new_string" \
   "$(posttool_edit "/tmp/x.md" "Some prose with ${EMDASH} dash here")"
 

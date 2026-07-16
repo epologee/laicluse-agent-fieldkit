@@ -52,7 +52,7 @@ case "$EVENT" in
   PostToolUse)
     TOOL=$(dd_tool_name "$INPUT")
     case "$TOOL" in
-      Edit|Write|MultiEdit|Bash|apply_patch)
+      Edit|Write|MultiEdit|apply_patch)
         run_capture_lane post PostToolUse
         ;;
     esac
