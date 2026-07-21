@@ -159,6 +159,11 @@ it('formats a git-discipline-friendly fallback commit message', () => {
   assert.match(message, /Vaultsync-Reason: debounce/);
 });
 
+it('records a changed HTML viewer as visual commit evidence', () => {
+  const message = fallbackCommitMessage('manual', ['0 System/viewer.html']);
+  assert.match(message, /^Visual: 0 System\/viewer\.html$/m);
+});
+
 it('finds dibs through DIBS_BIN first', () => {
   const fake = join(tmp, 'fake-dibs');
   writeFileSync(fake, '#!/bin/sh\nexit 0\n', { mode: 0o755 });

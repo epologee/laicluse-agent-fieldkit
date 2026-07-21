@@ -363,7 +363,13 @@ function releaseDibs(registration, claimResult, env = process.env) {
   return runDibs(registration, 'release', args, env);
 }
 
-export function fallbackCommitMessage(reason = 'debounce') {
+function visualEvidenceTrailer(paths, message = '') {
+  if (/^Visual:\s*\S/im.test(message)) return [];
+  const viewer = paths.find((path) => path.toLowerCase().endsWith('.html'));
+  return viewer ? [`Visual: ${viewer}`] : [];
+}
+
+export function fallbackCommitMessage(reason = 'debounce', paths = []) {
   return [
     'Sync vault content',
     '',
@@ -373,6 +379,7 @@ export function fallbackCommitMessage(reason = 'debounce') {
     'Tests: n/a (docs-only)',
     'Slice: docs-only',
     'Red-then-green: n/a (no executable behaviour changed)',
+    ...visualEvidenceTrailer(paths),
     `Vaultsync-Reason: ${reason}`,
   ].join('\n');
 }
@@ -386,9 +393,9 @@ function withoutVaultsyncTrailers(message) {
     .trim();
 }
 
-function normalizeCommitMessage(message, reason) {
+function normalizeCommitMessage(message, reason, paths = []) {
   const cleaned = String(message || '').replace(/\r\n/g, '\n').trim();
-  if (!cleaned) return fallbackCommitMessage(reason);
+  if (!cleaned) return fallbackCommitMessage(reason, paths);
   const content = withoutVaultsyncTrailers(cleaned);
   const [subject, ...rest] = content.split('\n');
   const body = rest.join('\n').trim();
@@ -400,6 +407,7 @@ function normalizeCommitMessage(message, reason) {
     'Tests: n/a (docs-only)',
     'Slice: docs-only',
     'Red-then-green: n/a (no executable behaviour changed)',
+    ...visualEvidenceTrailer(paths, cleaned),
     `Vaultsync-Reason: ${reason}`,
   ].join('\n');
 }
@@ -493,8 +501,8 @@ function llmCommitMessage(registration, diff, paths, reason) {
       includeSliceTrailer: true,
     },
   }, { mandatory: false });
-  if (!result || typeof result.message !== 'string') return fallbackCommitMessage(reason);
-  return normalizeCommitMessage(result.message, reason);
+  if (!result || typeof result.message !== 'string') return fallbackCommitMessage(reason, paths);
+  return normalizeCommitMessage(result.message, reason, paths);
 }
 
 function safeGitInfo(root, fn) {

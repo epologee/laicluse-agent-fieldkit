@@ -68,6 +68,7 @@ vaultsync keeps the LLM-generated subject and body but canonicalizes the require
 Tests: n/a (docs-only)
 Slice: docs-only
 Red-then-green: n/a (no executable behaviour changed)
+Visual: <changed HTML viewer, when present>
 Vaultsync-Reason: <cycle reason>
 ```
 
