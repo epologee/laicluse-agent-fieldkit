@@ -13,8 +13,8 @@
 		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/drydry/">
 		<meta property="og:title" content="drydry · l'Aicluse Agent Fieldkit">
 		<meta property="og:description" content="Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.">
-		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=e857b91473">
-		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=e857b91473">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=7e0ff329b7">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=7e0ff329b7">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
@@ -22,7 +22,7 @@
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="drydry · l'Aicluse Agent Fieldkit">
 		<meta name="twitter:description" content="Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.">
-		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=e857b91473">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=7e0ff329b7">
 
 		<link rel="stylesheet" href="../../styles.css?v=3de7a55272">
 		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
@@ -52,8 +52,8 @@
 					<p class="lede">Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.3</span>
-						<span>7 skills</span>
+						<span>2.0.4</span>
+						<span>8 skills</span>
 					</div>
 				</div>
 			</section>
@@ -284,7 +284,8 @@ Signatures to look for:
 <tr><th>Skill</th><th>User-invocable</th><th>Purpose</th></tr>
 </thead>
 <tbody>
-<tr><td><code>drydry:drydry</code></td><td>yes</td><td>Orchestrator. Routes to a sub-skill or runs the audit pipeline directly. Quick and audit modes.</td></tr>
+<tr><td><code>drydry:drydry</code></td><td>yes</td><td><strong>Short invocation.</strong> &quot;Have I seen this before?&quot; about something in front of you. Orchestrator: routes to a sub-skill or runs the duplication audit pipeline. Quick and audit modes.</td></tr>
+<tr><td><code>drydry:parity-audit</code></td><td>yes</td><td><strong>Long invocation.</strong> &quot;Do all the ways to do this actually do the same thing?&quot; Named background sweep of every entry point, converges diverged consequences, then re-mines to prove it. Minutes, not seconds.</td></tr>
 <tr><td><code>drydry:sweep</code></td><td>no</td><td>Detection pass. Runs an independent reviewer with verifier-burden discipline.</td></tr>
 <tr><td><code>drydry:checklist</code></td><td>no</td><td>Opt-in seed source. Returns starting-point seed templates per domain when the operator passes <code>seed-from &lt;domain&gt;</code>. The default audit flow does not invoke this skill; the calling session formulates the checklist from the codebase itself.</td></tr>
 <tr><td><code>drydry:triage</code></td><td>no</td><td>Three-bucket triage (cheap-and-safe / partial / needs-design).</td></tr>

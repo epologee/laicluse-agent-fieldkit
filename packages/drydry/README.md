@@ -300,7 +300,8 @@ The full set of seed templates (including the design-system and React/TypeScript
 
 | Skill | User-invocable | Purpose |
 |-------|:---:|---------|
-| `drydry:drydry` | yes | Orchestrator. Routes to a sub-skill or runs the audit pipeline directly. Quick and audit modes. |
+| `drydry:drydry` | yes | **Short invocation.** "Have I seen this before?" about something in front of you. Orchestrator: routes to a sub-skill or runs the duplication audit pipeline. Quick and audit modes. |
+| `drydry:parity-audit` | yes | **Long invocation.** "Do all the ways to do this actually do the same thing?" Named background sweep of every entry point, converges diverged consequences, then re-mines to prove it. Minutes, not seconds. |
 | `drydry:sweep` | no | Detection pass. Runs an independent reviewer with verifier-burden discipline. |
 | `drydry:checklist` | no | Opt-in seed source. Returns starting-point seed templates per domain when the operator passes `seed-from <domain>`. The default audit flow does not invoke this skill; the calling session formulates the checklist from the codebase itself. |
 | `drydry:triage` | no | Three-bucket triage (cheap-and-safe / partial / needs-design). |

@@ -1,7 +1,7 @@
 ---
 name: drydry
 description: >-
-  Audit code, prose, docs, or design systems for duplicated logic, parallel paths, or familiar-looking work.
+  The short invocation. Ask "have I seen this before?" about something you are looking at right now: duplicated logic, a parallel path, work that feels familiar while being written as new. Answers in seconds to minutes over a scope you name, and escalates to a full duplication audit when the scope warrants it. For the long invocation, a whole-codebase sweep of entry points whose consequences have drifted apart, use drydry:parity-audit.
 allowed-tools:
   - Skill
   - Agent
@@ -47,7 +47,9 @@ run does not mark the version as seen. In agents that do not set
 
 # Drydry Orchestrator
 
-"Is dit een dubbeling?" becomes a discipline with a runbook, not a vibe-check. This skill is the one user-invocable surface of the `drydry` plugin. It routes between two modes and dispatches the six agent-only sub-skills that do the substance.
+"Is dit een dubbeling?" becomes a discipline with a runbook, not a vibe-check. This skill is the **short** of the plugin's two user-invocable surfaces: you are looking at something concrete and want to know whether it already exists. It routes between two modes and dispatches the six agent-only sub-skills that do the substance.
+
+The **long** surface is `drydry:parity-audit`: a named background process that sweeps every entry point in a codebase, compares what each does after the shared step, and re-runs itself to prove the divergence moved. Reach for that one when the question is not "is this duplicated?" but "do all the ways to do this actually do the same thing?".
 
 The framework rests on eight concepts (see `README.md` for the full text): Type-4 clone framing, verifier-burden discipline on LLM-found hits, allow-list scoping via checklist, drift hypothesis per finding, three-bucket convergence triage, two-fates discipline, contrarian second-pass on rejects, detection method as first-class artefact. The orchestrator does not enforce all eight in every invocation; quick mode skips the heavier discipline because the scope does not need it. Audit mode applies all eight.
 

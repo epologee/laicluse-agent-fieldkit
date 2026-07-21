@@ -93,7 +93,7 @@
 		"codexPackages": 20,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 21,
-		"skillEntries": 80,
+		"skillEntries": 81,
 		"hookFiles": 55
 	},
 	"install": {
@@ -346,7 +346,7 @@
 		},
 		{
 			"name": "drydry",
-			"version": "2.0.3",
+			"version": "2.0.4",
 			"category": "review",
 			"summary": "Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.",
 			"support": [
@@ -357,7 +357,7 @@
 			"detailPath": "agent-fieldkit/drydry/",
 			"sourcePath": "packages/drydry",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/drydry",
-			"skillCount": 7,
+			"skillCount": 8,
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
@@ -763,6 +763,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
 		},
 		{
+			"plugin": "drydry",
+			"packageVersion": "2.0.4",
+			"detailPath": "agent-fieldkit/drydry/",
+			"version": "v2.0.0",
+			"type": "Breaking",
+			"summary": "Marketplace identity moved to Fieldkit.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
+		},
+		{
 			"plugin": "whywhy",
 			"packageVersion": "2.0.4",
 			"detailPath": "agent-fieldkit/whywhy/",
@@ -770,15 +779,6 @@
 			"type": "Added",
 			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
-		},
-		{
-			"plugin": "drydry",
-			"packageVersion": "2.0.3",
-			"detailPath": "agent-fieldkit/drydry/",
-			"version": "v2.0.0",
-			"type": "Breaking",
-			"summary": "Marketplace identity moved to Fieldkit.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
 		},
 		{
 			"plugin": "lifeline",
