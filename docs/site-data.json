@@ -390,7 +390,7 @@
 		},
 		{
 			"name": "vaultsync",
-			"version": "2.0.7",
+			"version": "2.0.8",
 			"category": "feedback",
 			"summary": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha",
 			"support": [
@@ -405,9 +405,9 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.4",
-				"type": "Added",
-				"summary": "Managed-checkout status is now a CLI contract."
+				"version": "v2.0.8",
+				"type": "Fixed",
+				"summary": "Generated HTML viewers no longer block managed vault syncs."
 			}
 		},
 		{
@@ -736,6 +736,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
 		},
 		{
+			"plugin": "vaultsync",
+			"packageVersion": "2.0.8",
+			"detailPath": "agent-fieldkit/vaultsync/",
+			"version": "v2.0.8",
+			"type": "Fixed",
+			"summary": "Generated HTML viewers no longer block managed vault syncs.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
+		},
+		{
 			"plugin": "gurus",
 			"packageVersion": "2.0.7",
 			"detailPath": "agent-fieldkit/gurus/",
@@ -743,15 +752,6 @@
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
-		},
-		{
-			"plugin": "vaultsync",
-			"packageVersion": "2.0.7",
-			"detailPath": "agent-fieldkit/vaultsync/",
-			"version": "v2.0.4",
-			"type": "Added",
-			"summary": "Managed-checkout status is now a CLI contract.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
 		},
 		{
 			"plugin": "laicluse-agent-fieldkit",
