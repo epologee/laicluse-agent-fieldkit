@@ -20,6 +20,7 @@ setup() {
   git init -q -b main
   git config user.email "test@example.com"
   git config user.name "Test"
+  git config init.defaultBranch main
   git remote add origin "$UPSTREAM"
   popd >/dev/null
 
@@ -37,6 +38,7 @@ teardown() {
 run_install() {
   run bash -c "cd '$TEST_REPO' && bash '$INSTALL_SH'"
   [ "$status" -eq 0 ]
+  rm "$TEST_REPO/.git/hooks/pre-commit"
 }
 
 # Stage a non-trivial change with the given commit message body.
@@ -55,6 +57,7 @@ BODY
   git add seed.txt
   # Initial commit is trivial, so commit-msg accepts it without body schema.
   git -c commit.gpgsign=false commit -q -m "Seed initial file"
+  git checkout -q -b feature
 
   printf 'one\ntwo\nthree\nfour\n' > scratch.txt
   printf 'aa\nbb\ncc\ndd\n' > scratch2.txt
@@ -71,7 +74,7 @@ BODY
   make_wip_commit
 
   pushd "$TEST_REPO" >/dev/null
-  run git push -u origin main
+  run git push -u origin feature
   popd >/dev/null
 
   [ "$status" -ne 0 ]
@@ -84,7 +87,7 @@ BODY
 
   pushd "$TEST_REPO" >/dev/null
   run env GIT_DISCIPLINE_ALLOW_WIP_PUSH=1 GIT_DISCIPLINE_WIP_PUSH_LOG="$GIT_DISCIPLINE_WIP_PUSH_LOG" \
-    git push -u origin main
+    git push -u origin feature
   popd >/dev/null
 
   [ "$status" -eq 0 ]

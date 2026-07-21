@@ -55,7 +55,7 @@ const copy = {
 	},
 	"git-discipline": {
 		category: "workflow",
-		summary: "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
+		summary: "Coordinates verified worktree candidates, atomic default-branch merges, and shared commit and push enforcement.",
 	},
 	"dont-do-that": {
 		category: "workflow",

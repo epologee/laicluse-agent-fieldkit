@@ -5,10 +5,11 @@ setup() {
   SKILL="$REPO_ROOT/packages/git-discipline/skills/rebase-latest-default/SKILL.md"
 }
 
-@test "stale remote target asks before fetching and continues in the same invocation" {
-  grep -q 'Bash(git fetch:\*)' "$SKILL"
-  grep -q 'Ask the operator exactly once' "$SKILL"
-  grep -q 'Fetch origin and continue?' "$SKILL"
-  grep -q '^git fetch origin$' "$SKILL"
-  grep -q 'return to Step 0b in the same invocation' "$SKILL"
+@test "rebase delegates default resolution and the rebase operation to the shared command" {
+  grep -q 'bin/git-discipline" default' "$SKILL"
+  grep -q 'bin/git-discipline" rebase' "$SKILL"
+  grep -q -- '--local' "$SKILL"
+  grep -q -- '--remote' "$SKILL"
+  ! grep -q '^git rebase ' "$SKILL"
+  ! grep -q '^git fetch ' "$SKILL"
 }

@@ -19,6 +19,17 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.48]
+
+### Breaking
+
+- **Default-branch authoring now goes through verified worktree candidates.** Installing the native hooks adds a `pre-commit` guard that blocks commits in the primary checkout and on the default branch. Create a linked feature worktree, then use `git-discipline rebase`, `verify`, and `merge`; reinstall hooks with `/git-discipline:install-hooks --force` after updating.
+
+### Added
+
+- **Parallel candidates can merge without a canonical checkout.** The shared `bin/git-discipline` command dynamically resolves the default branch, rebases the worktree owner against the actual local or remote tip, records passing verification against the candidate SHA, creates a two-parent merge commit, and atomically updates the default ref. A concurrent winner causes a clean compare-and-swap failure followed by rebase and re-verification, without a long-lived merge lock.
+- **Native pushes enforce the candidate topology.** The installed `pre-push` hook permits a default update only when it is a verified two-parent merge whose first parent is the current remote tip and whose tree equals the candidate tree. Remote branch protection remains the hard boundary for repositories that require PRs.
+
 ## [v2.0.47]
 
 ### Changed

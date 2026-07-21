@@ -1,0 +1,388 @@
+#!/usr/bin/env node
+
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+
+class GitDisciplineError extends Error {
+  constructor(message, exitCode = 1) {
+    super(message);
+    this.exitCode = exitCode;
+  }
+}
+
+function runGit(argumentsList, options = {}) {
+  const result = spawnSync('git', argumentsList, {
+    cwd: options.cwd ?? process.cwd(),
+    encoding: 'utf8',
+    input: options.input,
+    stdio: options.stdio ?? ['pipe', 'pipe', 'pipe'],
+  });
+
+  if (result.error) {
+    throw new GitDisciplineError(`git ${argumentsList[0]} failed: ${result.error.message}`);
+  }
+  if (options.allowFailure || result.status === 0) {
+    return {
+      status: result.status ?? 1,
+      stdout: result.stdout?.trim() ?? '',
+      stderr: result.stderr?.trim() ?? '',
+    };
+  }
+
+  const detail = result.stderr?.trim() || result.stdout?.trim() || `exit ${result.status}`;
+  throw new GitDisciplineError(`git ${argumentsList.join(' ')} failed: ${detail}`, result.status ?? 1);
+}
+
+function gitOutput(argumentsList) {
+  return runGit(argumentsList).stdout;
+}
+
+function refExists(reference) {
+  return runGit(['rev-parse', '--verify', '--quiet', reference], { allowFailure: true }).status === 0;
+}
+
+function defaultBranch() {
+  const originHead = runGit(
+    ['symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'],
+    { allowFailure: true },
+  );
+  if (originHead.status === 0 && originHead.stdout.startsWith('origin/')) {
+    return originHead.stdout.slice('origin/'.length);
+  }
+
+  const configured = runGit(['config', '--get', 'init.defaultBranch'], { allowFailure: true });
+  if (configured.status === 0 && refExists(`refs/heads/${configured.stdout}`)) {
+    return configured.stdout;
+  }
+
+  throw new GitDisciplineError(
+    "Cannot determine the default branch from origin/HEAD or init.defaultBranch.",
+  );
+}
+
+function currentBranch() {
+  const result = runGit(['symbolic-ref', '--quiet', '--short', 'HEAD'], { allowFailure: true });
+  if (result.status !== 0) {
+    throw new GitDisciplineError('HEAD is detached; a candidate must be checked out on a branch.');
+  }
+  return result.stdout;
+}
+
+function requireCleanWorktree() {
+  if (gitOutput(['status', '--porcelain'])) {
+    throw new GitDisciplineError('Working tree is dirty; commit the candidate before continuing.');
+  }
+}
+
+function targetFrom(argumentsList) {
+  const local = argumentsList.includes('--local');
+  const remote = argumentsList.includes('--remote');
+  if (local === remote) {
+    throw new GitDisciplineError('Choose exactly one target: --local or --remote.');
+  }
+  return local ? 'local' : 'remote';
+}
+
+function localDefaultTip(branchName) {
+  const reference = `refs/heads/${branchName}`;
+  if (!refExists(reference)) {
+    throw new GitDisciplineError(`Local default branch ${branchName} does not exist.`);
+  }
+  return gitOutput(['rev-parse', reference]);
+}
+
+function remoteDefaultTip(branchName) {
+  const result = runGit(
+    ['ls-remote', '--exit-code', 'origin', `refs/heads/${branchName}`],
+    { allowFailure: true },
+  );
+  if (result.status !== 0 || !result.stdout) {
+    const detail = result.stderr || `origin/${branchName} does not exist`;
+    throw new GitDisciplineError(`Cannot read the remote default branch: ${detail}`);
+  }
+  return result.stdout.split(/\s+/)[0];
+}
+
+function defaultTip(target, branchName) {
+  return target === 'local' ? localDefaultTip(branchName) : remoteDefaultTip(branchName);
+}
+
+function requireCandidateBranch(branchName) {
+  const activeBranch = currentBranch();
+  if (activeBranch === branchName) {
+    throw new GitDisciplineError(`The candidate cannot be the default branch ${branchName}.`);
+  }
+  return activeBranch;
+}
+
+function isAncestor(ancestor, descendant) {
+  return runGit(['merge-base', '--is-ancestor', ancestor, descendant], { allowFailure: true }).status === 0;
+}
+
+function gitCommonDirectory() {
+  const absolute = runGit(['rev-parse', '--path-format=absolute', '--git-common-dir'], { allowFailure: true });
+  if (absolute.status === 0) {
+    return realpathSync(absolute.stdout);
+  }
+  const repositoryRoot = gitOutput(['rev-parse', '--show-toplevel']);
+  return realpathSync(resolve(repositoryRoot, gitOutput(['rev-parse', '--git-common-dir'])));
+}
+
+function repositoryStateDirectory() {
+  const repositoryKey = createHash('sha256').update(gitCommonDirectory()).digest('hex').slice(0, 24);
+  const laicluseHome = process.env.LAICLUSE_HOME || join(homedir(), '.laicluse');
+  return join(laicluseHome, 'git-discipline', 'candidates', repositoryKey);
+}
+
+function proofPath(candidate, target) {
+  return join(repositoryStateDirectory(), `${candidate}.${target}.json`);
+}
+
+function removeProof(candidate, target) {
+  rmSync(proofPath(candidate, target), { force: true });
+}
+
+function writeProof(proof) {
+  const destination = proofPath(proof.candidate, proof.target);
+  mkdirSync(dirname(destination), { recursive: true });
+  const temporary = `${destination}.${process.pid}.tmp`;
+  writeFileSync(temporary, `${JSON.stringify(proof, null, 2)}\n`, { mode: 0o600 });
+  renameSync(temporary, destination);
+}
+
+function readProof(candidate, target) {
+  const path = proofPath(candidate, target);
+  if (!existsSync(path)) {
+    throw new GitDisciplineError(`Candidate ${candidate.slice(0, 12)} has no passing verification for ${target}.`);
+  }
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    throw new GitDisciplineError(`Candidate verification is unreadable: ${error.message}`);
+  }
+}
+
+function validateProof(candidate, base, branchName, target) {
+  const proof = readProof(candidate, target);
+  if (proof.version !== 1 || proof.candidate !== candidate || proof.defaultBranch !== branchName) {
+    throw new GitDisciplineError(`Candidate ${candidate.slice(0, 12)} verification does not match the current repository state.`);
+  }
+  if (proof.base !== base) {
+    throw new GitDisciplineError(
+      `The default branch moved from ${proof.base.slice(0, 12)} to ${base.slice(0, 12)}; rebase and verify the candidate again.`,
+    );
+  }
+  if (proof.tree !== gitOutput(['rev-parse', `${candidate}^{tree}`])) {
+    throw new GitDisciplineError(`Candidate ${candidate.slice(0, 12)} tree no longer matches its verification.`);
+  }
+  if (!isAncestor(base, candidate)) {
+    throw new GitDisciplineError('Candidate is not a descendant of the current default branch; rebase and verify it again.');
+  }
+  return proof;
+}
+
+function rebaseCommand(argumentsList) {
+  const target = targetFrom(argumentsList);
+  const branchName = defaultBranch();
+  requireCandidateBranch(branchName);
+  requireCleanWorktree();
+
+  let base;
+  if (target === 'local') {
+    base = localDefaultTip(branchName);
+  } else {
+    remoteDefaultTip(branchName);
+    runGit(['fetch', '--no-tags', 'origin', `refs/heads/${branchName}`], { stdio: 'inherit' });
+    base = gitOutput(['rev-parse', 'FETCH_HEAD']);
+  }
+
+  const candidate = gitOutput(['rev-parse', 'HEAD']);
+  if (isAncestor(base, candidate)) {
+    process.stdout.write(`Candidate is already based on ${base.slice(0, 12)}.\n`);
+    return;
+  }
+
+  runGit(['rebase', base], { stdio: 'inherit' });
+  process.stdout.write(`Rebased ${currentBranch()} onto ${base.slice(0, 12)}.\n`);
+}
+
+function verifyCommand(argumentsList) {
+  const separator = argumentsList.indexOf('--');
+  if (separator < 0 || separator === argumentsList.length - 1) {
+    throw new GitDisciplineError('Verification requires a command after --.');
+  }
+  const target = targetFrom(argumentsList.slice(0, separator));
+  const verificationCommand = argumentsList.slice(separator + 1);
+  const branchName = defaultBranch();
+  const featureBranch = requireCandidateBranch(branchName);
+  requireCleanWorktree();
+  const candidate = gitOutput(['rev-parse', 'HEAD']);
+  const base = defaultTip(target, branchName);
+  if (!isAncestor(base, candidate)) {
+    throw new GitDisciplineError('Candidate is not a descendant of the current default branch; rebase it before verification.');
+  }
+
+  removeProof(candidate, target);
+  const result = spawnSync(verificationCommand[0], verificationCommand.slice(1), {
+    cwd: process.cwd(),
+    stdio: 'inherit',
+  });
+  const exitCode = result.error?.code === 'ENOENT' ? 127 : (result.status ?? 1);
+  if (exitCode !== 0) {
+    throw new GitDisciplineError(`Verification command failed with exit ${exitCode}.`, exitCode);
+  }
+
+  writeProof({
+    version: 1,
+    candidate,
+    tree: gitOutput(['rev-parse', `${candidate}^{tree}`]),
+    base,
+    defaultBranch: branchName,
+    branch: featureBranch,
+    target,
+    command: verificationCommand,
+    verifiedAt: new Date().toISOString(),
+  });
+  process.stdout.write(`Verified ${candidate.slice(0, 12)} against ${base.slice(0, 12)} (${target}).\n`);
+}
+
+function createMergeCommit(branchName, base, candidate, proof) {
+  const tree = gitOutput(['rev-parse', `${candidate}^{tree}`]);
+  const message = [
+    `Merge branch '${branchName}'`,
+    '',
+    `Candidate ${candidate.slice(0, 12)} was verified against ${base.slice(0, 12)} with:`,
+    proof.command.join(' '),
+    '',
+    'Slice: merge',
+    'PII-Doublecheck: yes',
+    '',
+  ].join('\n');
+  return runGit(['commit-tree', tree, '-p', base, '-p', candidate], { input: message }).stdout;
+}
+
+function mergeCommand(argumentsList) {
+  const target = targetFrom(argumentsList);
+  const defaultName = defaultBranch();
+  const featureBranch = requireCandidateBranch(defaultName);
+  requireCleanWorktree();
+  const candidate = gitOutput(['rev-parse', 'HEAD']);
+  const base = defaultTip(target, defaultName);
+  const proof = validateProof(candidate, base, defaultName, target);
+  const mergeCommit = createMergeCommit(featureBranch, base, candidate, proof);
+
+  if (target === 'local') {
+    const update = runGit(
+      ['update-ref', `refs/heads/${defaultName}`, mergeCommit, base],
+      { allowFailure: true },
+    );
+    if (update.status !== 0) {
+      throw new GitDisciplineError(`The default branch moved during merge: ${update.stderr || update.stdout}`);
+    }
+  } else {
+    const push = runGit(
+      ['push', 'origin', `${mergeCommit}:refs/heads/${defaultName}`],
+      { allowFailure: true },
+    );
+    if (push.status !== 0) {
+      const currentRemoteTip = remoteDefaultTip(defaultName);
+      if (currentRemoteTip !== base) throw new GitDisciplineError(`The default branch moved during merge; the non-force push lost the race: ${push.stderr || push.stdout}`);
+      throw new GitDisciplineError(`Remote rejected the merge push: ${push.stderr || push.stdout}`);
+    }
+  }
+
+  process.stdout.write(`Merged ${candidate.slice(0, 12)} as ${mergeCommit.slice(0, 12)} on ${target} ${defaultName}.\n`);
+}
+
+function guardCommitCommand() {
+  const defaultName = defaultBranch();
+  const branchName = currentBranch();
+  if (branchName === defaultName) {
+    throw new GitDisciplineError(`Direct commits on the default branch ${defaultName} are blocked; commit in a linked feature worktree.`);
+  }
+
+  const gitDirectory = realpathSync(gitOutput(['rev-parse', '--absolute-git-dir']));
+  if (gitDirectory === gitCommonDirectory()) {
+    throw new GitDisciplineError('Authoring in the primary checkout is blocked; use a linked feature worktree.');
+  }
+}
+
+function guardPushCommand() {
+  const defaultName = defaultBranch();
+  const updates = readFileSync(0, 'utf8').split('\n').filter(Boolean);
+  for (const update of updates) {
+    const fields = update.trim().split(/\s+/);
+    if (fields.length < 4 || fields[2] !== `refs/heads/${defaultName}`) {
+      continue;
+    }
+    const newCommit = fields[1];
+    const remoteCommit = fields[3];
+    if (/^0+$/.test(newCommit) || /^0+$/.test(remoteCommit)) {
+      throw new GitDisciplineError(`Creating or deleting the default branch ${defaultName} is blocked.`);
+    }
+    const parents = gitOutput(['show', '-s', '--format=%P', newCommit]).split(/\s+/).filter(Boolean);
+    if (parents.length !== 2 || parents[0] !== remoteCommit) {
+      throw new GitDisciplineError(`Default branch updates must be a two-parent merge whose first parent is the current remote tip.`);
+    }
+    const candidate = parents[1];
+    if (gitOutput(['rev-parse', `${newCommit}^{tree}`]) !== gitOutput(['rev-parse', `${candidate}^{tree}`])) {
+      throw new GitDisciplineError('Default branch merge tree must match the verified candidate tree.');
+    }
+    validateProof(candidate, remoteCommit, defaultName, 'remote');
+  }
+}
+
+function printHelp() {
+  process.stdout.write(`Usage:
+  git-discipline default
+  git-discipline rebase (--local|--remote)
+  git-discipline verify (--local|--remote) -- <command> [args...]
+  git-discipline merge (--local|--remote)
+  git-discipline guard-commit
+  git-discipline guard-push
+`);
+}
+
+function main() {
+  const [command, ...argumentsList] = process.argv.slice(2);
+  switch (command) {
+    case 'default':
+      process.stdout.write(`${defaultBranch()}\n`);
+      break;
+    case 'rebase':
+      rebaseCommand(argumentsList);
+      break;
+    case 'verify':
+      verifyCommand(argumentsList);
+      break;
+    case 'merge':
+      mergeCommand(argumentsList);
+      break;
+    case 'guard-commit':
+      guardCommitCommand();
+      break;
+    case 'guard-push':
+      guardPushCommand();
+      break;
+    case '--help':
+    case '-h':
+    case undefined:
+      printHelp();
+      break;
+    default:
+      throw new GitDisciplineError(`Unknown command: ${command}`);
+  }
+}
+
+try {
+  main();
+} catch (error) {
+  if (error instanceof GitDisciplineError) {
+    process.stderr.write(`git-discipline: ${error.message}\n`);
+    process.exit(error.exitCode);
+  }
+  throw error;
+}

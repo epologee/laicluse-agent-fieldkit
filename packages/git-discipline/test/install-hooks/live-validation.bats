@@ -7,7 +7,19 @@
 
 load helpers
 
+@test "installed flow hooks pin a concrete Node.js executable" {
+  run_install "$TEST_REPO"
+  [ "$status" -eq 0 ]
+
+  local hook
+  for hook in pre-commit pre-push; do
+    ! grep -q '__NODE_EXECUTABLE__' "$(hook_target_path "$hook")"
+    grep -q "NODE_EXECUTABLE=\"$NODE_BIN\"" "$(hook_target_path "$hook")"
+  done
+}
+
 @test "installed commit-msg blocks non-trivial body-less commit" {
+  use_linked_feature_worktree
   run_install "$TEST_REPO"
   [ "$status" -eq 0 ]
 
@@ -28,6 +40,7 @@ load helpers
 }
 
 @test "installed commit-msg accepts a body-compliant commit" {
+  use_linked_feature_worktree
   run_install "$TEST_REPO"
   [ "$status" -eq 0 ]
 
@@ -47,6 +60,7 @@ load helpers
 }
 
 @test "installed commit-msg accepts non-trivial commit with full body schema" {
+  use_linked_feature_worktree
   run_install "$TEST_REPO"
   [ "$status" -eq 0 ]
 
@@ -103,6 +117,7 @@ BODY
 }
 
 @test "post-commit does NOT log when commit-msg ran normally" {
+  use_linked_feature_worktree
   run_install "$TEST_REPO"
   [ "$status" -eq 0 ]
 

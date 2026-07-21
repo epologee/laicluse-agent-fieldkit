@@ -1,176 +1,14 @@
 ---
 name: rebase-latest-default
 description: >-
-  Rebase the current branch onto the freshest local or remote default branch.
-allowed-tools: Bash(git rev-parse:*), Bash(git ls-remote:*), Bash(git fetch:*), Bash(git rebase:*), Bash(git rev-list:*), Bash(git add:*), Bash(git diff:*), Bash(git status:*), Bash(git symbolic-ref:*), Bash(git remote:*), Bash(git log:*), Bash(git push:*), Bash(git config:*)
+  Rebase and verify the current worktree branch on the actual default-branch tip without using a default checkout.
 ---
 
-# /git-discipline:rebase-latest-default Skill
+# Rebase Latest Default
 
-Rebase the current branch on the latest version of the default branch. The default branch name comes from Git's `origin/HEAD` metadata, not from branch-name conventions. The target can be the local branch with that name or the matching remote tracking branch, whichever is further ahead. This supports worktree setups where the canonical checkout has unpushed default-branch commits.
+Rebase the current worktree's feature branch on the current default branch and attach fresh verification evidence to the resulting candidate commit. The shared `git-discipline` command owns default-branch resolution, cleanliness checks, the rebase, and candidate evidence; do not reproduce those operations with ad hoc Git commands.
 
-## Step 0: Detect Default Branch and Rebase Target
-
-### 0a: Find the default branch name
-
-Determine the default branch name (`$DEFAULT`):
-
-```bash
-DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
-if [ -z "$DEFAULT" ]; then
-  CONFIGURED_DEFAULT=$(git config --get init.defaultBranch 2>/dev/null || true)
-  if [ -n "$CONFIGURED_DEFAULT" ] && git rev-parse --verify "refs/heads/$CONFIGURED_DEFAULT" >/dev/null 2>&1; then
-    DEFAULT=$CONFIGURED_DEFAULT
-  fi
-fi
-```
-
-This preserves repository metadata as the first authority while still supporting a local-only repository: `init.defaultBranch` is Git configuration, not a hard-coded `main` or `master` guess, and it is accepted only when the corresponding local branch exists.
-
-If `$DEFAULT` is empty, stop with the message: `Cannot determine the default branch from origin/HEAD or init.defaultBranch. Configure Git's default branch or pass an explicit target.`
-
-### 0b: Determine the rebase target
-
-Check which references to `$DEFAULT` exist:
-
-```bash
-git rev-parse --verify refs/heads/$DEFAULT 2>/dev/null
-```
-```bash
-git rev-parse --verify refs/remotes/origin/$DEFAULT 2>/dev/null
-```
-
-Based on availability, determine `$TARGET`:
-
-- **Both exist:** Compare which is ahead:
-  ```bash
-  git rev-list --left-right --count refs/heads/$DEFAULT...refs/remotes/origin/$DEFAULT
-  ```
-  Left count = commits in local not in origin (local ahead). Right count = commits in origin not in local (origin ahead). If origin is strictly ahead (right > 0, left = 0), use `origin/$DEFAULT`. If both have diverged (left > 0 AND right > 0), warn: `Local $DEFAULT and origin/$DEFAULT have diverged (<left> and <right> commits respectively). Rebasing on local. Consider fetching and fast-forwarding local $DEFAULT first.` Then use `$DEFAULT` (local). If local is ahead or equal, use `$DEFAULT` (local). Report which target was chosen and why.
-- **Only local exists:** Use `$DEFAULT`. No staleness check needed.
-- **Only remote exists:** Use `origin/$DEFAULT`. Proceed to Step 1 (staleness check).
-- **Neither exists:** Stop with the message: `Default branch $DEFAULT does not exist locally or as origin/$DEFAULT. Fetch or fix origin/HEAD, then retry.`
-
-## Step 1: Staleness Check (remote targets only)
-
-Skip this step entirely when `$TARGET` is a local branch.
-
-When `$TARGET` is `origin/$DEFAULT`, check if the tracking ref matches the remote without fetching. Run these as **separate Bash calls**:
-
-```bash
-git rev-parse refs/remotes/origin/$DEFAULT
-```
-```bash
-git ls-remote origin refs/heads/$DEFAULT
-```
-
-Compare the SHAs:
-
-- **If they match:** proceed to Step 2.
-- **If they differ:** show the stale SHAs:
-  ```
-  origin/$DEFAULT is stale (local: <short-sha>, remote: <short-sha>).
-  Fetching origin updates all remote-tracking refs. A later --force-with-lease can use those refreshed refs as its overwrite baseline.
-  Fetch origin and continue?
-  ```
-
-Ask the operator exactly once through the active host's user-input mechanism. If approved, remember that approval for the rest of this invocation and fetch explicitly:
-
-```bash
-git fetch origin
-```
-
-If the fetch succeeds, return to Step 0b in the same invocation. Re-determine `$TARGET` from the refreshed refs, repeat this staleness check when the target is remote, and then continue to Step 2. If the remote advances again before that repeated check, reuse the recorded approval and fetch again without asking a second time. If a fetch fails, stop with the command's error; do not rebase against the stale ref.
-
-If declined, stop without fetching or rebasing.
-
-## Step 2: Pre-rebase Guards
-
-First, check if the current branch IS the default branch:
-
-```bash
-git rev-parse --abbrev-ref HEAD
-```
-
-If the current branch equals `$DEFAULT`, report `You are on $DEFAULT, nothing to rebase.` and stop.
-
-Then, check for uncommitted changes:
-
-```bash
-git status --porcelain
-```
-
-If the output is non-empty, report `Working tree is dirty. Stash or commit your changes first.` and stop.
-
-## Step 3: Pre-rebase State
-
-Record the current state so the user can assess the rebase afterward:
-
-```bash
-git rev-list --left-right --count $TARGET...HEAD
-```
-
-Report: `Branch is <ahead> commits ahead, <behind> commits behind $TARGET.`
-
-If the branch is 0 commits behind, report `Already up to date with $TARGET.` and stop.
-
-## Step 4: Rebase
-
-```bash
-git rebase $TARGET
-```
-
-- **If the rebase succeeds cleanly:** proceed to Step 5.
-- **If the rebase hits conflicts:** proceed to Step 4a.
-
-## Step 4a: Resolve Conflicts
-
-When a rebase stops on conflicts:
-
-1. Read each conflicting file to understand both sides.
-2. Resolve the conflicts. Use your understanding of the codebase and the intent of both sides to produce the correct merge. Prefer the branch's intent when it deliberately diverges from the default branch (that's the point of the branch). Prefer the default branch's version for incidental changes (renames, formatting, new imports).
-3. Stage the resolved files and continue:
-   ```bash
-   git add <resolved-files>
-   ```
-   ```bash
-   git rebase --continue
-   ```
-4. Repeat if the rebase stops on further commits.
-5. If a conflict is genuinely ambiguous (both sides made intentional, incompatible changes to the same logic), stop and describe the conflict to the user instead of guessing.
-
-### Generated files: regenerate, don't hand-merge
-
-A conflict in a generated file (a schema dump like Rails' `db/schema.rb`, a lockfile, codegen output) is not resolved by editing the markers; hand-stitching produces something the generator would never emit. Clear the markers only to unblock (take either side), then rerun whatever produces the file and stage that output. Pick the right tool per file: you already know which command regenerates each kind.
-
-If the generator needs the fully merged inputs (which only exist once the rebase finishes), unblock the conflicting commit with a placeholder, let the rebase complete, regenerate once against the final tree, and fold the result into the commit it belongs to.
-
-## Step 5: After Rebase
-
-Report the result: how many commits ahead of `$TARGET`, and whether conflicts were resolved (and if so, which files). Then proceed to Step 6 for the push decision.
-
-## Step 5a: Mark carry-along commits that predate the discipline
-
-A rebase replays commits that may have been authored before the commit-body
-discipline existed; on the push the body-gate flags those subject-only commits.
-They are not new work to re-justify, and reworking their bodies is busywork over
-changes that already shipped under their pre-rebase SHA. Mark them as carried,
-do not rewrite them.
-
-For each rebased commit whose body does not meet the schema (a subject-only
-commit, or one the gate would flag), amend the trailer `Discipline: skip due to
-rebase` onto it so the body-gate treats it as already-shipped. The route is the
-local session's call: stamp during the rebase, or push first and let the gate
-name the stragglers, then amend the trailer onto exactly those. Commits you
-authored under the discipline keep their real body; the marker is only for the
-carry-along, not a blanket bypass. The trailer and its semantics are documented
-in `/git-discipline:commit-discipline` under Escape hatches.
-
-## Step 6: Forced-continuation push (resolver-gated)
-
-A rebase rewrites the branch's commits, so the published branch now points at pre-rebase commits and its open PR keeps running CI against the OLD tip. **The whole point of this skill is that CI re-runs on the rebased version**, so pushing the rebased tip is the COMPLETION of this rebase, not a new decision: it does not need a fresh go. The current branch is a feature branch here (Step 2 already stopped if you were on the default), so this never force-pushes the default. Deferring the push to the operator leaves CI stuck on the pre-rebase commits and defeats the skill.
-
-Consult the resolver, reading `push_access` from its output:
+## Resolve the runtime and repository mode
 
 ```bash
 resolve_git_discipline_root() {
@@ -179,38 +17,46 @@ resolve_git_discipline_root() {
     return 0
   fi
   if command -v codex >/dev/null 2>&1; then
-    codex plugin list --json \
-      | jq -er '.installed[] | select(.pluginId == "git-discipline@laicluse-agent-fieldkit") | .source.path'
+    codex plugin list --json | jq -er '.installed[] | select(.pluginId == "git-discipline@laicluse-agent-fieldkit") | .source.path'
     return $?
   fi
   return 1
 }
 
 GD_ROOT="$(resolve_git_discipline_root)" || { echo "git-discipline plugin root not found" >&2; exit 1; }
-"$GD_ROOT/skills/push-policy/git-repo-policy"
+"$GD_ROOT/bin/git-discipline" default
+POLICY="$("$GD_ROOT/skills/push-policy/git-repo-policy")"
+MODE="$(printf '%s\n' "$POLICY" | sed -n 's/^mode=//p')"
 ```
 
-**The gate is whether the branch is PUBLISHED, not whether an upstream is configured.** A branch can have a live remote counterpart (and an open PR) while its local tracking is unset; `@{u}` then fails even though the branch is fully published. Detect publication by the remote branch, and read the current branch name first:
+Use `--local` only for `local-only`. Every mode with an origin uses `--remote`, whose exact fetch writes only `FETCH_HEAD`; it does not refresh remote-tracking refs or change a feature-branch force-with-lease baseline.
 
 ```bash
-git rev-parse --abbrev-ref HEAD
+case "$MODE" in
+  local-only) TARGET=--local ;;
+  solo-trunk|team-trunk|pr-flow|external) TARGET=--remote ;;
+  *) echo "Unknown git-discipline mode: $MODE" >&2; exit 1 ;;
+esac
+
+"$GD_ROOT/bin/git-discipline" rebase "$TARGET"
 ```
+
+## Conflicts belong to the worktree owner
+
+When Git stops on a conflict, inspect both intents, resolve it in this worktree, stage the resolution, and continue the rebase. Regenerate generated files from their canonical inputs instead of hand-merging them. Stop only for a genuinely ambiguous product decision. Never move conflict resolution to a default checkout or a central integrator.
+
+## Verify the rebased candidate
+
+Choose the relevant deterministic test command from the repository and run it through the same executable so evidence is recorded against both the candidate SHA and the current default SHA:
+
 ```bash
-git rev-parse --verify refs/remotes/origin/$BRANCH 2>/dev/null
+"$GD_ROOT/bin/git-discipline" verify "$TARGET" -- <test-command> [args...]
 ```
 
-Decide:
+Use `bash -lc '<command-1> && <command-2>'` only when one candidate needs multiple commands. A failed command removes mergeability for that candidate. Any later commit, amend, rebase, or default-branch advance requires another verification.
 
-- **Remote branch exists AND `push_access` is not `external`:** force-with-lease push the rebased tip so CI re-runs. `--force-with-lease` compares against the remote-tracking ref and refuses if the remote moved beyond what you last fetched. When Step 1 fetched after operator approval, the refreshed remote-tracking SHAs are the new lease baselines; that explicit consequence is why Step 1 asks before fetching.
-  - Upstream configured (`@{u}` resolves): `git push --force-with-lease`
-  - Upstream NOT configured: push explicitly against the published branch and repair tracking, do NOT defer:
-    ```bash
-    git push --force-with-lease=$BRANCH:$(git rev-parse refs/remotes/origin/$BRANCH) origin HEAD:$BRANCH
-    ```
-    ```bash
-    git branch --set-upstream-to=origin/$BRANCH
-    ```
-- **No remote branch at all (branch is local-only, never pushed):** this would be a FIRST publication, a genuine operator gate. Leave it to the operator and report the branch is rebased and ready.
-- **`push_access` is `external`:** no write rights. Leave the push to the operator.
+## Published feature branches
 
-The push hooks still gate the CONTENT of that push (no wip commits, valid bodies); the force flag does not bypass them. See `/git-discipline:push-policy` for the mode behavior.
+If the rebase rewrote an already-published feature branch and policy permits writes, complete the rebase with `git push --force-with-lease` to that feature branch. Never force-push the default branch. A first publication and `external` mode remain operator-owned.
+
+Report the old and new candidate SHAs, the resolved default branch and base SHA, conflict resolutions, the verification command, and whether an existing feature branch was updated.

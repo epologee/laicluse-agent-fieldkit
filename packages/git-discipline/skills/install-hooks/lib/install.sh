@@ -49,7 +49,7 @@ done
 # Repo guard
 # ---------------------------------------------------------------------------
 
-if ! git_dir=$(git rev-parse --git-dir 2>/dev/null); then
+if ! git_dir=$(git rev-parse --git-common-dir 2>/dev/null); then
   printf 'git-discipline:install-hooks ERROR: not inside a git repository.\n' >&2
   exit 1
 fi
@@ -109,6 +109,18 @@ if [[ -z "$plugin_install_path" ]] \
   exit 1
 fi
 
+node_executable=$(node -p 'process.execPath' 2>/dev/null || true)
+if [[ -z "$node_executable" ]] && command -v asdf >/dev/null 2>&1; then
+  node_version=$(asdf list nodejs 2>/dev/null | sed 's/^[[:space:]*]*//' | tail -1)
+  if [[ -n "$node_version" ]]; then
+    node_executable=$(ASDF_NODEJS_VERSION="$node_version" node -p 'process.execPath' 2>/dev/null || true)
+  fi
+fi
+if [[ -z "$node_executable" ]] || [[ ! -x "$node_executable" ]]; then
+  printf 'git-discipline:install-hooks ERROR: cannot resolve a Node.js executable.\n' >&2
+  exit 1
+fi
+
 # ---------------------------------------------------------------------------
 # Hooks to install
 # ---------------------------------------------------------------------------
@@ -116,7 +128,7 @@ fi
 # Slice 7 will add pre-push, slice 8 prepare-commit-msg. Both will be
 # auto-picked up here when the source files appear, no edits needed.
 
-hook_candidates=(commit-msg prepare-commit-msg post-commit post-rewrite pre-push)
+hook_candidates=(pre-commit commit-msg prepare-commit-msg post-commit post-rewrite pre-push)
 
 # ---------------------------------------------------------------------------
 # Install loop
@@ -135,12 +147,15 @@ if [[ "$dry_run" -eq 0 ]]; then
 fi
 
 # rendered_source <hook-name>
-# Reads the source script and substitutes __PLUGIN_INSTALL_PATH__.
+# Reads the source script and substitutes runtime paths.
 rendered_source() {
   local hook="$1"
   local src="$SOURCE_HOOKS_DIR/$hook"
   # sed -i not portable across BSD/GNU; render to stdout instead.
-  sed "s|__PLUGIN_INSTALL_PATH__|$plugin_install_path|g" "$src"
+  sed \
+    -e "s|__PLUGIN_INSTALL_PATH__|$plugin_install_path|g" \
+    -e "s|__NODE_EXECUTABLE__|$node_executable|g" \
+    "$src"
 }
 
 exit_code=0

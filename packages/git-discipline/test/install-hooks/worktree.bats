@@ -1,11 +1,9 @@
 #!/usr/bin/env bats
-# worktree.bats
-# In a git worktree, install.sh detects the worktree's gitdir (not the main
-# repo's) and lands hooks there.
+# allow-comment: linked-worktree regression proves the common Git hook root executes.
 
 load helpers
 
-@test "worktree install lands in the worktree's gitdir" {
+@test "worktree install writes the common git hooks directory and executes there" {
   # Need an initial commit before adding a worktree.
   pushd "$TEST_REPO" >/dev/null
   printf 'init\n' > README
@@ -21,16 +19,19 @@ load helpers
   run_install "$worktree_dir"
   [ "$status" -eq 0 ]
 
-  # The worktree's gitdir is .git/worktrees/wt under the main repo, NOT
-  # the main .git/hooks/. Verify the install landed in the worktree-specific
-  # hooks dir, which "git rev-parse --git-dir" returns from inside the wt.
+  # allow-comment: Git executes hooks from the common directory across linked worktrees.
   pushd "$worktree_dir" >/dev/null
   local gitdir
-  gitdir=$(git rev-parse --git-dir)
-  # Resolve to absolute.
+  gitdir=$(git rev-parse --git-common-dir)
   gitdir=$(cd "$gitdir" && pwd)
   popd >/dev/null
 
+  [ -f "$gitdir/hooks/pre-commit" ]
   [ -f "$gitdir/hooks/commit-msg" ]
   [ -f "$gitdir/hooks/post-commit" ]
+
+  printf 'one\n' > "$worktree_dir/tiny.txt"
+  git -C "$worktree_dir" add tiny.txt
+  run git -C "$worktree_dir" -c commit.gpgsign=false commit -m "Tiny worktree commit"
+  [ "$status" -eq 0 ]
 }

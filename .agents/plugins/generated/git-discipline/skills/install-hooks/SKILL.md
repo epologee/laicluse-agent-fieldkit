@@ -14,11 +14,12 @@ The hooks:
 
 | Hook | Purpose |
 |------|---------|
+| `pre-commit` | Blocks ordinary commits in the primary checkout and on the dynamically resolved default branch; authoring belongs in a linked feature worktree. |
 | `commit-msg` | Validates the commit message against `validate-body.sh` (the same lib as the PreToolUse guard). |
 | `prepare-commit-msg` | Pre-fills the editor window with a structured body template based on the staged diff. |
 | `post-commit` | Detects `--no-verify` usage and logs it to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log`. |
 | `post-rewrite` | Runs after `git rebase` and `git commit --amend` and validates each rewritten body. git ignores its exit status, so it warns and logs to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-post-rewrite.log` rather than blocking; `pre-push` is the blocking gate for these commits. It exists because `commit-msg` does not fire on rebase-picked commits. |
-| `pre-push` | Blocks the push when any commit in the range carries `Slice: wip` (wip-gate) or a body that fails `validate-body.sh`. The body check mirrors the Claude-side push-body-gate so CLI/Codex pushes reach the same verdict. |
+| `pre-push` | Blocks wip or invalid commit bodies and rejects a default update unless it is the verified two-parent merge produced by the shared `git-discipline` flow. |
 
 ## Why
 
@@ -36,13 +37,12 @@ behavior never diverges.
 ## What the skill does
 
 1. Verifies that we are inside a git repo (`git rev-parse --git-dir`).
-2. Detects whether `core.hooksPath` is set, and picks the correct target
-   directory (`.git/hooks/` or the value of `core.hooksPath`).
+2. Detects whether `core.hooksPath` is set, and picks the correct target directory (the common Git directory's `hooks/`, shared by every linked worktree, or the value of `core.hooksPath`).
 3. Finds the plugin root from the `lib/install.sh` script's own location and
    bakes that absolute path into each hook (placeholder
    `__PLUGIN_INSTALL_PATH__` is replaced). Re-running after a plugin update or
    reinstall refreshes the path.
-4. Per hook (`commit-msg`, `prepare-commit-msg`, `post-commit`,
+4. Per hook (`pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-commit`,
    `pre-push`), copies the source from the plugin to the target dir, sets
    the executable bit, and logs the result.
 
@@ -87,6 +87,7 @@ operator-only off-switch.
 git-discipline:install-hooks
   hooks dir   : .git/hooks (default)
   plugin path : /path/to/git-discipline
+  installed   : pre-commit
   installed   : commit-msg
   installed   : prepare-commit-msg
   installed   : post-commit

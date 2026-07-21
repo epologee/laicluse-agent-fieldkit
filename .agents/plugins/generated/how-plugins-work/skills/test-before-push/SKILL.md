@@ -26,11 +26,20 @@ Run from the repo root:
 alias=$(jq -r '.name' .claude-plugin/marketplace.json)
 printf 'alias=%s\n' "$alias"
 git status --short
-[ ! -x bin/plugin-versions ] || bin/plugin-versions --check
-[ ! -x bin/plugin-adapters ] || bin/plugin-adapters check .
+if [ -x bin/plugin-versions ]; then
+  if git diff --cached --quiet; then
+    bin/plugin-versions --check
+  else
+    PLUGIN_VERSIONS_GIT_CMD="${PLUGIN_VERSIONS_GIT_CMD:-git commit}" bin/plugin-versions --staged
+  fi
+fi
+if [ -x bin/plugin-adapters ]; then
+  bin/plugin-adapters build .
+  bin/plugin-adapters check .
+fi
 ```
 
-All checks must pass. If `git status --short` prints unrelated work, stop and isolate it first; the install snapshots the working tree. The current task's own changes may remain when repo policy requires runtime activation before the final commit.
+All checks must pass. A clean index validates the committed version with `--check`; a staged current-task slice validates and preserves the next commit-count version with the same `--staged` operation the repository hook uses. This is what makes runtime activation before the final commit possible without installing a version that the commit immediately replaces. If `git status --short` prints unrelated work, stop and isolate it first; the install snapshots the working tree. Stage the current task before this procedure when repo policy requires runtime activation before the final commit.
 
 ## Claude Code install
 

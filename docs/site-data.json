@@ -163,9 +163,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.33",
-				"type": "Changed",
-				"summary": "Multi-agent plugin work now closes both runtime loops before completion."
+				"version": "v2.0.34",
+				"type": "Fixed",
+				"summary": "Runtime activation can now precede the final commit without version drift."
 			}
 		},
 		{
@@ -236,9 +236,9 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.48",
+			"version": "2.0.49",
 			"category": "workflow",
-			"summary": "Adds commit discipline, repo-aware push policy, and git hooks for agent sessions and direct CLI commits.",
+			"summary": "Coordinates verified worktree candidates, atomic default-branch merges, and shared commit and push enforcement.",
 			"support": [
 				"Claude Code",
 				"Codex"
@@ -248,12 +248,12 @@
 			"sourcePath": "packages/git-discipline",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/git-discipline",
 			"skillCount": 13,
-			"commandCount": 2,
+			"commandCount": 3,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.47",
-				"type": "Changed",
-				"summary": "A stale default-branch ref no longer forces a manual fetch and second invocation."
+				"version": "v2.0.48",
+				"type": "Breaking",
+				"summary": "Default-branch authoring now goes through verified worktree candidates."
 			}
 		},
 		{
@@ -611,11 +611,11 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.48",
+			"packageVersion": "2.0.49",
 			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.47",
-			"type": "Changed",
-			"summary": "A stale default-branch ref no longer forces a manual fetch and second invocation.",
+			"version": "v2.0.48",
+			"type": "Breaking",
+			"summary": "Default-branch authoring now goes through verified worktree candidates.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
@@ -640,9 +640,9 @@
 			"plugin": "how-plugins-work",
 			"packageVersion": "2.0.34",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
-			"version": "v2.0.33",
-			"type": "Changed",
-			"summary": "Multi-agent plugin work now closes both runtime loops before completion.",
+			"version": "v2.0.34",
+			"type": "Fixed",
+			"summary": "Runtime activation can now precede the final commit without version drift.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{

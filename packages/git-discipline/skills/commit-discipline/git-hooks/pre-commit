@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -uo pipefail
+
+PLUGIN_PATH="__PLUGIN_INSTALL_PATH__"
+NODE_EXECUTABLE="__NODE_EXECUTABLE__"
+exec "$NODE_EXECUTABLE" "$PLUGIN_PATH/bin/git-discipline" guard-commit

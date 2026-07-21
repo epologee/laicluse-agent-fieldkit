@@ -24,8 +24,11 @@
 set -uo pipefail
 
 PLUGIN_PATH="__PLUGIN_INSTALL_PATH__"
+NODE_EXECUTABLE="__NODE_EXECUTABLE__"
 LIB="$PLUGIN_PATH/hooks/lib/wip-gate.sh"
 DENY_LIB="$PLUGIN_PATH/hooks/lib/deny-check.sh"
+GIT_DISCIPLINE="$PLUGIN_PATH/bin/git-discipline"
+push_updates=$(cat)
 
 # /git-discipline:disable-git lock check. Runs before the wip-gate so a locked repo
 # cannot push at all. Soft-fails (no-op) when the helper is missing.
@@ -33,6 +36,16 @@ if [[ -f "$DENY_LIB" ]]; then
   # shellcheck disable=SC1090
   . "$DENY_LIB"
   deny_check "push"
+fi
+
+if [[ ! -x "$GIT_DISCIPLINE" ]]; then
+  printf 'git-discipline/pre-push: flow command not found at %s\n' "$GIT_DISCIPLINE" >&2
+  printf '  Re-run /git-discipline:install-hooks to refresh the plugin path.\n' >&2
+  exit 1
+fi
+
+if ! printf '%s\n' "$push_updates" | "$NODE_EXECUTABLE" "$GIT_DISCIPLINE" guard-push; then
+  exit 1
 fi
 
 if [[ ! -f "$LIB" ]]; then
@@ -98,7 +111,7 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       all_body="$all_body"$'\n'"  $bshort \"$bsub\": $bline"
     done < <(git rev-list "$range" 2>/dev/null || true)
   fi
-done
+done <<< "$push_updates"
 
 if [[ -n "$all_body" ]]; then
   {
