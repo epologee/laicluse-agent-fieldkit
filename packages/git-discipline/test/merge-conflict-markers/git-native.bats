@@ -15,6 +15,7 @@ install_git_native() {
   run bash -c "cd '$TEST_REPO' && bash '$INSTALL_SH'"
   [ "$status" -eq 0 ]
   [ -x "$TEST_REPO/.git/hooks/commit-msg" ]
+  rm "$TEST_REPO/.git/hooks/pre-commit"
 }
 
 @test "CLI commit with staged conflict markers is blocked and HEAD does not move" {

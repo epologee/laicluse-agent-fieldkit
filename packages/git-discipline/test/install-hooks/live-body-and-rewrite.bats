@@ -30,7 +30,7 @@ seed_repo() {
   seed_repo
 
   pushd "$TEST_REPO" >/dev/null
-  run bash -c "printf 'refs/heads/main %s refs/heads/main %s\n' '$HEAD_SHA' '$BASE_SHA' | .git/hooks/pre-push origin file:///tmp/none"
+  run bash -c "printf 'refs/heads/feature %s refs/heads/feature %s\n' '$HEAD_SHA' '$BASE_SHA' | .git/hooks/pre-push origin file:///tmp/none"
   popd >/dev/null
 
   [ "$status" -eq 1 ]

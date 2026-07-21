@@ -1,7 +1,7 @@
 {
   "name": "git-discipline",
-  "version": "2.0.48",
-  "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
+  "version": "2.0.49",
+  "description": "Parallel-worktree Git flow, repo-aware push policy, atomic verified merges, and commit/push hooks for agent sessions and direct CLI use.",
   "author": {
     "name": "local"
   },
@@ -12,8 +12,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Git Discipline",
-    "shortDescription": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
-    "longDescription": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
+    "shortDescription": "Parallel-worktree Git flow, repo-aware push policy, atomic verified merges, and commit/push hooks for agent sessions ...",
+    "longDescription": "Parallel-worktree Git flow, repo-aware push policy, atomic verified merges, and commit/push hooks for agent sessions and direct CLI use.",
     "developerName": "local",
     "category": "Productivity",
     "capabilities": [

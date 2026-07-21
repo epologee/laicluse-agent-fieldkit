@@ -1,7 +1,6 @@
 # git-discipline
 
-Git workflow skills plus commit and push hooks for agent sessions and direct
-CLI commits.
+Parallel-worktree Git flow plus commit and push enforcement for agent sessions and direct CLI use. Each mutating agent owns a linked feature worktree; the primary checkout is not an authoring checkout. Verified candidates become real two-parent default-branch merge commits through an atomic ref update, without a canonical checkout or a long-lived merge lock.
 
 Use it when commits and pushes need the same discipline regardless of whether
 they come from Claude Code, Codex, or a direct terminal. The plugin gives the
@@ -30,12 +29,11 @@ the current plugin version.
 
 ## What it does
 
-`git-discipline` has two parts:
+`git-discipline` has three parts:
 
-1. **Git workflow skills.** Commands for grouped commits, precise commits from
-   a dirty tree, rebasing on the latest default branch, merging to default,
-   resolving push policy, and installing hooks.
-2. **Commit-discipline enforcement.** Two-layer hook architecture
+1. **Parallel candidate flow.** One vendor-neutral `bin/git-discipline` implementation dynamically resolves the default branch, rebases the current worktree, records test evidence against the exact candidate and base SHAs, creates a two-parent merge commit, and updates the local or remote default ref with compare-and-swap semantics.
+2. **Git workflow skills.** Thin host adapters for grouped commits, precise commits from a dirty tree, candidate rebase and verification, merging to default, resolving push policy, and installing hooks.
+3. **Commit-discipline enforcement.** Two-layer hook architecture
    (PreToolUse guards plus git-native hooks) that validates a structured
    body schema: subject + WHY paragraph + Slice / Tests / Red-then-green
    trailers parsed via `git interpret-trailers`, with eight opt-out enum
@@ -48,6 +46,21 @@ the current plugin version.
 
 Reference for the schema, examples, escape-hatches, and troubleshooting:
 `/git-discipline:commit-discipline`.
+
+## Parallel candidate command
+
+The executable is the single implementation used by skills and native hooks:
+
+```bash
+git-discipline default
+git-discipline rebase --local|--remote
+git-discipline verify --local|--remote -- <test-command> [args...]
+git-discipline merge --local|--remote
+```
+
+`--local` uses the configured local default ref and is intended for `local-only` repositories. `--remote` reads the actual `origin` default tip, fetches only that tip into `FETCH_HEAD` for rebases, and merges through a normal non-force push. Passing verification evidence lives under `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/candidates/` as recovery and visibility state. Git commits and refs remain the source of truth: evidence is rejected as soon as the candidate or default SHA changes.
+
+The merge commit always has the verified default tip as first parent, the candidate as second parent, and the candidate tree. A local merge uses `git update-ref` with an expected old SHA; a remote merge relies on the same topology plus a non-force push. If another candidate updates default first, the loser rebases and verifies again.
 
 ## Skills
 
@@ -74,16 +87,8 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
 - **commit-snipe** stages only the files (or hunks) that belong to the
   current conversation's work and leaves the rest untouched. Auto-fires
   on the word "snipe".
-- **rebase-latest-default** rebases the current branch on the freshest default branch (local or `origin/<default>`), resolves trivial conflicts where safe, and stops on non-trivial conflicts. When the remote-tracking ref is stale, it asks before fetching and continues the same invocation after approval.
-- **merge-to-default** lands the current branch on the project's default
-  with a github-style `--no-ff` merge commit. It rebases the source branch
-  onto the latest default *before* merging whenever the default is ahead, so
-  the merge is a clean commit and a branch falling behind no longer opens a
-  conflict-marker window in the default checkout; a reactive rebase fallback
-  remains for the narrow race where the default advances mid-merge. It deletes
-  the local source branch
-  after the merge is confirmed and no-ops with a TUI warning when invoked on
-  the default branch itself. Push remains an explicit user action.
+- **rebase-latest-default** delegates default resolution, rebase, and SHA-bound verification to `bin/git-discipline`. Conflicts stay with the feature-worktree owner; no default checkout or central integrator resolves them.
+- **merge-to-default** resolves repository policy, reruns relevant verification at the candidate SHA, and invokes the atomic two-parent merge. `local-only` updates the local ref; `solo-trunk` and explicitly ordered `team-trunk` merges use a normal remote push; `pr-flow` and `external` retain their repository gates. Source cleanup remains with `bonsai:prune` after merge and any required deployment are proven complete.
 - **push-policy** decides whether and when a push fits the current repo. It
   ships a resolver (`skills/push-policy/git-repo-policy`) that reads per-repo
   facts (collaboration, visibility, default-branch protection, push access)
@@ -94,7 +99,7 @@ Reference for the schema, examples, escape-hatches, and troubleshooting:
   orthogonal to this context decision.
 - **commit-discipline** is the canonical reference for the body schema,
   error-codes, opt-out enum, and escape-hatches.
-- **install-hooks** copies the git-native `commit-msg`, `prepare-commit-msg`,
+- **install-hooks** copies the git-native `pre-commit`, `commit-msg`, `prepare-commit-msg`,
   `post-commit`, `post-rewrite`, and `pre-push` hooks into the current repo so commits
   made outside Claude Code still get validated. `--force` overwrites
   existing hooks (a backup is taken automatically); `--dry-run` previews.
@@ -146,11 +151,12 @@ sourced from `skills/commit-discipline/git-hooks/`):
 
 | Hook | Purpose |
 |------|---------|
+| `pre-commit` | blocks commits in the primary checkout and on the default branch |
 | `commit-msg` | runs `validate-body.sh` on every non-Claude commit |
 | `prepare-commit-msg` | pre-fills the editor with a layer-classified template |
 | `post-commit` | logs `--no-verify` usage to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` |
 | `post-rewrite` | validates rebase/amend-rewritten bodies; warns and logs (git ignores its exit status) since `commit-msg` does not fire on rebase-picked commits |
-| `pre-push` | re-runs the wip-gate and validates each body on the push range |
+| `pre-push` | validates candidate topology and proof, then re-runs the wip and body gates |
 
 Both layers source the same `hooks/lib/validate-body.sh`, so behavior never
 diverges between Claude-driven and CLI-driven commits.
@@ -210,7 +216,7 @@ troubleshooting guide.
 ## Test suite
 
 ```bash
-bash packages/git-discipline/test/run-bats              # 200+ BATS cases
+bash packages/git-discipline/test/run-bats              # 500+ BATS cases
 bash packages/git-discipline/test/smoke/smoke-test.sh   # 22-case end-to-end smoke
 ```
 
@@ -221,6 +227,7 @@ The BATS suite is split per concern:
   guard glue per slice.
 - `install-hooks/` covers the per-repo install scenarios (empty repo,
   existing hooks, `core.hooksPath`, worktree).
+- `parallel-flow/` covers default resolution, worktree rebase, SHA-bound verification, atomic local and remote merges, race loss, and native authoring guards.
 - `migrated-hooks/`, `migration/` cover compatibility with previous hook
   behavior.
 

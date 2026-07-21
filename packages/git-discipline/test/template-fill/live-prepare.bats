@@ -50,7 +50,7 @@ _run_editor_abort_commit() {
   # GIT_EDITOR=false: git opens the editor and /usr/bin/false immediately
   # exits 1, causing git to abort the commit with "Aborting commit due to
   # empty commit message" -- but prepare-commit-msg ran before the editor.
-  GIT_EDITOR=false git -c commit.gpgsign=false commit 2>/dev/null || true
+  GIT_EDITOR=false git -c commit.gpgsign=false commit --no-verify 2>/dev/null || true
 
   popd >/dev/null
 }

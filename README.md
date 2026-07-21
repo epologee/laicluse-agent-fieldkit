@@ -40,8 +40,7 @@ The marketplace currently ships:
   marketplace aliases, manifests, adapters, and runtime caches.
 - `self-improvement`: routes feedback about agent behavior to hooks, skills,
   project code, or instruction files.
-- `git-discipline`: git workflow skills plus commit and push hooks for agent
-  sessions and direct CLI commits.
+- `git-discipline`: parallel-worktree candidate verification and atomic two-parent default merges, plus repo-aware commit and push hooks.
 - `bonsai`: git worktree lifecycle as a cross-platform CLI with setup and
   guarded teardown.
 - `dibs`: single-occupancy locks so one coding agent owns a working directory

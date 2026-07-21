@@ -32,3 +32,10 @@ runtime_closeout_section() {
 	[[ "$output" == *"Claude Code and Codex"* ]]
 	[[ "$output" == *"before completion or push"* ]]
 }
+
+@test "the runtime closeout validates the staged next version before a required pre-commit activation" {
+	grep -q 'git diff --cached --quiet' "$CLOSEOUT"
+	grep -q 'bin/plugin-versions --staged' "$CLOSEOUT"
+	grep -q 'bin/plugin-adapters build .' "$CLOSEOUT"
+	grep -q 'bin/plugin-versions --check' "$CLOSEOUT"
+}

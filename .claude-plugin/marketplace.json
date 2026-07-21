@@ -29,7 +29,7 @@
     },
     {
       "name": "git-discipline",
-      "description": "Git workflow skills, repo-aware push policy, and commit/push hooks for agent sessions and direct CLI commits.",
+      "description": "Parallel-worktree Git flow, repo-aware push policy, atomic verified merges, and commit/push hooks for agent sessions and direct CLI use.",
       "source": "./packages/git-discipline"
     },
     {

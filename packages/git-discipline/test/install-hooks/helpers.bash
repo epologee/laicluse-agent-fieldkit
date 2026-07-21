@@ -10,6 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 INSTALL_SH="$REPO_ROOT/packages/git-discipline/skills/install-hooks/lib/install.sh"
 SOURCE_HOOKS_DIR="$REPO_ROOT/packages/git-discipline/skills/commit-discipline/git-hooks"
+NODE_BIN="$(asdf which node 2>/dev/null || command -v node)"
 
 setup() {
   TEST_REPO="$BATS_TEST_TMPDIR/repo"
@@ -19,11 +20,22 @@ setup() {
   git init -q -b main
   git config user.email "test@example.com"
   git config user.name "Test"
+  git config init.defaultBranch main
   popd >/dev/null
 
   # Each test runs as a clean shell; export only what install.sh consults.
   export HOME="$BATS_TEST_TMPDIR/home"
+  export PATH="$(dirname "$NODE_BIN"):$PATH"
   install -d "$HOME/.claude/plugins"
+}
+
+use_linked_feature_worktree() {
+  local primary_repo="$TEST_REPO"
+  local feature_worktree="$BATS_TEST_TMPDIR/feature-worktree"
+  git -C "$primary_repo" commit -q --allow-empty --no-verify -m "Initial commit"
+  git -C "$primary_repo" branch feature
+  git -C "$primary_repo" worktree add -q "$feature_worktree" feature
+  TEST_REPO="$feature_worktree"
 }
 
 teardown() {

@@ -20,6 +20,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.34]
+
+### Fixed
+
+- **Runtime activation can now precede the final commit without version drift.** `/test-before-push` validates a clean index with `plugin-versions --check`, but uses the repository's staged next-version calculation when the current slice is staged, then builds and checks adapters before installing either runtime.
+
 ## [v2.0.33]
 
 ### Changed
