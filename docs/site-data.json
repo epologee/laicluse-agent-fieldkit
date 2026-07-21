@@ -148,7 +148,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.33",
+			"version": "2.0.34",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -637,6 +637,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
+			"plugin": "how-plugins-work",
+			"packageVersion": "2.0.34",
+			"detailPath": "agent-fieldkit/how-plugins-work/",
+			"version": "v2.0.33",
+			"type": "Changed",
+			"summary": "Multi-agent plugin work now closes both runtime loops before completion.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
+		},
+		{
 			"plugin": "bonsai",
 			"packageVersion": "2.0.33",
 			"detailPath": "agent-fieldkit/bonsai/",
@@ -644,15 +653,6 @@
 			"type": "Fixed",
 			"summary": "Local-only repositories use their configured default branch.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
-		},
-		{
-			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.33",
-			"detailPath": "agent-fieldkit/how-plugins-work/",
-			"version": "v2.0.33",
-			"type": "Changed",
-			"summary": "Multi-agent plugin work now closes both runtime loops before completion.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{
 			"plugin": "rover",

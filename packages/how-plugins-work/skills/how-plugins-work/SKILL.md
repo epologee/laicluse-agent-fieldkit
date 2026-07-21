@@ -140,6 +140,14 @@ A Codex plugin is technically needed only when Codex must receive plugin runtime
 
 Decision rule: choose `skills add` for instruction-only skills, choose a Codex plugin when the workflow depends on MCP tools or other plugin-owned runtime files, and keep both routes documented when they serve different users. The reference may still have an opinion about the cleaner product shape; say "prefer the plugin route because it keeps generated runtime views and install metadata together" when that is the judgment. Do not relabel that judgment as "technically necessary" unless a platform rule or a local install test proves the `skills` route cannot provide the needed behavior.
 
+## OpenCode: Agent Skills without a marketplace
+
+OpenCode does not consume the Claude or Codex marketplace manifests described above. It discovers Agent Skills from `.opencode/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md`, and `.agents/skills/<name>/SKILL.md`, both project-local and in the corresponding user-level roots. It exposes each discovered skill's `name` and `description` through its native `skill` tool, and the agent loads the full body on demand with `skill({ name: "<skill>" })`. See the [OpenCode Agent Skills documentation](https://opencode.ai/docs/skills/).
+
+OpenCode recognizes `name` and `description` as required frontmatter plus optional `license`, `compatibility`, and string-to-string `metadata`. Unknown fields are ignored rather than rejected. A shared skill may therefore parse in OpenCode while still carrying another host's metadata, but portable source should not depend on fields or invocation behavior that only one host understands.
+
+The fieldkit's `packages/<plugin>/skills/<skill>/` source layout is not itself an OpenCode discovery path. Supporting OpenCode requires an explicit install or generated adapter that materializes a skill into one of OpenCode's supported roots. `bin/plugin-adapters` currently generates Claude and Codex runtime forms only, so this marketplace must not claim OpenCode delivery until that third adapter and a real OpenCode runtime check exist.
+
 ## Uniqueness and conflicts
 
 ### Within a marketplace
