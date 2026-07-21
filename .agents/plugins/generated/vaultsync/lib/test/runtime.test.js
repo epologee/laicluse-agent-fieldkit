@@ -9,6 +9,7 @@ import {
   DEFAULT_PAUSE_MINUTES,
   fallbackCommitMessage,
   findDibsBin,
+  launchAgentPlist,
   preflightRepository,
   probeLlmCommand,
   registrationPathForRoot,
@@ -61,6 +62,27 @@ function runNode(args, options = {}) {
   }
   return result;
 }
+
+it('provides Node on PATH to LaunchAgent child executables', () => {
+  const child = join(tmp, 'launchd-child.mjs');
+  writeFileSync(child, '#!/usr/bin/env node\nprocess.stdout.write("child-ready\\n");\n', { mode: 0o755 });
+  const plist = launchAgentPlist({
+    HOME: tmp,
+    LAICLUSE_HOME: join(tmp, 'launchd-home'),
+    PATH: '/usr/bin:/bin:/usr/sbin:/sbin',
+  });
+  const pathValue = plist.match(/<key>PATH<\/key>\s*<string>([^<]+)<\/string>/)?.[1];
+
+  assert.ok(pathValue, 'LaunchAgent plist must define PATH for child executables');
+  assert.ok(pathValue.split(':').includes(dirname(process.execPath)));
+
+  const result = spawnSync(child, [], {
+    encoding: 'utf8',
+    env: { HOME: tmp, PATH: pathValue },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, 'child-ready\n');
+});
 
 it('keys registrations by the resolved Git worktree root', () => {
   const repo = createRepo('identity-main');

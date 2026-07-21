@@ -1,5 +1,5 @@
 import { accessSync, constants, existsSync, mkdirSync, readFileSync, realpathSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { delimiter, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { homedir, platform, userInfo } from 'node:os';
@@ -1185,6 +1185,10 @@ function xmlEscape(value) {
 export function launchAgentPlist(env = process.env) {
   const outLog = join(logsDir(env), 'daemon.out.log');
   const errLog = join(logsDir(env), 'daemon.err.log');
+  const path = [...new Set([
+    dirname(process.execPath),
+    ...(env.PATH || '').split(delimiter).filter(Boolean),
+  ])].join(delimiter);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -1197,6 +1201,11 @@ export function launchAgentPlist(env = process.env) {
     <string>${xmlEscape(currentBinPath())}</string>
     <string>daemon</string>
   </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>${xmlEscape(path)}</string>
+  </dict>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
