@@ -42,6 +42,12 @@
       "function": "guard_no_worktree_deploy",
       "contract": "tool-call"
     },
+    "no-worktree-marketplace": {
+      "lane": "pre-bash",
+      "order": 35,
+      "function": "guard_no_worktree_marketplace",
+      "contract": "tool-call"
+    },
     "pr-discipline": {
       "lane": "pre-bash",
       "order": 40,
