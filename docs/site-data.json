@@ -93,7 +93,7 @@
 		"codexPackages": 20,
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 21,
-		"skillEntries": 81,
+		"skillEntries": 82,
 		"hookFiles": 56
 	},
 	"install": {
@@ -565,9 +565,9 @@
 		},
 		{
 			"name": "lifeline",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "review",
-			"summary": "Two lifelines for when your own certainty runs out: research what others did before committing, and verify your own claims against external sources when challenged.",
+			"summary": "Three lifelines for when a first answer is not enough: research before choosing, verify doubtful claims, and rethink drifting projects from first principles.",
 			"support": [
 				"Claude Code",
 				"Codex"
@@ -576,13 +576,13 @@
 			"detailPath": "agent-fieldkit/lifeline/",
 			"sourcePath": "packages/lifeline",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/lifeline",
-			"skillCount": 2,
+			"skillCount": 3,
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v1.0.0",
+				"version": "v2.0.2",
 				"type": "Added",
-				"summary": "inspire and ground now ship together from the lifeline plugin."
+				"summary": "rethink returns a drifting project to first principles before another local fix is attempted."
 			}
 		},
 		{
@@ -782,11 +782,11 @@
 		},
 		{
 			"plugin": "lifeline",
-			"packageVersion": "2.0.2",
+			"packageVersion": "2.0.3",
 			"detailPath": "agent-fieldkit/lifeline/",
-			"version": "v1.0.0",
+			"version": "v2.0.2",
 			"type": "Added",
-			"summary": "inspire and ground now ship together from the lifeline plugin.",
+			"summary": "rethink returns a drifting project to first principles before another local fix is attempted.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
 		},
 		{
