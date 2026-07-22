@@ -2,14 +2,14 @@
 name: merge-to-default
 user-invocable: true
 description: >-
-  Verify and atomically merge a worktree candidate into the current default branch without checking that branch out.
+  Verify and atomically merge a worktree candidate into the current default branch.
 optional: true
 scope: global
 ---
 
 # Merge To Default
 
-Merge the current worktree candidate as a real two-parent commit without checking out or mutating a default-branch worktree. The shared `git-discipline` executable creates the commit, validates candidate evidence, and updates the local or remote ref with compare-and-swap semantics. Do not reproduce that implementation with direct Git commands.
+Merge the current worktree candidate as a real two-parent commit without checking out the default branch in the candidate worktree. The shared `git-discipline` executable creates the commit, validates candidate evidence, and updates the local or remote default with compare-and-swap semantics. Do not reproduce that implementation with direct Git commands.
 
 ## Resolve policy and the shared command
 
@@ -69,7 +69,7 @@ The verification command must cover the relevant behavior at the exact candidate
 "$GD_ROOT/bin/git-discipline" merge "$TARGET"
 ```
 
-The executable creates a merge commit whose first parent is the verified default tip, whose second parent is the candidate, and whose tree equals the candidate tree. `--local` uses `git update-ref <ref> <new> <expected>`; `--remote` uses a normal non-force push. If another merge wins first, the compare-and-swap fails without changing the default ref. Rebase on the new tip, rerun the relevant verification, and retry until the candidate wins or a genuine gate is reached. Do not add a long-lived merge lock.
+The executable creates a merge commit whose first parent is the verified default tip, whose second parent is the candidate, and whose tree equals the candidate tree. `--local` rejects repositories with remotes. It uses `git update-ref <ref> <new> <expected>` when the default is not checked out, or Git's `receive.denyCurrentBranch=updateInstead` path when a clean default worktree must remain coherent. `--remote` uses a normal non-force push. If another merge wins first, the compare-and-swap fails without changing the default ref. Rebase on the new tip, rerun the relevant verification, and retry until the candidate wins or a genuine gate is reached. Do not add a long-lived merge lock.
 
 Keep the source worktree and branch until merge and any required deployment are proven complete; cleanup belongs to `bonsai:prune`. Deployment is repository-specific and must use the exact merged SHA from a clean deploy checkout, never this authoring worktree.
 

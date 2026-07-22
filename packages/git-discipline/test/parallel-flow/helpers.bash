@@ -35,6 +35,12 @@ create_feature_commit() {
   commit_on_current_branch "$TEST_REPO" "feature" "Feature commit"
 }
 
+create_feature_worktree_commit() {
+  FEATURE_WORKTREE="$BATS_TEST_TMPDIR/feature-worktree"
+  git -C "$TEST_REPO" worktree add -q -b feature "$FEATURE_WORKTREE"
+  commit_on_current_branch "$FEATURE_WORKTREE" "feature" "Feature commit"
+}
+
 advance_local_default() {
   local default_worktree="$BATS_TEST_TMPDIR/default-worktree"
   git -C "$TEST_REPO" worktree add -q "$default_worktree" main

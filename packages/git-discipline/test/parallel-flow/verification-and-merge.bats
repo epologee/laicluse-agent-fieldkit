@@ -32,6 +32,63 @@ load helpers
   [[ "$output" == *"has no passing verification"* ]]
 }
 
+@test "local target refuses a repository with a remote" {
+  add_origin
+  create_feature_commit
+
+  run bash -c "cd '$TEST_REPO' && '$GIT_DISCIPLINE' verify --local -- true"
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Local target requires a repository without remotes"* ]]
+}
+
+@test "local merge keeps a checked-out default worktree coherent" {
+  create_feature_worktree_commit
+  local base candidate
+  base=$(git -C "$TEST_REPO" rev-parse refs/heads/main)
+  candidate=$(git -C "$FEATURE_WORKTREE" rev-parse HEAD)
+
+  run bash -c "cd '$FEATURE_WORKTREE' && '$GIT_DISCIPLINE' verify --local -- true"
+  [ "$status" -eq 0 ]
+
+  run bash -c "cd '$FEATURE_WORKTREE' && '$GIT_DISCIPLINE' merge --local"
+  [ "$status" -eq 0 ]
+
+  local merged parents
+  merged=$(git -C "$TEST_REPO" rev-parse HEAD)
+  parents=$(git -C "$TEST_REPO" show -s --format=%P "$merged")
+  [ "$parents" = "$base $candidate" ]
+  [ "$(git -C "$TEST_REPO" status --porcelain)" = "" ]
+  [ "$(git -C "$TEST_REPO" show HEAD:file.txt)" = "$(cat "$TEST_REPO/file.txt")" ]
+}
+
+@test "local merge leaves a dirty default worktree and its ref untouched" {
+  create_feature_worktree_commit
+  (cd "$FEATURE_WORKTREE" && "$GIT_DISCIPLINE" verify --local -- true)
+  local base
+  base=$(git -C "$TEST_REPO" rev-parse refs/heads/main)
+  printf 'local work\n' >> "$TEST_REPO/file.txt"
+
+  run bash -c "cd '$FEATURE_WORKTREE' && '$GIT_DISCIPLINE' merge --local"
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"checked-out default worktree is not clean"* ]]
+  [ "$(git -C "$TEST_REPO" rev-parse refs/heads/main)" = "$base" ]
+  [ "$(tail -n 1 "$TEST_REPO/file.txt")" = "local work" ]
+}
+
+@test "local merge preserves untracked files in the default worktree" {
+  create_feature_worktree_commit
+  (cd "$FEATURE_WORKTREE" && "$GIT_DISCIPLINE" verify --local -- true)
+  printf 'keep me\n' > "$TEST_REPO/untracked.txt"
+
+  run bash -c "cd '$FEATURE_WORKTREE' && '$GIT_DISCIPLINE' merge --local"
+
+  [ "$status" -eq 0 ]
+  [ "$(cat "$TEST_REPO/untracked.txt")" = "keep me" ]
+  [ "$(git -C "$TEST_REPO" status --porcelain --untracked-files=no)" = "" ]
+}
+
 @test "moving the candidate after verification requires verification again" {
   create_feature_commit
   (cd "$TEST_REPO" && "$GIT_DISCIPLINE" verify --local -- true)

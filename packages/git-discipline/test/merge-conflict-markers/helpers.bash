@@ -22,6 +22,7 @@ setup() {
 
   export HOME="$BATS_TEST_TMPDIR/home"
   install -d "$HOME/.claude/plugins"
+  export GIT_EDITOR=true
 
   export LAICLUSE_HOME="$BATS_TEST_TMPDIR/laicluse"
   install -d "$LAICLUSE_HOME/git-discipline"
