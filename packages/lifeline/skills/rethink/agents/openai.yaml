@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rethink"
+  short_description: "Reconstruct a drifting project from first principles"
+  default_prompt: "Use $rethink to reconstruct this project from evidence and write a governing manifesto before making more local fixes."

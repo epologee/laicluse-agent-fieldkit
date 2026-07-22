@@ -1,7 +1,7 @@
 {
   "name": "lifeline",
-  "version": "2.0.2",
-  "description": "Reach outside your own head when you are unsure: research what others did before you commit (inspire), and verify your own claims against external sources when challenged (ground). Two lifelines for the moment your own certainty runs out. Skills: inspire, ground.",
+  "version": "2.0.3",
+  "description": "Reach beyond a first answer: research before choosing (inspire), verify doubtful claims (ground), and reconstruct drifting projects from first principles (rethink). Skills: inspire, ground, rethink.",
   "author": {
     "name": "local"
   },
@@ -12,8 +12,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Lifeline",
-    "shortDescription": "Reach outside your own head when you are unsure: research what others did before you commit (inspire), and verify you...",
-    "longDescription": "Reach outside your own head when you are unsure: research what others did before you commit (inspire), and verify your own claims against external sources when challenged (ground). Two lifelines for the moment your own certainty runs out. Skills: inspire, ground.",
+    "shortDescription": "Reach beyond a first answer: research before choosing (inspire), verify doubtful claims (ground), and reconstruct dri...",
+    "longDescription": "Reach beyond a first answer: research before choosing (inspire), verify doubtful claims (ground), and reconstruct drifting projects from first principles (rethink). Skills: inspire, ground, rethink.",
     "developerName": "local",
     "category": "Productivity",
     "capabilities": [

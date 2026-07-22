@@ -107,7 +107,7 @@ const copy = {
 	},
 	lifeline: {
 		category: "review",
-		summary: "Two lifelines for when your own certainty runs out: research what others did before committing, and verify your own claims against external sources when challenged.",
+		summary: "Three lifelines for when a first answer is not enough: research before choosing, verify doubtful claims, and rethink drifting projects from first principles.",
 	},
 	saysay: {
 		category: "feedback",

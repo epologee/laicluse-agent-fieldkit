@@ -18,6 +18,12 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.2]
+
+### Added
+
+- **`rethink` returns a drifting project to first principles before another local fix is attempted.** It reconstructs intent and actual behavior from design documents, code, Git history, runtime evidence, transcripts, and operator experience; writes a governing manifesto; and stress-tests its abstraction level through independent review and a one-question-at-a-time operator interview. The workflow keeps refinement and implementation outside the coordinating artifact unless they are separately requested.
+
 ## [v1.0.0]
 
 ### Added

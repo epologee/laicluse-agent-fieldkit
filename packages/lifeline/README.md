@@ -1,12 +1,6 @@
 # lifeline
 
-Two ways to reach outside your own head when your own certainty runs out, the
-way a game-show contestant phones a friend. Both skills consult external
-reality instead of trusting the model's first answer; they differ only in when.
-
-Use `inspire` before choosing a direction, when the useful question is "what
-exists and what can we learn from it?". Use `ground` after a claim is in doubt,
-when the useful question is "is this specific thing actually true?".
+Three ways to reach outside your own first answer when certainty, evidence, or project coherence runs out. `inspire` researches the wider world before choosing a direction. `ground` verifies a specific claim after doubt appears. `rethink` reconstructs a drifting project from its own history and lived behavior before writing a first-principles manifesto that can govern future decisions.
 
 ## Installation
 
@@ -33,3 +27,7 @@ processes, so it re-checks a specific claim with code search, file reads, and
 the web rather than re-asserting from model weights. Triggers on `/ground`, on
 skepticism signals like "dat klopt niet", and on necessity claims that justify
 complexity.
+
+### `/rethink`
+
+Reconstruct a project's purpose, promises, responsibilities, and boundaries when recurring local fixes no longer form a coherent system. It excavates original design documents, code, repository history, runtime evidence, transcripts, and lived frustration; triangulates intended, actual, and experienced behavior; then drafts and independently stress-tests a non-prescriptive manifesto. It deliberately stops before refinement or implementation unless those are separately requested.
