@@ -36,8 +36,8 @@ function runGit(argumentsList, options = {}) {
   throw new GitDisciplineError(`git ${argumentsList.join(' ')} failed: ${detail}`, result.status ?? 1);
 }
 
-function gitOutput(argumentsList) {
-  return runGit(argumentsList).stdout;
+function gitOutput(argumentsList, options = {}) {
+  return runGit(argumentsList, options).stdout;
 }
 
 function refExists(reference) {
@@ -83,6 +83,11 @@ function targetFrom(argumentsList) {
   if (local === remote) {
     throw new GitDisciplineError('Choose exactly one target: --local or --remote.');
   }
+  if (local && gitOutput(['remote'])) {
+    throw new GitDisciplineError(
+      'Local target requires a repository without remotes; resolve repository policy before continuing.',
+    );
+  }
   return local ? 'local' : 'remote';
 }
 
@@ -108,6 +113,23 @@ function remoteDefaultTip(branchName) {
 
 function defaultTip(target, branchName) {
   return target === 'local' ? localDefaultTip(branchName) : remoteDefaultTip(branchName);
+}
+
+function worktreesCheckingOut(branchName) {
+  const branchReference = `refs/heads/${branchName}`;
+  const fields = runGit(['worktree', 'list', '--porcelain', '-z']).stdout.split('\0');
+  const matches = [];
+  let worktreePath = null;
+
+  for (const field of fields) {
+    if (field.startsWith('worktree ')) {
+      worktreePath = field.slice('worktree '.length);
+    } else if (field === `branch ${branchReference}` && worktreePath) {
+      matches.push(worktreePath);
+    }
+  }
+
+  return matches;
 }
 
 function requireCandidateBranch(branchName) {
@@ -264,6 +286,58 @@ function createMergeCommit(branchName, base, candidate, proof) {
   return runGit(['commit-tree', tree, '-p', base, '-p', candidate], { input: message }).stdout;
 }
 
+function updateLocalDefault(branchName, mergeCommit, base) {
+  const defaultWorktrees = worktreesCheckingOut(branchName);
+  if (defaultWorktrees.length > 1) {
+    throw new GitDisciplineError(
+      `Local default branch ${branchName} is checked out in multiple worktrees; refusing an ambiguous update.`,
+    );
+  }
+
+  if (defaultWorktrees.length === 0) {
+    const update = runGit(
+      ['update-ref', `refs/heads/${branchName}`, mergeCommit, base],
+      { allowFailure: true },
+    );
+    if (update.status !== 0) {
+      throw new GitDisciplineError(`The default branch moved during merge: ${update.stderr || update.stdout}`);
+    }
+    return;
+  }
+
+  const defaultWorktree = defaultWorktrees[0];
+  const trackedStatus = ['status', '--porcelain', '--untracked-files=no'];
+  if (gitOutput(trackedStatus, { cwd: defaultWorktree })) {
+    throw new GitDisciplineError(
+      `The checked-out default worktree is not clean: ${defaultWorktree}`,
+    );
+  }
+
+  const push = runGit(
+    [
+      'push',
+      '--no-verify',
+      '--porcelain',
+      `--force-with-lease=refs/heads/${branchName}:${base}`,
+      '--receive-pack=git -c receive.denyCurrentBranch=updateInstead receive-pack',
+      defaultWorktree,
+      `${mergeCommit}:refs/heads/${branchName}`,
+    ],
+    { allowFailure: true },
+  );
+  if (push.status === 0) return;
+
+  if (localDefaultTip(branchName) !== base) {
+    throw new GitDisciplineError(`The default branch moved during merge: ${push.stderr || push.stdout}`);
+  }
+  if (gitOutput(trackedStatus, { cwd: defaultWorktree })) {
+    throw new GitDisciplineError(
+      `The checked-out default worktree is not clean: ${defaultWorktree}`,
+    );
+  }
+  throw new GitDisciplineError(`Local default update failed: ${push.stderr || push.stdout}`);
+}
+
 function mergeCommand(argumentsList) {
   const target = targetFrom(argumentsList);
   const defaultName = defaultBranch();
@@ -275,13 +349,7 @@ function mergeCommand(argumentsList) {
   const mergeCommit = createMergeCommit(featureBranch, base, candidate, proof);
 
   if (target === 'local') {
-    const update = runGit(
-      ['update-ref', `refs/heads/${defaultName}`, mergeCommit, base],
-      { allowFailure: true },
-    );
-    if (update.status !== 0) {
-      throw new GitDisciplineError(`The default branch moved during merge: ${update.stderr || update.stdout}`);
-    }
+    updateLocalDefault(defaultName, mergeCommit, base);
   } else {
     const push = runGit(
       ['push', 'origin', `${mergeCommit}:refs/heads/${defaultName}`],

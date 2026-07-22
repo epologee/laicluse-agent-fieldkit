@@ -22,8 +22,16 @@ pretool_bash() {
 }
 
 setup() {
+  TEST_REPO="$BATS_TEST_TMPDIR/repo"
+  git init -q -b main "$TEST_REPO"
+  git -C "$TEST_REPO" config user.name "Test Author"
+  git -C "$TEST_REPO" config user.email "test@example.com"
+  git -C "$TEST_REPO" -c core.hooksPath=/dev/null commit -q --allow-empty -m "Initial commit"
+  cd "$TEST_REPO"
+
   # Each test gets its own isolated state file.
-  STATE_FILE="$(mktemp)"
+  STATE_FILE="$BATS_TEST_TMPDIR/commit-rule-state"
+  : > "$STATE_FILE"
   export GIT_DISCIPLINE_COMMIT_RULE_STATE_FILE="$STATE_FILE"
   # Ensure no old-path variable leaks in.
   unset CLAUDE_COMMIT_RULE_STATE_FILE
@@ -105,10 +113,10 @@ teardown() {
 
 # --- 5. commit-format uses [git-discipline/commit-format] mnemonic ---
 
-@test "subject over 72 chars surfaces [git-discipline/commit-format] nudge via additionalContext" {
+@test "subject over 72 chars is denied with [git-discipline/commit-format]" {
   printf 'pv=-1\npr=3\nrp=0\nack_pending_sha=\n' > "$STATE_FILE"
   run bash -c "echo '$(pretool_bash 'git commit -m "Override the upstream defaults that nudge multi-line commits into a heredoc form." # ack-rule4:essentie')' | bash '$GIT_DISCIPLINE_DISPATCH' 2>&1"
-  [ "$status" -eq 0 ]
+  [ "$status" -eq 2 ]
   echo "$output" | grep -q '\[git-discipline/commit-format\]'
   echo "$output" | grep -q 'max 72'
 }

@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.50]
+
+### Fixed
+
+- **Local merges no longer desynchronise a checked-out default worktree.** `merge --local` now keeps a clean default checkout, its index, and its branch ref on the same merge commit through Git's `updateInstead` path, preserves untracked files, and rejects repositories whose policy must resolve through a remote target.
+
 ## [v2.0.48]
 
 ### Breaking
