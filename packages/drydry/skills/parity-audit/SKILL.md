@@ -59,8 +59,8 @@ Five of these carry an established name from the aspect-oriented migration liter
 | 2 | **Explore** | exploration | Read the shared core by hand, in parallel with the fan-out, until you can tell a real finding from a plausible one. |
 | 3 | **Compare** | none, this inverts fan-in analysis | Record what runs after the shared call, in one schema, and diff the tails. |
 | 4 | **Document** | documentation | Write the artefact. It is not a write-up, it is the baseline phase 7 diffs against. |
-| 5 | **Converge** | aspect refactoring | Move the shared consequence to the deepest common point, not the shallowest. |
-| 6 | **Guard** | behaviour conservation | Leave an exit-parity test behind: two doors, one spy, same observed effects. |
+| 5 | **Converge** | aspect refactoring | Move the shared consequence to the strongest enforcement the substrate allows, so a new caller cannot re-introduce the divergence. |
+| 6 | **Guard** | behaviour conservation | Guard at the strength you enforced on; a test is the terminal guard only when no type or check can express the constraint. |
 | 7 | **Re-mine** | closed-loop remediation | Run phases 1 to 4 again, with the same instrument, and read the delta. |
 
 ### 1. Mine
@@ -111,11 +111,17 @@ Two paths that are ninety percent parallel and differ on ten percent are the dan
 
 Converge incrementally, one consequence at a time, so the system is never half-migrated in a way that cannot be shipped. That is the literature's incremental integration, and in practice it means one commit per converged consequence, each independently green.
 
+**Move the consequence to the strongest enforcement, not merely the deepest call site.** Depth places the code; it does not say what stops the next caller. Putting the shared step at the deepest common point is still weak if a new door can bypass it, and that is exactly why a re-mine keeps surfacing the same shape of finding: the fix was placed, not enforced. The axis that decides whether a class recurs is what holds the fix in place, ascending from weak to strong: a convention or comment (nobody enforces it, it always comes back), a review or audit (costs per instance, forever), a test that pins behaviour (holds only on the paths a fixture touches), a lint or static check that blocks the edit (holds wherever the pattern is syntactically detectable), a type or API where the wrong state does not compile (the fault cannot be written), and a single authoring site where the question cannot arise (nothing to enforce). The one distinction that carries the weight is the jump from blocked to unrepresentable: a check rejects the fault, a type makes it unwritable.
+
+Which enforcement is reachable is a property of the substrate, so establish that ceiling before you converge. A statically typed language reaches the type level (newtypes, non-optional fields, exhaustive switches). A dynamic language reaches the check level (a custom lint or AST rule). Config reaches the check level (policy-as-code) or the single-site level (one module is the only way to declare the thing). Prose reaches the check level (a schema on the frontmatter). **Default to the strongest reachable enforcement.** Dropping to a weaker one is a logged cost-value decision that names what reaching the stronger one would cost, the same shape as a fate-2 skip, never a silent default. A convergence held only by a convention or a review is an open finding, not a closed one, however many call sites it touched today; it is closed only when you can name what now enforces it and answer yes to "can I delete the rule and keep the code correct?"
+
 ### 6. Guard
 
 The refactoring literature calls the obligation **behaviour conservation**: the change must preserve observable behaviour. A divergence audit sharpens it, because the behaviour you must conserve is *per door*, and the doors did not agree before you started. Decide explicitly which door was right, then conserve that.
 
-Parity tests that compare what goes **into** the shared call catch half the problem. The other half is a test that puts the observed effects of two doors against the same spy. Guardrails belong at the exit, not only at the entrance. Every convergence should leave exactly one such test behind.
+Parity tests that compare what goes **into** the shared call catch half the problem. The other half is a test that puts the observed effects of two doors against the same spy. Guardrails belong at the exit, not only at the entrance.
+
+But the guard is whatever now enforces the convergence, not automatically a test. If you converged to a type where the wrong state does not compile, the compiler is the guard and an exit-parity test is redundant paperwork that a reader will mistake for the thing holding the line. If you converged to a lint or AST rule, that rule is the guard, and it covers callers no fixture will ever reach. The exit-parity test is the terminal guard only when nothing stronger can express the constraint, which is the honest case for a consequence that lives in observable side effects rather than in a representable type. Match the guard to the enforcement you reached; do not default to writing a test because this phase was named after behaviour conservation. A test that re-checks a compiler-enforced invariant is not conservation, it is a second, weaker copy of a guarantee you already have.
 
 ### 7. Re-mine
 
@@ -125,13 +131,15 @@ Run the audit again, with the same instrument, after the change. This is not cer
 - It tells you whether divergence was removed or merely **moved**. That distinction is the real finding, and it is invisible without a second measurement.
 - It re-baselines the artefact so the next run has something to diff against.
 
+For a class you converged to a type or a single authoring site, do not re-scan for it. Verify in one line that the constraint still stands, that the field is still non-optional, that the rule is still in the config, and move on. Re-scanning a compiler-enforced class wastes a reviewer and invites a false "still clean" reading that treats an unrepresentable fault as merely absent this time. And read the count delta as a measure of the fix, not only of the code. A class converged to a strong enforcement should drop toward zero and stay there across runs; a class held by a convention or a review stays flat, because the fix never removed the ability to write the fault. A flat count for a finding you reported as converged is the tell that it was placed, not enforced, and belongs back in the Converge phase at a stronger level.
+
 Report counts honestly. A second pass usually enumerates more finely than the first; more rows is more resolution, not more surface. Say so explicitly or the delta lies.
 
 ## Discipline
 
 These cut across every phase; the phase-specific rules live with their phase.
 
-- **Findings are hypotheses until a test reproduces them.** Every behaviour change gets a test that is red first for the stated reason, then green. A divergence you cannot make fail on demand is a divergence you have not understood.
+- **Findings are hypotheses until a test reproduces them.** Every behaviour change gets a test that is red first for the stated reason, then green. A divergence you cannot make fail on demand is a divergence you have not understood. That reproduction test proves you understood the finding; it is not automatically the guard that keeps it from returning. When a type or a check can express the constraint, the red-then-green test stays as the proof and the type or check becomes the guardrail (see Guard).
 - **A finding that only the audit can see is not finished.** Either a test now fails, or the report names why no test can reach it. Otherwise the next run rediscovers it and you learn nothing.
 - **Ship the convergence in slices that each stand alone.** One consequence per commit, each green, so an interrupted audit leaves a working system rather than a half-migration.
 - **Say what you did not look at.** Surfaces you skipped, a subsystem the fan-out could not reach, an artefact you could not capture. An audit that reports only what it found reads as complete when it is not.
