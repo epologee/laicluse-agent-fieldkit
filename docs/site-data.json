@@ -346,7 +346,7 @@
 		},
 		{
 			"name": "drydry",
-			"version": "2.0.5",
+			"version": "2.0.6",
 			"category": "review",
 			"summary": "Finds parallel paths in code, prose, and process, then converges the duplication that actually drifts.",
 			"support": [
@@ -755,7 +755,7 @@
 		},
 		{
 			"plugin": "drydry",
-			"packageVersion": "2.0.5",
+			"packageVersion": "2.0.6",
 			"detailPath": "agent-fieldkit/drydry/",
 			"version": "v2.0.0",
 			"type": "Breaking",
