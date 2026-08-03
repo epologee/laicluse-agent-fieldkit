@@ -67,6 +67,8 @@ question a name, not tokens to ban.
    in one shape, rewrite the method before proposing a lint exception.
 10. If two names seem possible, ask what future search term should find this.
     Searchability beats private cleverness.
+11. For backlog ideas, refinements, variants, and proposed slices, write for the product owner who may have no implementation context. Lead with the observable human problem or desired outcome; move component names, hooks, commands, and technical causes into the description or grounding. A backlog title must still make sense when read outside the originating session.
+12. An epic boundary should separate outcomes a product owner can steer independently, not components, repositories, technical layers, or implementation teams. Reuse an existing epic when the human outcome matches even if the implementation differs; create a new epic only when prioritizing one outcome independently from the others would be meaningful.
 
 ## Shapes That Sometimes Help
 
@@ -240,6 +242,10 @@ README names should be stable entry points: plugin names, commands, skills,
 directories, and examples should match actual package and CLI names exactly.
 A README reference to a nonexistent name is a blocker: build it, rename it, or
 remove the reference.
+
+Backlog and refinement titles are product-facing navigation. Name the behavior that gets in a person's way or the outcome the change should create. Do not lead with the implementation vehicle (`hook`, `daemon`, `handler`, `route`, `config`, a command name, or an internal agent role) unless that vehicle is itself the product the reader manages. Keep those details in the description so engineers can still find them without forcing the product owner to reconstruct the system first.
+
+Epic names need a stronger test than individual backlog titles because they define the product map. A good epic groups several ideas under one recognizable outcome and can be prioritized without knowing which service or repository implements it. Names such as `Hooks`, `Config`, `Backend`, or `Miscellaneous` expose the implementation or avoid the decision; names such as `Customers can trust the status they see` expose the outcome and create a useful planning boundary.
 
 ## Human Communication
 

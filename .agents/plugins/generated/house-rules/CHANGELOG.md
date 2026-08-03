@@ -18,6 +18,12 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.10]
+
+### Changed
+
+- **Backlog names now start with the human outcome.** `naming-is-hard` tells agents to write Idea, refinement, variant, slice, and epic titles for product owners without implementation context. Epic boundaries now separate independently steerable outcomes instead of components or technical layers.
+
 ## [v2.0.6]
 
 ### Changed
