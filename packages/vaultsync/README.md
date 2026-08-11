@@ -21,6 +21,7 @@ The plugin ships a `vaultsync` CLI. If the command is not on `PATH`, run the ins
 - Stores runtime state under `${LAICLUSE_HOME:-$HOME/.laicluse}/vaultsync`.
 - Installs a user-level macOS LaunchAgent for the daemon loop.
 - Debounces dirty Git state before committing.
+- Refuses machine-local home paths in new commits and outgoing history before shared content can be pushed.
 - Generates substantive English commit messages through the configured LLM command, with deterministic git-discipline-safe trailers.
 - Runs an optional verifier before a cycle is considered clean.
 - Asks the configured LLM command to repair bounded verifier failures for included text files.
@@ -51,6 +52,8 @@ vaultsync's registration storage layout.
 vaultsync resolves `dibs` dynamically at runtime. `DIBS_BIN` remains an explicit override, otherwise vaultsync checks the installed plugin cache, `PATH`, and only then any legacy custom path in an older registration. New registrations do not pin versioned plugin-cache paths, so plugin updates do not leave vaultsync pointing at a removed `dibs` binary.
 
 `pause` always has an automatic resume deadline. The default is 120 minutes. If a pause expires while another live `dibs` holder still owns the checkout, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears.
+
+The built-in shareability gate rejects the current machine's home directory in added Git content, generated commit messages, and outgoing commits. Keep executable locations and other machine-specific values in environment overrides or user-level configuration. The optional verifier remains responsible for repository-specific content policy; vaultsync does not claim to remove PII from arbitrary prose.
 
 ## LLM Command Contract
 

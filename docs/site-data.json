@@ -390,7 +390,7 @@
 		},
 		{
 			"name": "vaultsync",
-			"version": "2.0.8",
+			"version": "2.0.9",
 			"category": "feedback",
 			"summary": "Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha",
 			"support": [
@@ -405,9 +405,9 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.8",
+				"version": "v2.0.9",
 				"type": "Fixed",
-				"summary": "Generated HTML viewers no longer block managed vault syncs."
+				"summary": "Shared vaults reject machine-local home paths before commit or push."
 			}
 		},
 		{
@@ -718,6 +718,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
+			"plugin": "vaultsync",
+			"packageVersion": "2.0.9",
+			"detailPath": "agent-fieldkit/vaultsync/",
+			"version": "v2.0.9",
+			"type": "Fixed",
+			"summary": "Shared vaults reject machine-local home paths before commit or push.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
+		},
+		{
 			"plugin": "eye-of-the-beholder",
 			"packageVersion": "2.0.8",
 			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
@@ -734,15 +743,6 @@
 			"type": "Changed",
 			"summary": "First l'Aicluse release.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
-		},
-		{
-			"plugin": "vaultsync",
-			"packageVersion": "2.0.8",
-			"detailPath": "agent-fieldkit/vaultsync/",
-			"version": "v2.0.8",
-			"type": "Fixed",
-			"summary": "Generated HTML viewers no longer block managed vault syncs.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
 		},
 		{
 			"plugin": "gurus",

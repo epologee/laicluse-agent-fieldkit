@@ -63,6 +63,56 @@ function runNode(args, options = {}) {
   return result;
 }
 
+function syncFixture(name) {
+  const remote = join(tmp, `${name}-remote.git`);
+  const local = join(tmp, `${name}-local`);
+  git(tmp, ['init', '--bare', '-q', remote]);
+  git(tmp, ['clone', '-q', remote, local]);
+  writeFileSync(join(local, 'note.md'), '# Note\n');
+  git(local, ['add', 'note.md']);
+  git(local, ['commit', '-q', '-m', 'Initial commit']);
+  git(local, ['push', '-q', '-u', 'origin', 'HEAD']);
+
+  const fakeDibs = join(tmp, `${name}-dibs.mjs`);
+  writeFileSync(fakeDibs, [
+    '#!/usr/bin/env node',
+    'const command = process.argv[2];',
+    'if (command === "claim") process.stdout.write(JSON.stringify({ state: "claimed", holder: { nonce: "abc" } }));',
+    'else if (command === "release") process.stdout.write(JSON.stringify({ state: "released" }));',
+    'else if (command === "check") process.stdout.write(JSON.stringify({ state: "free" }));',
+    'else process.exit(2);',
+    '',
+  ].join('\n'), { mode: 0o755 });
+
+  const llm = join(tmp, `${name}-llm.mjs`);
+  writeFileSync(llm, [
+    '#!/usr/bin/env node',
+    'let input = "";',
+    'process.stdin.on("data", (chunk) => input += chunk);',
+    'process.stdin.on("end", () => {',
+    '  const payload = JSON.parse(input);',
+    '  if (payload.task === "commit_message") process.stdout.write(JSON.stringify({ message: "Update vault note\\n\\nRecord the portable vault content.\\n\\nSlice: docs-only" }));',
+    '  else if (payload.task === "resolve_conflict") process.stdout.write(JSON.stringify({ resolved: "Remote truth line.\\n" }));',
+    '  else process.exit(2);',
+    '});',
+    '',
+  ].join('\n'), { mode: 0o755 });
+
+  const env = {
+    LAICLUSE_HOME: join(tmp, `${name}-state`),
+    DIBS_BIN: fakeDibs,
+    HOME: join(tmp, `${name}-home`),
+    GIT_AUTHOR_NAME: 'Vaultsync Test',
+    GIT_AUTHOR_EMAIL: 'vaultsync@example.invalid',
+    GIT_COMMITTER_NAME: 'Vaultsync Test',
+    GIT_COMMITTER_EMAIL: 'vaultsync@example.invalid',
+  };
+  mkdirSync(env.HOME);
+  const cli = fileURLToPath(new URL('../../bin/vaultsync', import.meta.url));
+  runNode([cli, 'install', local, '--llm-command', `${process.execPath} ${llm}`, '--no-launchd'], { env });
+  return { cli, env, local, remote };
+}
+
 it('provides Node on PATH to LaunchAgent child executables', () => {
   const child = join(tmp, 'launchd-child.mjs');
   writeFileSync(child, '#!/usr/bin/env node\nprocess.stdout.write("child-ready\\n");\n', { mode: 0o755 });
@@ -329,6 +379,48 @@ it('installs and runs one dirty checkout sync cycle against a bare remote', () =
   assert.equal(git(local, ['status', '--porcelain']), '');
   assert.match(git(local, ['log', '-1', '--pretty=%s']), /Update vault note/);
   assert.match(git(tmp, ['--git-dir', remote, 'log', '-1', '--pretty=%s']), /Update vault note/);
+});
+
+it('refuses to commit dirty content containing the current home path', () => {
+  const fixture = syncFixture('shareability-dirty');
+  writeFileSync(join(fixture.local, 'note.md'), `# Note\n\nRun ${fixture.env.HOME}/bin/tilt.\n`);
+
+  assert.throws(
+    () => runNode([fixture.cli, 'now', fixture.local, '--json'], { env: fixture.env }),
+    /machine-local home path/,
+  );
+  assert.equal(git(fixture.local, ['rev-list', '--left-right', '--count', 'HEAD...@{u}']), '0\t0');
+  assert.match(git(fixture.local, ['status', '--porcelain']), /note\.md/);
+});
+
+it('refuses to push an existing ahead commit containing the current home path', () => {
+  const fixture = syncFixture('shareability-ahead');
+  writeFileSync(join(fixture.local, 'note.md'), `# Note\n\nRun ${fixture.env.HOME}/bin/tilt.\n`);
+  git(fixture.local, ['add', 'note.md']);
+  git(fixture.local, ['commit', '-q', '-m', 'Record machine-local command']);
+
+  assert.throws(
+    () => runNode([fixture.cli, 'now', fixture.local, '--json'], { env: fixture.env }),
+    /machine-local home path/,
+  );
+  assert.equal(git(fixture.local, ['rev-list', '--left-right', '--count', 'HEAD...@{u}']), '1\t0');
+  assert.equal(git(tmp, ['--git-dir', fixture.remote, 'log', '-1', '--pretty=%s']), 'Initial commit');
+});
+
+it('allows a corrective commit that removes a machine-local home path', () => {
+  const fixture = syncFixture('shareability-cleanup');
+  writeFileSync(join(fixture.local, 'note.md'), `# Note\n\nRun ${fixture.env.HOME}/bin/tilt.\n`);
+  git(fixture.local, ['add', 'note.md']);
+  git(fixture.local, ['commit', '-q', '-m', 'Seed legacy machine-local command']);
+  git(fixture.local, ['push', '-q']);
+  writeFileSync(join(fixture.local, 'note.md'), '# Note\n\nRun tilt from PATH.\n');
+  git(fixture.local, ['add', 'note.md']);
+  git(fixture.local, ['commit', '-q', '-m', 'Use portable command resolution']);
+
+  runNode([fixture.cli, 'now', fixture.local, '--json'], { env: fixture.env });
+
+  assert.equal(git(fixture.local, ['rev-list', '--left-right', '--count', 'HEAD...@{u}']), '0\t0');
+  assert.equal(git(tmp, ['--git-dir', fixture.remote, 'show', 'HEAD:note.md']), '# Note\n\nRun tilt from PATH.');
 });
 
 it('installs and auto-commits a local-only checkout without an upstream', () => {
