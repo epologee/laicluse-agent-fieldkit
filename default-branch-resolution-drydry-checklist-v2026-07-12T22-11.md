@@ -9,4 +9,4 @@ Version: `v2026-07-12T22-11`
 - `configured-ref-not-verified`: Find `init.defaultBranch` fallbacks that do not verify `refs/heads/<configured>` before accepting the name. Signatures: `init.defaultBranch`, `rev-parse --verify`.
 - `context-fallback-confusion`: Separate presentation-only current-branch fallbacks from merge, review, deletion, or integration decisions. Signatures: `default_branch`, `context`, `label`.
 - `conservative-unknown-regression`: Preserve consumers whose safe behavior deliberately treats missing remote metadata as unknown. Signatures: `default_policy="unknown"`, `wip_gate_resolve_default_ref`.
-- `generated-mirror-drift`: Confirm every changed canonical skill or package source is reflected in generated Codex adapters. Signatures: `.agents/plugins/generated`, `plugin-adapters check`, `circus plugins check`.
+- `generated-mirror-drift`: Confirm every changed canonical skill or package source is reflected in generated Codex adapters. Signatures: `.agents/plugins/generated`, `circus plugins check`.

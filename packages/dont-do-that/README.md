@@ -31,7 +31,7 @@ codex plugin add dont-do-that@laicluse-agent-fieldkit
 ## Agent support
 
 Claude Code receives the full hook stack. Codex receives the same event layers
-through `hooks/hooks.codex.json`, materialized by `bin/plugin-adapters build` as
+through `hooks/hooks.codex.json`, materialized by `circus plugins build` as
 `hooks/hooks.json` in the generated Codex adapter package.
 
 Guard placement and per-agent policy live in `hooks/guards.json`. An agent
@@ -400,7 +400,7 @@ set that guard's `agents.<agent>` value to `disabled` in `hooks/guards.json` and
 run:
 
 ```bash
-bin/plugin-adapters build .
+packages/circus/bin/circus plugins build .
 ```
 
 For a one-off local silence, set `DD_SKIP_GUARDS=<id>` or an event-specific
@@ -456,7 +456,7 @@ only surface context or nudges.
   the lane, function name, contract, and optional agent policy.
 - Run the registry validator with
   `bash packages/dont-do-that/bin/validate-registry`.
-- Sync generated Codex adapter files with `bin/plugin-adapters build .`.
+- Sync generated Codex adapter files with `packages/circus/bin/circus plugins build .`.
 - Update this README so the guard appears in the catalog and the detailed
   section for its hook moment.
 

@@ -7,7 +7,7 @@ CODEX_MARKETPLACE_FILE=".agents/plugins/marketplace.json"
 CLAUDE_MARKETPLACE_FILE=".claude-plugin/marketplace.json"
 
 die() {
-  printf 'plugin-adapters: %s\n' "$1" >&2
+  printf 'circus plugins: %s\n' "$1" >&2
   exit 1
 }
 
@@ -48,18 +48,18 @@ codex_plugin_payload() {
       version: $m.version,
       description: $desc,
       author: {
-        name: ($author | tostring)
+	name: ($author | tostring)
       },
       keywords: (($m.keywords // []) + [$plugin, "agent-skills"] | unique),
       skills: "./skills/",
       interface: {
-        displayName: ($m.displayName // ($m.name | titlecase)),
-        shortDescription: ($desc | shortdesc),
-        longDescription: $desc,
-        developerName: ($author | tostring),
-        category: $category,
-        capabilities: ["Read"],
-        defaultPrompt: ["Use the " + ($m.name | titlecase) + " plugin."]
+	displayName: ($m.displayName // ($m.name | titlecase)),
+	shortDescription: ($desc | shortdesc),
+	longDescription: $desc,
+	developerName: ($author | tostring),
+	category: $category,
+	capabilities: ["Read"],
+	defaultPrompt: ["Use the " + ($m.name | titlecase) + " plugin."]
       }
     }
     + (if ($m.repository // "") != "" then {repository: $m.repository} else {} end)
@@ -74,12 +74,12 @@ codex_marketplace_entry() {
     {
       name: $name,
       source: {
-        source: "local",
-        path: $source
+	source: "local",
+	path: $source
       },
       policy: {
-        installation: "AVAILABLE",
-        authentication: "ON_INSTALL"
+	installation: "AVAILABLE",
+	authentication: "ON_INSTALL"
       },
       category: $category
     }
@@ -116,6 +116,11 @@ validate_codex_hooks_config() {
   local plugin="$1" path="$2"
   jq -e 'type == "object" and (keys == ["hooks"]) and (.hooks | type == "object")' "$path" >/dev/null ||
     die "plugin $plugin Codex hooks config must have exactly one top-level hooks key: $path"
+}
+
+is_tombstone_manifest() {
+	local manifest="$1"
+	jq -e '(.description // "") | startswith("DEPRECATED:")' "$manifest" >/dev/null
 }
 
 skill_source_for_agent() {
@@ -185,10 +190,10 @@ copy_codex_skills() {
   done
 }
 
-copy_codex_bin() {
+copy_codex_runtime_payload() {
   local plugin_dir="$1" target_dir="$2" dir file rel out
-  rm -rf "$target_dir/bin" "$target_dir/lib"
-  for dir in bin lib; do
+  rm -rf "$target_dir/bin" "$target_dir/lib" "$target_dir/templates"
+  for dir in bin lib templates; do
     [ -d "$plugin_dir/$dir" ] || continue
     while IFS= read -r file; do
       rel="${file#$plugin_dir/}"
@@ -231,7 +236,7 @@ copy_codex_hooks() {
     while IFS= read -r file; do
       rel="${file#$plugin_dir/}"
       case "$rel" in
-        hooks/hooks.json|hooks/hooks.codex.json) continue ;;
+	hooks/hooks.json|hooks/hooks.codex.json) continue ;;
       esac
       out="$target_dir/$rel"
       mkdir -p "$(dirname "$out")"
@@ -273,7 +278,14 @@ generate_into() {
     plugin_dir="$repo/${source#./}"
     manifest="$plugin_dir/.claude-plugin/plugin.json"
     [ -f "$manifest" ] || die "plugin $name is missing .claude-plugin/plugin.json"
-    [ -d "$plugin_dir/skills" ] || die "plugin $name is missing skills/"
+    if [ ! -d "$plugin_dir/skills" ]; then
+	  if is_tombstone_manifest "$manifest"; then
+	    rm -rf "$out_root/.agents/plugins/generated/$name"
+	    rm -rf "$out_root/${source#./}/.codex-plugin"
+	    continue
+	  fi
+	  die "plugin $name is missing skills/"
+    fi
     validate_skill_sources "$name" "$plugin_dir"
     copy_claude_skill_targets "$repo" "$out_root" "$plugin_dir"
     if has_codex_hooks "$plugin_dir"; then
@@ -293,7 +305,7 @@ generate_into() {
       rm -rf "$out_root/${source#./}/.codex-plugin"
       mkdir -p "$target_dir/.codex-plugin"
       copy_codex_skills "$plugin_dir" "$target_dir"
-      copy_codex_bin "$plugin_dir" "$target_dir"
+      copy_codex_runtime_payload "$plugin_dir" "$target_dir"
       copy_codex_root_files "$plugin_dir" "$target_dir"
       copy_codex_agents "$plugin_dir" "$target_dir"
       copy_codex_hooks "$plugin_dir" "$target_dir"
@@ -320,7 +332,7 @@ generate_into() {
     {
       name: $name,
       interface: {
-        displayName: $display
+	displayName: $display
       },
       plugins: .
     }
@@ -350,7 +362,7 @@ cmd_build() {
   local repo
   repo="$(repo_root "${1:-$PWD}")"
   generate_into "$repo" "$repo"
-  printf 'plugin-adapters: wrote %s and .codex-plugin manifests (%s)\n' "$CODEX_MARKETPLACE_FILE" "$repo"
+  printf 'circus plugins: wrote %s and .codex-plugin manifests (%s)\n' "$CODEX_MARKETPLACE_FILE" "$repo"
 }
 
 cmd_check() {
@@ -407,9 +419,9 @@ usage() {
   cat <<'EOF'
 plugin-adapters - build agent-specific plugin metadata from Claude marketplace source
 
-  bin/plugin-adapters build [repo]   write .agents/plugins and .codex-plugin manifests
-  bin/plugin-adapters check [repo]   report drift between source and generated targets
-  bin/plugin-adapters diff [repo]    show generated target diffs
+  circus plugins build [repo]   write .agents/plugins and .codex-plugin manifests
+  circus plugins check [repo]   report drift between source and generated targets
+  circus plugins diff [repo]    show generated target diffs
 EOF
 }
 

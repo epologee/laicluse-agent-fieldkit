@@ -56,6 +56,28 @@ HTML
   [ "$status" -ne 0 ]
 }
 
+@test "category labels leave room for double-digit counts" {
+  node - "$REPO" <<'NODE'
+const fs = require("fs");
+const path = require("path");
+const repo = process.argv[2];
+const marketplacePath = path.join(repo, ".claude-plugin", "marketplace.json");
+const marketplace = JSON.parse(fs.readFileSync(marketplacePath, "utf8"));
+for (let i = 2; i <= 10; i += 1) {
+  const name = `demo-${i}`;
+  marketplace.plugins.push({ name, description: "demo plugin", source: `./packages/${name}` });
+  const packageDir = path.join(repo, "packages", name);
+  fs.mkdirSync(path.join(packageDir, ".claude-plugin"), { recursive: true });
+  fs.writeFileSync(path.join(packageDir, ".claude-plugin", "plugin.json"), JSON.stringify({ name, description: "demo plugin", version: "2.0.1" }));
+  fs.writeFileSync(path.join(packageDir, "README.md"), `# ${name}\n\nDemo plugin.\n`);
+}
+fs.writeFileSync(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`);
+NODE
+  node "$SCRIPT" "$REPO" > /dev/null
+
+  node -e 'const svg=require("fs").readFileSync(process.argv[1],"utf8");if(!/>10<\/text>\s*<text x="154"[^>]*>Feedback and utilities<\/text>/.test(svg))process.exit(1)' "$REPO/docs/assets/og-card.svg"
+}
+
 @test "the meta hash replaces the dev placeholder" {
   run grep -c 'og-image.png?v=dev' "$REPO/docs/index.html"
   [ "$output" -eq 0 ]

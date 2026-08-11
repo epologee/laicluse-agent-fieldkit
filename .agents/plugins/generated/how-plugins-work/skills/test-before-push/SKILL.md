@@ -26,17 +26,19 @@ Run from the repo root:
 alias=$(jq -r '.name' .claude-plugin/marketplace.json)
 printf 'alias=%s\n' "$alias"
 git status --short
-if [ -x bin/plugin-versions ]; then
-  if git diff --cached --quiet; then
-    bin/plugin-versions --check
-  else
-    PLUGIN_VERSIONS_GIT_CMD="${PLUGIN_VERSIONS_GIT_CMD:-git commit}" bin/plugin-versions --staged
-  fi
+circus_bin="${CIRCUS_BIN:-$(command -v circus || true)}"
+[ -x "$circus_bin" ] || {
+  echo "circus@laicluse-agent-fieldkit is required for plugin builds" >&2
+  exit 1
+}
+if git diff --cached --quiet; then
+  "$circus_bin" plugins versions --check .
+else
+  PLUGIN_VERSIONS_GIT_CMD="${PLUGIN_VERSIONS_GIT_CMD:-git commit}" \
+    "$circus_bin" plugins versions --staged .
 fi
-if [ -x bin/plugin-adapters ]; then
-  bin/plugin-adapters build .
-  bin/plugin-adapters check .
-fi
+"$circus_bin" plugins build .
+"$circus_bin" plugins check .
 ```
 
 All checks must pass. A clean index validates the committed version with `--check`; a staged current-task slice validates and preserves the next commit-count version with the same `--staged` operation the repository hook uses. This is what makes runtime activation before the final commit possible without installing a version that the commit immediately replaces. If `git status --short` prints unrelated work, stop and isolate it first; the install snapshots the working tree. Stage the current task before this procedure when repo policy requires runtime activation before the final commit.
@@ -72,7 +74,7 @@ codex plugin add "$plugin@$alias"
 
 Codex reads `.agents/plugins/marketplace.json`, follows
 `plugins[].source.path`, then reads the package `.codex-plugin/plugin.json`.
-If the add cannot find the plugin, run `bin/plugin-adapters check .` before
+If the add cannot find the plugin, run `circus plugins check .` before
 looking at any cache path. When the check passes and the plugin is absent from
 the Codex marketplace, treat that as intentional single-agent coverage rather
 than stale generated metadata.

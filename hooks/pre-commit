@@ -15,20 +15,20 @@ if [ -x "bin/check-no-symlinks" ]; then
   fi
 fi
 
-plugin_versions_script="bin/plugin-versions"
-if [ -x "$plugin_versions_script" ]; then
+circus_script="packages/circus/bin/circus"
+if [ -f ".claude-plugin/marketplace.json" ]; then
+	if [ ! -x "$circus_script" ]; then
+		echo "ERROR: canonical Circus executable not found at $circus_script." >&2
+		exit 1
+	fi
   PLUGIN_VERSIONS_GIT_CMD=$(ps -o args= -p $PPID 2>/dev/null || echo "git commit")
   export PLUGIN_VERSIONS_GIT_CMD
-  if ! "$plugin_versions_script" --staged; then
-    echo "ERROR: $plugin_versions_script --staged failed." >&2
+  if ! "$circus_script" plugins versions --staged .; then
+    echo "ERROR: $circus_script plugins versions --staged failed." >&2
     exit 1
   fi
-fi
-
-adapter_script="bin/plugin-adapters"
-if [ -x "$adapter_script" ] && [ -f ".claude-plugin/marketplace.json" ]; then
-  if ! "$adapter_script" build . >/dev/null; then
-    echo "ERROR: $adapter_script build failed." >&2
+  if ! "$circus_script" plugins build . >/dev/null; then
+    echo "ERROR: $circus_script plugins build failed." >&2
     exit 1
   fi
   if [ -d ".agents/plugins" ]; then
@@ -46,9 +46,9 @@ if [ -x "$adapter_script" ] && [ -f ".claude-plugin/marketplace.json" ]; then
   find packages -path "*/skills/*/SKILL.claude.md" -type f | while IFS= read -r claude_skill; do
     git add "$(dirname "$claude_skill")/SKILL.md"
   done
-  if ! "$adapter_script" check . >/dev/null; then
-    echo "ERROR: $adapter_script check failed." >&2
-    "$adapter_script" check . >&2
+  if ! "$circus_script" plugins check . >/dev/null; then
+    echo "ERROR: $circus_script plugins check failed." >&2
+    "$circus_script" plugins check . >&2
     exit 1
   fi
 fi

@@ -19,7 +19,7 @@ jq -e '.name == "self-improvement" and (.description | test("durable target"))' 
 jq -e '.name == "self-improvement" and .interface.displayName == "Self Improvement"' \
   "$generated_manifest" >/dev/null
 
-bin/plugin-adapters check . >/dev/null
+packages/circus/bin/circus plugins check . >/dev/null
 
 if rg -n '/legacy marketplace|gitgit|Claude behavior|Claude Code ecosystem|~/.claude' \
   --glob '!packages/self-improvement/test/smoke-test.sh' \

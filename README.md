@@ -87,6 +87,7 @@ The marketplace currently ships:
   `naming-is-hard`.
 - `whywhy`: drills a configurable why-chain into a question or goal, then
   reads the chain for assumptions, forks, and better framing.
+- `circus`: builds shared and agent-specific instruction targets, keeps project-level CIRCUS.md/CLAUDE.md/AGENTS.md aligned, and generates and versions multi-agent plugin adapters.
 
 ## Development
 
@@ -101,9 +102,9 @@ Host runtimes use their own adapter metadata. Claude manifests are edited in
 place; Codex manifests are generated from the same package sources:
 
 ```bash
-bin/plugin-adapters build .
-bin/plugin-adapters check .
-bin/plugin-adapters diff .
+packages/circus/bin/circus plugins build .
+packages/circus/bin/circus plugins check .
+packages/circus/bin/circus plugins diff .
 ```
 
 The GitHub Pages catalog data is generated from the same source manifests and
@@ -116,8 +117,8 @@ bin/build-pages .
 Plugin versions follow `2.0.<commit-count>` per package:
 
 ```bash
-bin/plugin-versions --check
-bin/plugin-versions --write
+packages/circus/bin/circus plugins versions --check .
+packages/circus/bin/circus plugins versions --write .
 ```
 
 Enable the local git hooks in this clone:

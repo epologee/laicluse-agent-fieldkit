@@ -35,7 +35,7 @@ runtime_closeout_section() {
 
 @test "the runtime closeout validates the staged next version before a required pre-commit activation" {
 	grep -q 'git diff --cached --quiet' "$CLOSEOUT"
-	grep -q 'bin/plugin-versions --staged' "$CLOSEOUT"
-	grep -q 'bin/plugin-adapters build .' "$CLOSEOUT"
-	grep -q 'bin/plugin-versions --check' "$CLOSEOUT"
+	grep -q 'plugins versions --staged .' "$CLOSEOUT"
+	grep -q 'plugins build .' "$CLOSEOUT"
+	grep -q 'plugins versions --check .' "$CLOSEOUT"
 }

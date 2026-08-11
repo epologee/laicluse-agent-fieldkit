@@ -6,7 +6,7 @@
 # version DOWNWARD inside the merge itself (observed: 2.0.15 -> 2.0.6). The
 # staged-mode bump must count commits reachable from HEAD *and* MERGE_HEAD.
 
-SCRIPT="$BATS_TEST_DIRNAME/../../bin/plugin-versions"
+SCRIPT="$BATS_TEST_DIRNAME/../../packages/circus/bin/circus"
 
 setup() {
   export REPO="$BATS_TEST_TMPDIR/repo"
@@ -40,7 +40,7 @@ JSON
   git checkout -q main 2>/dev/null || git checkout -q master
   git merge --no-ff --no-commit feature
 
-  PLUGIN_VERSIONS_GIT_CMD="git commit" run bash "$SCRIPT" --staged
+  PLUGIN_VERSIONS_GIT_CMD="git commit" run "$SCRIPT" plugins versions --staged "$REPO"
 
   [ "$status" -eq 0 ]
   version=$(jq -r '.version' packages/demo/.claude-plugin/plugin.json)
@@ -53,7 +53,7 @@ JSON
   echo three > packages/demo/three.txt
   git add packages/demo/three.txt
 
-  PLUGIN_VERSIONS_GIT_CMD="git commit" run bash "$SCRIPT" --staged
+  PLUGIN_VERSIONS_GIT_CMD="git commit" run "$SCRIPT" plugins versions --staged "$REPO"
 
   [ "$status" -eq 0 ]
   version=$(jq -r '.version' packages/demo/.claude-plugin/plugin.json)

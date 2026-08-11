@@ -9,7 +9,7 @@
 # (observed with clipboard-copy, anger-log, and git-discipline's git-native
 # hook libraries).
 
-SCRIPT="$BATS_TEST_DIRNAME/../../bin/plugin-adapters"
+SCRIPT="$BATS_TEST_DIRNAME/../../packages/circus/bin/circus"
 
 setup() {
   export REPO="$BATS_TEST_TMPDIR/repo"
@@ -44,28 +44,28 @@ MD
 }
 
 @test "build copies bin/ into the generated codex dir for sanitized plugins" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
 
   [ -f "$REPO/.agents/plugins/generated/demo/bin/demo-helper" ]
   [ -x "$REPO/.agents/plugins/generated/demo/bin/demo-helper" ]
 }
 
 @test "build copies hooks/lib into the generated codex dir for sanitized plugins" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
 
   [ -f "$REPO/.agents/plugins/generated/demo/hooks/lib/demo-lib.sh" ]
   [ ! -f "$REPO/.agents/plugins/generated/demo/hooks/hooks.json" ]
 }
 
 @test "build copies top-level changelog into the generated codex dir" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
 
   [ -f "$REPO/.agents/plugins/generated/demo/CHANGELOG.md" ]
   grep -q 'demo changelog' "$REPO/.agents/plugins/generated/demo/CHANGELOG.md"
 }
 
 @test "build copies marketplace changelog into the generated codex dir" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
 
   [ -f "$REPO/.agents/plugins/generated/demo/MARKETPLACE-CHANGELOG.md" ]
   grep -q 'demo marketplace changelog' "$REPO/.agents/plugins/generated/demo/MARKETPLACE-CHANGELOG.md"
@@ -81,7 +81,7 @@ MD
 {"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command","command":"${PLUGIN_ROOT}/hooks/dispatch.sh"}]}]}}
 JSON
 
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
 
   [ -f "$REPO/.agents/plugins/generated/demo/hooks/hooks.json" ]
   [ -f "$REPO/.agents/plugins/generated/demo/hooks/dispatch.sh" ]
@@ -92,26 +92,26 @@ JSON
 }
 
 @test "check passes after build with a bin directory present" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
 
-  run bash "$SCRIPT" check "$REPO"
+  run "$SCRIPT" plugins check "$REPO"
   [ "$status" -eq 0 ]
 }
 
 @test "a stale generated hook library that no longer exists in the source is drift" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
   printf 'stale\n' > "$REPO/.agents/plugins/generated/demo/hooks/lib/stale-lib.sh"
 
-  run bash "$SCRIPT" check "$REPO"
+  run "$SCRIPT" plugins check "$REPO"
   [ "$status" -eq 1 ]
   [[ "$output" == *"stale-lib.sh"* ]]
 }
 
 @test "a stale generated bin file that no longer exists in the source is drift" {
-  bash "$SCRIPT" build "$REPO" > /dev/null
+  "$SCRIPT" plugins build "$REPO" > /dev/null
   printf '#!/bin/sh\necho stale\n' > "$REPO/.agents/plugins/generated/demo/bin/stale-helper"
 
-  run bash "$SCRIPT" check "$REPO"
+  run "$SCRIPT" plugins check "$REPO"
   [ "$status" -eq 1 ]
   [[ "$output" == *"stale-helper"* ]]
 }

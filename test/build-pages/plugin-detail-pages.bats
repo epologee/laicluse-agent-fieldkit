@@ -5,6 +5,7 @@
 # package READMEs so deep links stay synchronized with marketplace changes.
 
 SCRIPT="$BATS_TEST_DIRNAME/../../bin/build-pages"
+SOURCE_REPO="$BATS_TEST_DIRNAME/../.."
 
 setup() {
   export REPO="$BATS_TEST_TMPDIR/repo"
@@ -140,6 +141,13 @@ HTML
   grep -q '<a href="https://example.test/dibs">external reference</a>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q '<table>' "$REPO/docs/agent-fieldkit/dibs/index.html"
   grep -q 'Reports status' "$REPO/docs/agent-fieldkit/dibs/index.html"
+}
+
+@test "Circus website explains shared and agent-specific prompt composition" {
+  grep -Fq 'shared/*.md + specific/claude.md -> ~/.claude/CLAUDE.md' "$SOURCE_REPO/packages/circus/README.md"
+  grep -Fq 'shared/*.md + specific/codex.md -> ~/.codex/AGENTS.md' "$SOURCE_REPO/packages/circus/README.md"
+  grep -Fq 'shared/*.md + specific/claude.md -&gt; ~/.claude/CLAUDE.md' "$SOURCE_REPO/docs/agent-fieldkit/circus/index.html"
+  grep -Fq 'shared/*.md + specific/codex.md -&gt; ~/.codex/AGENTS.md' "$SOURCE_REPO/docs/agent-fieldkit/circus/index.html"
 }
 
 @test "README tables keep escaped pipes inside code spans in the same cell" {

@@ -1525,8 +1525,9 @@ function buildOgSvg(data) {
 	const rowGap = 14;
 	const colGap = 16;
 	const perRow = Math.ceil(cats.length / 2);
-	const pillWidth = (label) => Math.round(58 + label.length * charW + 28);
-	const col1Max = Math.max(...cats.filter((_, i) => i % perRow === 0).map((c) => pillWidth(c.label)));
+	const countWidth = (count) => Math.ceil(String(count).length * charW);
+	const pillWidth = ({ label, count }) => Math.round(42 + countWidth(count) + label.length * charW + 28);
+	const col1Max = Math.max(...cats.filter((_, i) => i % perRow === 0).map(pillWidth));
 	const colXs = [80, 80 + col1Max + colGap];
 	const pills = cats
 		.map(({ label, count }, i) => {
@@ -1534,12 +1535,13 @@ function buildOgSvg(data) {
 			const col = i - row * perRow;
 			const y = pillTopY + row * (pillH + rowGap);
 			const baseline = y + pillH / 2 + 9;
-			const width = pillWidth(label);
+			const width = pillWidth({ label, count });
 			const x = colXs[col];
+			const labelX = x + 42 + countWidth(count);
 			return `	<g>
 		<rect x="${x}" y="${y}" width="${width}" height="${pillH}" rx="28" fill="#11150f" stroke="rgba(255,255,255,0.15)"/>
 		<text x="${x + 26}" y="${baseline}" font-family="${OG_MONO}" font-size="${pillFont}" font-weight="700" fill="#31d994" stroke="#31d994" stroke-width="0.9">${count}</text>
-		<text x="${x + 58}" y="${baseline}" font-family="${OG_MONO}" font-size="${pillFont}" fill="#d7dcd8">${xmlEscape(label)}</text>
+		<text x="${labelX}" y="${baseline}" font-family="${OG_MONO}" font-size="${pillFont}" fill="#d7dcd8">${xmlEscape(label)}</text>
 	</g>`;
 		})
 		.join("\n");

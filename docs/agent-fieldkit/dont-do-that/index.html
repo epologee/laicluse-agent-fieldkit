@@ -13,8 +13,8 @@
 		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/dont-do-that/">
 		<meta property="og:title" content="dont-do-that · l'Aicluse Agent Fieldkit">
 		<meta property="og:description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
-		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=bbda16ec51">
-		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=bbda16ec51">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=24569fdac1">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=24569fdac1">
 		<meta property="og:image:type" content="image/png">
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
@@ -22,7 +22,7 @@
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="dont-do-that · l'Aicluse Agent Fieldkit">
 		<meta name="twitter:description" content="Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.">
-		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=bbda16ec51">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=24569fdac1">
 
 		<link rel="stylesheet" href="../../styles.css?v=3de7a55272">
 		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
@@ -52,7 +52,7 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.37</span>
+						<span>2.0.38</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -72,7 +72,7 @@
 <li><code>/not-your-monkey</code> / <code>$not-your-monkey</code>, a visual self-inspection correction skill for turns where the agent must stop making the operator reload and judge UI changes.</li>
 </ul>
 <h2 id="agent-support">Agent support</h2>
-<p>Claude Code receives the full hook stack. Codex receives the same event layers through <code>hooks/hooks.codex.json</code>, materialized by <code>bin/plugin-adapters build</code> as <code>hooks/hooks.json</code> in the generated Codex adapter package.</p>
+<p>Claude Code receives the full hook stack. Codex receives the same event layers through <code>hooks/hooks.codex.json</code>, materialized by <code>circus plugins build</code> as <code>hooks/hooks.json</code> in the generated Codex adapter package.</p>
 <p>Guard placement and per-agent policy live in <code>hooks/guards.json</code>. An agent absent from a guard's <code>agents</code> map defaults to <code>enabled</code>; only an explicit <code>disabled</code> removes a guard for that agent. Codex currently disables only two Stop guards:</p>
 <ul>
 <li><code>premature</code>, because its nudge turn can replace an otherwise-complete assistant answer in the Mac app.</li>
@@ -202,7 +202,7 @@
 <p>This is for visual or interactive work: web apps, app screens, PDFs, images, generated screenshots, canvas output, responsive layouts, and similar artifacts where code review alone cannot prove the result. It does not lift normal gates; credentials, human-only account approvals, external irreversible operations, or inaccessible hardware still require the operator.</p>
 <h2 id="configuration">Configuration</h2>
 <p>The dispatcher always runs when the host calls the hook, but individual guards fire only when their pattern matches. To silence a guard durably for one agent, set that guard's <code>agents.&lt;agent&gt;</code> value to <code>disabled</code> in <code>hooks/guards.json</code> and run:</p>
-<pre><code class="language-bash">bin/plugin-adapters build .</code></pre>
+<pre><code class="language-bash">packages/circus/bin/circus plugins build .</code></pre>
 <p>For a one-off local silence, set <code>DD_SKIP_GUARDS=&lt;id&gt;</code> or an event-specific variant such as <code>DD_SKIP_STOP_GUARDS=&lt;id&gt;</code> on the dispatcher command in the hook manifest. <code>DD_ONLY_GUARDS</code> and event-specific <code>DD_ONLY_*_GUARDS</code> variants are available for focused local testing.</p>
 <p>To silence the plugin entirely, uninstall it:</p>
 <div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
@@ -235,7 +235,7 @@
 <li>Add <code>hooks/guards/&lt;id&gt;.sh</code> with a shell function named in the registry.</li>
 <li>Register the guard in <code>hooks/guards.json</code> with a lane, unique order within the lane, function name, contract, and optional agent policy.</li>
 <li>Run the registry validator with <code>bash packages/dont-do-that/bin/validate-registry</code>.</li>
-<li>Sync generated Codex adapter files with <code>bin/plugin-adapters build .</code>.</li>
+<li>Sync generated Codex adapter files with <code>packages/circus/bin/circus plugins build .</code>.</li>
 <li>Update this README so the guard appears in the catalog and the detailed section for its hook moment.</li>
 </ul>
 <p>Every user-visible hook message starts with <code>[dont-do-that/&lt;code&gt;] </code>. The code is a stable identifier for the guard or, in the <code>false-claims</code> case, for the message mnemonic (<code>[dont-do-that/pre-existing]</code>).</p>
