@@ -37,6 +37,17 @@ The build step exists because Codex does not support file imports: shared text
 must be physically present in the target file, and symlinks leave no room for
 per-agent content.
 
+### One shared prompt, agent-specific additions
+
+Every generated prompt starts with the same shared doctrine, then adds only the instructions for that agent:
+
+```text
+shared/*.md + specific/claude.md -> ~/.claude/CLAUDE.md
+shared/*.md + specific/codex.md -> ~/.codex/AGENTS.md
+```
+
+The shared files keep the agents aligned; each `specific/<agent>.md` file adds agent-specific behavior without replacing that common baseline. The source and generated prompts remain local to the user's machine and are not distributed with the Circus plugin.
+
 **Project level (`circus sync`).** Keeps a repo's `CIRCUS.md` (visible committed
 ground truth), `CLAUDE.md`, and `AGENTS.md` identical. It is bidirectional:
 edit any of the three, and `circus sync` folds that edit into the other two
