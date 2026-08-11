@@ -521,7 +521,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.10",
+			"version": "2.0.11",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -538,7 +538,7 @@
 			"latestChange": {
 				"version": "v2.0.10",
 				"type": "Changed",
-				"summary": "Backlog names now start with the human outcome."
+				"summary": "Migration plans now converge on one implementation."
 			}
 		},
 		{
@@ -701,11 +701,11 @@
 		},
 		{
 			"plugin": "house-rules",
-			"packageVersion": "2.0.10",
+			"packageVersion": "2.0.11",
 			"detailPath": "agent-fieldkit/house-rules/",
 			"version": "v2.0.10",
 			"type": "Changed",
-			"summary": "Backlog names now start with the human outcome.",
+			"summary": "Migration plans now converge on one implementation.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{

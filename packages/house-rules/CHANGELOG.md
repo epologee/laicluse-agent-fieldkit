@@ -22,6 +22,7 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 
 ### Changed
 
+- **Migration plans now converge on one implementation.** `scar-tissue` removes moved skills from their old location and reserves old plugin packages for deprecation tombstones instead of forwarding layers.
 - **Backlog names now start with the human outcome.** `naming-is-hard` tells agents to write Idea, refinement, variant, slice, and epic titles for product owners without implementation context. Epic boundaries now separate independently steerable outcomes instead of components or technical layers.
 
 ## [v2.0.6]

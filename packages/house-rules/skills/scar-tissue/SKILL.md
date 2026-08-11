@@ -2,6 +2,7 @@
 name: scar-tissue
 description: >-
   Use when wrapping up work before handing it over: cut the residue of iterative fixing so the deliverable shows the destination, not the journey. Triggers on "scar tissue", finishing a branch, an end-of-work cleanup pass, or writing a changelog, commit message, or PR description. Spans code, changelogs, commit history, PR text, and tests.
+  Also use while designing a migration or compatibility plan, before an obsolete entry point becomes a permanent forwarding layer.
 user-invocable: true
 ---
 
@@ -31,6 +32,13 @@ Being invoked is usually a pointer, not a blank cheque. The operator saw somethi
 ## The discipline: a deliberate end-of-work pass
 
 When the work is done, go back before you hand it over and cut the marks of the struggle until only what is really needed remains. The result should read as if it were designed that way the first time. This is not optional polish: a fought-into-existence artifact spreads confusion and drift to everyone downstream. Cutting it saves tokens, compute, time, and money, and keeps quality high.
+
+## Migration without residue
+
+A migration ends with one canonical implementation at the destination. Do not preserve an obsolete path with a wrapper, forwarding entry point, alias, or copied implementation merely because that path existed before the move.
+
+- When an old plugin is removed, replace it with the deprecation tombstone defined by the plugin migration protocol. The tombstone only reaches existing installations with removal instructions; it does not forward behavior to the successor.
+- When a skill moves, remove the old skill. The destination is its only implementation and invocation path.
 
 ## The test of a scar
 
