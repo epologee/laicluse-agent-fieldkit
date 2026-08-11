@@ -20,10 +20,10 @@ set -eu
 cd "$(git rev-parse --show-toplevel)"
 
 MARKETPLACE_FILE=".claude-plugin/marketplace.json"
-VERSION_PREFIX="2.0"
+VERSION_PREFIX="@@VERSION_PREFIX@@"
 
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 {--check|--write|--bootstrap|--staged}" >&2
+  echo "Usage: circus plugins versions {--check|--write|--bootstrap|--staged}" >&2
   exit 1
 fi
 
@@ -76,13 +76,13 @@ retired_paths_for() {
     git diff --cached --diff-filter=D --name-only 2>/dev/null
   } | awk -v n="$name" '
       /\/SKILL\.md$/ {
-        sub(/\/SKILL\.md$/, "");
-        if ($0 ~ "^skills/[^/]+$") { print; next }
-        pfx = "packages/" n "/skills/"
-        if (index($0, pfx) == 1) {
-          rest = substr($0, length(pfx) + 1)
-          if (rest ~ "^[^/]+$") print
-        }
+	sub(/\/SKILL\.md$/, "");
+	if ($0 ~ "^skills/[^/]+$") { print; next }
+	pfx = "packages/" n "/skills/"
+	if (index($0, pfx) == 1) {
+	  rest = substr($0, length(pfx) + 1)
+	  if (rest ~ "^[^/]+$") print
+	}
       }
     ' | sort -u
 }
@@ -259,7 +259,7 @@ case "$MODE" in
   --staged) mode_staged ;;
   *)
     echo "Unknown mode: $MODE" >&2
-    echo "Usage: $0 {--check|--write|--bootstrap|--staged}" >&2
+    echo "Usage: circus plugins versions {--check|--write|--bootstrap|--staged}" >&2
     exit 1
     ;;
 esac

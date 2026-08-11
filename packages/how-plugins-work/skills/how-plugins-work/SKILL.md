@@ -4,7 +4,7 @@ user-invocable: true
 description: >-
   Build, scaffold, or diagnose Claude/Codex plugins, skills, and marketplaces.
   Read this BEFORE creating a new plugin, marketplace, marketplace.json source,
-  skill, or Codex adapter, and when generating adapters with plugin-adapters —
+  skill, or Codex adapter, and when generating adapters with Circus,
   not only when debugging plugin/skill resolution, slash-command misses, Unknown
   command errors, marketplace sync, or agent adapters.
 ---
@@ -103,7 +103,7 @@ Important differences from Claude:
 - Codex frontmatter parsing uses stricter YAML behavior; a `description` with
   YAML-special punctuation must use a folded scalar.
 - Generated Codex targets are adapter files. Edit the Claude/source metadata or
-  the shared `SKILL.md`, then run `bin/plugin-adapters build .`.
+  the shared `SKILL.md`, then run `circus plugins build .`.
 - Claude-only frontmatter keys such as `user-invocable` stay in the shared
   source for Claude, but Codex receives a generated sanitized copy when needed.
 - Codex CLI skill autocomplete lives under `$`, not `/`. Use `$<skill>` or the
@@ -146,7 +146,7 @@ OpenCode does not consume the Claude or Codex marketplace manifests described ab
 
 OpenCode recognizes `name` and `description` as required frontmatter plus optional `license`, `compatibility`, and string-to-string `metadata`. Unknown fields are ignored rather than rejected. A shared skill may therefore parse in OpenCode while still carrying another host's metadata, but portable source should not depend on fields or invocation behavior that only one host understands.
 
-The fieldkit's `packages/<plugin>/skills/<skill>/` source layout is not itself an OpenCode discovery path. Supporting OpenCode requires an explicit install or generated adapter that materializes a skill into one of OpenCode's supported roots. `bin/plugin-adapters` currently generates Claude and Codex runtime forms only, so this marketplace must not claim OpenCode delivery until that third adapter and a real OpenCode runtime check exist.
+The fieldkit's `packages/<plugin>/skills/<skill>/` source layout is not itself an OpenCode discovery path. Supporting OpenCode requires an explicit install or generated adapter that materializes a skill into one of OpenCode's supported roots. `circus plugins build` currently generates Claude and Codex runtime forms only, so this marketplace must not claim OpenCode delivery until that third adapter and a real OpenCode runtime check exist.
 
 ## Uniqueness and conflicts
 
@@ -393,7 +393,7 @@ not one agent's exact implementation path.
 
 ### Direction of dependency
 
-Public plugin documentation may define the generic sync contract. Private or project-specific generators may consume that contract and even assume this skill is installed. The reverse dependency is not allowed: a public plugin should not name a private synchronizer, private path, personal doctrine repo, or local machine convention.
+`how-plugins-work` defines the generic sync contract; the public Circus plugin implements it. Project-specific tooling may invoke Circus, but neither public plugin may depend on private paths, personal doctrine repositories, or local machine conventions.
 
 ## Model selection
 
@@ -771,7 +771,7 @@ local marketplace.
    <marketplace>` before reinstalling when the remote changed. For local
    marketplace development, rebuild the generated adapters first.
 5. If the plugin exists in Claude metadata but not Codex, run
-   `bin/plugin-adapters check .`. Drift means the Codex adapter files are stale;
+   `circus plugins check .`. Drift means the Codex adapter files are stale;
    a clean check means the omission is intentional single-agent coverage.
 6. If `codex plugin add` cannot find the plugin, inspect
    `.agents/plugins/marketplace.json` first, then the package

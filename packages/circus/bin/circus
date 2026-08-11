@@ -1,0 +1,373 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LAICLUSE_HOME="${LAICLUSE_HOME:-$HOME/.laicluse}"
+DEFAULT_ROOT="$LAICLUSE_HOME/circus"
+ROOT="${CIRCUS_ROOT:-$DEFAULT_ROOT}"
+SHARED_DIR="$ROOT/shared"
+SPECIFIC_DIR="$ROOT/specific"
+TARGETS_FILE="$ROOT/targets"
+BANNER_MARK="<!-- GENERATED "
+BANNER="${BANNER_MARK}from the circus source by 'circus build'. Edit shared/ or specific/, never this file. Direct edits disappear on the next build. -->"
+
+die() { printf 'circus: %s\n' "$1" >&2; exit 1; }
+
+expand() { printf '%s' "${1/#\~/$HOME}"; }
+
+normalize_support() {
+  local value
+  value="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  case "$value" in
+    true|yes|on|1|enabled) printf 'true' ;;
+    false|no|off|0|disabled) printf 'false' ;;
+    auto) printf 'auto' ;;
+    *) die "invalid supported value: $1" ;;
+  esac
+}
+
+target_status() {
+  local name="$1" support="$2" detect="$3" detector
+  case "$support" in
+    true)
+      printf 'active\t-\n'
+      ;;
+    false)
+      printf 'skipped\tsupported=false\n'
+      ;;
+    auto)
+      detector="${detect:-$name}"
+      if command -v -- "$detector" >/dev/null 2>&1; then
+        printf 'active\tdetect=%s\n' "$detector"
+      else
+        printf 'skipped\tdetect=%s not found\n' "$detector"
+      fi
+      ;;
+    *)
+      die "invalid target support status for $name: $support"
+      ;;
+  esac
+}
+
+assemble() {
+  printf '%s\n\n' "$BANNER"
+  local f
+  for f in "$SHARED_DIR"/*.md; do
+    [ -e "$f" ] || continue
+    cat "$f"
+    printf '\n\n'
+  done
+  local specific="$SPECIFIC_DIR/$1.md"
+  [ -f "$specific" ] && { cat "$specific"; printf '\n'; }
+  return 0
+}
+
+is_ours() {
+  local first
+  [ -f "$1" ] || return 1
+  IFS= read -r first < "$1" || true
+  case "$first" in "$BANNER_MARK"*) return 0 ;; *) return 1 ;; esac
+}
+
+each_target_all() {
+  [ -f "$TARGETS_FILE" ] || die "missing targets file at $TARGETS_FILE"
+  local line name rest path opts opt support support_set detect status reason
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%%#*}"
+    [ -z "${line//[[:space:]]/}" ] && continue
+    case "$line" in *=*) ;; *) die "invalid target line in $TARGETS_FILE: $line" ;; esac
+    IFS='=' read -r name rest <<< "$line"
+    name="${name//[[:space:]]/}"
+    [ -n "$name" ] || die "target without a name in $TARGETS_FILE"
+    read -r path opts <<< "$rest"
+    [ -n "${path:-}" ] || die "target $name is missing an output path"
+
+    support="true"
+    support_set=0
+    detect=""
+    for opt in $opts; do
+      case "$opt" in
+        supported=*)
+          support="$(normalize_support "${opt#supported=}")"
+          support_set=1
+          ;;
+        enabled=*)
+          support="$(normalize_support "${opt#enabled=}")"
+          support_set=1
+          ;;
+        detect=*)
+          detect="${opt#detect=}"
+          ;;
+        *)
+	  die "unknown target option for $name: $opt"
+          ;;
+      esac
+    done
+    if [ "$support_set" -eq 0 ] && [ -n "$detect" ]; then
+      support="auto"
+    fi
+    IFS=$'\t' read -r status reason < <(target_status "$name" "$support" "$detect")
+    printf '%s\t%s\t%s\t%s\n' "$name" "$(expand "$path")" "$status" "$reason"
+  done < "$TARGETS_FILE"
+}
+
+cmd_build() {
+  local force=0 only=""
+  [ "${1:-}" = "--force" ] && { force=1; shift; }
+  only="${1:-}"
+  local name out status reason new seen=0
+  while IFS=$'\t' read -r name out status reason; do
+    [ -n "$only" ] && [ "$only" != "$name" ] && continue
+    seen=1
+    if [ "$status" != "active" ]; then
+      printf 'circus: %-9s skipped (%s)\n' "$name" "$reason"
+      continue
+    fi
+    [ -f "$SPECIFIC_DIR/$name.md" ] || printf 'circus: warning: no specific/ file for %s (shared only)\n' "$name" >&2
+    mkdir -p "$(dirname "$out")"
+    new="$(assemble "$name")"
+    if [ -f "$out" ] && ! is_ours "$out" && [ "$force" -ne 1 ]; then
+      printf '%s\n' "$new" > "$out.generated"
+      printf 'circus: %s already exists and is handwritten; staged as %s\n        review, then activate with: circus build --force %s\n' "$out" "$out.generated" "$name" >&2
+      continue
+    fi
+    if [ -f "$out" ] && [ "$new" = "$(cat "$out")" ]; then
+      printf 'circus: %-9s up-to-date\n' "$name"
+      continue
+    fi
+    printf '%s\n' "$new" > "$out"
+    printf 'circus: %-9s -> %s\n' "$name" "$out"
+  done < <(each_target_all)
+  [ -n "$only" ] && [ "$seen" -eq 0 ] && die "unknown target: $only"
+  return 0
+}
+
+cmd_check() {
+  local rc=0 name out status reason
+  while IFS=$'\t' read -r name out status reason; do
+    if [ "$status" != "active" ]; then
+      printf 'skip   %-9s %s\n' "$name" "$reason"
+      continue
+    fi
+    if [ ! -f "$out" ]; then
+      printf 'DRIFT  %-9s missing (%s)\n' "$name" "$out"; rc=1; continue
+    fi
+    if [ "$(assemble "$name")" = "$(cat "$out")" ]; then
+      printf 'ok     %-9s %s\n' "$name" "$out"
+    else
+      printf 'DRIFT  %-9s differs from the source (%s)\n' "$name" "$out"; rc=1
+    fi
+  done < <(each_target_all)
+  return $rc
+}
+
+cmd_diff() {
+  local name out status reason
+  while IFS=$'\t' read -r name out status reason; do
+    printf '=== %s (%s) ===\n' "$name" "$out"
+    if [ "$status" != "active" ]; then
+      printf '(target skipped: %s)\n' "$reason"
+      continue
+    fi
+    [ -f "$out" ] || { printf '(target does not exist yet)\n'; continue; }
+    diff -u "$out" <(assemble "$name") || true
+  done < <(each_target_all)
+}
+
+cmd_list() {
+  printf 'root:    %s\n' "$ROOT"
+  printf 'shared:  %s\n' "$(ls "$SHARED_DIR" 2>/dev/null | tr '\n' ' ')"
+  printf 'specific: %s\n' "$(ls "$SPECIFIC_DIR" 2>/dev/null | tr '\n' ' ')"
+  printf 'targets:\n'
+  each_target_all | while IFS=$'\t' read -r name out status reason; do
+    if [ "$status" = "active" ]; then
+      if [ "$reason" = "-" ]; then
+        printf '  %-9s -> %s\n' "$name" "$out"
+      else
+        printf '  %-9s -> %s [auto: %s]\n' "$name" "$out" "$reason"
+      fi
+    else
+      printf '  %-9s -> %s [skip: %s]\n' "$name" "$out" "$reason"
+    fi
+  done
+}
+
+cmd_edit() {
+  ${EDITOR:-vi} "$ROOT"
+}
+
+
+plugin_template() {
+  local template_dir template
+  template_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../templates" 2>/dev/null && pwd)" \
+    || die "plugin templates are missing next to ${BASH_SOURCE[0]}"
+  template="$template_dir/$1"
+  [ -f "$template" ] || die "missing plugin template: $template"
+  printf '%s' "$template"
+}
+
+cmd_plugins_build() {
+  bash "$(plugin_template plugin-adapters)" build "${1:-$PWD}"
+}
+
+cmd_plugins_check() {
+  bash "$(plugin_template plugin-adapters)" check "${1:-$PWD}"
+}
+
+cmd_plugins_diff() {
+  bash "$(plugin_template plugin-adapters)" diff "${1:-$PWD}"
+}
+
+plugin_version_prefix() {
+  local repo="$1" configured prefixes count manifest
+  if [ -f "$repo/.plugin-version-prefix" ]; then
+    configured="$(tr -d '[:space:]' < "$repo/.plugin-version-prefix")"
+    printf '%s\n' "$configured" | grep -Eq '^[0-9]+\.[0-9]+$' \
+      || die "invalid plugin version prefix in $repo/.plugin-version-prefix: $configured"
+    printf '%s' "$configured"
+    return 0
+  fi
+  prefixes="$({
+    while IFS= read -r -d '' manifest; do
+      jq -r '.version // empty' "$manifest"
+    done < <(find "$repo/packages" -path '*/.claude-plugin/plugin.json' -type f -print0)
+  } | sed -E -n 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/p' | sort -u)"
+  count="$(printf '%s\n' "$prefixes" | sed '/^$/d' | wc -l | tr -d ' ')"
+  [ "$count" = "1" ] || die "expected one shared major.minor version prefix in $repo, found ${count:-0}"
+  printf '%s' "$prefixes"
+}
+
+cmd_plugins_versions() {
+  local mode="${1:-}" repo prefix versions_template
+  case "$mode" in
+    --check|--write|--bootstrap|--staged) ;;
+    *) die "usage: circus plugins versions {--check|--write|--bootstrap|--staged} [repo]" ;;
+  esac
+  repo="$(cd "${2:-$PWD}" 2>/dev/null && pwd)" || die "directory does not exist: ${2:-$PWD}"
+  prefix="$(plugin_version_prefix "$repo")"
+  versions_template="$(plugin_template plugin-versions)"
+  (cd "$repo" && sed "s/@@VERSION_PREFIX@@/$prefix/g" "$versions_template" | bash -s -- "$mode")
+}
+
+cmd_plugins() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    build) cmd_plugins_build "$@" ;;
+    check) cmd_plugins_check "$@" ;;
+    diff)  cmd_plugins_diff "$@" ;;
+    versions) cmd_plugins_versions "$@" ;;
+    ""|-h|--help|help)
+      cat <<'EOF'
+circus plugins - generate agent-specific plugin adapters from a Claude marketplace
+
+  circus plugins build [repo]          write .agents/plugins and .codex-plugin manifests
+  circus plugins check [repo]          report drift between Claude source and Codex targets
+  circus plugins diff [repo]           show what build would change
+  circus plugins versions <mode> [repo]  check or update marketplace plugin versions
+EOF
+      ;;
+    *) die "unknown plugins command: $sub" ;;
+  esac
+}
+
+SYNC_MARK="<!-- SYNCED "
+SYNC_BANNER="${SYNC_MARK}with CIRCUS.md through 'circus sync'. Edit CIRCUS.md or this file; run 'circus sync' to align CLAUDE.md and AGENTS.md. -->"
+
+sync_strip() {
+  local first
+  IFS= read -r first < "$1" || true
+  case "$first" in
+    "$SYNC_MARK"*) tail -n +3 "$1" ;;
+    *) cat "$1" ;;
+  esac
+}
+
+cmd_sync() {
+  local repo="${1:-$PWD}"
+  repo="$(cd "$repo" 2>/dev/null && pwd)" || die "directory does not exist: ${1:-$PWD}"
+  local CIR="$repo/CIRCUS.md" C="$repo/CLAUDE.md" A="$repo/AGENTS.md"
+
+  local cur_cir cur_c cur_a base
+  cur_cir="$( [ -f "$CIR" ] && cat "$CIR" || printf '' )"
+  cur_c="$( [ -f "$C" ] && sync_strip "$C" || printf '' )"
+  cur_a="$( [ -f "$A" ] && sync_strip "$A" || printf '' )"
+  base="$(cd "$repo" && git show HEAD:CIRCUS.md 2>/dev/null || printf '')"
+
+  if [ ! -f "$CIR" ] && [ ! -f "$C" ] && [ ! -f "$A" ]; then
+    die "no CIRCUS.md, CLAUDE.md, or AGENTS.md in $repo"
+  fi
+
+  local ed_cir=0 ed_c=0 ed_a=0 truth="" conflict=0 source=""
+  [ "$cur_cir" != "$base" ] && ed_cir=1
+  [ "$cur_c" != "$base" ] && ed_c=1
+  [ "$cur_a" != "$base" ] && ed_a=1
+
+  if [ "$ed_cir" -eq 1 ]; then
+    truth="$cur_cir"; source="CIRCUS.md"
+  elif [ "$ed_c" -eq 1 ] && [ "$ed_a" -eq 1 ] && [ "$cur_c" != "$cur_a" ]; then
+    conflict=1
+  elif [ "$ed_c" -eq 1 ]; then
+    truth="$cur_c"; source="CLAUDE.md"
+  elif [ "$ed_a" -eq 1 ]; then
+    truth="$cur_a"; source="AGENTS.md"
+  else
+    truth="$base"
+  fi
+
+  if [ "$conflict" -eq 1 ]; then
+    cat >&2 <<EOF
+circus: CONFLICT in $repo
+  Multiple files among CIRCUS.md / CLAUDE.md / AGENTS.md changed differently
+  since the last sync. Circus does NOT merge them; the running agent does.
+  Ancestor:  git show HEAD:CIRCUS.md
+  Ours:      CLAUDE.md   Theirs: AGENTS.md   Current truth: CIRCUS.md
+  Merge with your own judgment, write the result to CIRCUS.md, then run 'circus sync' again.
+EOF
+    return 3
+  fi
+
+  printf '%s\n' "$truth" > "$CIR"
+  { printf '%s\n\n' "$SYNC_BANNER"; printf '%s\n' "$truth"; } > "$C"
+  { printf '%s\n\n' "$SYNC_BANNER"; printf '%s\n' "$truth"; } > "$A"
+
+  if [ -z "$source" ]; then
+    printf 'circus: in sync (%s)\n' "$repo"
+  else
+    printf 'circus: synced from %s -> CIRCUS.md, CLAUDE.md, AGENTS.md (%s)\n' "$source" "$repo"
+  fi
+}
+
+usage() {
+  cat <<'EOF'
+circus - briefs every coding agent with shared doctrine plus an agent-specific layer
+
+  circus build [--force] [name]   generate all targets (or one target)
+  circus sync [path]              keep project-level CIRCUS.md/CLAUDE.md/AGENTS.md in sync
+  circus check                    report drift between source and targets (exit 1 on drift)
+  circus diff                     show what a build would change for each target
+  circus plugins <command>        build, check, diff, or version plugin adapters
+  circus list                     show root, shared doctrine, specifics, and target mapping
+  circus edit                     open the source directory in $EDITOR
+
+Source: ${LAICLUSE_HOME:-~/.laicluse}/circus/{shared,specific}. Mapping: ${LAICLUSE_HOME:-~/.laicluse}/circus/targets.
+shared/ contains shared doctrine; specific/ is per-agent.
+A handwritten target is never overwritten silently; Circus stages <target>.generated for review.
+Plugin-sync follows the public how-plugins-work model: SKILL.md is the shared source when behavior is agent-agnostic; SKILL.claude.md and SKILL.codex.md are agent-specific sources that may exist as a pair or as single-agent coverage; manifests are agent adapters.
+EOF
+}
+
+main() {
+  local cmd="${1:-}"; shift || true
+  case "$cmd" in
+    build) cmd_build "$@" ;;
+    sync)  cmd_sync "$@" ;;
+    check) cmd_check "$@" ;;
+    diff)  cmd_diff "$@" ;;
+    plugins) cmd_plugins "$@" ;;
+    list)  cmd_list "$@" ;;
+    edit)  cmd_edit "$@" ;;
+    ""|-h|--help|help) usage ;;
+    *) die "unknown command: $cmd (see 'circus --help')" ;;
+  esac
+}
+
+main "$@"

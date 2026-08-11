@@ -88,12 +88,12 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 21,
+		"sourcePackages": 22,
 		"publicProjects": 3,
-		"codexPackages": 20,
+		"codexPackages": 21,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 21,
-		"skillEntries": 82,
+		"changelogEntries": 22,
+		"skillEntries": 84,
 		"hookFiles": 56
 	},
 	"install": {
@@ -119,7 +119,8 @@
 			"claude plugins install house-rules@laicluse-agent-fieldkit",
 			"claude plugins install whywhy@laicluse-agent-fieldkit",
 			"claude plugins install lifeline@laicluse-agent-fieldkit",
-			"claude plugins install saysay@laicluse-agent-fieldkit"
+			"claude plugins install saysay@laicluse-agent-fieldkit",
+			"claude plugins install circus@laicluse-agent-fieldkit"
 		],
 		"codex": [
 			"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
@@ -142,13 +143,14 @@
 			"codex plugin add house-rules@laicluse-agent-fieldkit",
 			"codex plugin add whywhy@laicluse-agent-fieldkit",
 			"codex plugin add lifeline@laicluse-agent-fieldkit",
-			"codex plugin add saysay@laicluse-agent-fieldkit"
+			"codex plugin add saysay@laicluse-agent-fieldkit",
+			"codex plugin add circus@laicluse-agent-fieldkit"
 		]
 	},
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.36",
+			"version": "2.0.37",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -214,7 +216,7 @@
 		},
 		{
 			"name": "self-improvement",
-			"version": "2.0.8",
+			"version": "2.0.9",
 			"category": "feedback",
 			"summary": "Turns feedback about agent behavior into the strongest durable fix: hook, skill, project code, or instruction text.",
 			"support": [
@@ -258,7 +260,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.37",
+			"version": "2.0.38",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -606,6 +608,28 @@
 				"type": "Fixed",
 				"summary": "Codex speech now survives the tool call."
 			}
+		},
+		{
+			"name": "circus",
+			"version": "2.0.1",
+			"category": "feedback",
+			"summary": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"detailPath": "agent-fieldkit/circus/",
+			"sourcePath": "packages/circus",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/circus",
+			"skillCount": 2,
+			"commandCount": 1,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Added",
+				"summary": "Circus is now part of l'Aicluse Agent Fieldkit."
+			}
 		}
 	],
 	"changelog": [
@@ -629,7 +653,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.37",
+			"packageVersion": "2.0.38",
 			"detailPath": "agent-fieldkit/dont-do-that/",
 			"version": "v2.0.36",
 			"type": "Fixed",
@@ -638,7 +662,7 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.36",
+			"packageVersion": "2.0.37",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
 			"version": "v2.0.34",
 			"type": "Fixed",
@@ -718,6 +742,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
+			"plugin": "self-improvement",
+			"packageVersion": "2.0.9",
+			"detailPath": "agent-fieldkit/self-improvement/",
+			"version": "v2.0.0",
+			"type": "Changed",
+			"summary": "First l'Aicluse release.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
+		},
+		{
 			"plugin": "vaultsync",
 			"packageVersion": "2.0.9",
 			"detailPath": "agent-fieldkit/vaultsync/",
@@ -734,15 +767,6 @@
 			"type": "Added",
 			"summary": "/taste-test: elicit a visual direction without having to describe it.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
-		},
-		{
-			"plugin": "self-improvement",
-			"packageVersion": "2.0.8",
-			"detailPath": "agent-fieldkit/self-improvement/",
-			"version": "v2.0.0",
-			"type": "Changed",
-			"summary": "First l'Aicluse release.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
 		},
 		{
 			"plugin": "gurus",
@@ -797,6 +821,15 @@
 			"type": "Changed",
 			"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/pattern-memory/CHANGELOG.md"
+		},
+		{
+			"plugin": "circus",
+			"packageVersion": "2.0.1",
+			"detailPath": "agent-fieldkit/circus/",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "Circus is now part of l'Aicluse Agent Fieldkit.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/circus/CHANGELOG.md"
 		}
 	]
 }

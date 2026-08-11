@@ -111,6 +111,11 @@
       "name": "saysay",
       "description": "Speech mode for macOS: the agent speaks every response aloud through the `say` command, translating screen content into spoken language instead of reading it out verbatim. /saysay toggles it on, /saysay off exits. Ships a per-user phonetic dictionary plus serialized, ducked playback so parallel sessions speak one after another.",
       "source": "./packages/saysay"
+    },
+    {
+      "name": "circus",
+      "description": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.",
+      "source": "./packages/circus"
     }
   ]
 }

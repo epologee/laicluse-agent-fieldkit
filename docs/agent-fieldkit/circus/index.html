@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>circus · l'Aicluse Agent Fieldkit</title>
+		<meta name="description" content="One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.">
+		<link rel="canonical" href="https://laicluse.com/agent-fieldkit/circus/">
+
+		<meta property="og:type" content="article">
+		<meta property="og:site_name" content="l'Aicluse Agent Fieldkit">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:url" content="https://laicluse.com/agent-fieldkit/circus/">
+		<meta property="og:title" content="circus · l'Aicluse Agent Fieldkit">
+		<meta property="og:description" content="One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.">
+		<meta property="og:image" content="https://laicluse.com/assets/og-image.png?v=24569fdac1">
+		<meta property="og:image:secure_url" content="https://laicluse.com/assets/og-image.png?v=24569fdac1">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="circus · l'Aicluse Agent Fieldkit">
+		<meta name="twitter:description" content="One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.">
+		<meta name="twitter:image" content="https://laicluse.com/assets/og-image.png?v=24569fdac1">
+
+		<link rel="stylesheet" href="../../styles.css?v=3de7a55272">
+		<script src="../../code-panel-copy.js?v=3ee1e4c503"></script>
+		<script src="../../agent-command-switch.js?v=a82a9a6e56"></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+
+		<header class="site-header" aria-label="Primary">
+			<a class="brand" href="../" aria-label="l'Aicluse Agent Fieldkit home">
+				<span class="brand-title"><span class="wordmark" aria-hidden="true"></span><span class="brand-suffix">Agent Fieldkit</span><span class="sr-only">l'Aicluse Agent Fieldkit</span></span>
+			</a>
+			<nav class="site-nav" aria-label="Sections">
+				<a href="../#catalog">Catalog</a>
+				<a href="../#install">Install</a>
+				<a href="../#changelog">Changelog</a>
+				<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/circus">GitHub</a>
+			</nav>
+		</header>
+
+		<main id="content" class="detail-page">
+			<section class="detail-hero">
+				<div class="detail-hero-inner">
+					<a class="back-link" href="../#catalog">Catalog</a>
+					<p class="eyebrow">Feedback and utilities</p>
+					<h1>circus</h1>
+					<p class="lede">One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.</p>
+					<div class="plugin-meta detail-meta" aria-label="Package metadata">
+						<span class="support-pill both">Claude + Codex</span>
+						<span>2.0.1</span>
+						<span>2 skills</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="detail-content-section">
+				<article class="readme-content">
+<p>The Circus is one source of truth for the system prompts of multiple coding agents. Change the source once, then build the configured agent-specific targets, such as Claude Code, OpenAI Codex, or future agents supported on the current machine.</p>
+<p><code>circus</code> is le Carre's nickname for MI6 in <em>Tinker Tailor Soldier Spy</em>: a central service briefing field agents from one source.</p>
+<p>This plugin ships the <strong>generator</strong> (<code>bin/circus</code>). <strong>Personal data</strong> lives outside the plugin in <code>~/.laicluse/circus/</code> (override with <code>CIRCUS_ROOT</code>), so distributed code contains no user-specific doctrine or host paths.</p>
+<h2 id="three-levels">Three Levels</h2>
+<p><strong>User level (<code>circus build</code>).</strong> Source is <code>~/.laicluse/circus/</code>: <code>shared/*.md</code> (shared doctrine), <code>specific/&lt;agent&gt;.md</code> (per-agent overlay), and <code>targets</code> (<code>name=path</code>). It generates every active target listed there, for example <code>~/.claude/CLAUDE.md</code> and <code>~/.codex/AGENTS.md</code>. Target lines may add <code>supported=false</code> to keep an agent known but inactive, or <code>supported=auto</code> with <code>detect=&lt;command&gt;</code> to skip it unless that command exists. This is one-way, with a <code>&lt;!-- GENERATED --&gt;</code> banner. A handwritten target is never overwritten silently; it is staged as <code>&lt;target&gt;.generated</code> for review and can be activated with <code>--force</code>.</p>
+<p>The build step exists because Codex does not support file imports: shared text must be physically present in the target file, and symlinks leave no room for per-agent content.</p>
+<p><strong>Project level (<code>circus sync</code>).</strong> Keeps a repo's <code>CIRCUS.md</code> (visible committed ground truth), <code>CLAUDE.md</code>, and <code>AGENTS.md</code> identical. It is bidirectional: edit any of the three, and <code>circus sync</code> folds that edit into the other two using the last committed <code>CIRCUS.md</code> as the ancestor. On a real conflict (<code>CLAUDE.md</code> and <code>AGENTS.md</code> changed differently), the running agent merges; circus itself does not.</p>
+<p><strong>Plugin level (<code>circus plugins</code>).</strong> Applies the public <code>how-plugins-work</code> sync model to local marketplace repos. <code>SKILL.md</code> is shared source when behavior is agent-agnostic. <code>SKILL.claude.md</code> and <code>SKILL.codex.md</code> are agent-specific sources; they may exist as a pair for parity-by-variant, or singly when a multi-agent plugin has partial skill coverage. Claude manifests remain source; Codex manifests and <code>.agents/plugins/marketplace.json</code> are generated adapters. When suffix sources are present, circus materializes the runtime <code>SKILL.md</code> only for the agents that have source coverage. If Codex rejects a Claude-only frontmatter field, circus materializes a sanitized generated package under <code>.agents/plugins/generated/&lt;plugin&gt;/</code>. If Codex needs hooks, use <code>hooks/hooks.codex.json</code>; circus materializes it as runtime <code>hooks/hooks.json</code> in that generated package and keeps Claude-only hook metadata out of Codex's strict hook schema. Circus owns that executable adapter logic; generated manifests and runtime packages remain output.</p>
+<h2 id="usage">Usage</h2>
+<pre><code>circus build [--force] [name]   generate user targets from shared + specific
+circus sync [path]              sync project CIRCUS.md/CLAUDE.md/AGENTS.md
+circus check                    drift report (exit 1 on drift)
+circus diff                     show what a build would change
+circus plugins build [repo]     generate Codex plugin adapters from Claude metadata
+circus plugins check [repo]     drift check for generated plugin adapters
+circus plugins diff [repo]      show adapter diff without writing
+circus plugins versions {--check|--write|--bootstrap|--staged} [repo]  check or update marketplace plugin versions
+circus list                     root, doctrine, specific, mapping
+circus edit                     open the source data in $EDITOR</code></pre>
+<h2 id="add-an-agent">Add an Agent</h2>
+<ol>
+<li>Add <code>name=~/path</code> to <code>~/.laicluse/circus/targets</code>.</li>
+<li>Add <code>~/.laicluse/circus/specific/name.md</code> with per-agent instructions.</li>
+<li><code>circus build</code>.</li>
+</ol>
+<p>Optional targets can stay in the file without being built:</p>
+<pre><code>claude=~/.claude/CLAUDE.md
+codex=~/.codex/AGENTS.md
+opencode=~/.config/opencode/AGENTS.md supported=false
+future=~/.future-agent/AGENTS.md supported=auto detect=future-agent</code></pre>
+<p><code>supported=auto</code> uses the target name as the detector when <code>detect=</code> is omitted. <code>circus build</code>, <code>circus check</code>, and <code>circus diff</code> skip inactive targets; <code>circus list</code> shows why they were skipped.</p>
+				</article>
+				<aside class="detail-sidebar" aria-label="Plugin links">
+					<div class="sidebar-block">
+						<h2>Install</h2>
+						<div class="agent-command-switch" data-agent-command-switch data-default-agent="claude">
+	<div class="agent-command-switch-head">
+		<div class="agent-command-options" role="group" aria-label="circus install commands">
+<button class="agent-command-option is-active" type="button" data-agent-option="claude" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.86L3.75 20.25l3.89-.95A8.5 8.5 0 1 0 12 3.5Zm-3.2 7.1h6.4M8.8 13.4h3.8" /></svg><span>Claude</span></button>
+<button class="agent-command-option" type="button" data-agent-option="codex" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.75 6.75h14.5v10.5H4.75zM8 10l2 2-2 2m4.5 0h3.5" /></svg><span>Codex</span></button>
+</div>
+		<button class="agent-command-copy" type="button" data-agent-copy>Copy</button>
+	</div>
+	<div class="agent-command-panels">
+<pre class="agent-command-panel is-active" data-agent-panel="claude"><code id="install-circus-claude">claude plugins install circus@laicluse-agent-fieldkit</code></pre>
+<pre class="agent-command-panel" data-agent-panel="codex" hidden><code id="install-circus-codex">codex plugin add circus@laicluse-agent-fieldkit</code></pre>
+	</div>
+</div>
+					</div>
+					<div class="sidebar-block">
+						<h2>Source</h2>
+						<a href="https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/circus">Package source</a>
+					</div>
+				</aside>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<span>l'Aicluse Agent Fieldkit</span>
+			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+		</footer>
+	</body>
+</html>

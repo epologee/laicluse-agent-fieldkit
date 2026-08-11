@@ -1,0 +1,26 @@
+{
+  "name": "circus",
+  "version": "2.0.1",
+  "description": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.",
+  "author": {
+    "name": "local"
+  },
+  "keywords": [
+    "agent-skills",
+    "circus"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Circus",
+    "shortDescription": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, ...",
+    "longDescription": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.",
+    "developerName": "local",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Circus plugin."
+    ]
+  }
+}
