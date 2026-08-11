@@ -52,7 +52,7 @@
 					<p class="lede">Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.8</span>
+						<span>2.0.9</span>
 						<span>1 skill</span>
 					</div>
 				</div>
@@ -69,6 +69,7 @@
 <li>Stores runtime state under <code>${LAICLUSE_HOME:-$HOME/.laicluse}/vaultsync</code>.</li>
 <li>Installs a user-level macOS LaunchAgent for the daemon loop.</li>
 <li>Debounces dirty Git state before committing.</li>
+<li>Refuses machine-local home paths in new commits and outgoing history before shared content can be pushed.</li>
 <li>Generates substantive English commit messages through the configured LLM command, with deterministic git-discipline-safe trailers.</li>
 <li>Runs an optional verifier before a cycle is considered clean.</li>
 <li>Asks the configured LLM command to repair bounded verifier failures for included text files.</li>
@@ -89,6 +90,7 @@ vaultsync daemon</code></pre>
 <p><code>managed</code> reports whether the requested path resolves to a vaultsync-managed checkout. It is the public integration point for tools that need to avoid operating inside vaultsync roots; they must call the CLI instead of depending on vaultsync's registration storage layout.</p>
 <p>vaultsync resolves <code>dibs</code> dynamically at runtime. <code>DIBS_BIN</code> remains an explicit override, otherwise vaultsync checks the installed plugin cache, <code>PATH</code>, and only then any legacy custom path in an older registration. New registrations do not pin versioned plugin-cache paths, so plugin updates do not leave vaultsync pointing at a removed <code>dibs</code> binary.</p>
 <p><code>pause</code> always has an automatic resume deadline. The default is 120 minutes. If a pause expires while another live <code>dibs</code> holder still owns the checkout, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears.</p>
+<p>The built-in shareability gate rejects the current machine's home directory in added Git content, generated commit messages, and outgoing commits. Keep executable locations and other machine-specific values in environment overrides or user-level configuration. The optional verifier remains responsible for repository-specific content policy; vaultsync does not claim to remove PII from arbitrary prose.</p>
 <h2 id="llm-command-contract">LLM Command Contract</h2>
 <p>The configured LLM command reads one JSON object from stdin and writes one JSON object to stdout. The protocol field is <code>vaultsync.llm.v1</code>.</p>
 <p>For commit messages:</p>

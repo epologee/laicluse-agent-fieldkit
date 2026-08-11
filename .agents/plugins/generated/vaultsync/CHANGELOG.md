@@ -2,6 +2,12 @@
 
 The post-update broadcast shows the topmost section once per machine whenever the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.9]
+
+### Fixed
+
+- **Shared vaults reject machine-local home paths before commit or push.** Portable commands and user-level configuration now stay separate from Git-visible vault content, while corrective commits can remove an existing leaked path.
+
 ## [v2.0.8]
 
 ### Fixed

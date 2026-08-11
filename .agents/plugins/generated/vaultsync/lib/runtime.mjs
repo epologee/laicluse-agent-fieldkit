@@ -191,6 +191,38 @@ function changedPaths(root, staged = false) {
   return entries.map((entry) => entry.slice(3)).filter(Boolean);
 }
 
+function addedDiffContent(diff) {
+  return String(diff || '')
+    .split('\n')
+    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+    .map((line) => line.slice(1))
+    .join('\n');
+}
+
+function localHomeLiterals(env = process.env) {
+  const configuredHome = env.HOME || homedir();
+  const literals = new Set([configuredHome, resolve(configuredHome)]);
+  for (const literal of [...literals]) {
+    literals.add(literal.replace(/\\/g, '/'));
+    literals.add(literal.replace(/\//g, '\\'));
+  }
+  return [...literals].filter((literal) => literal.length > 1);
+}
+
+function assertPortableContent(content, env = process.env) {
+  if (localHomeLiterals(env).some((literal) => content.includes(literal))) {
+    throw new Error('vaultsync: refusing machine-local home path in shared Git content; use PATH, an environment override, or local configuration');
+  }
+}
+
+function assertPortableOutgoingCommits(root, env = process.env) {
+  if (!optionalUpstreamName(root)) return;
+  const messages = gitOut(root, ['log', '--format=%B', '@{u}..HEAD']);
+  const patches = gitOut(root, ['log', '--format=', '--patch', '--unified=0', '@{u}..HEAD']);
+  assertPortableContent(messages, env);
+  assertPortableContent(addedDiffContent(patches), env);
+}
+
 function aheadBehind(root) {
   const result = git(root, ['rev-list', '--left-right', '--count', 'HEAD...@{u}'], { allowFailure: true });
   if (result.status !== 0) return { ahead: 0, behind: 0, known: false };
@@ -742,7 +774,7 @@ function repairVerificationFailure(registration, verificationError, cyclePaths, 
   return { repaired: written.length > 0, paths: written };
 }
 
-function verifyWithRepairs(registration, cyclePaths, reason) {
+function verifyWithRepairs(registration, cyclePaths, reason, env = process.env) {
   const repairs = [];
   for (let step = 0; step <= MAX_VERIFICATION_REPAIR_STEPS; step += 1) {
     try {
@@ -754,7 +786,7 @@ function verifyWithRepairs(registration, cyclePaths, reason) {
       let repair = mechanicalVerifierRepairs(registration, err);
       if (!repair.repaired) repair = repairVerificationFailure(registration, err, cyclePaths, reason);
       if (!repair.repaired) throw err;
-      const repairCommit = commitDirtyState(registration, `${reason}-verifier-repair`);
+      const repairCommit = commitDirtyState(registration, `${reason}-verifier-repair`, env);
       if (!repairCommit.committed) throw err;
       repairs.push(repair);
     }
@@ -762,7 +794,8 @@ function verifyWithRepairs(registration, cyclePaths, reason) {
   throw new Error('verification repair loop exhausted unexpectedly');
 }
 
-function pushCurrentBranch(root) {
+function pushCurrentBranch(root, env = process.env) {
+  assertPortableOutgoingCommits(root, env);
   const push = git(root, ['push'], { allowFailure: true });
   if (push.status === 0) return push;
   const output = gitCombinedOutput(push);
@@ -781,13 +814,15 @@ function aheadChangedPaths(root) {
   return result.stdout.split('\0').filter(Boolean);
 }
 
-function commitDirtyState(registration, reason) {
+function commitDirtyState(registration, reason, env = process.env) {
   const root = registration.rootRealpath;
   git(root, ['add', '-A']);
   const diff = gitOut(root, ['diff', '--cached', '--no-ext-diff']);
   if (!diff.trim()) return { committed: false, paths: [] };
+  assertPortableContent(addedDiffContent(diff), env);
   const paths = changedPaths(root, true);
   const message = llmCommitMessage(registration, diff, paths, reason);
+  assertPortableContent(message, env);
   const commit = git(root, ['commit', '-F', '-'], { input: `${message.trim()}\n`, allowFailure: true });
   if (commit.status !== 0) {
     const output = gitCombinedOutput(commit);
@@ -836,7 +871,7 @@ export async function runCycle(registration, { reason = 'daemon', force = false,
     claim = claimDibs(reg, env);
     let committed = null;
     if (dirty) {
-      committed = commitDirtyState(reg, reason);
+      committed = commitDirtyState(reg, reason, env);
     }
     let afterCommitRelation = aheadBehind(reg.rootRealpath);
     let rebase = { rebased: false, conflictsResolved: 0 };
@@ -845,13 +880,13 @@ export async function runCycle(registration, { reason = 'daemon', force = false,
       afterCommitRelation = aheadBehind(reg.rootRealpath);
     }
     const cyclePaths = committed?.committed ? committed.paths : aheadChangedPaths(reg.rootRealpath);
-    const verificationResult = verifyWithRepairs(reg, cyclePaths, reason);
+    const verificationResult = verifyWithRepairs(reg, cyclePaths, reason, env);
     const verification = verificationResult.verification;
     if (verificationResult.repaired) {
       afterCommitRelation = aheadBehind(reg.rootRealpath);
     }
     if (afterCommitRelation.known && (afterCommitRelation.ahead > 0 || committed?.committed)) {
-      pushCurrentBranch(reg.rootRealpath);
+      pushCurrentBranch(reg.rootRealpath, env);
     }
     return saveCycleResult(reg, {
       state: 'synced',
