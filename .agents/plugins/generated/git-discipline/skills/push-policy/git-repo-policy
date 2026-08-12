@@ -3,12 +3,12 @@
 set -uo pipefail
 
 derive_mode() {
-  local has_remote="$1" push_access="$2" default_policy="$3" collaboration="$4"
+  local has_remote="$1" push_access="$2" default_policy="$3" collaboration="$4" visibility="$5"
   [ "$has_remote" = "no" ] && { echo "local-only"; return; }
   [ "$push_access" != "write" ] && { echo "external"; return; }
   [ "$default_policy" != "pushable" ] && { echo "pr-flow"; return; }
-  [ "$collaboration" = "individual" ] && { echo "solo-trunk"; return; }
-  echo "team-trunk"
+  [ "$collaboration" = "individual" ] && [ "$visibility" = "private" ] && { echo "auto-trunk"; return; }
+  echo "gated-trunk"
 }
 
 _cfg() { git -C "$1" config --get "$2" 2>/dev/null; }
@@ -30,16 +30,23 @@ _owner_known() {
 }
 
 _classify_collaboration() {
-  local count="$1" visibility="$2"
+  local count="$1"
   if [ "${count:-1}" -le 1 ]; then echo "individual"
-  elif [ "$visibility" = "public" ]; then echo "open"
-  else echo "closed"; fi
+  else echo "shared"; fi
+}
+
+_normalize_collaboration() {
+  case "$1" in
+    individual) echo "individual" ;;
+    shared|closed|open) echo "shared" ;;
+    *) echo "$1" ;;
+  esac
 }
 
 _detect_collaboration() {
-  local repo="$1" visibility="$2" authors
+  local repo="$1" authors
   authors=$(git -C "$repo" log --format='%an' -n 200 2>/dev/null | sort -u | grep -c . )
-  _classify_collaboration "$authors" "$visibility"
+  _classify_collaboration "$authors"
 }
 
 main() {
@@ -55,7 +62,7 @@ main() {
 
   if [ "$has_remote" = "no" ]; then
     slug=""; owner=""
-    collaboration="$(_cfg "$repo" codingAgent.git.collaboration)"; collaboration="${collaboration:-individual}"
+    collaboration="$(_cfg "$repo" codingAgent.git.collaboration)"; collaboration="$(_normalize_collaboration "${collaboration:-individual}")"
     visibility="private"; default_policy="pushable"; push_access="write"; confidence="high"
   else
     slug="$(_remote_slug "$repo" || true)"
@@ -102,10 +109,11 @@ main() {
     fi
 
     collaboration="$(_cfg "$repo" codingAgent.git.collaboration || true)"
-    [ -z "$collaboration" ] && collaboration="$(_detect_collaboration "$repo" "$visibility")"
+    [ -z "$collaboration" ] && collaboration="$(_detect_collaboration "$repo")"
+    collaboration="$(_normalize_collaboration "$collaboration")"
   fi
 
-  mode="$(derive_mode "$has_remote" "$push_access" "$default_policy" "$collaboration")"
+  mode="$(derive_mode "$has_remote" "$push_access" "$default_policy" "$collaboration" "$visibility")"
   [ "$visibility" = "public" ] && hygiene="high" || hygiene="normal"
 
   printf 'remote=%s\nhas_remote=%s\ncollaboration=%s\nvisibility=%s\ndefault_policy=%s\npush_access=%s\nconfidence=%s\nmode=%s\nhygiene=%s\n' \

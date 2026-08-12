@@ -88,15 +88,8 @@ The merge commit always has the verified default tip as first parent, the candid
   current conversation's work and leaves the rest untouched. Auto-fires
   on the word "snipe".
 - **rebase-latest-default** delegates default resolution, rebase, and SHA-bound verification to `bin/git-discipline`. Conflicts stay with the feature-worktree owner; no default checkout or central integrator resolves them.
-- **merge-to-default** resolves repository policy, reruns relevant verification at the candidate SHA, and invokes the atomic two-parent merge. `local-only` updates the local ref; `solo-trunk` and explicitly ordered `team-trunk` merges use a normal remote push; `pr-flow` and `external` retain their repository gates. Source cleanup remains with `bonsai:prune` after merge and any required deployment are proven complete.
-- **push-policy** decides whether and when a push fits the current repo. It
-  ships a resolver (`skills/push-policy/git-repo-policy`) that reads per-repo
-  facts (collaboration, visibility, default-branch protection, push access)
-  and derives one of five modes (`local-only`, `solo-trunk`, `team-trunk`,
-  `pr-flow`, `external`), each with its own push behavior. Per-repo overrides
-  live under git-local `codingAgent.git.*`. `rebase-latest-default` and
-  `merge-to-default` consult it; the push hooks gate content and are
-  orthogonal to this context decision.
+- **merge-to-default** resolves repository policy, reruns relevant verification at the candidate SHA, and invokes the atomic two-parent merge. `local-only` updates the local ref; `auto-trunk` and explicitly ordered `gated-trunk` merges use a normal remote push; `pr-flow` and `external` retain their repository gates. Source cleanup remains with `bonsai:prune` after merge and any required deployment are proven complete.
+- **push-policy** decides whether and when a push fits the current repo. It ships a resolver (`skills/push-policy/git-repo-policy`) that reads independent per-repo facts (collaboration, visibility, default-branch protection, push access) and derives one of five modes (`local-only`, `auto-trunk`, `gated-trunk`, `pr-flow`, `external`), each with its own push behavior. Per-repo overrides live under git-local `codingAgent.git.*`. `rebase-latest-default` and `merge-to-default` consult it; the push hooks gate content and are orthogonal to this context decision.
 - **commit-discipline** is the canonical reference for the body schema,
   error-codes, opt-out enum, and escape-hatches.
 - **install-hooks** copies the git-native `pre-commit`, `commit-msg`, `prepare-commit-msg`,

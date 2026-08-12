@@ -34,7 +34,7 @@ Use `--local` only for `local-only`. Every mode with an origin uses `--remote`, 
 ```bash
 case "$MODE" in
   local-only) TARGET=--local ;;
-  solo-trunk|team-trunk|pr-flow|external) TARGET=--remote ;;
+  auto-trunk|gated-trunk|pr-flow|external) TARGET=--remote ;;
   *) echo "Unknown git-discipline mode: $MODE" >&2; exit 1 ;;
 esac
 

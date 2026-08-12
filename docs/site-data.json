@@ -238,7 +238,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.50",
+			"version": "2.0.51",
 			"category": "workflow",
 			"summary": "Coordinates verified worktree candidates, atomic default-branch merges, and shared commit and push enforcement.",
 			"support": [
@@ -253,9 +253,9 @@
 			"commandCount": 3,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.50",
-				"type": "Fixed",
-				"summary": "Local merges no longer desynchronise a checked-out default worktree."
+				"version": "v2.0.51",
+				"type": "Breaking",
+				"summary": "Public repositories no longer qualify for automatic trunk pushes just because one author appears in their history."
 			}
 		},
 		{
@@ -635,11 +635,11 @@
 	"changelog": [
 		{
 			"plugin": "git-discipline",
-			"packageVersion": "2.0.50",
+			"packageVersion": "2.0.51",
 			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.50",
-			"type": "Fixed",
-			"summary": "Local merges no longer desynchronise a checked-out default worktree.",
+			"version": "v2.0.51",
+			"type": "Breaking",
+			"summary": "Public repositories no longer qualify for automatic trunk pushes just because one author appears in their history.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{

@@ -1,7 +1,7 @@
 ---
 name: push-policy
 description: >-
-  Reference for deciding whether pushing is appropriate for this repo's collaboration mode.
+  Reference for deciding whether pushing is appropriate for this repo's publication policy.
 ---
 
 # /git-discipline:push-policy
@@ -11,20 +11,11 @@ This skill governs push CONTEXT: whether and when a push fits the repository
 you are working in. The two are orthogonal. A push can be content-valid and
 still be the operator's call; a freely-pushable repo still owes a valid body.
 
-The destination is a sound push decision for THIS repo, not a fixed ceremony.
-Resolve the repo's mode, then act in the way that mode allows. Do not invent a
-ceremony where the repo does not need one, and do not push where another person
-is affected without the operator's go.
+The destination is a sound push decision for THIS repo, not a fixed ceremony. Resolve the repo's mode, then act in the way that mode allows. Do not invent a ceremony where the repo does not need one, and do not publish visible changes or update shared state without the operator's go.
 
 ## A commit is not a push, and never a gate
 
-A local commit captures your own finished work; it is expected, not asked for.
-Leaving that work uncommitted while calling it "operator territory" is the
-error, not the caution: it is dirty state handed off as a to-do. "Never commit
-to main" is a team-repo rule about a shared or protected branch, not a universal
-one; on a solo or personal repo, committing to main is the normal flow. The
-operator's go is owed by the push or merge that reaches other people, or a
-publish, per the mode below, never by the commit itself.
+A local commit captures your own finished work; it is expected, not asked for. Leaving that work uncommitted while calling it "operator territory" is the error, not the caution: it is dirty state handed off as a to-do. "Never commit to main" is a team-repo rule about a shared or protected branch, not a universal one; on a solo or personal repo, committing to main is the normal flow. The operator's go is owed by the push or merge that publishes visible work or reaches other people, per the mode below, never by the commit itself.
 
 ## The resolver
 
@@ -51,14 +42,10 @@ line: `remote`, `has_remote`, `collaboration`, `visibility`, `default_policy`,
 `push_access`, `confidence`, `mode`, `hygiene`. The pure derivation functions
 are covered by `test/push-policy/derive-mode.bats`.
 
-## Three facts, plus access
+## Three independent facts, plus access
 
-- **collaboration**: `individual`, `closed`, or `open`. Derived from distinct
-  author NAMES (not emails) in recent history, so one person committing under
-  several git emails still reads as `individual`. Multiple authors on a private
-  repo read as `closed`; on a public repo as `open`.
-- **visibility**: `private` or `public` (via `gh`). Public raises `hygiene` to
-  `high`.
+- **collaboration**: `individual` or `shared`. Derived from distinct author NAMES (not emails) in recent history, so one person committing under several git emails still reads as `individual`. Visibility does not alter this fact.
+- **visibility**: `private` or `public` (via `gh`). Public raises `hygiene` to `high` and prevents automatic publication even when collaboration is `individual`.
 - **defaultBranchPolicy**: `pushable` or `protected`. `protected` means
   MEANINGFUL protection on the default branch: required pull-request reviews,
   required status-check contexts, or push restrictions. An empty 200 protection
@@ -69,11 +56,8 @@ are covered by `test/push-policy/derive-mode.bats`.
 ## Five modes
 
 - **local-only**: no remote. Never mention pushing at all.
-- **solo-trunk**: your own repo, pushable default. Push freely, including the
-  default branch. Auto-push completions. Do not ask.
-- **team-trunk**: a shared repo you can write to, pushable default. Feature
-  branches push freely. Pushing the shared default is suggested once with
-  reasons, not done silently.
+- **auto-trunk**: a private, individual repo with a pushable default. Push freely, including the default branch. Auto-push completions. Do not ask.
+- **gated-trunk**: a public or shared repo you can write to with a pushable default. Feature branches push only when publication is already part of the operator's request. Pushing the default is never done silently.
 - **pr-flow**: a protected default. Never push the default directly. Branch,
   then PR, then merge is the gated step that needs the operator's go.
 - **external**: no write access. Fork plus PR.
@@ -95,7 +79,7 @@ protected default.
 Per-repo overrides live in git-local config under the `codingAgent.git.*`
 namespace and win over detection:
 
-- `codingAgent.git.collaboration` (`individual` / `closed` / `open`)
+- `codingAgent.git.collaboration` (`individual` / `shared`; legacy `closed` and `open` values normalize to `shared`)
 - `codingAgent.git.visibility` (`private` / `public`)
 - `codingAgent.git.defaultBranchPolicy` (`pushable` / `protected`)
 - `codingAgent.git.pushAccess` (`write` / `external`)
