@@ -1,0 +1,37 @@
+{
+  "name": "xquik",
+  "version": "2.0.1",
+  "description": "Use Xquik for bounded Twitter/X advanced search, profile and trend reads, typed SDK integrations, exports, monitors, webhooks, and confirmation-gated account actions through REST or MCP.",
+  "author": {
+    "name": "Xquik"
+  },
+  "keywords": [
+    "agent-skills",
+    "mcp",
+    "monitoring",
+    "sdk",
+    "tweet-search",
+    "twitter-advanced-search",
+    "twitter-api",
+    "webhooks",
+    "x-data",
+    "xquik"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Xquik",
+    "shortDescription": "Use Xquik for bounded Twitter/X advanced search, profile and trend reads, typed SDK integrations, exports, monitors, ...",
+    "longDescription": "Use Xquik for bounded Twitter/X advanced search, profile and trend reads, typed SDK integrations, exports, monitors, webhooks, and confirmation-gated account actions through REST or MCP.",
+    "developerName": "Xquik",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Use the Xquik plugin."
+    ]
+  },
+  "repository": "https://github.com/Xquik-dev/x-twitter-scraper",
+  "homepage": "https://docs.xquik.com",
+  "license": "MIT"
+}
