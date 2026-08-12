@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.41]
+
+### Changed
+
+- **Worktree-only refusals now include the narrow escape hatch.** An explicit operator request or path-dependent checkout can disable `laicluse.requireWorktree` without disabling Dibs occupancy.
+
 ## [v2.0.40]
 
 ### Changed

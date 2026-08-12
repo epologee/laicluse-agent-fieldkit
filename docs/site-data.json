@@ -194,7 +194,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.40",
+			"version": "2.0.41",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -209,9 +209,9 @@
 			"commandCount": 4,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.40",
+				"version": "v2.0.41",
 				"type": "Changed",
-				"summary": "Cross-session occupancy refusals now tell the blocked agent to surface the holder, pid, and work to the operator before choosing a recovery path."
+				"summary": "Worktree-only refusals now include the narrow escape hatch."
 			}
 		},
 		{
@@ -644,11 +644,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.40",
+			"packageVersion": "2.0.41",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.40",
+			"version": "v2.0.41",
 			"type": "Changed",
-			"summary": "Cross-session occupancy refusals now tell the blocked agent to surface the holder, pid, and work to the operator before choosing a recovery path.",
+			"summary": "Worktree-only refusals now include the narrow escape hatch.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{

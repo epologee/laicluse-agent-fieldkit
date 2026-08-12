@@ -236,7 +236,7 @@ occ_requires_linked_worktree() {
 occ_enforce_worktree_requirement() {
 	local dir="$1"
 	occ_requires_linked_worktree "$dir" || return 0
-	printf '[dibs/worktree-required] %s has laicluse.requireWorktree=true; mutating the primary checkout is blocked. Create or use a linked git worktree, for example with bonsai:bonsai, and retry there.\n' "$dir" >&2
+	printf '[dibs/worktree-required] %s has laicluse.requireWorktree=true; mutating this checkout is blocked. Create or use a linked git worktree, for example with bonsai:bonsai, and retry there. If the operator explicitly asked you to work without a worktree, or a linked worktree would break path-dependent behavior, run '\''git config laicluse.requireWorktree false'\'' from this checkout and retry; Dibs occupancy remains active.\n' "$dir" >&2
 	exit 2
 }
 
