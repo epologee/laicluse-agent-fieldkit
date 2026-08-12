@@ -101,6 +101,7 @@ source may expose `hooks/hooks.json` only when that JSON object has exactly one
 top-level key, `hooks`. Claude-only metadata such as top-level `description`
 belongs in Claude's `hooks/hooks.json`; Codex-specific hook payloads live in
 `hooks/hooks.codex.json` and are materialized into the generated package.
+Circus wraps plugin-root commands in those generated manifests so a missing runtime blocks `PreToolUse` with a restart instruction and becomes a readable warning for other lifecycle events instead of an exit-127 failure.
 
 The commands follow the same build/check/diff pattern as the system-prompt
 targets:

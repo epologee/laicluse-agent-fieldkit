@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.40]
+
+### Fixed
+
+- **Codex now gives a concrete restart instruction when a running session loses the guard hook runtime.**
+
 ## [v2.0.39]
 
 ### Fixed

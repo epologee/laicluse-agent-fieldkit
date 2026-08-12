@@ -118,6 +118,54 @@ validate_codex_hooks_config() {
     die "plugin $plugin Codex hooks config must have exactly one top-level hooks key: $path"
 }
 
+codex_hook_command() {
+  local plugin="$1" event="$2" command="$3" marker prefix remainder runtime_path trailing message
+  marker='${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}'
+  case "$command" in
+    *"$marker"*) ;;
+    *) printf '%s\n' "$command"; return 0 ;;
+  esac
+
+  prefix="${command%%"$marker"*}"
+  remainder="${command#*"$marker"}"
+  runtime_path="${remainder%% *}"
+  trailing="${remainder#"$runtime_path"}"
+  case "$runtime_path" in
+    /*) ;;
+    *) die "plugin $plugin $event hook has an invalid plugin-root command: $command" ;;
+  esac
+
+  message="$plugin $event hook runtime is unavailable; restart this Codex session."
+  if [ "$event" = "PreToolUse" ]; then
+    printf 'plugin_root="${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"; hook_entry="$plugin_root%s"; if [ ! -x "$hook_entry" ]; then printf '\''%%s\\n'\'' '\''%s'\'' >&2; exit 2; fi; %s"$hook_entry"%s\n' \
+      "$runtime_path" "$message" "$prefix" "$trailing"
+    return 0
+  fi
+
+  printf 'plugin_root="${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"; hook_entry="$plugin_root%s"; if [ ! -x "$hook_entry" ]; then printf '\''%%s\\n'\'' '\''{"systemMessage":"%s"}'\''; exit 0; fi; %s"$hook_entry"%s\n' \
+    "$runtime_path" "$message" "$prefix" "$trailing"
+}
+
+write_codex_hooks_config() {
+  local plugin="$1" source="$2" target="$3" event group_index hook_index command wrapped temporary
+  cp -p "$source" "$target"
+  while IFS=$'\t' read -r event group_index hook_index command; do
+    wrapped="$(codex_hook_command "$plugin" "$event" "$command")"
+    temporary="$target.tmp"
+    jq --tab --arg event "$event" --argjson group "$group_index" --argjson hook "$hook_index" --arg command "$wrapped" \
+      '.hooks[$event][$group].hooks[$hook].command = $command' "$target" > "$temporary"
+    mv "$temporary" "$target"
+  done < <(jq -r '
+    .hooks | to_entries[] |
+    .key as $event |
+    .value | to_entries[] |
+    .key as $group |
+    .value.hooks | to_entries[] |
+    select(.value.type == "command") |
+    [$event, $group, .key, .value.command] | @tsv
+  ' "$source")
+}
+
 is_tombstone_manifest() {
 	local manifest="$1"
 	jq -e '(.description // "") | startswith("DEPRECATED:")' "$manifest" >/dev/null
@@ -229,7 +277,7 @@ copy_codex_agents() {
 }
 
 copy_codex_hooks() {
-  local plugin_dir="$1" target_dir="$2" file rel out
+  local plugin="$1" plugin_dir="$2" target_dir="$3" file rel out
   rm -rf "$target_dir/hooks"
 
   if has_codex_hooks "$plugin_dir"; then
@@ -243,7 +291,7 @@ copy_codex_hooks() {
       cp -p "$file" "$out"
     done < <(find "$plugin_dir/hooks" -type f | sort)
     mkdir -p "$target_dir/hooks"
-    cp -p "$plugin_dir/hooks/hooks.codex.json" "$target_dir/hooks/hooks.json"
+    write_codex_hooks_config "$plugin" "$plugin_dir/hooks/hooks.codex.json" "$target_dir/hooks/hooks.json"
     return 0
   fi
 
@@ -308,7 +356,7 @@ generate_into() {
       copy_codex_runtime_payload "$plugin_dir" "$target_dir"
       copy_codex_root_files "$plugin_dir" "$target_dir"
       copy_codex_agents "$plugin_dir" "$target_dir"
-      copy_codex_hooks "$plugin_dir" "$target_dir"
+      copy_codex_hooks "$name" "$plugin_dir" "$target_dir"
       codex_plugin_payload "$manifest" "$name" > "$target_dir/.codex-plugin/plugin.json"
     else
       if [ -f "$plugin_dir/hooks/hooks.json" ]; then

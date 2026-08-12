@@ -1,27 +1,36 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash|Edit|Write|MultiEdit|apply_patch",
-        "hooks": [
-          { "type": "command", "command": "DD_AGENT=codex ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit|Bash|apply_patch",
-        "hooks": [
-          { "type": "command", "command": "DD_AGENT=codex ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          { "type": "command", "command": "DD_AGENT=codex ${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/hooks/dispatch.sh" }
-        ]
-      }
-    ]
-  }
+	"hooks": {
+		"PreToolUse": [
+			{
+				"matcher": "Bash|Edit|Write|MultiEdit|apply_patch",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "plugin_root=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}\"; hook_entry=\"$plugin_root/hooks/dispatch.sh\"; if [ ! -x \"$hook_entry\" ]; then printf '%s\\n' 'dont-do-that PreToolUse hook runtime is unavailable; restart this Codex session.' >&2; exit 2; fi; DD_AGENT=codex \"$hook_entry\""
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write|MultiEdit|Bash|apply_patch",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "plugin_root=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}\"; hook_entry=\"$plugin_root/hooks/dispatch.sh\"; if [ ! -x \"$hook_entry\" ]; then printf '%s\\n' '{\"systemMessage\":\"dont-do-that PostToolUse hook runtime is unavailable; restart this Codex session.\"}'; exit 0; fi; DD_AGENT=codex \"$hook_entry\""
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "plugin_root=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}\"; hook_entry=\"$plugin_root/hooks/dispatch.sh\"; if [ ! -x \"$hook_entry\" ]; then printf '%s\\n' '{\"systemMessage\":\"dont-do-that Stop hook runtime is unavailable; restart this Codex session.\"}'; exit 0; fi; DD_AGENT=codex \"$hook_entry\""
+					}
+				]
+			}
+		]
+	}
 }
