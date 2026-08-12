@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.39]
+
+### Fixed
+
+- **Persistent local marketplaces can no longer point at linked worktrees.** The guard now inspects the actual source argument for both Claude's `plugins` command and Codex's `plugin` command, so an explicit worktree path is blocked from any current directory while canonical checkouts and remote sources remain valid.
+
 ## [v2.0.36]
 
 ### Fixed

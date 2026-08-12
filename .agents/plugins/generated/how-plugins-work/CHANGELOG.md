@@ -20,6 +20,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.38]
+
+### Changed
+
+- **Persistent local marketplace installs now use only the primary checkout.** Feature worktrees remain valid for source tests and adapter checks, but Claude and Codex registration waits until the candidate is integrated and the primary checkout contains that SHA.
+
 ## [v2.0.34]
 
 ### Fixed

@@ -85,7 +85,7 @@ Local CLI help verified on 2026-06-09:
 
 | Context | What appears | Example |
 |---------|--------------|---------|
-| Marketplace add | local path or Git source | `codex plugin marketplace add ./` |
+| Marketplace add | primary-checkout path or Git source | `codex plugin marketplace add /path/to/primary-checkout` |
 | Plugin install | `<plugin>@<marketplace>` | `codex plugin add how-plugins-work@example-tools` |
 | Marketplace index | `.agents/plugins/marketplace.json` | `name: example-tools` |
 | Plugin source path | `plugins[].source.path` | `./packages/how-plugins-work` |
@@ -464,16 +464,21 @@ Three useful checks, from lightest to heaviest:
 
 ### Local marketplace for persistent install without pushing
 
-Claude Code: `claude plugins marketplace add ./` re-points an existing
-marketplace alias to the local path, provided `.claude-plugin/marketplace.json`
-claims the same alias. After that, `claude plugins update
-<plugin>@<marketplace>` pulls from the local working copy instead of the remote.
-Useful for end-to-end testing of plugin changes without pushing first.
+Persistent local marketplace sources always use the repository's primary checkout. Never register a linked worktree, even temporarily: marketplace configuration outlives the authoring session, other parallel sessions consume the same path, and worktree cleanup turns every dependent plugin into a broken install. This applies to every locally cloned marketplace, not a named allowlist.
 
-Codex: `codex plugin marketplace add ./` registers the local marketplace source,
-and `codex plugin add <plugin>@<marketplace>` installs from that configured
-marketplace. Codex reads `.agents/plugins/marketplace.json`, follows
-`plugins[].source.path`, and then reads the package `.codex-plugin/plugin.json`.
+Resolve the primary checkout from Git metadata instead of assuming a directory layout:
+
+```bash
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+primary_checkout=$(dirname "$common_dir")
+test "$(git rev-parse --absolute-git-dir)" = "$common_dir" || printf 'candidate worktree; persistent install waits for integration into %s\n' "$primary_checkout"
+```
+
+Claude Code: from the primary checkout, `claude plugins marketplace add "$primary_checkout"` re-points an existing marketplace alias to the canonical local clone, provided `.claude-plugin/marketplace.json` claims the same alias. After that, `claude plugins update <plugin>@<marketplace>` pulls from the primary checkout.
+
+Codex: from the primary checkout, `codex plugin marketplace add "$primary_checkout"` registers the canonical local marketplace source, and `codex plugin add <plugin>@<marketplace>` installs from it. Codex reads `.agents/plugins/marketplace.json`, follows `plugins[].source.path`, and then reads the package `.codex-plugin/plugin.json`.
+
+Feature-worktree validation remains transient: run source tests, adapter build/check, and host-specific ephemeral checks there. Integrate the candidate first, update the primary checkout to the integrated SHA, then refresh persistent Claude and Codex installs from that primary checkout. Never repoint a marketplace to make unintegrated work loadable.
 
 **Gotcha 1: cascade-uninstall on marketplace remove.** `claude plugin marketplace remove <alias>` does not only remove the marketplace configuration; it also uninstalls every plugin that was installed via that alias. Empirically tested in Claude Code 2.1.92: a marketplace with 18 installed plugins crashed to 0 after a single `remove`. Re-adding the marketplace does not automatically restore the plugins; each plugin must be explicitly re-invoked with `claude plugin install <plugin>@<alias>`. For a local dev session where you switch between path-based and remote-based marketplace with the same alias: this means a re-install of every plugin that comes from that alias, not just a config change.
 
