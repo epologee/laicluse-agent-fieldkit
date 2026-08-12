@@ -194,7 +194,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.41",
+			"version": "2.0.42",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -209,9 +209,9 @@
 			"commandCount": 4,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.41",
-				"type": "Changed",
-				"summary": "Worktree-only refusals now include the narrow escape hatch."
+				"version": "v2.0.42",
+				"type": "Fixed",
+				"summary": "Codex now gives a concrete restart instruction when a running session loses the Dibs hook runtime."
 			}
 		},
 		{
@@ -260,7 +260,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.39",
+			"version": "2.0.40",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -275,9 +275,9 @@
 			"commandCount": 2,
 			"hookFileCount": 27,
 			"latestChange": {
-				"version": "v2.0.39",
+				"version": "v2.0.40",
 				"type": "Fixed",
-				"summary": "Persistent local marketplaces can no longer point at linked worktrees."
+				"summary": "Codex now gives a concrete restart instruction when a running session loses the guard hook runtime."
 			}
 		},
 		{
@@ -611,7 +611,7 @@
 		},
 		{
 			"name": "circus",
-			"version": "2.0.2",
+			"version": "2.0.3",
 			"category": "feedback",
 			"summary": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.",
 			"support": [
@@ -626,9 +626,9 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.1",
-				"type": "Added",
-				"summary": "Circus is now part of l'Aicluse Agent Fieldkit."
+				"version": "v2.0.3",
+				"type": "Fixed",
+				"summary": "Generated Codex hooks now explain when their session runtime has disappeared."
 			}
 		}
 	],
@@ -644,20 +644,20 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.41",
+			"packageVersion": "2.0.42",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.41",
-			"type": "Changed",
-			"summary": "Worktree-only refusals now include the narrow escape hatch.",
+			"version": "v2.0.42",
+			"type": "Fixed",
+			"summary": "Codex now gives a concrete restart instruction when a running session loses the Dibs hook runtime.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.39",
+			"packageVersion": "2.0.40",
 			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.39",
+			"version": "v2.0.40",
 			"type": "Fixed",
-			"summary": "Persistent local marketplaces can no longer point at linked worktrees.",
+			"summary": "Codex now gives a concrete restart instruction when a running session loses the guard hook runtime.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
@@ -805,6 +805,15 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
 		},
 		{
+			"plugin": "circus",
+			"packageVersion": "2.0.3",
+			"detailPath": "agent-fieldkit/circus/",
+			"version": "v2.0.3",
+			"type": "Fixed",
+			"summary": "Generated Codex hooks now explain when their session runtime has disappeared.",
+			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/circus/CHANGELOG.md"
+		},
+		{
 			"plugin": "lifeline",
 			"packageVersion": "2.0.3",
 			"detailPath": "agent-fieldkit/lifeline/",
@@ -812,15 +821,6 @@
 			"type": "Added",
 			"summary": "rethink returns a drifting project to first principles before another local fix is attempted.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
-		},
-		{
-			"plugin": "circus",
-			"packageVersion": "2.0.2",
-			"detailPath": "agent-fieldkit/circus/",
-			"version": "v2.0.1",
-			"type": "Added",
-			"summary": "Circus is now part of l'Aicluse Agent Fieldkit.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/circus/CHANGELOG.md"
 		},
 		{
 			"plugin": "pattern-memory",

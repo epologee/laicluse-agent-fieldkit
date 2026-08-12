@@ -63,12 +63,7 @@ singly when a multi-agent plugin has partial skill coverage. Claude manifests
 remain source; Codex manifests and `.agents/plugins/marketplace.json` are
 generated adapters. When suffix sources are present, circus materializes the
 runtime `SKILL.md` only for the agents that have source coverage. If Codex
-rejects a Claude-only frontmatter field, circus materializes a sanitized
-generated package under `.agents/plugins/generated/<plugin>/`. If Codex needs
-hooks, use `hooks/hooks.codex.json`; circus materializes it as runtime
-`hooks/hooks.json` in that generated package and keeps Claude-only hook metadata
-out of Codex's strict hook schema. Circus owns that executable adapter logic;
-generated manifests and runtime packages remain output.
+rejects a Claude-only frontmatter field, circus materializes a sanitized generated package under `.agents/plugins/generated/<plugin>/`. If Codex needs hooks, use `hooks/hooks.codex.json`; circus materializes it as runtime `hooks/hooks.json` in that generated package and keeps Claude-only hook metadata out of Codex's strict hook schema. Generated hook commands also detect a missing plugin runtime before launching their entrypoint. `PreToolUse` fails closed with a restart instruction; other lifecycle events report the same condition as a warning so an obsolete session cannot produce a stream of exit-127 failures. Circus owns that executable adapter logic; generated manifests and runtime packages remain output.
 
 ## Usage
 

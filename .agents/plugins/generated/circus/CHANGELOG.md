@@ -1,5 +1,11 @@
 # Circus changelog
 
+## [v2.0.3]
+
+### Fixed
+
+- **Generated Codex hooks now explain when their session runtime has disappeared.** `PreToolUse` fails closed with a restart instruction, while other lifecycle events emit a readable warning instead of cascading exit-127 failures.
+
 ## [v2.0.1]
 
 ### Added
