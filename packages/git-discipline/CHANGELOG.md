@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.51]
+
+### Breaking
+
+- **Public repositories no longer qualify for automatic trunk pushes just because one author appears in their history.** Collaboration is now the independent `individual` or `shared` fact, while visibility separately determines publication risk. The former `solo-trunk` and `team-trunk` modes are now `auto-trunk` and `gated-trunk`; only private, individual repositories qualify for `auto-trunk`.
+
 ## [v2.0.50]
 
 ### Fixed

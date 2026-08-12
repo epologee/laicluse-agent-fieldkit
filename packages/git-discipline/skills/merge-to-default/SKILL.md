@@ -37,15 +37,15 @@ Repository policy determines the only valid merge target:
 | Mode | Action |
 |------|--------|
 | `local-only` | Use `--local`; atomically update the local default ref. |
-| `solo-trunk` | Use `--remote`; the non-force push is normal completion. |
-| `team-trunk` | Use `--remote` only when the operator explicitly ordered this default merge; that order is the go for the shared ref update. |
+| `auto-trunk` | Use `--remote`; the non-force push is normal completion. |
+| `gated-trunk` | Use `--remote` only when the operator explicitly ordered this default merge; that order is the go for the published or shared ref update. |
 | `pr-flow` | Do not update the default ref directly. Follow the repository's PR flow; the remote merge remains an explicit operator gate. |
 | `external` | Do not update the default ref; there is no write access. |
 
 ```bash
 case "$MODE" in
   local-only) TARGET=--local ;;
-  solo-trunk|team-trunk) TARGET=--remote ;;
+  auto-trunk|gated-trunk) TARGET=--remote ;;
   pr-flow) echo "Default is protected; use the repository PR flow." >&2; exit 1 ;;
   external) echo "Repository is external; default cannot be updated from this checkout." >&2; exit 1 ;;
   *) echo "Unknown git-discipline mode: $MODE" >&2; exit 1 ;;

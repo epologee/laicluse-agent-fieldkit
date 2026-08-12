@@ -27,8 +27,8 @@ setup() {
 @test "merge-to-default maps repository policy before choosing a local or remote CAS" {
   grep -q 'git-repo-policy' "$SKILL"
   grep -q 'local-only' "$SKILL"
-  grep -q 'solo-trunk' "$SKILL"
-  grep -q 'team-trunk' "$SKILL"
+  grep -q 'auto-trunk' "$SKILL"
+  grep -q 'gated-trunk' "$SKILL"
   grep -q 'pr-flow' "$SKILL"
   grep -q 'external' "$SKILL"
 }

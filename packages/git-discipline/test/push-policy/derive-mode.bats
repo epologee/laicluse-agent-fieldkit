@@ -1,57 +1,67 @@
 #!/usr/bin/env bats
-# allow-comment: Pure-function unit tests for the push-policy resolver: derive_mode (mode from four facts), _protection_meaningful (branch-protection JSON triage), _classify_collaboration (author-count plus visibility to individual/closed/open).
+# allow-comment: Pure-function unit tests for the push-policy resolver: derive_mode (mode from five facts), _protection_meaningful (branch-protection JSON triage), _classify_collaboration (author-count to individual/shared).
 
 load helpers
 
 @test "no remote is local-only" {
-  run derive_mode no write pushable individual
+  run derive_mode no write pushable individual private
   [ "$status" -eq 0 ]
   [ "$output" = "local-only" ]
 }
 
 @test "no remote wins over everything" {
-  run derive_mode no external protected open
+  run derive_mode no external protected shared public
   [ "$output" = "local-only" ]
 }
 
 @test "no write access forks" {
-  run derive_mode yes external pushable individual
+  run derive_mode yes external pushable individual private
   [ "$output" = "external" ]
 }
 
 @test "unknown access is conservative" {
-  run derive_mode yes unknown pushable individual
+  run derive_mode yes unknown pushable individual private
   [ "$output" = "external" ]
 }
 
 @test "protected default is pr-flow" {
-  run derive_mode yes write protected closed
+  run derive_mode yes write protected shared private
   [ "$output" = "pr-flow" ]
 }
 
 @test "unknown default is conservative" {
-  run derive_mode yes write unknown individual
+  run derive_mode yes write unknown individual private
   [ "$output" = "pr-flow" ]
 }
 
-@test "own pushable solo is solo-trunk" {
-  run derive_mode yes write pushable individual
-  [ "$output" = "solo-trunk" ]
+@test "private individual pushable default is auto-trunk" {
+  run derive_mode yes write pushable individual private
+  [ "$output" = "auto-trunk" ]
 }
 
-@test "pushable closed team is team-trunk" {
-  run derive_mode yes write pushable closed
-  [ "$output" = "team-trunk" ]
+@test "private shared pushable default is gated-trunk" {
+  run derive_mode yes write pushable shared private
+  [ "$output" = "gated-trunk" ]
 }
 
-@test "pushable open maintainer is team-trunk" {
-  run derive_mode yes write pushable open
-  [ "$output" = "team-trunk" ]
+@test "public shared pushable default is gated-trunk" {
+  run derive_mode yes write pushable shared public
+  [ "$output" = "gated-trunk" ]
 }
 
-@test "unknown collaboration is not solo" {
-  run derive_mode yes write pushable unknown
-  [ "$output" = "team-trunk" ]
+@test "public individual pushable default is gated-trunk" {
+  run derive_mode yes write pushable individual public
+  [ "$output" = "gated-trunk" ]
+}
+
+@test "unknown collaboration is not automatic" {
+  run derive_mode yes write pushable unknown private
+  [ "$output" = "gated-trunk" ]
+}
+
+@test "unknown visibility is not automatic" {
+  run derive_mode yes write pushable individual unknown
+  [ "$output" = "gated-trunk" ]
 }
 
 @test "empty protection object is not meaningful" {
@@ -107,21 +117,21 @@ SH
 }
 
 @test "one author name is individual" {
-  run _classify_collaboration 1 private
+  run _classify_collaboration 1
   [ "$output" = "individual" ]
 }
 
-@test "one author name stays individual when public" {
-  run _classify_collaboration 1 public
-  [ "$output" = "individual" ]
+@test "multiple author names are shared" {
+  run _classify_collaboration 3
+  [ "$output" = "shared" ]
 }
 
-@test "multiple names private is closed" {
-  run _classify_collaboration 3 private
-  [ "$output" = "closed" ]
+@test "legacy closed override normalizes to shared" {
+  run _normalize_collaboration closed
+  [ "$output" = "shared" ]
 }
 
-@test "multiple names public is open" {
-  run _classify_collaboration 3 public
-  [ "$output" = "open" ]
+@test "legacy open override normalizes to shared" {
+  run _normalize_collaboration open
+  [ "$output" = "shared" ]
 }
