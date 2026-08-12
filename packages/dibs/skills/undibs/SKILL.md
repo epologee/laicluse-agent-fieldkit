@@ -10,11 +10,7 @@ description: >-
 
 # undibs
 
-The deliberate counterpart to calling dibs: hand the directories back so the next
-agent can claim them. This is the explicit operator/recovery release that the
-[[dibs]] skill warns against doing automatically. Use it at the end of a long
-session, when a stale lock is in the way, or when the operator asks to free a
-worktree by hand.
+The deliberate counterpart to calling dibs: hand the directories back so the next agent can claim them. Use it when the current work is complete and control returns for genuinely new instructions, at the end of a long session, when a stale lock is in the way, or when the operator asks to free a worktree by hand. The occupancy hook normally performs the same session-wide sweep automatically on a completed `Stop` handoff.
 
 A single session can hold more than one lock: the occupancy hook claims a lock
 per git-root for every directory it edits, so a session that touched several
@@ -81,11 +77,6 @@ through pid-liveness rather than releasing on the dead holder's behalf; reach fo
 an explicit release only when a live process you control holds the lock or the
 operator asks to clear it.
 
-## When not to use this
+## Release boundary
 
-Do not run `undibs` as routine end-of-task cleanup for a lock you acquired
-through the occupancy hook. A green test suite, a clean worktree, a finished
-commit, or a written final answer is not a release condition. The host's
-session-end mechanism already runs the same sweep (Claude), and pid-liveness /
-owner reclaim clears a lock on the next claim (Codex). `undibs` is for the
-explicit, operator-facing case where you mean to free the directories now.
+A green test suite, a clean worktree, or a finished commit alone is not a release condition. Release when the work itself is complete and the agent is handing control back for genuinely new instructions. Keep Dibs while asking a question whose answer is needed to continue the same work, or mark an explicit work-in-progress handoff with `🚧`. Hosts with the Dibs `Stop` hook apply that boundary automatically; invoke `undibs` directly when the host has no such hook or the operator asks for immediate release.

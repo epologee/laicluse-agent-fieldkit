@@ -95,12 +95,7 @@ return state `excluded` and write no lock, so the occupancy hook lets the edit
 through without a second lock path. Matching is by resolved realpath: excluding a
 git worktree root excludes every file inside it.
 
-`release` is an explicit recovery/operator action, not normal end-of-task
-cleanup. After a coding agent claims occupancy through the hook, keep the lock
-until the host's session end mechanism releases it (Claude) or until
-pid-liveness/owner reclaim clears it on the next claim (Codex). Do not manually
-release a live agent lock just because the current task is committed, tests are
-green, or the final answer is being written.
+`release` is also the final cleanup step when a coding agent has completed its work and hands control back for genuinely new instructions. Do not release merely because the current task is committed or tests are green: the work may still continue. The occupancy hook sweeps the session's locks on a completed `Stop` handoff. A final question or the `🚧` marker retains them for continuation; `SessionEnd`, pid-liveness, and owner reclaim remain fallbacks for interrupted sessions.
 
 `--pid` is the pid that must stay alive for the lock to count as live. Record
 the long-lived holder (the agent or session process), not the ephemeral process

@@ -1,5 +1,15 @@
 {
 	"hooks": {
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "plugin_root=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}\"; hook_entry=\"$plugin_root/hooks/occupancy.sh\"; if [ ! -x \"$hook_entry\" ]; then printf '%s\\n' '{\"systemMessage\":\"dibs Stop hook runtime is unavailable; restart this Codex session.\"}'; exit 0; fi; \"$hook_entry\""
+					}
+				]
+			}
+		],
 		"PreToolUse": [
 			{
 				"matcher": "Bash|Edit|Write|MultiEdit|apply_patch",

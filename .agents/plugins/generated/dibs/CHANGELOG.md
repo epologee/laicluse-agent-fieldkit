@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.43]
+
+### Changed
+
+- **Completed handoffs release Dibs before the session ends.** Claude and Codex now sweep every lock they hold on `Stop` when the final answer hands control back for new work. A final question or the `🚧` marker retains the locks for continuation; `SessionEnd` remains a fallback.
+
 ## [v2.0.42]
 
 ### Fixed

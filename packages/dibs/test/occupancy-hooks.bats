@@ -31,6 +31,16 @@ run_hook() {
   run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
 }
 
+stop_emit() {
+  jq -nc --arg cwd "$DIR" --arg message "$1" \
+    '{hook_event_name:"Stop", cwd:$cwd, session_id:"sess-1", stop_hook_active:false, last_assistant_message:$message}'
+}
+
+run_stop_hook() {
+  stop_emit "$1" > "$BATS_TEST_TMPDIR/in.json"
+  run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+}
+
 bash_emit() {
 	jq -nc --arg cwd "$DIR" --arg cmd "$1" \
 		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:$cmd}}'
@@ -411,6 +421,69 @@ init_bash_target_repo() {
   kill "$other" 2>/dev/null || true
   [ "$rc" -eq 0 ]
   echo "$output" | grep -q '"agent": "codex"'
+}
+
+@test "completed Stop sweeps every directory this session locked" {
+  local dir2="$BATS_TEST_TMPDIR/work2"
+  mkdir -p "$dir2"
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+  dibs claim "$dir2" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Implemented, verified, and committed."
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "free"'
+  run dibs check "$dir2" --json
+  echo "$output" | grep -q '"state": "free"'
+}
+
+@test "Stop retains locks while waiting for an answer to continue the same work" {
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Which account should I use?"
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"pid": '$$
+}
+
+@test "Stop retains locks for an explicit work-in-progress handoff" {
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Still working through the failing integration test. 🚧"
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"pid": '$$
+}
+
+@test "Stop releases when a completed summary merely mentions the work-in-progress marker" {
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Implemented the trailing 🚧 handling and verified it."
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "free"'
+}
+
+@test "completed Stop does not disturb a lock held by another agent" {
+  sleep 60 & local other=$!
+  dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
+  export DIBS_HOLDER_PID=$$
+
+  run_stop_hook "Implemented, verified, and committed."
+  local rc=$status
+  run dibs check "$DIR" --json
+  kill "$other" 2>/dev/null || true
+  [ "$rc" -eq 0 ]
+  echo "$output" | grep -q '"agent": "codex"'
+}
+
+@test "Claude and Codex hook manifests register completed-handoff cleanup on Stop" {
+  jq -e '.hooks.Stop | length > 0' "$REPO_ROOT/packages/dibs/hooks/hooks.json" >/dev/null
+  jq -e '.hooks.Stop | length > 0' "$REPO_ROOT/packages/dibs/hooks/hooks.codex.json" >/dev/null
 }
 
 @test "the recorded holder pid equals DIBS_HOLDER_PID, not the hook shell" {

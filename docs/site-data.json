@@ -194,7 +194,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.42",
+			"version": "2.0.43",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -209,9 +209,9 @@
 			"commandCount": 4,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.42",
-				"type": "Fixed",
-				"summary": "Codex now gives a concrete restart instruction when a running session loses the Dibs hook runtime."
+				"version": "v2.0.43",
+				"type": "Changed",
+				"summary": "Completed handoffs release Dibs before the session ends."
 			}
 		},
 		{
@@ -644,11 +644,11 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.42",
+			"packageVersion": "2.0.43",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.42",
-			"type": "Fixed",
-			"summary": "Codex now gives a concrete restart instruction when a running session loses the Dibs hook runtime.",
+			"version": "v2.0.43",
+			"type": "Changed",
+			"summary": "Completed handoffs release Dibs before the session ends.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
