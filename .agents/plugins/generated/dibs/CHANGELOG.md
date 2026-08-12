@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.44]
+
+### Fixed
+
+- **Occupancy follows each tool call's workdir.** Relative command and file targets now resolve from the mutation's own execution directory instead of the conversation cwd, so a session started in one checkout no longer claims or collides with that checkout while writing elsewhere.
+
 ## [v2.0.43]
 
 ### Changed

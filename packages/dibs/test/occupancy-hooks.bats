@@ -226,6 +226,31 @@ init_bash_target_repo() {
 	echo "$output" | grep -q '\[dibs/occupancy\]'
 }
 
+@test "Bash resolves relative write targets from the command workdir, not the conversation cwd" {
+	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
+	local command_repo="$BATS_TEST_TMPDIR/command-repo"
+	init_bash_target_repo "$conversation_repo"
+	init_bash_target_repo "$command_repo"
+
+	sleep 60 & local other=$!
+	dibs claim "$conversation_repo" --pid "$other" --agent codex --session other-sess --description "other session work" >/dev/null
+	export DIBS_HOLDER_PID=$$
+	jq -nc --arg cwd "$conversation_repo" --arg workdir "$command_repo" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:"touch changed.txt", workdir:$workdir}}' > "$BATS_TEST_TMPDIR/in.json"
+
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+	local rc=$status
+	run dibs check "$command_repo" --json
+	local command_lock="$output"
+	run dibs check "$conversation_repo" --json
+	local conversation_lock="$output"
+	kill "$other" 2>/dev/null || true
+
+	[ "$rc" -eq 0 ]
+	echo "$command_lock" | grep -q '"pid": '$$
+	echo "$conversation_lock" | grep -q '"agent": "codex"'
+}
+
 @test "opt-in worktree requirement denies primary checkout mutation and allows linked worktree" {
 	local primary="$BATS_TEST_TMPDIR/primary"
 	local linked="$BATS_TEST_TMPDIR/linked"

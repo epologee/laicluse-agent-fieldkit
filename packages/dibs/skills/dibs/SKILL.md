@@ -130,7 +130,7 @@ acquisition points are:
 
 - **Pre-mutation hook.** A coding agent claims the directory at its first
   mutating file edit (`Edit`/`Write`/`MultiEdit`/`apply_patch`) or a `Bash`
-  command it detects as writing, not when the session starts. Occupancy only
+  command it detects as writing, not when the session starts. Relative write targets resolve from the tool call's own workdir when the host supplies one; the conversation cwd is only the fallback. Occupancy only
   gates the write-output: several agents may read, think, and run commands from
   the same directory, and dibs only arbitrates who may write. Because a claim needs a description, an
   agent that writes before administering a dibs is told to run
