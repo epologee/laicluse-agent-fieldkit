@@ -1,12 +1,12 @@
 ---
 name: test-before-push
 description: >-
-  Activate and verify multi-agent plugin changes locally in Claude Code and Codex before completion or push.
+  Verify plugin candidates, then activate integrated changes from the primary checkout in Claude Code and Codex.
 ---
 
 # Test before push
 
-One way, always. No choices, no options, no "option 1 or option 2". Run this procedure after every multi-agent marketplace plugin change before declaring it complete, whether or not a push is planned.
+One way, always. No choices, no options, no "option 1 or option 2". Run this procedure after every multi-agent marketplace plugin change before declaring it complete, whether or not a push is planned. A linked worktree may verify a candidate but may never become a persistent marketplace source.
 
 ## When to use
 
@@ -41,16 +41,32 @@ fi
 "$circus_bin" plugins check .
 ```
 
-All checks must pass. A clean index validates the committed version with `--check`; a staged current-task slice validates and preserves the next commit-count version with the same `--staged` operation the repository hook uses. This is what makes runtime activation before the final commit possible without installing a version that the commit immediately replaces. If `git status --short` prints unrelated work, stop and isolate it first; the install snapshots the working tree. Stage the current task before this procedure when repo policy requires runtime activation before the final commit.
+All checks must pass. A clean index validates the committed version with `--check`; a staged current-task slice validates and preserves the next commit-count version with the same `--staged` operation the repository hook uses. If `git status --short` prints unrelated work, stop and isolate it first. Stage the current task before this procedure when version calculation needs the final candidate slice.
+
+## Persistent source gate
+
+```bash
+git_dir=$(git rev-parse --absolute-git-dir)
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+primary_checkout=$(dirname "$common_dir")
+if [ "$git_dir" != "$common_dir" ]; then
+  printf 'Candidate verified in linked worktree; integrate it before persistent runtime activation from %s.\n' "$primary_checkout"
+fi
+```
+
+Never run either host's `marketplace add` with a linked-worktree path. Finish candidate verification there, integrate it through the repository flow, update the primary checkout to the integrated SHA, and run the install sections below from that primary checkout. This ordering keeps persistent global agent state stable across parallel sessions and worktree cleanup.
 
 ## Claude Code install
 
 Run:
 
 ```bash
-alias=$(jq -r '.name' .claude-plugin/marketplace.json)
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+primary_checkout=$(dirname "$common_dir")
+test "$(git rev-parse --absolute-git-dir)" = "$common_dir"
+alias=$(jq -r '.name' "$primary_checkout/.claude-plugin/marketplace.json")
 plugin=<plugin>
-claude plugins marketplace add ./
+claude plugins marketplace add "$primary_checkout"
 if claude plugins list | grep -Fq "$plugin@$alias"; then
   claude plugins update "$plugin@$alias"
 else
@@ -59,16 +75,19 @@ fi
 jq -r --arg key "$plugin@$alias" '.plugins[$key][0].version' ~/.claude/plugins/installed_plugins.json
 ```
 
-The printed version must match `packages/<plugin>/.claude-plugin/plugin.json`.
+The printed version must match `$primary_checkout/packages/<plugin>/.claude-plugin/plugin.json`.
 
 ## Codex install
 
 Run:
 
 ```bash
-alias=$(jq -r '.name' .agents/plugins/marketplace.json)
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+primary_checkout=$(dirname "$common_dir")
+test "$(git rev-parse --absolute-git-dir)" = "$common_dir"
+alias=$(jq -r '.name' "$primary_checkout/.agents/plugins/marketplace.json")
 plugin=<plugin>
-codex plugin marketplace add ./
+codex plugin marketplace add "$primary_checkout"
 codex plugin add "$plugin@$alias"
 ```
 
@@ -88,11 +107,9 @@ working-tree edits. For Codex, start a fresh session after `codex plugin add`.
 
 ## Revert
 
-For local-only marketplaces, there is no remote revert. Leave the local
-marketplace configured until the operator explicitly changes the install source.
+For local-only marketplaces, there is no remote revert. Leave the primary-checkout marketplace configured until the operator explicitly changes the install source.
 
-When a repo later has a real remote and the tested commit has been pushed,
-re-point the alias to the remote source without removing the marketplace:
+Only when the local clone is deliberately retired after its tested commit has been pushed, re-point the alias to the remote source without removing the marketplace:
 
 ```bash
 owner_repo=$(git remote get-url origin | sed -E 's#.*github.com[:/](.+)/(.+)(\.git)?$#\1/\2#; s#\.git$##')

@@ -57,9 +57,7 @@ PreToolUse Bash denies invalid or risky command attempts before they run:
   `git remote add`, and `git remote set-url`. Claude, Codex.
 - `no-worktree-deploy`: blocks `ansible-playbook` from a git worktree unless
   read-only flags are used. Claude, Codex.
-- `no-worktree-marketplace`: blocks Claude or Codex marketplace registration
-  from a linked git worktree, whose temporary path would outlive the source.
-  Claude, Codex.
+- `no-worktree-marketplace`: blocks any linked git worktree passed as a persistent Claude or Codex marketplace source, regardless of the command's current directory; primary checkouts and remote sources remain valid. Claude, Codex.
 - `pr-discipline`: blocks weak `gh pr create` / `gh pr edit` titles and
   template or tooling-attribution bodies. Claude, Codex.
 - `dash-bash`: denies Bash commands containing a real em-dash or en-dash before any side effect occurs. Claude, Codex.

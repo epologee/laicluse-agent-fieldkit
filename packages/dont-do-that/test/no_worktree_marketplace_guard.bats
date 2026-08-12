@@ -20,8 +20,8 @@ setup() {
   git -C "$REPO" worktree add -q -b feature "$WORKTREE"
 }
 
-@test "marketplace registration from a linked worktree is denied for Codex and Claude" {
-  for command in "codex plugin marketplace add ./" "claude plugin marketplace add ./"; do
+@test "marketplace registration from a linked worktree cwd is denied for Codex and Claude" {
+  for command in "codex plugin marketplace add ./" "claude plugins marketplace add ./"; do
     payload="$(pre_bash_payload "$WORKTREE" "$command")"
 
     run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=no-worktree-marketplace bash "$2"' _ "$payload" "$DISPATCH"
@@ -31,8 +31,38 @@ setup() {
   done
 }
 
+@test "explicit linked worktree marketplace paths are denied from any cwd" {
+  for command in "codex plugin marketplace add $WORKTREE" "claude plugins marketplace add $WORKTREE"; do
+    payload="$(pre_bash_payload "$REPO" "$command")"
+
+    run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=no-worktree-marketplace bash "$2"' _ "$payload" "$DISPATCH"
+
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"[dont-do-that/no-worktree-marketplace]"* ]]
+    [[ "$output" == *"$REPO"* ]]
+  done
+}
+
 @test "marketplace registration from the canonical checkout passes" {
   payload="$(pre_bash_payload "$REPO" "codex plugin marketplace add ./")"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=no-worktree-marketplace bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "explicit canonical marketplace path passes" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin marketplace add $REPO")"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=no-worktree-marketplace bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "remote marketplace source passes" {
+  payload="$(pre_bash_payload "$WORKTREE" "codex plugin marketplace add example/tools")"
 
   run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=no-worktree-marketplace bash "$2"' _ "$payload" "$DISPATCH"
 

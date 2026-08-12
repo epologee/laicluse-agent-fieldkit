@@ -23,19 +23,21 @@ runtime_closeout_section() {
 	[[ "$output" == *"codex plugin list --json"* ]]
 }
 
-@test "the runtime closeout routes plugin work before completion or push" {
+@test "the runtime closeout activates both hosts from the primary checkout" {
 	run ruby -ryaml -e '
 		parts = File.read(ARGV.fetch(0)).split(/^---\s*$/)
 		puts YAML.safe_load(parts.fetch(1)).fetch("description")
 	' "$CLOSEOUT"
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Claude Code and Codex"* ]]
-	[[ "$output" == *"before completion or push"* ]]
+	[[ "$output" == *"primary checkout"* ]]
 }
 
-@test "the runtime closeout validates the staged next version before a required pre-commit activation" {
+@test "the runtime closeout validates the staged candidate before integrated activation" {
 	grep -q 'git diff --cached --quiet' "$CLOSEOUT"
 	grep -q 'plugins versions --staged .' "$CLOSEOUT"
 	grep -q 'plugins build .' "$CLOSEOUT"
 	grep -q 'plugins versions --check .' "$CLOSEOUT"
+	grep -q 'rev-parse --path-format=absolute --git-common-dir' "$CLOSEOUT"
+	! grep -q 'marketplace add ./' "$CLOSEOUT"
 }

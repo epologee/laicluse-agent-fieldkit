@@ -150,7 +150,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.37",
+			"version": "2.0.38",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -165,9 +165,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.34",
-				"type": "Fixed",
-				"summary": "Runtime activation can now precede the final commit without version drift."
+				"version": "v2.0.38",
+				"type": "Changed",
+				"summary": "Persistent local marketplace installs now use only the primary checkout."
 			}
 		},
 		{
@@ -260,7 +260,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.38",
+			"version": "2.0.39",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -275,9 +275,9 @@
 			"commandCount": 2,
 			"hookFileCount": 27,
 			"latestChange": {
-				"version": "v2.0.36",
+				"version": "v2.0.39",
 				"type": "Fixed",
-				"summary": "Shell text is never asked to rewrite after the command already ran."
+				"summary": "Persistent local marketplaces can no longer point at linked worktrees."
 			}
 		},
 		{
@@ -653,20 +653,20 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.38",
+			"packageVersion": "2.0.39",
 			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.36",
+			"version": "v2.0.39",
 			"type": "Fixed",
-			"summary": "Shell text is never asked to rewrite after the command already ran.",
+			"summary": "Persistent local marketplaces can no longer point at linked worktrees.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.37",
+			"packageVersion": "2.0.38",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
-			"version": "v2.0.34",
-			"type": "Fixed",
-			"summary": "Runtime activation can now precede the final commit without version drift.",
+			"version": "v2.0.38",
+			"type": "Changed",
+			"summary": "Persistent local marketplace installs now use only the primary checkout.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{
