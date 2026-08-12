@@ -146,10 +146,7 @@ acquisition points are:
   not as advice: use `bonsai:bonsai` or `git worktree`, never a loose filesystem
   copy, before editing.
   Claude and Codex call the same CLI; the on-disk lock is the shared artifact.
-  Repos that should only be mutated through linked worktrees can set local git
-  config `laicluse.requireWorktree=true`; the hook then denies mutating the
-  primary checkout while allowing linked worktrees. Opt occupancy off for a
-  whole session with `DIBS_OCCUPANCY=off`.
+  Repos that should only be mutated through linked worktrees can set local git config `laicluse.requireWorktree=true`; the hook then denies mutating the primary checkout while allowing linked worktrees. When the operator explicitly asks to work without a worktree, or a linked worktree would break path-dependent behavior such as a content vault or locally referenced symlinks, disable only that requirement with `git -C "<repo>" config laicluse.requireWorktree false`, claim the checkout, and continue there. Dibs occupancy remains active. Opt occupancy off for a whole session with `DIBS_OCCUPANCY=off`.
 - **Directory handout.** `bonsai` claims the lock for a worktree it hands out
   (it consumes this one implementation; there is no second lock anywhere). The
   git-native commit hook in the branch-worktree-discipline order remains the

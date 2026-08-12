@@ -52,7 +52,7 @@
 					<p class="lede">Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.40</span>
+						<span>2.0.41</span>
 						<span>2 skills</span>
 					</div>
 				</div>
@@ -103,6 +103,9 @@ dibs excludes    [--json]</code></pre>
 <p>Repos that should only be mutated through linked worktrees can opt in locally:</p>
 <pre><code class="language-bash">git config laicluse.requireWorktree true</code></pre>
 <p>When that config is true, the occupancy hook denies mutating the primary checkout and still allows linked worktrees for the same repository. This is local git config by design: dibs stays a general lock by default, and only repos that explicitly ask for worktree-only mutation get the extra guard.</p>
+<p>If the operator explicitly asks an agent to work without a worktree, or a linked worktree would break path-dependent behavior such as a content vault or locally referenced symlinks, disable only the worktree requirement and keep the occupancy lock:</p>
+<pre><code class="language-bash">git -C &quot;&lt;repo&gt;&quot; config laicluse.requireWorktree false
+dibs claim &quot;&lt;repo&gt;&quot; --description &quot;&lt;what you are doing&gt;&quot;</code></pre>
 <p>Opt out of enforcement for a session with <code>DIBS_OCCUPANCY=off</code>. <code>bonsai</code>'s claim-at-handout is unaffected and complementary.</p>
 <h2 id="excludes">Excludes</h2>
 <p>Some directories should never take an occupancy lock: the agent-config homes, where two sessions each editing their own runtime config must not steer each other aside and the git-native commit hook is the backstop. dibs keeps a per-machine exclude list. <code>claim</code> and <code>check</code> on an excluded directory (or any path inside it) return state <code>excluded</code> and write no lock, so the occupancy hook passes the edit through untouched. Exclusion lives in the CLI, not the hook, so there is a single decision point.</p>

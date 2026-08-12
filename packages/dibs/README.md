@@ -180,6 +180,13 @@ checkout and still allows linked worktrees for the same repository. This is
 local git config by design: dibs stays a general lock by default, and only repos
 that explicitly ask for worktree-only mutation get the extra guard.
 
+If the operator explicitly asks an agent to work without a worktree, or a linked worktree would break path-dependent behavior such as a content vault or locally referenced symlinks, disable only the worktree requirement and keep the occupancy lock:
+
+```bash
+git -C "<repo>" config laicluse.requireWorktree false
+dibs claim "<repo>" --description "<what you are doing>"
+```
+
 Opt out of enforcement for a session with `DIBS_OCCUPANCY=off`. `bonsai`'s
 claim-at-handout is unaffected and complementary.
 

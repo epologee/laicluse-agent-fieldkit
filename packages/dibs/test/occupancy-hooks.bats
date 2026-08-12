@@ -234,6 +234,12 @@ init_bash_target_repo() {
 	run_bash_hook "touch primary.txt"
 	[ "$status" -eq 2 ]
 	echo "$output" | grep -q '\[dibs/worktree-required\]'
+	echo "$output" | grep -q 'operator explicitly asked you to work without a worktree'
+	echo "$output" | grep -q 'git config laicluse.requireWorktree false'
+
+	git -C "$primary" config laicluse.requireWorktree false
+	run_bash_hook "touch primary.txt"
+	[ "$status" -eq 0 ]
 
 	DIR="$linked"
 	run_bash_hook "touch linked.txt"
