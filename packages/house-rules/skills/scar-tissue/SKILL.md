@@ -23,6 +23,8 @@ A meandering, corrected path generates it. Watch for it in every artifact, not j
 
 ## Invoked on a suspected scar: look before you cut
 
+The skill name is a noun phrase, not a literal search request. Operators often enter `$house-rules:scar-tissue` through autocomplete to say "look for scar tissue in the artifact currently under discussion." Resolve that artifact from the conversation and inspect it for iterative residue. Do not search for or remove the literal words `scar-tissue` unless those words themselves were explicitly identified as the problem. "Remove scar tissue from this idea" means consolidate superseded plans and correction layers into one coherent current idea.
+
 Being invoked is usually a pointer, not a blank cheque. The operator saw something go by in the trace, thought "this did not need to happen" (a changelog that undoes itself, an escape for a self-inflicted problem), and wants it gone; or wants a control check, because generating scar tissue is a coding-agent reflex. Do not open with questions, and do not open with assumptions.
 
 - **Look first.** Read the flagged artifact, or for a control check the recent diff. Cutting on sight, and assuming a wide sweep when one thing was pointed at, are both the reflex, not the work.
