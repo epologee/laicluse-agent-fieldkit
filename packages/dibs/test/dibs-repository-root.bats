@@ -23,7 +23,7 @@ dibs() {
 
 @test "claims from different subdirectories in one git worktree contend for one lock" {
   dibs claim "$ALPHA" --pid $$ --agent claude --json >/dev/null
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
 
   run dibs claim "$BETA" --pid "$other" --agent codex --json
   local rc=$status

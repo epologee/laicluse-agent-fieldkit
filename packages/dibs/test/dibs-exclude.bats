@@ -56,7 +56,7 @@ dibs() {
 
 @test "two live sessions both pass on an excluded dir (no refusal)" {
   dibs exclude "$DIR"
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid $$ --agent claude --json
   run dibs claim "$DIR" --pid "$other" --agent codex --json
   kill "$other" 2>/dev/null || true

@@ -33,7 +33,7 @@ dibs() {
 
 @test "release by a non-holder is refused and leaves the lock in place" {
   dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   run dibs release "$DIR" --pid "$other"
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]
@@ -60,7 +60,7 @@ dibs() {
 
 @test "release by non-holder under --json reports held-by-other" {
   dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   run dibs release "$DIR" --pid "$other" --json
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]
