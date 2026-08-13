@@ -56,7 +56,7 @@ dibs() {
 }
 
 @test "check reports a dead holder as not alive and stale" {
-  sleep 120 & local holder=$!
+  tail -f /dev/null >/dev/null 2>&1 & local holder=$!
   dibs claim "$DIR" --pid "$holder" --agent claude --json >/dev/null
   kill "$holder"; wait "$holder" 2>/dev/null || true
   run dibs check "$DIR" --json

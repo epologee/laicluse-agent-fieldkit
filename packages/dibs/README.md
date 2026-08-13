@@ -64,11 +64,7 @@ realpath, so it still frees a worktree that has since been pruned.
   locking it again; **excludes** lists the built-in defaults plus the configured
   entries. See *Excludes* below.
 
-`release` is for explicit recovery or operator-directed teardown. It is not
-normal end-of-task cleanup for a coding agent that claimed occupancy through the
-hook. That lock should stay held until the host session ends (Claude), or until
-pid-liveness/owner reclaim clears it on the next claim (Codex). A green test
-suite, clean worktree, commit, or final answer is not a release condition.
+`release` is also the final cleanup step when a coding agent has completed its work and hands control back for genuinely new instructions. A green test suite, clean worktree, or commit alone is not a release condition: the current task may still continue. The occupancy hook performs a session-wide `release-all` on a completed `Stop` handoff. A final question or the `🚧` marker means the current work is waiting to continue and retains its locks; `SessionEnd` remains the fallback.
 
 `--pid` is the holder pid whose liveness defines the lock; default is the
 calling process's parent pid. Record the long-lived agent or session process,
@@ -80,17 +76,7 @@ the lock to the new pid/host instead of self-locking. The occupancy hook sets it
 from `DIBS_OWNER`, then for Codex from `CMUX_TAB_ID`, `CMUX_WORKSPACE_ID`,
 `CODEX_THREAD_ID`, or finally the hook session id.
 
-`--description` stores a short human work description in the lock record. Use a
-compact phrase of a few words, for example `stale dibs lock cleanup` or `finish
-plugin install`. dibs compacts whitespace, turns branch separators such as `-`,
-`_`, and `/` into spaces, caps the field at 80 characters, and shows it by
-`check`, refused `claim` output, and occupancy hook denials as `work: <text>`.
-Use this for quick inspection of old locks: when the described work is visibly
-complete and the holder is stale, the next session can clear the leftover lock
-with more confidence. The CLI also reads `DIBS_DESCRIPTION`; the occupancy hook
-passes it through when set and otherwise falls back to the current non-default
-git branch, resolved through Git's default-branch metadata, rendered as words.
-`bonsai` records the branch name as words for worktrees it hands out.
+`--description` stores a short human work description in the lock record. Use a compact phrase of a few words, for example `stale dibs lock cleanup` or `finish plugin install`. dibs compacts whitespace, turns separators such as `-`, `_`, and `/` into spaces, caps the field at 80 characters, and shows it in `check`, refused `claim` output, and occupancy hook denials as `work: <text>`. Use this for quick inspection of old locks: when the described work is visibly complete and the holder is stale, the next session can clear the leftover lock with more confidence. The CLI also reads `DIBS_DESCRIPTION`; the occupancy hook passes it through when set and refuses to invent one from a branch or another host-specific label. `bonsai` supplies the branch name as words when it hands out a worktree.
 
 ## How it works
 
@@ -153,7 +139,7 @@ plugin's own CLI, so there is no second lock path.
   `Write` / `MultiEdit` / `apply_patch`) and conservative shell mutations
   (`Bash`) such as `cp`, `mv`, `rm`, `touch`, mutating `git` subcommands,
   package installs, and shell redirection. Read-only shell commands stay quiet.
-  Bash targets are resolved from shell structure and command semantics: heredoc and message bodies are ignored, redirects gate their output, Git mutations gate their `-C` / `--git-dir` context, copy-like commands distinguish sources from destinations, and `~` / environment-backed paths are expanded without evaluating the command. The cwd is gated only when the parsed write target is relative to it. It hard-denies (exit 2) when a *different*
+  Bash targets are resolved from shell structure and command semantics: heredoc and message bodies are ignored, redirects gate their output, Git mutations gate their `-C` / `--git-dir` context, copy-like commands distinguish sources from destinations, and `~` / environment-backed paths are expanded without evaluating the command. Relative targets use the tool call's own workdir when the host supplies one; the conversation cwd is only the fallback. It hard-denies (exit 2) when a *different*
   live session holds the target, reporting the holder and how to recover. The
   recovery text points the blocked agent at a separate git worktree on a new
   branch, so the safe next move is visible at the denial point.
@@ -162,12 +148,8 @@ plugin's own CLI, so there is no second lock path.
   never self-locks the agent out. A legacy ownerless Codex resume is reclaimed
   at the first write. A free directory, a self-healed dead holder, and any
   non-refusal dibs result all pass (fail-open).
-- **SessionEnd** (Claude only) releases every directory the session locked, not
-  just the cwd: it sweeps with `release-all` keyed by the session's holder pid,
-  so a session that edited several git roots leaves nothing locked behind. Codex
-  has no session-end event, so a Codex lock clears through pid-liveness self-heal
-  on the next claim, or through owner-based reclaim on a Codex resume, which is
-  expected rather than a leak.
+- **Stop** releases every directory the session locked when the final answer completes the current work and hands control back for new instructions. It sweeps with `release-all` keyed by the session's holder pid plus the available session or owner identity. A final question or the `🚧` marker retains the locks because the current work is waiting to continue. If another Stop hook makes the agent continue after release, the next mutation claims Dibs again before writing.
+- **SessionEnd** (Claude only) runs the same session-wide sweep as a final fallback. Codex also retains pid-liveness self-heal and owner-based reclaim for interrupted sessions that never emitted a completed Stop.
 
 Repos that should only be mutated through linked worktrees can opt in locally:
 

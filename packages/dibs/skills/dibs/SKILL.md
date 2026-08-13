@@ -96,12 +96,7 @@ return state `excluded` and write no lock, so the occupancy hook lets the edit
 through without a second lock path. Matching is by resolved realpath: excluding a
 git worktree root excludes every file inside it.
 
-`release` is an explicit recovery/operator action, not normal end-of-task
-cleanup. After a coding agent claims occupancy through the hook, keep the lock
-until the host's session end mechanism releases it (Claude) or until
-pid-liveness/owner reclaim clears it on the next claim (Codex). Do not manually
-release a live agent lock just because the current task is committed, tests are
-green, or the final answer is being written.
+`release` is also the final cleanup step when a coding agent has completed its work and hands control back for genuinely new instructions. Do not release merely because the current task is committed or tests are green: the work may still continue. The occupancy hook sweeps the session's locks on a completed `Stop` handoff. A final question or the `🚧` marker retains them for continuation; `SessionEnd`, pid-liveness, and owner reclaim remain fallbacks for interrupted sessions.
 
 `--pid` is the pid that must stay alive for the lock to count as live. Record
 the long-lived holder (the agent or session process), not the ephemeral process
@@ -135,7 +130,7 @@ acquisition points are:
 
 - **Pre-mutation hook.** A coding agent claims the directory at its first
   mutating file edit (`Edit`/`Write`/`MultiEdit`/`apply_patch`) or a `Bash`
-  command it detects as writing, not when the session starts. Occupancy only
+  command it detects as writing, not when the session starts. Relative write targets resolve from the tool call's own workdir when the host supplies one; the conversation cwd is only the fallback. Occupancy only
   gates the write-output: several agents may read, think, and run commands from
   the same directory, and dibs only arbitrates who may write. Because a claim needs a description, an
   agent that writes before administering a dibs is told to run

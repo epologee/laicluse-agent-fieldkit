@@ -33,7 +33,7 @@ dibs() {
   dibs claim "$DIR" --pid $$ --agent claude --json >/dev/null
   # Claiming via the symlink with a different pid must see the existing holder
   # (same realpath -> same lock), not a fresh free lock.
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   run dibs claim "$alias" --pid "$other" --agent codex --json
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]

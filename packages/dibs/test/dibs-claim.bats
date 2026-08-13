@@ -54,7 +54,7 @@ dibs() {
 
 @test "a second live claimer is refused and told who holds it and since when" {
   dibs claim "$DIR" --pid $$ --agent claude --description "stale dibs lock cleanup" --json
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   run dibs claim "$DIR" --pid "$other" --agent codex
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]
@@ -71,7 +71,7 @@ dibs() {
 
 @test "refused claim under --json reports state refused and the holder" {
   dibs claim "$DIR" --pid $$ --agent claude --description "stale dibs lock cleanup" --json
-  sleep 120 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   run dibs claim "$DIR" --pid "$other" --agent codex --json
   kill "$other" 2>/dev/null || true
   [ "$status" -ne 0 ]
@@ -92,8 +92,8 @@ dibs() {
 }
 
 @test "a resumed owner can reclaim with a new pid" {
-  sleep 120 & local old=$!
-  sleep 120 & local new=$!
+  tail -f /dev/null >/dev/null 2>&1 & local old=$!
+  tail -f /dev/null >/dev/null 2>&1 & local new=$!
   dibs claim "$DIR" --pid "$old" --agent codex --owner cmux-tab-1 --json >/dev/null
 
   run dibs claim "$DIR" --pid "$new" --agent codex --owner cmux-tab-1 --json
@@ -108,8 +108,8 @@ dibs() {
 }
 
 @test "a different owner is still refused" {
-  sleep 120 & local old=$!
-  sleep 120 & local new=$!
+  tail -f /dev/null >/dev/null 2>&1 & local old=$!
+  tail -f /dev/null >/dev/null 2>&1 & local new=$!
   dibs claim "$DIR" --pid "$old" --agent codex --owner cmux-tab-1 --json >/dev/null
 
   run dibs claim "$DIR" --pid "$new" --agent codex --owner cmux-tab-2 --json
@@ -133,7 +133,7 @@ dibs() {
 }
 
 @test "a dead holder's lock is taken over by the next claimer" {
-  sleep 120 & local holder=$!
+  tail -f /dev/null >/dev/null 2>&1 & local holder=$!
   dibs claim "$DIR" --pid "$holder" --agent claude --json
   kill "$holder"; wait "$holder" 2>/dev/null || true
   run dibs claim "$DIR" --pid $$ --agent codex --json
@@ -143,7 +143,7 @@ dibs() {
 }
 
 @test "a live holder on this host is respected (not broken)" {
-  sleep 120 & local holder=$!
+  tail -f /dev/null >/dev/null 2>&1 & local holder=$!
   dibs claim "$DIR" --pid "$holder" --agent claude --json
   run dibs claim "$DIR" --pid $$ --agent codex --json
   kill "$holder" 2>/dev/null || true
@@ -179,15 +179,23 @@ dibs() {
   local n=20
   declare -a holders=()
   for i in $(seq 1 $n); do
-    sleep 30 & holders+=($!)
+    tail -f /dev/null >/dev/null 2>&1 & holders+=($!)
   done
   local outdir="$BATS_TEST_TMPDIR/out"
   mkdir -p "$outdir"
+  declare -a claimers=()
   for i in $(seq 1 $n); do
-    ( dibs claim "$DIR" --pid "${holders[$((i - 1))]}" --agent "a$i" --json >/dev/null 2>&1; echo $? >"$outdir/$i.rc" ) &
+	(
+	  if dibs claim "$DIR" --pid "${holders[$((i - 1))]}" --agent "a$i" --json >/dev/null 2>&1; then
+		echo 0 >"$outdir/$i.rc"
+	  else
+		echo $? >"$outdir/$i.rc"
+	  fi
+	) &
+    claimers+=($!)
   done
-  wait
-  for h in "${holders[@]}"; do kill "$h" 2>/dev/null || true; done
+  for claimer in "${claimers[@]}"; do wait "$claimer"; done
+  for holder in "${holders[@]}"; do kill "$holder" 2>/dev/null || true; done
   local ok=0
   for i in $(seq 1 $n); do
     [ "$(cat "$outdir/$i.rc")" -eq 0 ] && ok=$((ok + 1))

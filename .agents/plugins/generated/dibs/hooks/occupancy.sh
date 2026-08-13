@@ -1,5 +1,5 @@
 #!/bin/bash
-# allow-comment: load-bearing contract. dibs occupancy enforcement gates the write-output at PreToolUse: a file edit (Edit/Write/MultiEdit/apply_patch) always, and a Bash command that occ_bash_mutates classifies as writing. Several agents may read and think in the same directory; dibs only arbitrates who writes. A claim needs a work description the agent composes (from DIBS_DESCRIPTION); a write with no administered dibs is hard-denied telling the agent to run `dibs claim <dir> --description ...`, and a write into a directory a DIFFERENT live session holds is hard-denied with the holder. Read-only work passes untouched. Released at SessionEnd (Claude only; Codex relies on dibs pid-liveness self-heal). No lock logic lives here; every verb shells out to this plugin's own dibs CLI, and the gate fails open on infra faults (missing dibs binary, unresolvable dir) so a broken lock never blocks. Opt out per session with DIBS_OCCUPANCY=off.
+# allow-comment: load-bearing contract. dibs occupancy enforcement gates the write-output at PreToolUse: a file edit (Edit/Write/MultiEdit/apply_patch) always, and a Bash command that occ_bash_mutates classifies as writing. Write targets resolve from the tool call's own workdir when supplied, with the conversation cwd only as fallback. Several agents may read and think in the same directory; dibs only arbitrates who writes. A claim needs a work description the agent composes (from DIBS_DESCRIPTION); a write with no administered dibs is hard-denied telling the agent to run `dibs claim <dir> --description ...`, and a write into a directory a DIFFERENT live session holds is hard-denied with the holder. Read-only work passes untouched. A completed Stop handoff releases every lock held by the session; a question or the 🚧 marker keeps them for continuation, and SessionEnd remains the final fallback. No lock logic lives here; every verb shells out to this plugin's own dibs CLI, and the gate fails open on infra faults (missing dibs binary, unresolvable dir) so a broken lock never blocks. Opt out per session with DIBS_OCCUPANCY=off.
 
 OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # allow-comment: load-bearing. Share one holder-pid walk with the undibs skill so claim and release agree on the recorded pid.
@@ -9,10 +9,39 @@ occ_event()   { jq -r '.hook_event_name // empty' <<< "$1" 2>/dev/null; }
 occ_tool()    { jq -r '.tool_name // empty' <<< "$1" 2>/dev/null; }
 occ_session() { jq -r '.session_id // .sessionId // empty' <<< "$1" 2>/dev/null; }
 
+occ_completed_handoff() {
+  local message
+  message="$(jq -r '.last_assistant_message // empty' <<< "$1" 2>/dev/null)"
+  [ -n "$(printf '%s' "$message" | tr -d '[:space:]')" ] || return 1
+  message="$(printf '%s' "$message" | sed -E 's/[[:space:]]+$//')"
+  case "$message" in
+    *\?|*？|*🚧) return 1 ;;
+  esac
+  return 0
+}
+
 occ_cwd() {
   local c
   c=$(jq -r '.cwd // empty' <<< "$1" 2>/dev/null)
   [ -n "$c" ] && [ -d "$c" ] && printf '%s\n' "$c"
+}
+
+occ_tool_workdir() {
+  local input="$1" workdir base
+  workdir=$(jq -r '.tool_input.workdir // .tool_input.cwd // empty' <<< "$input" 2>/dev/null)
+  if [ -z "$workdir" ]; then
+    occ_cwd "$input"
+    return
+  fi
+  case "$workdir" in
+    /*) ;;
+    *)
+      base="$(occ_cwd "$input")"
+      [ -n "$base" ] || return 1
+      workdir="$base/$workdir"
+      ;;
+  esac
+  [ -d "$workdir" ] && (cd "$workdir" && pwd -P)
 }
 
 occ_abs_path() {
@@ -23,7 +52,7 @@ occ_abs_path() {
     "~/"*) printf '%s\n' "$HOME/${path#"~/"}" ;;
     "~") printf '%s\n' "$HOME" ;;
     *)
-      cwd="$(occ_cwd "$input")"
+      cwd="$(occ_tool_workdir "$input")"
       [ -n "$cwd" ] || return 1
       printf '%s/%s\n' "$cwd" "$path"
       ;;
@@ -123,7 +152,7 @@ occ_bash_mutates() {
 occ_bash_dirs() {
 	local input="$1" command cwd path
 	command="$(occ_bash_command "$input")"
-	cwd="$(occ_cwd "$input")"
+	cwd="$(occ_tool_workdir "$input")"
 	[ -n "$cwd" ] || return 0
 	while IFS= read -r path; do
 		[ -n "$path" ] || continue
@@ -281,7 +310,7 @@ occ_block_no_dibs() {
 occ_gate() {
   local input="$1" out rc dir dirs
   dirs="$(occ_gate_dirs "$input")"
-  if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then dirs="$(occ_cwd "$input")"; fi
+  if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then dirs="$(occ_tool_workdir "$input")"; fi
   [ -n "$dirs" ] || return 0
   while IFS= read -r dir; do
     [ -n "$dir" ] || continue
@@ -302,7 +331,7 @@ occ_gate() {
   done <<< "$dirs"
 }
 
-# allow-comment: load-bearing. A session can claim more than one directory (occ_gate_dirs keys per git root of each edited file), so a single-dir release at SessionEnd would leak every non-cwd lock until pid-liveness self-heal. Sweep all of this session's locks by holder pid, plus owner/session when known.
+# allow-comment: load-bearing. A session can claim more than one directory (occ_gate_dirs keys per git root of each edited file), so a single-dir release at completed Stop or SessionEnd would leak every non-cwd lock until pid-liveness self-heal. Sweep all of this session's locks by holder pid, plus owner/session when known.
 occ_release() {
   local input="$1" dibs pid owner sid
   dibs="$(occ_dibs_bin)" || return 0
@@ -319,6 +348,7 @@ occ_release() {
 occ_dispatch() {
   local input="$1"
   case "$(occ_event "$input")" in
+    Stop)         occ_completed_handoff "$input" && occ_release "$input" ;;
     SessionEnd)   occ_release "$input" ;;
     PreToolUse)
       case "$(occ_tool "$input")" in

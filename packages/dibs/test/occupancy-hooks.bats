@@ -31,6 +31,16 @@ run_hook() {
   run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
 }
 
+stop_emit() {
+  jq -nc --arg cwd "$DIR" --arg message "$1" \
+    '{hook_event_name:"Stop", cwd:$cwd, session_id:"sess-1", stop_hook_active:false, last_assistant_message:$message}'
+}
+
+run_stop_hook() {
+  stop_emit "$1" > "$BATS_TEST_TMPDIR/in.json"
+  run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+}
+
 bash_emit() {
 	jq -nc --arg cwd "$DIR" --arg cmd "$1" \
 		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:$cmd}}'
@@ -53,7 +63,7 @@ init_bash_target_repo() {
 }
 
 @test "gate hard-denies a write when a live other-session agent holds the dir" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess --description "stale dibs lock cleanup" >/dev/null
   export DIBS_HOLDER_PID=$$
   run_hook PreToolUse Write
@@ -71,7 +81,7 @@ init_bash_target_repo() {
 }
 
 @test "gate allows a different live pid of the SAME session (no self-lockout)" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent claude --session sess-1 >/dev/null
   export DIBS_HOLDER_PID=$$
   run_hook PreToolUse Write
@@ -81,7 +91,7 @@ init_bash_target_repo() {
 }
 
 @test "gate allows a resumed codex owner even when the session id changed" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session old-thread --owner cmux-tab-1 >/dev/null
   export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs" CMUX_TAB_ID=cmux-tab-1
   jq -nc --arg cwd "$DIR" '{hook_event_name:"PreToolUse", tool_name:"Write", cwd:$cwd, session_id:"new-thread", tool_input:{file_path:($cwd+"/f.txt"), content:"x"}}' > "$BATS_TEST_TMPDIR/in.json"
@@ -184,7 +194,7 @@ init_bash_target_repo() {
 }
 
 @test "Bash read-only command does not claim or block" {
-	sleep 60 & local other=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other=$!
 	dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	run_bash_hook "git status --short"
@@ -206,7 +216,7 @@ init_bash_target_repo() {
 	git -C "$repo" add README.md
 	git -C "$repo" commit -m init >/dev/null
 
-	sleep 60 & local other=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other=$!
 	dibs claim "$repo" --pid "$other" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$BATS_TEST_TMPDIR"
@@ -214,6 +224,31 @@ init_bash_target_repo() {
 	kill "$other" 2>/dev/null || true
 	[ "$status" -eq 2 ]
 	echo "$output" | grep -q '\[dibs/occupancy\]'
+}
+
+@test "Bash resolves relative write targets from the command workdir, not the conversation cwd" {
+	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
+	local command_repo="$BATS_TEST_TMPDIR/command-repo"
+	init_bash_target_repo "$conversation_repo"
+	init_bash_target_repo "$command_repo"
+
+	tail -f /dev/null >/dev/null 2>&1 & local other=$!
+	dibs claim "$conversation_repo" --pid "$other" --agent codex --session other-sess --description "other session work" >/dev/null
+	export DIBS_HOLDER_PID=$$
+	jq -nc --arg cwd "$conversation_repo" --arg workdir "$command_repo" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:"touch changed.txt", workdir:$workdir}}' > "$BATS_TEST_TMPDIR/in.json"
+
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+	local rc=$status
+	run dibs check "$command_repo" --json
+	local command_lock="$output"
+	run dibs check "$conversation_repo" --json
+	local conversation_lock="$output"
+	kill "$other" 2>/dev/null || true
+
+	[ "$rc" -eq 0 ]
+	echo "$command_lock" | grep -q '"pid": '$$
+	echo "$conversation_lock" | grep -q '"agent": "codex"'
 }
 
 @test "opt-in worktree requirement denies primary checkout mutation and allows linked worktree" {
@@ -247,7 +282,7 @@ init_bash_target_repo() {
 }
 
 @test "gate self-heals a dead holder and allows the write" {
-  sleep 60 & local dead=$!
+  tail -f /dev/null >/dev/null 2>&1 & local dead=$!
   dibs claim "$DIR" --pid "$dead" --agent claude >/dev/null
   kill "$dead"; wait "$dead" 2>/dev/null || true
   export DIBS_HOLDER_PID=$$
@@ -263,7 +298,7 @@ init_bash_target_repo() {
 }
 
 @test "gate fails open when the payload carries no cwd" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   jq -nc '{hook_event_name:"PreToolUse", tool_name:"Write", session_id:"sess-1", tool_input:{file_path:"/tmp/x.ts", content:"x"}}' > "$BATS_TEST_TMPDIR/in.json"
@@ -274,7 +309,7 @@ init_bash_target_repo() {
 }
 
 @test "gate fails open when the payload carries no session id" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   jq -nc --arg cwd "$DIR" '{hook_event_name:"PreToolUse", tool_name:"Write", cwd:$cwd, tool_input:{file_path:($cwd+"/f.txt"), content:"x"}}' > "$BATS_TEST_TMPDIR/in.json"
@@ -295,7 +330,7 @@ init_bash_target_repo() {
   git -C "$parent" commit -m init >/dev/null
   git -C "$parent" worktree add -b child "$child" >/dev/null
 
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$parent" --pid "$other" --agent claude --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   jq -nc --arg cwd "$parent" --arg target "$child/new.txt" '
@@ -327,7 +362,7 @@ init_bash_target_repo() {
   git -C "$parent" commit -m init >/dev/null
   git -C "$parent" worktree add -b child "$child" >/dev/null
 
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$parent" --pid "$other" --agent claude --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   jq -nc --arg cwd "$parent" --arg target "$child/new.txt" '
@@ -348,7 +383,7 @@ init_bash_target_repo() {
 }
 
 @test "SessionStart does not steer aside when a live other-session agent holds the dir" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   run_hook SessionStart startup
@@ -402,7 +437,7 @@ init_bash_target_repo() {
 }
 
 @test "SessionEnd does not disturb a dir held by another agent" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   run_hook SessionEnd ""
@@ -411,6 +446,69 @@ init_bash_target_repo() {
   kill "$other" 2>/dev/null || true
   [ "$rc" -eq 0 ]
   echo "$output" | grep -q '"agent": "codex"'
+}
+
+@test "completed Stop sweeps every directory this session locked" {
+  local dir2="$BATS_TEST_TMPDIR/work2"
+  mkdir -p "$dir2"
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+  dibs claim "$dir2" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Implemented, verified, and committed."
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "free"'
+  run dibs check "$dir2" --json
+  echo "$output" | grep -q '"state": "free"'
+}
+
+@test "Stop retains locks while waiting for an answer to continue the same work" {
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Which account should I use?"
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"pid": '$$
+}
+
+@test "Stop retains locks for an explicit work-in-progress handoff" {
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Still working through the failing integration test. 🚧"
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"pid": '$$
+}
+
+@test "Stop releases when a completed summary merely mentions the work-in-progress marker" {
+  export DIBS_HOLDER_PID=$$
+  dibs claim "$DIR" --pid $$ --agent claude --session sess-1 >/dev/null
+
+  run_stop_hook "Implemented the trailing 🚧 handling and verified it."
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"state": "free"'
+}
+
+@test "completed Stop does not disturb a lock held by another agent" {
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
+  dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
+  export DIBS_HOLDER_PID=$$
+
+  run_stop_hook "Implemented, verified, and committed."
+  local rc=$status
+  run dibs check "$DIR" --json
+  kill "$other" 2>/dev/null || true
+  [ "$rc" -eq 0 ]
+  echo "$output" | grep -q '"agent": "codex"'
+}
+
+@test "Claude and Codex hook manifests register completed-handoff cleanup on Stop" {
+  jq -e '.hooks.Stop | length > 0' "$REPO_ROOT/packages/dibs/hooks/hooks.json" >/dev/null
+  jq -e '.hooks.Stop | length > 0' "$REPO_ROOT/packages/dibs/hooks/hooks.codex.json" >/dev/null
 }
 
 @test "the recorded holder pid equals DIBS_HOLDER_PID, not the hook shell" {
@@ -424,7 +522,7 @@ init_bash_target_repo() {
 }
 
 @test "DIBS_OCCUPANCY=off disables enforcement entirely" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim "$DIR" --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$ DIBS_OCCUPANCY=off
   run_hook PreToolUse Write
@@ -509,7 +607,7 @@ PS
 }
 
 @test "a 2>/dev/null redirect never contends the global /dev lock" {
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim /dev --pid "$other" --agent codex --session other-sess >/dev/null 2>&1 || true
   export DIBS_HOLDER_PID=$$
   run_bash_hook "grep -r needle . 2>/dev/null"
@@ -540,7 +638,7 @@ PS
   # bogus "/w:p" candidate that walks up to "/". Before the guard this claimed the
   # filesystem root and collided with any session holding "/". The gate must stay at
   # real directory level and fall back to cwd instead.
-  sleep 60 & local other=$!
+  tail -f /dev/null >/dev/null 2>&1 & local other=$!
   dibs claim / --pid "$other" --agent codex --session other-sess >/dev/null
   export DIBS_HOLDER_PID=$$
   run_bash_hook 'python3 - <<PY
@@ -559,7 +657,7 @@ cp a.docx b.docx'
 	init_bash_target_repo "$cwd_repo"
 	init_bash_target_repo "$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -584,7 +682,7 @@ cp a.docx b.docx'
 	init_bash_target_repo "$cwd_repo"
 	init_bash_target_repo "$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -605,7 +703,7 @@ cp a.docx b.docx'
 	init_bash_target_repo "$cwd_repo"
 	init_bash_target_repo "$decoy_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$decoy_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -632,7 +730,7 @@ MSG"
 	init_bash_target_repo "$target_repo"
 	init_bash_target_repo "$message_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$message_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$BATS_TEST_TMPDIR"
@@ -654,7 +752,7 @@ MSG"
 	init_bash_target_repo "$cwd_repo"
 	init_bash_target_repo "$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -676,7 +774,7 @@ MSG"
 	init_bash_target_repo "$target_repo"
 	export TARGET_REPO="$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -698,7 +796,7 @@ MSG"
 	init_bash_target_repo "$cwd_repo"
 	init_bash_target_repo "$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -719,7 +817,7 @@ MSG"
 	init_bash_target_repo "$cwd_repo"
 	init_bash_target_repo "$source_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$cwd_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$cwd_repo"
@@ -737,7 +835,7 @@ MSG"
 	init_bash_target_repo "$source_repo"
 	init_bash_target_repo "$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$source_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$BATS_TEST_TMPDIR"
@@ -756,7 +854,7 @@ MSG"
 	local target_repo="$BATS_TEST_TMPDIR/target"
 	init_bash_target_repo "$target_repo"
 
-	sleep 60 & local other_pid=$!
+	tail -f /dev/null >/dev/null 2>&1 & local other_pid=$!
 	dibs claim "$target_repo" --pid "$other_pid" --agent codex --session other-sess >/dev/null
 	export DIBS_HOLDER_PID=$$
 	DIR="$BATS_TEST_TMPDIR"
