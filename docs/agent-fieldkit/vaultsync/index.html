@@ -52,7 +52,7 @@
 					<p class="lede">Local-first Git sync automation for Markdown vault repositories: debounce Git-visible changes into commits, run verification, and when an upstream exists rebase and push with LLM conflict ha</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.9</span>
+						<span>2.0.10</span>
 						<span>1 skill</span>
 					</div>
 				</div>
@@ -71,6 +71,8 @@
 <li>Debounces dirty Git state before committing.</li>
 <li>Refuses machine-local home paths in new commits and outgoing history before shared content can be pushed.</li>
 <li>Generates substantive English commit messages through the configured LLM command, with deterministic git-discipline-safe trailers.</li>
+<li>Preserves a failed commit-message provider as the primary diagnosis when the fallback commit also fails, including safely redacted stderr and the secondary commit failure.</li>
+<li>Publishes one <code>vaultsync.status.v1</code> status contract with sync phase, recovery guidance, last successful sync, and pending staged, unstaged, untracked, and unpushed work.</li>
 <li>Runs an optional verifier before a cycle is considered clean.</li>
 <li>Asks the configured LLM command to repair bounded verifier failures for included text files.</li>
 <li>Claims <code>dibs</code> during mutating cycles so another agent does not edit the same checkout concurrently.</li>
@@ -88,6 +90,7 @@ vaultsync doctor [path] --llm-command '&lt;json command&gt;'
 vaultsync daemon</code></pre>
 <p><code>install</code> resolves the requested path to the nearest Git worktree root and records that whole checkout. The current branch is the sync branch. The branch's upstream is recorded when present; missing upstream is allowed and means local-only mode.</p>
 <p><code>managed</code> reports whether the requested path resolves to a vaultsync-managed checkout. It is the public integration point for tools that need to avoid operating inside vaultsync roots; they must call the CLI instead of depending on vaultsync's registration storage layout.</p>
+<p><code>status --json</code> emits the canonical <code>vaultsync.status.v1</code> contract. Consumers should use this output instead of registration files or daemon logs. Each vault status identifies whether sync is <code>synced</code>, <code>pending</code>, <code>degraded</code>, <code>blocked</code>, <code>paused</code>, <code>disabled</code>, or <code>unmanaged</code>; a failure keeps its primary phase, safely redacted message and detail, optional recovery action, and ordered secondary failures. Pending state separates uncommitted paths from unpushed commits, and <code>lastSuccessfulSyncAt</code> is not overwritten by a failed cycle.</p>
 <p>vaultsync resolves <code>dibs</code> dynamically at runtime. <code>DIBS_BIN</code> remains an explicit override, otherwise vaultsync checks the installed plugin cache, <code>PATH</code>, and only then any legacy custom path in an older registration. New registrations do not pin versioned plugin-cache paths, so plugin updates do not leave vaultsync pointing at a removed <code>dibs</code> binary.</p>
 <p><code>pause</code> always has an automatic resume deadline. The default is 120 minutes. If a pause expires while another live <code>dibs</code> holder still owns the checkout, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears.</p>
 <p>The built-in shareability gate rejects the current machine's home directory in added Git content, generated commit messages, and outgoing commits. Keep executable locations and other machine-specific values in environment overrides or user-level configuration. The optional verifier remains responsible for repository-specific content policy; vaultsync does not claim to remove PII from arbitrary prose.</p>
@@ -95,6 +98,9 @@ vaultsync daemon</code></pre>
 <p>The configured LLM command reads one JSON object from stdin and writes one JSON object to stdout. The protocol field is <code>vaultsync.llm.v1</code>.</p>
 <p>For commit messages:</p>
 <pre><code class="language-json">{ &quot;message&quot;: &quot;Substantive English commit message body&quot; }</code></pre>
+<p>When the provider command exits non-zero, vaultsync preserves its safely redacted stderr. A wrapper may supply a provider-specific message and recovery action as one stderr line without coupling vaultsync to that provider:</p>
+<pre><code class="language-json">{ &quot;protocol&quot;: &quot;vaultsync.llm.error.v1&quot;, &quot;message&quot;: &quot;OAuth session expired.&quot;, &quot;recovery&quot;: &quot;Re-authenticate the configured provider and retry sync.&quot; }</code></pre>
+<p>Plain stderr remains supported. Vaultsync recognizes a generic expired OAuth session and recommends re-authenticating the configured provider; it does not name or hard-code a provider.</p>
 <p>vaultsync keeps the LLM-generated subject and body but canonicalizes the required trailers:</p>
 <pre><code class="language-text">Tests: n/a (docs-only)
 Slice: docs-only

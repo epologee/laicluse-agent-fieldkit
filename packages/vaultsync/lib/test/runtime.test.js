@@ -214,6 +214,15 @@ it('records a changed HTML viewer as visual commit evidence', () => {
   assert.match(message, /^Visual: 0 System\/viewer\.html$/m);
 });
 
+it('makes fallback commit reasoning specific to the staged content', () => {
+  const first = fallbackCommitMessage('debounce', ['note.md'], '+first revision\n');
+  const second = fallbackCommitMessage('debounce', ['note.md'], '+second revision\n');
+
+  assert.notEqual(first, second);
+  assert.match(first, /1 changed vault path/);
+  assert.ok(first.split('\n').every((line) => line.length <= 72));
+});
+
 it('finds dibs through DIBS_BIN first', () => {
   const fake = join(tmp, 'fake-dibs');
   writeFileSync(fake, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
@@ -379,6 +388,98 @@ it('installs and runs one dirty checkout sync cycle against a bare remote', () =
   assert.equal(git(local, ['status', '--porcelain']), '');
   assert.match(git(local, ['log', '-1', '--pretty=%s']), /Update vault note/);
   assert.match(git(tmp, ['--git-dir', remote, 'log', '-1', '--pretty=%s']), /Update vault note/);
+});
+
+it('preserves a failed commit-message generator as the primary blocked sync cause and retries staged changes', () => {
+  const fixture = syncFixture('commit-message-auth-failure');
+  writeFileSync(join(fixture.local, 'note.md'), '# Note\n\nSuccessful sync before OAuth expires.\n');
+  runNode([fixture.cli, 'now', fixture.local, '--json'], { env: fixture.env });
+  const generator = join(tmp, 'commit-message-auth-failure-llm.mjs');
+  writeFileSync(generator, [
+    '#!/usr/bin/env node',
+    'let input = "";',
+    'process.stdin.on("data", (chunk) => input += chunk);',
+    'process.stdin.on("end", () => {',
+    '  const payload = JSON.parse(input);',
+    '  if (payload.task === "resolve_conflict") {',
+    '    process.stdout.write(JSON.stringify({ resolved: "Remote truth line.\\n" }));',
+    '    return;',
+    '  }',
+    '  if (payload.task === "commit_message") {',
+    '    process.stderr.write("Failed to authenticate: OAuth session expired and could not be refreshed\\nBearer secret-access-token\\nOAUTH_TOKEN=secret-refresh-token\\n");',
+    '    process.exit(17);',
+    '  }',
+    '  process.exit(2);',
+    '});',
+    '',
+  ].join('\n'), { mode: 0o755 });
+  const registrationPath = registrationPathForRoot(realpathSync(fixture.local), fixture.env);
+  const installed = JSON.parse(readFileSync(registrationPath, 'utf8'));
+  writeFileSync(registrationPath, `${JSON.stringify({ ...installed, llmCommand: `${process.execPath} ${generator}` }, null, 2)}\n`);
+  writeFileSync(join(fixture.local, '.git', 'hooks', 'commit-msg'), [
+    '#!/bin/sh',
+    'echo "git-discipline: duplicate-why: fallback reasoning duplicates the previous sync" >&2',
+    'exit 1',
+    '',
+  ].join('\n'), { mode: 0o755 });
+  writeFileSync(join(fixture.local, 'note.md'), `# Note\n\nChanged while OAuth is expired.\n\n${'large staged viewer content\n'.repeat(50000)}`);
+
+  assert.throws(
+    () => runNode([fixture.cli, 'now', fixture.local, '--json'], { env: fixture.env }),
+    /OAuth session expired/,
+  );
+
+  const afterManualFailure = JSON.parse(readFileSync(registrationPath, 'utf8'));
+  writeFileSync(registrationPath, `${JSON.stringify({ ...afterManualFailure, debounceSeconds: 1, lastSeenDirtyAt: '2026-01-01T00:00:00Z' }, null, 2)}\n`);
+  const daemonResult = JSON.parse(runNode([fixture.cli, 'daemon', '--once', '--json'], { env: fixture.env }).stdout);
+  assert.equal(daemonResult[0].state, 'error', JSON.stringify(daemonResult[0]));
+
+  const blocked = JSON.parse(readFileSync(registrationPath, 'utf8'));
+  assert.equal(blocked.lastError.phase, 'commit-message-generation', JSON.stringify(blocked.lastError));
+  assert.equal(blocked.lastError.message, 'OAuth session expired.');
+  assert.match(blocked.lastError.detail, /Failed to authenticate/);
+  assert.doesNotMatch(JSON.stringify(blocked.lastError), /secret-access-token|secret-refresh-token/);
+  assert.equal(blocked.lastError.recovery, 'Re-authenticate the configured provider and retry sync.');
+  assert.equal(blocked.lastError.secondary.length, 1);
+  assert.equal(blocked.lastError.secondary[0].phase, 'commit');
+  assert.match(blocked.lastError.secondary[0].message, /duplicate-why/);
+  assert.match(git(fixture.local, ['status', '--porcelain']), /^M  note\.md$/m);
+
+  const status = JSON.parse(runNode([fixture.cli, 'status', fixture.local, '--json'], { env: fixture.env }).stdout);
+  assert.equal(status.protocol, 'vaultsync.status.v1');
+  assert.equal(status.vaults[0].state, 'blocked');
+  assert.equal(status.vaults[0].failure.phase, 'commit-message-generation');
+  assert.match(status.vaults[0].lastSuccessfulSyncAt, /^\d{4}-/);
+  assert.equal(status.vaults[0].pending.uncommitted.staged[0], 'note.md');
+  assert.equal(status.vaults[0].pending.unpushed.commits, 0);
+  const textStatus = runNode([fixture.cli, 'status', fixture.local], { env: fixture.env }).stdout;
+  assert.match(textStatus, /blocked during commit-message-generation: OAuth session expired\./);
+  assert.match(textStatus, /secondary commit failure: git-discipline: duplicate-why/);
+  assert.match(textStatus, /last successful sync:/);
+  assert.match(textStatus, /local changes: 1 uncommitted \(1 staged\), 0 unpushed commits/);
+  assert.match(textStatus, /recovery: Re-authenticate the configured provider and retry sync\./);
+
+  writeFileSync(join(fixture.local, '.git', 'hooks', 'commit-msg'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+  writeFileSync(generator, [
+    '#!/usr/bin/env node',
+    'let input = "";',
+    'process.stdin.on("data", (chunk) => input += chunk);',
+    'process.stdin.on("end", () => {',
+    '  const payload = JSON.parse(input);',
+    '  if (payload.task === "commit_message") process.stdout.write(JSON.stringify({ message: "Record recovered vault note\\n\\nCommit the staged note after restoring provider authentication.\\n\\nSlice: docs-only" }));',
+    '  else if (payload.task === "resolve_conflict") process.stdout.write(JSON.stringify({ resolved: "Remote truth line.\\n" }));',
+    '  else process.exit(2);',
+    '});',
+    '',
+  ].join('\n'), { mode: 0o755 });
+
+  runNode([fixture.cli, 'now', fixture.local, '--json'], { env: fixture.env });
+
+  const recovered = JSON.parse(readFileSync(registrationPath, 'utf8'));
+  assert.equal(recovered.lastError, null);
+  assert.equal(git(fixture.local, ['status', '--porcelain']), '');
+  assert.equal(git(fixture.local, ['rev-list', '--left-right', '--count', 'HEAD...@{u}']), '0\t0');
+  assert.match(git(fixture.local, ['log', '-1', '--pretty=%s']), /Record recovered vault note/);
 });
 
 it('refuses to commit dirty content containing the current home path', () => {

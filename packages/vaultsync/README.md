@@ -23,6 +23,8 @@ The plugin ships a `vaultsync` CLI. If the command is not on `PATH`, run the ins
 - Debounces dirty Git state before committing.
 - Refuses machine-local home paths in new commits and outgoing history before shared content can be pushed.
 - Generates substantive English commit messages through the configured LLM command, with deterministic git-discipline-safe trailers.
+- Preserves a failed commit-message provider as the primary diagnosis when the fallback commit also fails, including safely redacted stderr and the secondary commit failure.
+- Publishes one `vaultsync.status.v1` status contract with sync phase, recovery guidance, last successful sync, and pending staged, unstaged, untracked, and unpushed work.
 - Runs an optional verifier before a cycle is considered clean.
 - Asks the configured LLM command to repair bounded verifier failures for included text files.
 - Claims `dibs` during mutating cycles so another agent does not edit the same checkout concurrently.
@@ -49,6 +51,8 @@ checkout. It is the public integration point for tools that need to avoid
 operating inside vaultsync roots; they must call the CLI instead of depending on
 vaultsync's registration storage layout.
 
+`status --json` emits the canonical `vaultsync.status.v1` contract. Consumers should use this output instead of registration files or daemon logs. Each vault status identifies whether sync is `synced`, `pending`, `degraded`, `blocked`, `paused`, `disabled`, or `unmanaged`; a failure keeps its primary phase, safely redacted message and detail, optional recovery action, and ordered secondary failures. Pending state separates uncommitted paths from unpushed commits, and `lastSuccessfulSyncAt` is not overwritten by a failed cycle.
+
 vaultsync resolves `dibs` dynamically at runtime. `DIBS_BIN` remains an explicit override, otherwise vaultsync checks the installed plugin cache, `PATH`, and only then any legacy custom path in an older registration. New registrations do not pin versioned plugin-cache paths, so plugin updates do not leave vaultsync pointing at a removed `dibs` binary.
 
 `pause` always has an automatic resume deadline. The default is 120 minutes. If a pause expires while another live `dibs` holder still owns the checkout, vaultsync extends the pause by 60 minutes and repeats that rule until the lock clears.
@@ -64,6 +68,14 @@ For commit messages:
 ```json
 { "message": "Substantive English commit message body" }
 ```
+
+When the provider command exits non-zero, vaultsync preserves its safely redacted stderr. A wrapper may supply a provider-specific message and recovery action as one stderr line without coupling vaultsync to that provider:
+
+```json
+{ "protocol": "vaultsync.llm.error.v1", "message": "OAuth session expired.", "recovery": "Re-authenticate the configured provider and retry sync." }
+```
+
+Plain stderr remains supported. Vaultsync recognizes a generic expired OAuth session and recommends re-authenticating the configured provider; it does not name or hard-code a provider.
 
 vaultsync keeps the LLM-generated subject and body but canonicalizes the required trailers:
 

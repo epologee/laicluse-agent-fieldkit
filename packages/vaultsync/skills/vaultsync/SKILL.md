@@ -44,6 +44,8 @@ For commit messages, the task is `commit_message` and the response is:
 { "message": "Substantive English commit message with body and Slice trailer" }
 ```
 
+If the command exits non-zero, vaultsync keeps safely redacted stderr as the primary failure even when its fallback commit also fails. A wrapper may emit one stderr JSON line using `vaultsync.llm.error.v1` with `message` and `recovery`; plain stderr remains supported.
+
 For conflicts, the task is `resolve_conflict` and the response is:
 
 ```json
@@ -62,7 +64,7 @@ Vaultsync only accepts repairs for files it included in the request. Verifier-re
 
 ## Operations
 
-- `vaultsync status [path]` shows registrations, branch/upstream state, dirty state, ahead/behind counts, pauses, and the last sync error.
+- `vaultsync status [path]` shows the canonical `vaultsync.status.v1` state: branch/upstream relation, pauses, the last successful sync, uncommitted and unpushed work, and a safely redacted causal failure chain with recovery guidance when available. Other tools consume `--json` instead of reading registration files or daemon logs.
 - `vaultsync managed [path]` reports whether the path resolves to a vaultsync-managed checkout. Other tools should use this CLI contract instead of reading vaultsync registration files.
 - `vaultsync pause [path]` pauses with an automatic resume deadline; default is 120 minutes. Use `--minutes <n>` or `--until <time>` for a different deadline.
 - `vaultsync resume [path]` clears a pause.

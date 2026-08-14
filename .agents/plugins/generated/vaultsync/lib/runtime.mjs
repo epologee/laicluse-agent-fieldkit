@@ -103,6 +103,7 @@ function git(cwd, args, options = {}) {
     cwd,
     input: options.input,
     encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
     env: { ...process.env, ...(options.env || {}) },
   });
   if (result.error) {
@@ -401,11 +402,14 @@ function visualEvidenceTrailer(paths, message = '') {
   return viewer ? [`Visual: ${viewer}`] : [];
 }
 
-export function fallbackCommitMessage(reason = 'debounce', paths = []) {
+export function fallbackCommitMessage(reason = 'debounce', paths = [], diff = '') {
+  const fingerprint = createHash('sha256').update(diff || `${reason}\0${paths.join('\0')}`).digest('hex').slice(0, 10);
+  const pathCount = paths.length === 1 ? '1 changed vault path' : `${paths.length} changed vault paths`;
   return [
     'Sync vault content',
     '',
-    'Vaultsync captured Git-visible local changes before reconciling with the remote truth.',
+    `Vaultsync captured staged change set ${fingerprint} before remote`,
+    `reconciliation. It contains ${pathCount}.`,
     'This keeps the vault state durable and ready for the next sync cycle.',
     '',
     'Tests: n/a (docs-only)',
@@ -425,9 +429,9 @@ function withoutVaultsyncTrailers(message) {
     .trim();
 }
 
-function normalizeCommitMessage(message, reason, paths = []) {
+function normalizeCommitMessage(message, reason, paths = [], diff = '') {
   const cleaned = String(message || '').replace(/\r\n/g, '\n').trim();
-  if (!cleaned) return fallbackCommitMessage(reason, paths);
+  if (!cleaned) return fallbackCommitMessage(reason, paths, diff);
   const content = withoutVaultsyncTrailers(cleaned);
   const [subject, ...rest] = content.split('\n');
   const body = rest.join('\n').trim();
@@ -462,6 +466,37 @@ function shellCommand(command, { cwd, input, env = process.env, timeoutMs = 1200
   return result;
 }
 
+function redactDiagnostic(value) {
+  return String(value || '')
+    .replace(/\b(Bearer)\s+\S+/gi, '$1 [redacted]')
+    .replace(/\b([A-Z][A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY)[A-Z0-9_]*)\s*=\s*\S+/gi, '$1=[redacted]')
+    .replace(/("[^"]*(?:token|secret|password|credential|api[_-]?key)[^"]*"\s*:\s*")[^"]*"/gi, '$1[redacted]"')
+    .replace(/([?&](?:access_token|refresh_token|api_key)=)[^&\s]+/gi, '$1[redacted]')
+    .replace(/\b(?:gh[opusr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{16,})\b/g, '[redacted]')
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[redacted]')
+    .replace(/([a-z][a-z0-9+.-]*:\/\/)[^\s/@:]+:[^\s/@]+@/gi, '$1[redacted]@')
+    .slice(0, 4000)
+    .trim();
+}
+
+function providerFailure(result) {
+  const detail = redactDiagnostic([result.stderr, result.stdout].filter(Boolean).join('\n')) || 'Configured provider command failed';
+  const structured = detail.split('\n').map((line) => {
+    try {
+      return JSON.parse(line);
+    } catch {
+      return null;
+    }
+  }).find((entry) => entry?.protocol === 'vaultsync.llm.error.v1');
+  const oauthExpired = /OAuth session expired/i.test(detail);
+  const err = new Error(redactDiagnostic(structured?.message) || (oauthExpired ? 'OAuth session expired.' : detail.split('\n')[0]));
+  err.phase = 'commit-message-generation';
+  err.detail = detail;
+  err.recovery = redactDiagnostic(structured?.recovery) || (oauthExpired ? 'Re-authenticate the configured provider and retry sync.' : null);
+  err.exitCode = result.status || 1;
+  return err;
+}
+
 function callLlm(registration, payload, { mandatory = false, timeoutMs = 120000 } = {}) {
   if (!registration.llmCommand) {
     if (mandatory) throw new Error('llmCommand is required for this vaultsync task');
@@ -473,12 +508,11 @@ function callLlm(registration, payload, { mandatory = false, timeoutMs = 120000 
     timeoutMs,
   });
   if (result.status !== 0) {
-    if (mandatory) {
-      const err = new Error(result.stderr.trim() || result.stdout.trim() || 'LLM command failed');
-      err.exitCode = result.status || 1;
-      throw err;
-    }
-    return null;
+    if (!mandatory) throw providerFailure(result);
+    const err = new Error(redactDiagnostic(result.stderr || result.stdout) || 'LLM command failed');
+    err.detail = redactDiagnostic([result.stderr, result.stdout].filter(Boolean).join('\n'));
+    err.exitCode = result.status || 1;
+    throw err;
   }
   try {
     return JSON.parse(result.stdout);
@@ -515,26 +549,30 @@ export function probeLlmCommand(llmCommand, rootRealpath = process.cwd()) {
 }
 
 function llmCommitMessage(registration, diff, paths, reason) {
-  const result = callLlm(registration, {
-    protocol: 'vaultsync.llm.v1',
-    task: 'commit_message',
-    repository: {
-      root: registration.rootRealpath,
-      branch: safeGitInfo(registration.rootRealpath, branchName),
-      upstream: safeGitInfo(registration.rootRealpath, upstreamName),
-    },
-    reason,
-    paths,
-    diff,
-    requirements: {
-      language: 'English',
-      substantive: true,
-      includeBody: true,
-      includeSliceTrailer: true,
-    },
-  }, { mandatory: false });
-  if (!result || typeof result.message !== 'string') return fallbackCommitMessage(reason, paths);
-  return normalizeCommitMessage(result.message, reason, paths);
+  try {
+    const result = callLlm(registration, {
+      protocol: 'vaultsync.llm.v1',
+      task: 'commit_message',
+      repository: {
+	root: registration.rootRealpath,
+	branch: safeGitInfo(registration.rootRealpath, branchName),
+	upstream: safeGitInfo(registration.rootRealpath, upstreamName),
+      },
+      reason,
+      paths,
+      diff,
+      requirements: {
+	language: 'English',
+	substantive: true,
+	includeBody: true,
+	includeSliceTrailer: true,
+      },
+    }, { mandatory: false });
+    if (!result || typeof result.message !== 'string') return { message: fallbackCommitMessage(reason, paths, diff), failure: null };
+    return { message: normalizeCommitMessage(result.message, reason, paths, diff), failure: null };
+  } catch (err) {
+    return { message: fallbackCommitMessage(reason, paths, diff), failure: err };
+  }
 }
 
 function safeGitInfo(root, fn) {
@@ -814,6 +852,41 @@ function aheadChangedPaths(root) {
   return result.stdout.split('\0').filter(Boolean);
 }
 
+function errorRecord(err, at = nowIso()) {
+  return {
+    at,
+    phase: err.phase || 'sync',
+    message: redactDiagnostic(err.message) || 'Sync failed',
+    detail: redactDiagnostic(err.detail) || null,
+    recovery: redactDiagnostic(err.recovery) || null,
+    secondary: Array.isArray(err.secondary) ? err.secondary.map((failure) => ({
+      phase: failure.phase || 'sync',
+      message: redactDiagnostic(failure.message) || 'Secondary sync failure',
+      detail: redactDiagnostic(failure.detail) || null,
+    })) : [],
+  };
+}
+
+function causalFailure(primary, phase, secondary) {
+  primary.secondary = [...(primary.secondary || []), {
+    phase,
+    message: secondary.message,
+    detail: secondary.detail || null,
+  }];
+  const secondaryLine = `Secondary ${phase} failure: ${redactDiagnostic(secondary.message)}`;
+  primary.detail = [primary.detail, secondaryLine].filter(Boolean).join('\n');
+  return primary;
+}
+
+function withPhase(phase, work) {
+  try {
+    return work();
+  } catch (err) {
+    if (!err.phase) err.phase = phase;
+    throw err;
+  }
+}
+
 function commitDirtyState(registration, reason, env = process.env) {
   const root = registration.rootRealpath;
   git(root, ['add', '-A']);
@@ -821,15 +894,22 @@ function commitDirtyState(registration, reason, env = process.env) {
   if (!diff.trim()) return { committed: false, paths: [] };
   assertPortableContent(addedDiffContent(diff), env);
   const paths = changedPaths(root, true);
-  const message = llmCommitMessage(registration, diff, paths, reason);
+  const generated = llmCommitMessage(registration, diff, paths, reason);
+  const message = generated.message;
   assertPortableContent(message, env);
   const commit = git(root, ['commit', '-F', '-'], { input: `${message.trim()}\n`, allowFailure: true });
   if (commit.status !== 0) {
     const output = gitCombinedOutput(commit);
-    if (!isManagedSyncGitGuard(output)) throwGitResult(commit, 'git commit failed');
-    git(root, ['commit', '--no-verify', '-F', '-'], { input: `${message.trim()}\n` });
+    try {
+      if (!isManagedSyncGitGuard(output)) throwGitResult(commit, 'git commit failed');
+      git(root, ['commit', '--no-verify', '-F', '-'], { input: `${message.trim()}\n` });
+    } catch (err) {
+      err.phase = 'commit';
+      if (generated.failure) throw causalFailure(generated.failure, 'commit', err);
+      throw err;
+    }
   }
-  return { committed: true, paths };
+  return { committed: true, paths, warning: generated.failure || null };
 }
 
 function maybeExtendExpiredPause(registration, env = process.env) {
@@ -851,49 +931,54 @@ function maybeExtendExpiredPause(registration, env = process.env) {
 
 export async function runCycle(registration, { reason = 'daemon', force = false, env = process.env } = {}) {
   let reg = registration;
-  const pause = maybeExtendExpiredPause(reg, env);
-  reg = pause.registration;
-  if (pause.active) {
-    return { state: pause.extended ? 'pause-extended' : 'paused', registration: reg };
-  }
-  const preflight = preflightRepository(reg.rootRealpath, env);
-  if (preflight.key !== reg.key) {
-    throw new Error(`registration key mismatch for ${reg.rootRealpath}`);
-  }
-  fetchRemote(reg.rootRealpath);
-  const dirty = isDirty(reg.rootRealpath);
-  const relation = aheadBehind(reg.rootRealpath);
-  if (!dirty && relation.ahead === 0 && relation.behind === 0 && !force) {
-    return saveCycleResult(reg, { state: 'idle', lastPollAt: nowIso(), lastError: null }, env);
-  }
   let claim = null;
   try {
-    claim = claimDibs(reg, env);
+    const pause = withPhase('pause', () => maybeExtendExpiredPause(reg, env));
+    reg = pause.registration;
+    if (pause.active) {
+      return { state: pause.extended ? 'pause-extended' : 'paused', registration: reg };
+    }
+    const preflight = withPhase('preflight', () => preflightRepository(reg.rootRealpath, env));
+    if (preflight.key !== reg.key) {
+      const err = new Error(`registration key mismatch for ${reg.rootRealpath}`);
+      err.phase = 'preflight';
+      throw err;
+    }
+    withPhase('fetch', () => fetchRemote(reg.rootRealpath));
+    const dirty = isDirty(reg.rootRealpath);
+    const relation = aheadBehind(reg.rootRealpath);
+    if (!dirty && relation.ahead === 0 && relation.behind === 0 && !force) {
+      return saveCycleResult(reg, { state: 'idle', lastPollAt: nowIso(), lastError: null }, env);
+    }
+    claim = withPhase('lock', () => claimDibs(reg, env));
     let committed = null;
     if (dirty) {
-      committed = commitDirtyState(reg, reason, env);
+      committed = withPhase('commit', () => commitDirtyState(reg, reason, env));
     }
     let afterCommitRelation = aheadBehind(reg.rootRealpath);
     let rebase = { rebased: false, conflictsResolved: 0 };
     if (afterCommitRelation.known && (afterCommitRelation.behind > 0 || committed?.committed)) {
-      rebase = pullRebaseWithLlm(reg);
+      rebase = withPhase('rebase', () => pullRebaseWithLlm(reg));
       afterCommitRelation = aheadBehind(reg.rootRealpath);
     }
     const cyclePaths = committed?.committed ? committed.paths : aheadChangedPaths(reg.rootRealpath);
-    const verificationResult = verifyWithRepairs(reg, cyclePaths, reason, env);
+    const verificationResult = withPhase('verification', () => verifyWithRepairs(reg, cyclePaths, reason, env));
     const verification = verificationResult.verification;
     if (verificationResult.repaired) {
       afterCommitRelation = aheadBehind(reg.rootRealpath);
     }
     if (afterCommitRelation.known && (afterCommitRelation.ahead > 0 || committed?.committed)) {
-      pushCurrentBranch(reg.rootRealpath, env);
+      withPhase('push', () => pushCurrentBranch(reg.rootRealpath, env));
     }
+    const completedAt = nowIso();
     return saveCycleResult(reg, {
       state: 'synced',
-      lastCycleAt: nowIso(),
-      lastPollAt: nowIso(),
+      lastCycleAt: completedAt,
+      lastPollAt: completedAt,
+      lastSuccessfulSyncAt: completedAt,
       lastSeenDirtyAt: null,
       lastError: null,
+      lastWarning: committed?.warning ? errorRecord(committed.warning, completedAt) : null,
       lastResult: {
         reason,
         committed: Boolean(committed?.committed),
@@ -916,12 +1001,9 @@ export async function runCycle(registration, { reason = 'daemon', force = false,
       state: 'error',
       lastCycleAt: at,
       lastPollAt: at,
+      lastSuccessfulSyncAt: reg.lastSuccessfulSyncAt || (!reg.lastError && reg.lastResult ? reg.lastCycleAt : null),
       lastSeenDirtyAt: stillDirty ? reg.lastSeenDirtyAt : null,
-      lastError: {
-        at,
-        message: err.message,
-        detail: err.detail || null,
-      },
+      lastError: errorRecord(err, at),
     }, env, err);
   } finally {
     if (claim) releaseDibs(reg, claim, env);
@@ -1013,7 +1095,9 @@ async function commandInstall(args, env = process.env) {
     lastSeenDirtyAt: null,
     lastCycleAt: null,
     lastPollAt: null,
+    lastSuccessfulSyncAt: null,
     lastError: null,
+    lastWarning: null,
     createdAt: nowIso(),
   };
   const registrationDibsBin = registrationDibsBinForInstall(dibsBin);
@@ -1059,6 +1143,72 @@ function commandDoctor(args, env = process.env) {
   emit({ ...preflight, dibsBin, llmProbe }, parsed.values.json);
 }
 
+function pendingChanges(root) {
+  const staged = changedPaths(root, true);
+  const unstagedRaw = gitOut(root, ['diff', '--name-only', '-z']);
+  const unstaged = unstagedRaw ? unstagedRaw.split('\0').filter(Boolean) : [];
+  const untrackedRaw = gitOut(root, ['ls-files', '--others', '--exclude-standard', '-z']);
+  const untracked = untrackedRaw ? untrackedRaw.split('\0').filter(Boolean) : [];
+  const paths = [...new Set([...staged, ...unstaged, ...untracked])].sort();
+  const relation = aheadBehind(root);
+  return {
+    uncommitted: {
+      count: paths.length,
+      paths,
+      staged: [...new Set(staged)].sort(),
+      unstaged: [...new Set(unstaged)].sort(),
+      untracked: [...new Set(untracked)].sort(),
+    },
+    unpushed: {
+      commits: relation.known ? relation.ahead : 0,
+      paths: relation.known ? aheadChangedPaths(root).sort() : [],
+    },
+  };
+}
+
+function structuredStatus(reg) {
+  const root = reg.rootRealpath;
+  try {
+    const relation = aheadBehind(root);
+    const pending = pendingChanges(root);
+    const failure = reg.lastError || reg.lastWarning || null;
+    let state = 'synced';
+    if (reg.enabled === false) state = 'disabled';
+    else if (reg.pausedUntil && Date.parse(reg.pausedUntil) > Date.now()) state = 'paused';
+    else if (reg.lastError) state = 'blocked';
+    else if (reg.lastWarning) state = 'degraded';
+    else if (pending.uncommitted.count > 0 || pending.unpushed.commits > 0) state = 'pending';
+    return {
+      key: reg.key,
+      root,
+      managed: true,
+      enabled: reg.enabled !== false,
+      state,
+      branch: branchName(root),
+      upstream: optionalUpstreamName(root),
+      ahead: relation.known ? relation.ahead : null,
+      behind: relation.known ? relation.behind : null,
+      pausedUntil: reg.pausedUntil || null,
+      pauseReason: reg.pauseReason || null,
+      lastCycleAt: reg.lastCycleAt || null,
+      lastPollAt: reg.lastPollAt || null,
+      lastSuccessfulSyncAt: reg.lastSuccessfulSyncAt || null,
+      failure,
+      pending,
+    };
+  } catch (err) {
+    return {
+      key: reg.key,
+      root,
+      managed: true,
+      enabled: reg.enabled !== false,
+      state: 'blocked',
+      failure: errorRecord(Object.assign(err, { phase: err.phase || 'status' })),
+      pending: null,
+    };
+  }
+}
+
 function commandStatus(args, env = process.env) {
   const parsed = parseArgs({
     args,
@@ -1067,44 +1217,39 @@ function commandStatus(args, env = process.env) {
       json: { type: 'boolean', default: false },
     },
   });
-  const regs = parsed.positionals[0]
-    ? [registrationForDir(parsed.positionals[0], env)]
-    : loadRegistrations(env).filter((reg) => !reg.unreadable);
-  const statuses = regs.map((reg) => {
-    let live = {};
-    try {
-      live = {
-        branch: branchName(reg.rootRealpath),
-	upstream: optionalUpstreamName(reg.rootRealpath),
-        dirty: isDirty(reg.rootRealpath),
-        relation: aheadBehind(reg.rootRealpath),
-      };
-    } catch (err) {
-      live = { error: err.message };
+  let regs;
+  if (parsed.positionals[0]) {
+    const root = resolveGitRoot(parsed.positionals[0], env);
+    const path = registrationPathForRoot(root, env);
+    if (!existsSync(path)) {
+      const status = { protocol: 'vaultsync.status.v1', vaults: [{ root, managed: false, enabled: false, state: 'unmanaged', failure: null, pending: null }] };
+      return emit(parsed.values.json ? status : `${root}\n  auto-sync: unmanaged`, parsed.values.json);
     }
-    return {
-      key: reg.key,
-      root: reg.rootRealpath,
-      enabled: reg.enabled,
-      pausedUntil: reg.pausedUntil,
-      pauseReason: reg.pauseReason,
-      lastCycleAt: reg.lastCycleAt,
-      lastPollAt: reg.lastPollAt,
-      lastError: reg.lastError,
-      live,
-    };
-  });
-  if (parsed.values.json) return emit(statuses, true);
+    regs = [readJsonFile(path)];
+  } else {
+    regs = loadRegistrations(env).filter((reg) => !reg.unreadable);
+  }
+  const statuses = regs.map(structuredStatus);
+  const contract = { protocol: 'vaultsync.status.v1', vaults: statuses };
+  if (parsed.values.json) return emit(contract, true);
   if (statuses.length === 0) return emit('No vaultsync registrations found.');
   const lines = [];
   for (const status of statuses) {
     lines.push(status.root);
-    lines.push(`  branch: ${status.live.branch || '(unknown)'}`);
-    lines.push(`  upstream: ${status.live.upstream || '(unknown)'}`);
-    lines.push(`  dirty: ${status.live.dirty === true ? 'yes' : 'no'}`);
-    if (status.live.relation?.known) lines.push(`  ahead/behind: ${status.live.relation.ahead}/${status.live.relation.behind}`);
+    lines.push(`  auto-sync: ${status.state}`);
+    lines.push(`  branch: ${status.branch || '(unknown)'}`);
+    lines.push(`  upstream: ${status.upstream || '(none)'}`);
+    if (status.ahead != null) lines.push(`  ahead/behind: ${status.ahead}/${status.behind}`);
     if (status.pausedUntil) lines.push(`  paused until: ${status.pausedUntil}`);
-    if (status.lastError) lines.push(`  last error: ${status.lastError.message}`);
+    if (status.lastSuccessfulSyncAt) lines.push(`  last successful sync: ${status.lastSuccessfulSyncAt}`);
+    if (status.failure) {
+      lines.push(`  blocked during ${status.failure.phase}: ${status.failure.message}`);
+      for (const secondary of status.failure.secondary || []) lines.push(`  secondary ${secondary.phase} failure: ${secondary.message}`);
+      if (status.failure.recovery) lines.push(`  recovery: ${status.failure.recovery}`);
+    }
+    if (status.pending) {
+      lines.push(`  local changes: ${status.pending.uncommitted.count} uncommitted (${status.pending.uncommitted.staged.length} staged), ${status.pending.unpushed.commits} unpushed commits`);
+    }
   }
   emit(lines.join('\n'));
 }
@@ -1180,6 +1325,7 @@ export async function daemonTick(env = process.env) {
   const registrations = loadRegistrations(env).filter((reg) => !reg.unreadable && reg.enabled !== false);
   const results = [];
   for (const reg of registrations) {
+    let cycleAttempted = false;
     try {
       const dirty = isDirty(reg.rootRealpath);
       const now = Date.now();
@@ -1191,21 +1337,28 @@ export async function daemonTick(env = process.env) {
       }
       const debounceMs = (reg.debounceSeconds || DEFAULT_DEBOUNCE_SECONDS) * 1000;
       if (dirty && lastSeenDirtyAt && now - lastSeenDirtyAt >= debounceMs) {
+	cycleAttempted = true;
         results.push(await runCycle(reg, { reason: 'debounce', force: true, env }));
         continue;
       }
       const lastPollAt = reg.lastPollAt ? Date.parse(reg.lastPollAt) : 0;
       const pollMs = (reg.idlePollSeconds || DEFAULT_IDLE_POLL_SECONDS) * 1000;
       if (!dirty && now - lastPollAt >= pollMs) {
+	cycleAttempted = true;
         results.push(await runCycle(reg, { reason: 'poll', force: false, env }));
         continue;
       }
       results.push({ root: reg.rootRealpath, state: dirty ? 'debouncing' : 'waiting' });
     } catch (err) {
-      const saved = saveRegistration({
-        ...reg,
-        lastError: { at: nowIso(), message: err.message, detail: err.detail || null },
-      }, env);
+      let saved = null;
+      if (cycleAttempted) {
+	const latest = readJsonFile(registrationPathForKey(reg.key, env));
+	if (latest.lastError?.phase) saved = latest;
+      }
+      if (!saved) {
+	if (!err.phase) err.phase = 'daemon';
+	saved = saveRegistration({ ...reg, lastError: errorRecord(err) }, env);
+      }
       results.push({ root: reg.rootRealpath, state: 'error', registration: saved, error: err.message });
     }
   }

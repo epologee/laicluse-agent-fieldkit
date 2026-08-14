@@ -2,6 +2,13 @@
 
 The post-update broadcast shows the topmost section once per machine whenever the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.10]
+
+### Fixed
+
+- **Commit-message provider failures remain the primary sync diagnosis.** Structured status now preserves safely redacted generator stderr, secondary commit failures, the last successful sync, staged and unpushed work, and a reliable recovery action; staged changes retry without Git repair.
+- **Fallback commit reasoning is specific to each staged change set.** Consecutive syncs no longer reuse a fixed WHY when commit-message generation is unavailable.
+
 ## [v2.0.9]
 
 ### Fixed
