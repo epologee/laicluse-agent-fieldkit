@@ -47,6 +47,20 @@ pre_bash_payload() {
   [ -z "$output" ]
 }
 
+@test "plugin mutation guard resolves Codex rollout transcripts by session id" {
+  session_id="01a0000d-d47f-7092-8d5e-188da6b8ba23"
+  transcript_dir="$BATS_TEST_TMPDIR/home/.codex/sessions/2026/08/14"
+  mkdir -p "$transcript_dir"
+  transcript="$transcript_dir/rollout-2026-08-14T13-35-01-$session_id.jsonl"
+  jq -cn '{type:"response_item", payload:{type:"message", role:"user", content:[{type:"input_text", text:"Update the Claude plugins now"}]}}' > "$transcript"
+  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" --arg session_id "$session_id" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:$session_id, last_user_message:"Inspect plugin state only", tool_input:{command:"claude plugins update dibs@example"}}')"
+
+  run bash -c 'printf "%s" "$1" | HOME="$3" DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH" "$BATS_TEST_TMPDIR/home"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
 @test "plugin mutation guard blocks Claude plugin updates without current approval" {
   payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Finish the source change")"
 

@@ -69,7 +69,7 @@ dd_transcript() {
   local base found
   for base in "$HOME/.claude/projects" "$HOME/.codex/sessions"; do
     [ -d "$base" ] || continue
-    found=$(find "$base" -name "${sid}.jsonl" -type f 2>/dev/null | head -1)
+    found=$(find "$base" -name "*${sid}.jsonl" -type f 2>/dev/null | head -1)
     if [ -n "$found" ]; then
       echo "$found"
       return 0
