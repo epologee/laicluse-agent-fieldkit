@@ -94,7 +94,7 @@
 		"claudeOnlyPackages": 1,
 		"changelogEntries": 22,
 		"skillEntries": 84,
-		"hookFiles": 56
+		"hookFiles": 57
 	},
 	"install": {
 		"claude": [
@@ -165,9 +165,9 @@
 			"commandCount": 2,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.38",
-				"type": "Changed",
-				"summary": "Persistent local marketplace installs now use only the primary checkout."
+				"version": "v2.0.39",
+				"type": "Fixed",
+				"summary": "Local Codex marketplace changes now finish by integration, not reinstallation."
 			}
 		},
 		{
@@ -194,7 +194,7 @@
 		},
 		{
 			"name": "dibs",
-			"version": "2.0.45",
+			"version": "2.0.46",
 			"category": "workflow",
 			"summary": "Keeps one coding agent in charge of a working directory at a time with a cross-platform occupancy lock.",
 			"support": [
@@ -209,9 +209,9 @@
 			"commandCount": 4,
 			"hookFileCount": 3,
 			"latestChange": {
-				"version": "v2.0.44",
+				"version": "v2.0.46",
 				"type": "Fixed",
-				"summary": "Occupancy follows each tool call's workdir."
+				"summary": "Codex no longer turns a missing execution workdir into conversation-CWD occupancy."
 			}
 		},
 		{
@@ -273,11 +273,11 @@
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that",
 			"skillCount": 3,
 			"commandCount": 2,
-			"hookFileCount": 27,
+			"hookFileCount": 28,
 			"latestChange": {
-				"version": "v2.0.40",
-				"type": "Fixed",
-				"summary": "Codex now gives a concrete restart instruction when a running session loses the guard hook runtime."
+				"version": "v2.0.41",
+				"type": "Added",
+				"summary": "Machine-wide plugin changes now require explicit operator approval."
 			}
 		},
 		{
@@ -644,29 +644,29 @@
 		},
 		{
 			"plugin": "dibs",
-			"packageVersion": "2.0.45",
+			"packageVersion": "2.0.46",
 			"detailPath": "agent-fieldkit/dibs/",
-			"version": "v2.0.44",
+			"version": "v2.0.46",
 			"type": "Fixed",
-			"summary": "Occupancy follows each tool call's workdir.",
+			"summary": "Codex no longer turns a missing execution workdir into conversation-CWD occupancy.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "dont-do-that",
 			"packageVersion": "2.0.40",
 			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.40",
-			"type": "Fixed",
-			"summary": "Codex now gives a concrete restart instruction when a running session loses the guard hook runtime.",
+			"version": "v2.0.41",
+			"type": "Added",
+			"summary": "Machine-wide plugin changes now require explicit operator approval.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
 			"plugin": "how-plugins-work",
 			"packageVersion": "2.0.38",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
-			"version": "v2.0.38",
-			"type": "Changed",
-			"summary": "Persistent local marketplace installs now use only the primary checkout.",
+			"version": "v2.0.39",
+			"type": "Fixed",
+			"summary": "Local Codex marketplace changes now finish by integration, not reinstallation.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{

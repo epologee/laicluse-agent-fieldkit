@@ -58,6 +58,7 @@ PreToolUse Bash denies invalid or risky command attempts before they run:
 - `no-worktree-deploy`: blocks `ansible-playbook` from a git worktree unless
   read-only flags are used. Claude, Codex.
 - `no-worktree-marketplace`: blocks any linked git worktree passed as a persistent Claude or Codex marketplace source, regardless of the command's current directory; primary checkouts and remote sources remain valid. Claude, Codex.
+- `plugin-mutation`: blocks machine-wide Claude and Codex plugin installs, updates, removals, enablement changes, and marketplace mutations unless the operator approved that exact action in the current turn. A local Codex marketplace that already points at the primary checkout needs only candidate integration. Claude, Codex.
 - `pr-discipline`: blocks weak `gh pr create` / `gh pr edit` titles and
   template or tooling-attribution bodies. Claude, Codex.
 - `dash-bash`: denies Bash commands containing a real em-dash or en-dash before any side effect occurs. Claude, Codex.

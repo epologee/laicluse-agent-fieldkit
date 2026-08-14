@@ -114,23 +114,20 @@ Important differences from Claude:
 - In the Codex app, plugin and skill invocation also has an `@` surface, and
   enabled skills may appear in the slash command list. Treat that as an app UI
   behavior, not as proof that Codex CLI accepts `/<skill>`.
-- `codex plugin list --json` is the authoritative local view for what Codex
-  has installed and enabled right now. The working tree may already contain a
-  newer generated manifest while the installed version still reports the old
-  value; refresh the install before treating the new skill text as live.
+- `codex plugin list --json` is the authoritative local view for what Codex has installed and enabled right now. Its `source.path` determines the delivery model. When a local marketplace points into the primary checkout, integrating the generated files updates the source used by future sessions; do not reinstall the plugin. A cache-backed or remote source needs a separately approved runtime refresh.
 
 ## Multi-agent runtime closeout
 
-A change to a plugin that ships to both Claude Code and Codex is not complete when only the host performing the edit sees it. Run this closeout after every such change, whether or not a push is planned; updating only the current agent runtime is incomplete.
+A change to a plugin that ships to both Claude Code and Codex needs verified adapters and a safe delivery path for each host. Source completion does not authorize mutation of shared machine runtime state.
 
-1. Build and check generated adapters before installing either runtime.
-2. Refresh Claude Code with `claude plugins update <plugin>@<marketplace>` when installed, or `claude plugins install <plugin>@<marketplace>` on first install.
-3. Refresh Codex with `codex plugin add <plugin>@<marketplace>`.
-4. Verify Claude's version and active `installPath` in `~/.claude/plugins/installed_plugins.json`, and verify Codex's version, enabled state, and active source with `codex plugin list --json`.
-5. Compare at least one changed runtime file in each active install with its source or generated artifact; matching manifest versions alone do not prove the payload arrived.
-6. Report that already-running Claude sessions need `/reload-plugins` or a restart and that already-running Codex sessions need a restart before they use the refreshed plugin.
+1. Build and check generated adapters.
+2. Inspect `codex plugin list --json`. When `marketplaceSource.sourceType` is `local` and `source.path` is inside the primary checkout, merge the candidate into that primary checkout. Do not run `codex plugin add`; future sessions already read the integrated source.
+3. Treat Claude cache updates, first installs, non-local Codex refreshes, enablement changes, removals, and marketplace changes as machine-wide mutations. They require explicit operator approval in the current turn, even when source implementation and integration were requested.
+4. After an approved mutation, verify Claude's version and active `installPath` in `~/.claude/plugins/installed_plugins.json`, or Codex's version, enabled state, and active source with `codex plugin list --json`.
+5. Compare at least one changed runtime file with its active source. Matching manifest versions alone do not prove the payload arrived.
+6. Existing sessions keep the hook and skill set they loaded. Never refresh a shared runtime merely to make the current source task feel complete.
 
-The only exception is a plugin that is intentionally single-agent. Prove that exception from the adapter check and the relevant marketplace catalog instead of inferring it from the agent running the current session. The `test-before-push` skill owns the complete command sequence; despite its historical name, use it for every multi-agent runtime closeout, not only when a push is imminent.
+The only adapter exception is a plugin that is intentionally single-agent. Prove that exception from the adapter check and the relevant marketplace catalog instead of inferring it from the agent running the current session. The `test-before-push` skill owns the complete verification and delivery decision.
 
 ## Skills CLI versus plugin installs
 
@@ -474,11 +471,11 @@ primary_checkout=$(dirname "$common_dir")
 test "$(git rev-parse --absolute-git-dir)" = "$common_dir" || printf 'candidate worktree; persistent install waits for integration into %s\n' "$primary_checkout"
 ```
 
-Claude Code: from the primary checkout, `claude plugins marketplace add "$primary_checkout"` re-points an existing marketplace alias to the canonical local clone, provided `.claude-plugin/marketplace.json` claims the same alias. After that, `claude plugins update <plugin>@<marketplace>` pulls from the primary checkout.
+Claude Code: a directory-backed marketplace still installs cache snapshots. Adding or re-pointing the marketplace and updating a plugin are machine-wide mutations and require explicit operator approval in the current turn.
 
-Codex: from the primary checkout, `codex plugin marketplace add "$primary_checkout"` registers the canonical local marketplace source, and `codex plugin add <plugin>@<marketplace>` installs from it. Codex reads `.agents/plugins/marketplace.json`, follows `plugins[].source.path`, and then reads the package `.codex-plugin/plugin.json`.
+Codex: a local marketplace registration reads `.agents/plugins/marketplace.json`, follows `plugins[].source.path`, and reports that direct path through `codex plugin list --json`. Once the path is inside the primary checkout, integrating generated changes is sufficient for future sessions. `codex plugin add` is only for a first install or an explicitly approved non-local refresh.
 
-Feature-worktree validation remains transient: run source tests, adapter build/check, and host-specific ephemeral checks there. Integrate the candidate first, update the primary checkout to the integrated SHA, then refresh persistent Claude and Codex installs from that primary checkout. Never repoint a marketplace to make unintegrated work loadable.
+Feature-worktree validation remains transient: run source tests, adapter build/check, and host-specific ephemeral checks there. Integrate the candidate into the primary checkout. Never repoint a marketplace or reinstall a plugin to make unintegrated work loadable.
 
 **Gotcha 1: cascade-uninstall on marketplace remove.** `claude plugin marketplace remove <alias>` does not only remove the marketplace configuration; it also uninstalls every plugin that was installed via that alias. Empirically tested in Claude Code 2.1.92: a marketplace with 18 installed plugins crashed to 0 after a single `remove`. Re-adding the marketplace does not automatically restore the plugins; each plugin must be explicitly re-invoked with `claude plugin install <plugin>@<alias>`. For a local dev session where you switch between path-based and remote-based marketplace with the same alias: this means a re-install of every plugin that comes from that alias, not just a config change.
 

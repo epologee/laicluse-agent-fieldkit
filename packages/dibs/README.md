@@ -139,7 +139,7 @@ plugin's own CLI, so there is no second lock path.
   `Write` / `MultiEdit` / `apply_patch`) and conservative shell mutations
   (`Bash`) such as `cp`, `mv`, `rm`, `touch`, mutating `git` subcommands,
   package installs, and shell redirection. Read-only shell commands stay quiet.
-  Bash targets are resolved from shell structure and command semantics: heredoc and message bodies are ignored, redirects gate their output, Git mutations gate their `-C` / `--git-dir` context, copy-like commands distinguish sources from destinations, and `~` / environment-backed paths are expanded without evaluating the command. Relative targets use the tool call's own workdir when the host supplies one; the conversation cwd is only the fallback. It hard-denies (exit 2) when a *different*
+  Bash targets are resolved from shell structure and command semantics: heredoc and message bodies are ignored, redirects gate their output, Git mutations gate their `-C` / `--git-dir` context, copy-like commands distinguish sources from destinations, and `~` / environment-backed paths are expanded without evaluating the command. Relative targets use the tool call's own workdir. When Codex omits that workdir, Dibs refuses ambiguous relative or implicit mutation targets instead of locking the conversation cwd; explicit absolute targets remain available. It hard-denies (exit 2) when a *different*
   live session holds the target, reporting the holder and how to recover. The
   recovery text points the blocked agent at a separate git worktree on a new
   branch, so the safe next move is visible at the denial point.

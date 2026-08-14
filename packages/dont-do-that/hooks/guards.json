@@ -48,6 +48,12 @@
       "function": "guard_no_worktree_marketplace",
       "contract": "tool-call"
     },
+    "plugin-mutation": {
+      "lane": "pre-bash",
+      "order": 37,
+      "function": "guard_plugin_mutation",
+      "contract": "tool-call"
+    },
     "pr-discipline": {
       "lane": "pre-bash",
       "order": 40,

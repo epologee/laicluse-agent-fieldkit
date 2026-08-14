@@ -9,6 +9,7 @@
 #   dd_stop_active    - 0/1 based on stop_hook_active
 #   dd_session_id     - session id from input JSON
 #   dd_transcript     - transcript path, resolving session fallback
+#   dd_last_user_text - latest operator message from payload or transcript
 #   dd_state_file     - per-session guard state under LAICLUSE_HOME
 #   dd_assistant_text - last-turn assistant text, optional line-tracking
 #   dd_is_wip         - 0 if the assistant text contains 🚧
@@ -75,6 +76,41 @@ dd_transcript() {
     fi
   done
   return 1
+}
+
+dd_last_user_text() {
+  local input="$1" direct tr
+  direct=$(jq -r '.last_user_message // .user_message // empty' <<< "$input" 2>/dev/null)
+  if [ -n "$direct" ]; then
+    printf '%s\n' "$direct" | tail -c 2000
+    return 0
+  fi
+
+  tr=$(dd_transcript "$input") || return 1
+  [ -f "$tr" ] || return 1
+  tail -200 "$tr" \
+    | jq -s -r '
+def textify:
+if . == null then ""
+elif type == "string" then .
+elif type == "array" then
+map(
+if type == "string" then .
+elif type == "object" then (.text? // (.content? | textify) // "")
+else "" end
+) | join("\n")
+elif type == "object" then (.text? // (.content? | textify) // "")
+else "" end;
+[
+.[]
+| select(.type == "user" or .role == "user" or .message.role == "user")
+| select(((.message.content? // .content?) | type) != "array"
+    or (((.message.content? // .content?) | map(.type? // "")) | index("tool_result") | not))
+| (.message.content? // .content? // .text? // empty | textify)
+| select(length > 0)
+] | last // ""
+' 2>/dev/null \
+    | tail -c 2000
 }
 
 dd_state_file() {

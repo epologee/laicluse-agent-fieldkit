@@ -251,6 +251,69 @@ init_bash_target_repo() {
 	echo "$conversation_lock" | grep -q '"agent": "codex"'
 }
 
+@test "Codex refuses an ambiguous Bash mutation when its hook payload omits workdir" {
+	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
+	init_bash_target_repo "$conversation_repo"
+
+	unset DIBS_DESCRIPTION
+	export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs"
+	jq -nc --arg cwd "$conversation_repo" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:"git merge --no-ff feature"}}' > "$BATS_TEST_TMPDIR/in.json"
+
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+	local rc=$status message="$output"
+	run dibs check "$conversation_repo" --json
+
+	[ "$rc" -eq 2 ]
+	echo "$message" | grep -q "cannot determine this command's mutation target"
+	echo "$message" | grep -q 'do not administer dibs on the conversation cwd'
+	echo "$message" | grep -q 'git -C'
+	echo "$output" | grep -q '"state": "free"'
+}
+
+@test "Codex refuses an unresolved Bash target when its hook payload omits workdir" {
+	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
+	init_bash_target_repo "$conversation_repo"
+
+	unset DIBS_DESCRIPTION DIBS_MISSING_TARGET
+	export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs"
+	jq -nc --arg cwd "$conversation_repo" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:"touch \"$DIBS_MISSING_TARGET/result\""}}' > "$BATS_TEST_TMPDIR/in.json"
+
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+	local rc=$status message="$output"
+	run dibs check "$conversation_repo" --json
+
+	[ "$rc" -eq 2 ]
+	echo "$message" | grep -q "cannot determine this command's mutation target"
+	echo "$output" | grep -q '"state": "free"'
+}
+
+@test "Codex gates an explicit git target when its hook payload omits workdir" {
+	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
+	local command_repo="$BATS_TEST_TMPDIR/command-repo"
+	init_bash_target_repo "$conversation_repo"
+	init_bash_target_repo "$command_repo"
+
+	tail -f /dev/null >/dev/null 2>&1 & local other=$!
+	dibs claim "$conversation_repo" --pid "$other" --agent codex --session other-sess --description "other session work" >/dev/null
+	export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs"
+	jq -nc --arg cwd "$conversation_repo" --arg repo "$command_repo" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:("git -C " + $repo + " merge --no-ff feature")}}' > "$BATS_TEST_TMPDIR/in.json"
+
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+	local rc=$status
+	run dibs check "$command_repo" --json
+	local command_lock="$output"
+	run dibs check "$conversation_repo" --json
+	local conversation_lock="$output"
+	kill "$other" 2>/dev/null || true
+
+	[ "$rc" -eq 0 ]
+	echo "$command_lock" | grep -q '"pid": '$$
+	echo "$conversation_lock" | grep -q '"agent": "codex"'
+}
+
 @test "opt-in worktree requirement denies primary checkout mutation and allows linked worktree" {
 	local primary="$BATS_TEST_TMPDIR/primary"
 	local linked="$BATS_TEST_TMPDIR/linked"

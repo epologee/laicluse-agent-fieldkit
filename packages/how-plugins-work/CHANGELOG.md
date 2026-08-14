@@ -20,6 +20,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 The helper writes the sentinel only when stdout is non-empty, so a CHANGELOG
 without a `## [vX.Y.Z]` section stays silent on every update.
 
+## [v2.0.39]
+
+### Fixed
+
+- **Local Codex marketplace changes now finish by integration, not reinstallation.** The workflow inspects `source.path`, merges the verified candidate into the primary checkout, and requires explicit operator approval before any machine-wide Claude or Codex plugin mutation.
+
 ## [v2.0.38]
 
 ### Changed

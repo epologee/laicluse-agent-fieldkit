@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.46]
+
+### Fixed
+
+- **Codex no longer turns a missing execution workdir into conversation-CWD occupancy.** When Codex omits `workdir` from a mutating Bash hook payload, Dibs refuses any relative or implicit target without claiming a lock. Commands with explicit absolute targets, such as `git -C <repo> ...`, remain available.
+
 ## [v2.0.44]
 
 ### Fixed

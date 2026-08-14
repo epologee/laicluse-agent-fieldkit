@@ -22,6 +22,12 @@ Version numbers may therefore be non-contiguous. The helper writes the sentinel
 only when stdout is non-empty, so a CHANGELOG without a `## [vX.Y.Z]` section
 stays silent on every update.
 
+## [v2.0.41]
+
+### Added
+
+- **Machine-wide plugin changes now require explicit operator approval.** Local Codex marketplace development stays on the safe path: test the worktree, merge it into the primary checkout, and let new sessions read that source without reinstalling the plugin or invalidating live hook paths.
+
 ## [v2.0.40]
 
 ### Fixed

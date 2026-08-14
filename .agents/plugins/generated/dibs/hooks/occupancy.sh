@@ -1,5 +1,5 @@
 #!/bin/bash
-# allow-comment: load-bearing contract. dibs occupancy enforcement gates the write-output at PreToolUse: a file edit (Edit/Write/MultiEdit/apply_patch) always, and a Bash command that occ_bash_mutates classifies as writing. Write targets resolve from the tool call's own workdir when supplied, with the conversation cwd only as fallback. Several agents may read and think in the same directory; dibs only arbitrates who writes. A claim needs a work description the agent composes (from DIBS_DESCRIPTION); a write with no administered dibs is hard-denied telling the agent to run `dibs claim <dir> --description ...`, and a write into a directory a DIFFERENT live session holds is hard-denied with the holder. Read-only work passes untouched. A completed Stop handoff releases every lock held by the session; a question or the 🚧 marker keeps them for continuation, and SessionEnd remains the final fallback. No lock logic lives here; every verb shells out to this plugin's own dibs CLI, and the gate fails open on infra faults (missing dibs binary, unresolvable dir) so a broken lock never blocks. Opt out per session with DIBS_OCCUPANCY=off.
+# allow-comment: load-bearing contract. dibs occupancy enforcement gates the write-output at PreToolUse: a file edit (Edit/Write/MultiEdit/apply_patch) always, and a Bash command that occ_bash_mutates classifies as writing. Write targets resolve from the tool call's own workdir. When Codex omits that workdir, ambiguous Bash mutation targets are refused instead of locking the conversation cwd; explicit absolute targets remain available. Several agents may read and think in the same directory; dibs only arbitrates who writes. A claim needs a work description the agent composes (from DIBS_DESCRIPTION); a write with no administered dibs is hard-denied telling the agent to run `dibs claim <dir> --description ...`, and a write into a directory a DIFFERENT live session holds is hard-denied with the holder. Read-only work passes untouched. A completed Stop handoff releases every lock held by the session; a question or the 🚧 marker keeps them for continuation, and SessionEnd remains the final fallback. No lock logic lives here; every verb shells out to this plugin's own dibs CLI, and the gate fails open on infra faults (missing dibs binary, unresolvable dir) so a broken lock never blocks. Opt out per session with DIBS_OCCUPANCY=off.
 
 OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # allow-comment: load-bearing. Share one holder-pid walk with the undibs skill so claim and release agree on the recorded pid.
@@ -307,8 +307,32 @@ occ_block_no_dibs() {
   printf '[dibs/occupancy] %s has no dibs registered for you, so this write is refused. Administer one first: run '\''dibs claim %s --description "<one line: what you are doing here>"'\'' with a description you compose yourself, then retry.\n' "$dir" "$dir" >&2
 }
 
+occ_codex_bash_target_is_ambiguous() {
+  local input="$1" command cwd workdir parser targets
+  [ "$(occ_agent_label)" = "codex" ] || return 1
+  workdir="$(jq -r '.tool_input.workdir // .tool_input.cwd // empty' <<< "$input" 2>/dev/null)"
+  [ -z "$workdir" ] || return 1
+  command="$(occ_bash_command "$input")"
+  cwd="$(occ_cwd "$input")"
+  parser="$OCC_DIR/bin/bash-write-targets"
+  [ -n "$command" ] && [ -n "$cwd" ] && [ -f "$parser" ] || return 1
+  targets="$(occ_bash_write_targets "$command" "$cwd")"
+  [ -n "$targets" ] || return 1
+  printf '%s' "$command" | node "$parser" "$cwd" --require-explicit >/dev/null 2>&1
+  [ "$?" -eq 3 ]
+}
+
+occ_block_ambiguous_bash_target() {
+  local cwd="$1"
+  printf '[dibs/occupancy] Codex omitted the execution workdir, so Dibs cannot determine this command'\''s mutation target without treating the conversation cwd (%s) as the target. Dibs does not lock process or conversation CWDs. The command is refused; do not administer dibs on the conversation cwd. Make every mutation target explicit (for Git: '\''git -C "<repo>" ...'\'', otherwise use absolute target paths), then retry.\n' "$cwd" >&2
+}
+
 occ_gate() {
   local input="$1" out rc dir dirs
+  if [ "$(occ_tool "$input")" = "Bash" ] && occ_codex_bash_target_is_ambiguous "$input"; then
+    occ_block_ambiguous_bash_target "$(occ_cwd "$input")"
+    exit 2
+  fi
   dirs="$(occ_gate_dirs "$input")"
   if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then dirs="$(occ_tool_workdir "$input")"; fi
   [ -n "$dirs" ] || return 0

@@ -1,18 +1,18 @@
 ---
 name: test-before-push
 description: >-
-  Verify plugin candidates, then activate integrated changes from the primary checkout in Claude Code and Codex.
+  Verify plugin candidates and integrate them without automatically mutating shared agent runtimes.
 ---
 
 # Test before push
 
-One way, always. No choices, no options, no "option 1 or option 2". Run this procedure after every multi-agent marketplace plugin change before declaring it complete, whether or not a push is planned. A linked worktree may verify a candidate but may never become a persistent marketplace source.
+Run this procedure after every multi-agent marketplace plugin change before declaring the source change complete, whether or not a push is planned. A linked worktree may verify a candidate but may never become a persistent marketplace source. Plugin installs, updates, removals, enablement changes, and marketplace mutations affect every live coding session on the machine and are a separate operator-approved action.
 
 ## When to use
 
 - You are in a marketplace repo with `.claude-plugin/marketplace.json` in the root.
 - The repo has generated Codex adapters under `.agents/plugins/`.
-- You want the current plugin version loadable in another Claude Code or Codex session.
+- You want the current plugin source verified and safely integrated for Claude Code or Codex.
 - You are completing the change locally or preparing it for a later push.
 
 Do not use for user-level skills in `~/.claude/skills/` or `~/.codex/skills`;
@@ -50,15 +50,15 @@ git_dir=$(git rev-parse --absolute-git-dir)
 common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
 primary_checkout=$(dirname "$common_dir")
 if [ "$git_dir" != "$common_dir" ]; then
-  printf 'Candidate verified in linked worktree; integrate it before persistent runtime activation from %s.\n' "$primary_checkout"
+  printf 'Candidate verified in linked worktree; integrate it into %s.\n' "$primary_checkout"
 fi
 ```
 
-Never run either host's `marketplace add` with a linked-worktree path. Finish candidate verification there, integrate it through the repository flow, update the primary checkout to the integrated SHA, and run the install sections below from that primary checkout. This ordering keeps persistent global agent state stable across parallel sessions and worktree cleanup.
+Never run either host's `marketplace add` with a linked-worktree path. Finish candidate verification there and integrate it through the repository flow. For an already-registered local Codex marketplace, that merge is the activation path for future sessions because Codex reads the generated plugin directly from the primary checkout.
 
-## Claude Code install
+## Detect the Codex source mode
 
-Run:
+From the primary checkout, inspect the existing installation without changing it:
 
 ```bash
 common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
@@ -66,48 +66,37 @@ primary_checkout=$(dirname "$common_dir")
 test "$(git rev-parse --absolute-git-dir)" = "$common_dir"
 alias=$(jq -r '.name' "$primary_checkout/.claude-plugin/marketplace.json")
 plugin=<plugin>
-claude plugins marketplace add "$primary_checkout"
-if claude plugins list | grep -Fq "$plugin@$alias"; then
-  claude plugins update "$plugin@$alias"
-else
-  claude plugins install "$plugin@$alias"
-fi
-jq -r --arg key "$plugin@$alias" '.plugins[$key][0].version' ~/.claude/plugins/installed_plugins.json
+codex_source=$(codex plugin list --json | jq -er --arg id "$plugin@$alias" '
+  .installed[]
+  | select(.pluginId == $id and .marketplaceSource.sourceType == "local")
+  | .source.path
+')
+case "$codex_source" in
+  "$primary_checkout"/*) printf 'local-codex-source=%s\n' "$codex_source" ;;
+  *) printf 'Codex is not reading this primary checkout directly.\n' >&2; exit 1 ;;
+esac
 ```
 
-The printed version must match `$primary_checkout/packages/<plugin>/.claude-plugin/plugin.json`.
+When this check passes, merge the candidate into that primary checkout. Do not run `codex plugin add`, `codex plugin marketplace add`, or `codex plugin marketplace upgrade`; those commands are redundant for this source mode and can invalidate hook paths held by every running Codex session. A fresh Codex session will read the integrated generated source.
 
-## Codex install
+## Shared runtime mutation gate
 
-Run:
+Claude Code normally executes an installed cache snapshot. Codex may also use a cache or need a first install instead of the direct local source above. Updating either host is machine-wide state, not a routine source-closeout step. Run the relevant command only after explicit operator approval in the current turn, naming the exact plugin and host:
 
 ```bash
-common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
-primary_checkout=$(dirname "$common_dir")
-test "$(git rev-parse --absolute-git-dir)" = "$common_dir"
-alias=$(jq -r '.name' "$primary_checkout/.agents/plugins/marketplace.json")
-plugin=<plugin>
-codex plugin marketplace add "$primary_checkout"
-codex plugin add "$plugin@$alias"
+claude plugins update "$plugin@$alias"  # or install on first use
+codex plugin add "$plugin@$alias"       # only for first install or a non-local source refresh
 ```
 
-Codex reads `.agents/plugins/marketplace.json`, follows
-`plugins[].source.path`, then reads the package `.codex-plugin/plugin.json`.
-If the add cannot find the plugin, run `circus plugins check .` before
-looking at any cache path. When the check passes and the plugin is absent from
-the Codex marketplace, treat that as intentional single-agent coverage rather
-than stale generated metadata.
+Do not infer approval from a request to fix, test, integrate, commit, or merge a plugin. Those actions do not authorize changing shared agent runtime state. Marketplace add, remove, or upgrade commands require the same explicit approval.
 
 ## Fresh session check
 
-Open a fresh session in any directory and invoke the plugin's slash command.
-For Claude Code, the current session can pick up the new cache with
-`/reload-plugins` after `claude plugins update`; reload alone never snapshots
-working-tree edits. For Codex, start a fresh session after `codex plugin add`.
+After a merge-only local Codex change, open a fresh session and invoke the changed capability. Existing sessions keep the hook and skill set loaded at session start. After an explicitly approved Claude update, the current session can pick up the new cache with `/reload-plugins`; reload alone never snapshots working-tree edits.
 
 ## Revert
 
-For local-only marketplaces, there is no remote revert. Leave the primary-checkout marketplace configured until the operator explicitly changes the install source.
+For local-only marketplaces, there is no remote revert. Leave the primary-checkout marketplace configured until the operator explicitly changes the install source. Do not run any command below without that approval.
 
 Only when the local clone is deliberately retired after its tested commit has been pushed, re-point the alias to the remote source without removing the marketplace:
 
@@ -124,6 +113,4 @@ remove cascade-uninstalls plugins under that alias.
 
 ## Contract
 
-This skill has no confirmation step. The only valid pause is a failed
-precondition or an explicit operator gate such as remote creation, push, or
-first public publication.
+Source verification and integration have no confirmation step. Machine-wide plugin or marketplace mutation always pauses for explicit operator approval in the current turn.

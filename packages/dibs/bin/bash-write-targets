@@ -6,6 +6,8 @@ const path = require("path");
 
 const command = fs.readFileSync(0, "utf8");
 const cwd = path.resolve(process.argv[2] || process.cwd());
+const requireExplicit = process.argv.includes("--require-explicit");
+let implicitTargetSeen = false;
 const environment = { ...process.env, PWD: cwd };
 
 function heredocOpeners(line) {
@@ -266,7 +268,11 @@ function expandWord(word, activeEnvironment) {
 
 function targetPath(expanded, base) {
 	if (!expanded || expanded.text === "-" || /^&?\d+$/.test(expanded.text)) return null;
-	if (expanded.unresolved) return base;
+	if (expanded.unresolved) {
+		implicitTargetSeen = true;
+		return base;
+	}
+	if (!path.isAbsolute(expanded.text)) implicitTargetSeen = true;
 	return path.resolve(base, expanded.text);
 }
 
@@ -309,6 +315,7 @@ function gitTargets(words, base) {
 	let gitCwd = base;
 	let gitDir = null;
 	let workTree = null;
+	let hasGitContext = false;
 	let index = 1;
 
 	while (index < words.length) {
@@ -319,6 +326,7 @@ function gitTargets(words, base) {
 		}
 		if (argument === "-C" && words[index + 1]) {
 			gitCwd = targetPath(words[index + 1], gitCwd) || gitCwd;
+			hasGitContext = true;
 			index += 2;
 			continue;
 		}
@@ -370,18 +378,24 @@ function gitTargets(words, base) {
 
 	if (subcommand === "init") {
 		const operands = parseOperands(subcommandArguments, new Set(["--separate-git-dir", "--object-format", "--ref-format", "-b", "--initial-branch"]));
-		return [targetPath(operands[0], gitCwd) || gitCwd];
+		const target = targetPath(operands[0], gitCwd);
+		if (!target) implicitTargetSeen = true;
+		return [target || gitCwd];
 	}
 	if (subcommand === "clone") {
 		const operands = parseOperands(subcommandArguments, new Set(["-o", "--origin", "-b", "--branch", "-u", "--upload-pack", "--reference", "--reference-if-able", "--separate-git-dir", "--depth", "--shallow-since", "--shallow-exclude", "--jobs", "-j", "--filter", "--server-option"]));
 		if (operands[1]) return [targetPath(operands[1], gitCwd)].filter(Boolean);
 		if (!operands[0]) return [];
 		const inferred = path.basename(operands[0].text.replace(/\/$/, "")).replace(/\.git$/, "");
+		implicitTargetSeen = true;
 		return [path.resolve(gitCwd, inferred)];
 	}
 
 	const contextTargets = [workTree, gitDir].filter(Boolean);
-	if (contextTargets.length === 0) contextTargets.push(gitCwd);
+	if (contextTargets.length === 0) {
+		if (!hasGitContext) implicitTargetSeen = true;
+		contextTargets.push(gitCwd);
+	}
 	if (subcommand !== "worktree") return contextTargets;
 	const action = subcommandArguments[0]?.text;
 	const operands = parseOperands(subcommandArguments.slice(1), new Set(["-b", "-B", "--detach", "--checkout", "--lock", "--reason"]));
@@ -434,11 +448,13 @@ function fileCommandTargets(commandName, argumentsList, base) {
 function packageManagerTargets(commandName, argumentsList, base) {
 	const actions = commandName === "bundle" ? new Set(["install", "add", "remove", "update"]) : new Set(["install", "add", "remove", "update", "link", "unlink"]);
 	let packageCwd = base;
+	let hasPackageContext = false;
 	let action = "";
 	for (let index = 0; index < argumentsList.length; index += 1) {
 		const argument = argumentsList[index];
 		if (["--prefix", "--cwd", "--dir"].includes(argument.text) && argumentsList[index + 1]) {
 			packageCwd = targetPath(argumentsList[index + 1], base) || packageCwd;
+			hasPackageContext = true;
 			index += 1;
 			continue;
 		}
@@ -447,6 +463,7 @@ function packageManagerTargets(commandName, argumentsList, base) {
 			break;
 		}
 	}
+	if (actions.has(action) && !hasPackageContext) implicitTargetSeen = true;
 	return actions.has(action) ? [packageCwd] : [];
 }
 
@@ -505,4 +522,5 @@ function extractTargets(source) {
 }
 
 const targets = extractTargets(command);
+if (requireExplicit && implicitTargetSeen) process.exit(3);
 if (targets.length > 0) process.stdout.write(targets.join("\n") + "\n");
