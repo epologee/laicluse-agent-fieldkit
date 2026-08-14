@@ -150,7 +150,7 @@
 	"plugins": [
 		{
 			"name": "how-plugins-work",
-			"version": "2.0.38",
+			"version": "2.0.40",
 			"category": "feedback",
 			"summary": "Explains plugin naming, runtime caches, adapter sync, and invocation rules when the marketplace shape gets confusing.",
 			"support": [
@@ -260,7 +260,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.40",
+			"version": "2.0.42",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -653,7 +653,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.40",
+			"packageVersion": "2.0.42",
 			"detailPath": "agent-fieldkit/dont-do-that/",
 			"version": "v2.0.41",
 			"type": "Added",
@@ -662,7 +662,7 @@
 		},
 		{
 			"plugin": "how-plugins-work",
-			"packageVersion": "2.0.38",
+			"packageVersion": "2.0.40",
 			"detailPath": "agent-fieldkit/how-plugins-work/",
 			"version": "v2.0.39",
 			"type": "Fixed",
