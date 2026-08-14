@@ -33,6 +33,13 @@ setup() {
   grep -q 'external' "$SKILL"
 }
 
+@test "deployment waits for an occupied or divergent canonical checkout" {
+  grep -q 'held by another session' "$SKILL"
+  grep -q 'committed-but-unintegrated work' "$SKILL"
+  grep -q 'stop deployment and wait' "$SKILL"
+  grep -q 'Do not detach' "$SKILL"
+}
+
 @test "review skills use the same configured local default contract" {
   local intervision_codex="$REPO_ROOT/packages/intervision/skills/second-opinion/SKILL.codex.md"
   local intervision_claude="$REPO_ROOT/packages/intervision/skills/second-opinion/SKILL.claude.md"
