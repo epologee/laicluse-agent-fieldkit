@@ -79,16 +79,10 @@ dd_transcript() {
 }
 
 dd_last_user_text() {
-  local input="$1" direct tr
-  direct=$(jq -r '.last_user_message // .user_message // empty' <<< "$input" 2>/dev/null)
-  if [ -n "$direct" ]; then
-    printf '%s\n' "$direct" | tail -c 2000
-    return 0
-  fi
-
-  tr=$(dd_transcript "$input") || return 1
-  [ -f "$tr" ] || return 1
-  tail -200 "$tr" \
+  local input="$1" direct tr transcript_user
+  tr=$(dd_transcript "$input" 2>/dev/null || true)
+  if [ -f "$tr" ]; then
+    transcript_user=$(tail -200 "$tr" \
     | jq -s -r '
 def textify:
 if . == null then ""
@@ -115,7 +109,16 @@ else "" end;
 | select(length > 0)
 ] | last // ""
 ' 2>/dev/null \
-    | tail -c 2000
+      | tail -c 2000)
+    if [ -n "$transcript_user" ]; then
+      printf '%s\n' "$transcript_user"
+      return 0
+    fi
+  fi
+
+  direct=$(jq -r '.last_user_message // .user_message // empty' <<< "$input" 2>/dev/null)
+  [ -n "$direct" ] || return 1
+  printf '%s\n' "$direct" | tail -c 2000
 }
 
 dd_state_file() {

@@ -36,6 +36,17 @@ pre_bash_payload() {
   [ -z "$output" ]
 }
 
+@test "current Codex transcript approval wins over stale payload text" {
+  transcript="$BATS_TEST_TMPDIR/codex.jsonl"
+  jq -cn '{type:"response_item", payload:{type:"message", role:"user", content:[{type:"input_text", text:"Update the Claude plugins now"}]}}' > "$transcript"
+  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" --arg transcript "$transcript" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, transcript_path:$transcript, last_user_message:"Inspect plugin state only", tool_input:{command:"claude plugins update dibs@example"}}')"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
 @test "plugin mutation guard blocks Claude plugin updates without current approval" {
   payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Finish the source change")"
 
