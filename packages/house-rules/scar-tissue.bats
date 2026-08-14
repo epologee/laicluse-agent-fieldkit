@@ -4,28 +4,38 @@ setup() {
   SKILL="$BATS_TEST_DIRNAME/skills/scar-tissue/SKILL.md"
 }
 
-migration_section() {
-  awk '
-    /^## Migration without residue$/ { active = 1; next }
+section() {
+  local heading="$1"
+  awk -v heading="$heading" '
+    $0 == "## " heading { active = 1; next }
     active && /^## / { exit }
     active { print }
   ' "$SKILL"
 }
 
-@test "migration guidance leaves one canonical implementation" {
-  run migration_section
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ canonical[[:space:]]+implementation ]]
-  [[ "$output" =~ plugin.*tombstone ]]
-  [[ "$output" =~ skill.*remove ]]
-}
-
-@test "migration design triggers the scar-tissue review" {
+@test "routing metadata names residue and handoff" {
   run ruby -ryaml -e '
     parts = File.read(ARGV.fetch(0)).split(/^---\s*$/)
-    puts YAML.safe_load(parts.fetch(1)).fetch("description")
+    metadata = YAML.safe_load(parts.fetch(1))
+    abort "wrong skill name" unless metadata.fetch("name") == "scar-tissue"
+    description = metadata.fetch("description")
+    abort "missing residue trigger" unless description.match?(/superseded residue/i)
+    abort "missing handoff trigger" unless description.match?(/before handoff/i)
   ' "$SKILL"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"migration"* ]]
-  [[ "$output" == *"compatibility"* ]]
+}
+
+@test "cleanup preserves current responsibilities and readers" {
+  run section "Catch it without creating ceremony"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ current[[:space:]]+failure[[:space:]]+mode ]] || return 1
+  [[ "$output" =~ named[[:space:]]+current[[:space:]]+consumer ]] || return 1
+  [[ "$output" =~ external[[:space:]]+reader ]] || return 1
+}
+
+@test "migration guidance leaves one canonical implementation" {
+  run section "Migration without residue"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ canonical[[:space:]]+implementation ]] || return 1
+  [[ "$output" =~ owning[[:space:]]+migration[[:space:]]+or[[:space:]]+deprecation[[:space:]]+protocol ]] || return 1
 }
