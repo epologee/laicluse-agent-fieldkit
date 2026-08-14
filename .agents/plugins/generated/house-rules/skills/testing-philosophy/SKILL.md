@@ -49,9 +49,9 @@ The general discipline, cutting the residue of iterative fixing from any deliver
 - **Test case hoarding**: every bug, incident, or review remark becomes a permanent test, with no pruning judgment, until the suite is too noisy to mean anything.
 - **Phrasing pinning**: asserting exact wording or structure of output where only the function is the requirement; the spec then breaks on every harmless rewording.
 
-The test of a scar is the wound: can you name the failure this spec still protects against, in terms of behavior the system has today? If yes, it is a guard. If the answer is "it went wrong here once", it is scar tissue. Bug reproductions are mandated by this philosophy and are not scar tissue by default; they become it when the code path they pinned no longer exists.
+The test of a scar is the wound: can you name the failure this spec still protects against, in terms of behavior the system has today? If yes, it is a guard. If the answer is "it went wrong here once", it is scar tissue. Bug reproductions are mandated by this philosophy and remain while they uniquely specify a current behavior or risk. A diagnostic stitch is different: it only proves that a superseded interpretation is no longer applied. During Refactor, remove it when positive coverage owns the behavior; otherwise rewrite it to guard the current requirement or risk. Turning GREEN does not make it a permanent spec.
 
-Pruning is deliberate and per-spec: name the spec, name why its wound is closed, remove it in its own commit. Mass-deleting tests remains a smell (see below); scar removal at scale is a sign you are dodging failures, not curating a suite.
+Pruning a spec that predates the current change is deliberate and per-spec: name the spec, name why its wound is closed, and remove it in its own commit. A diagnostic stitch introduced by the current change is resolved within the same TDD cycle, before that atomic change is committed. Mass-deleting tests remains a smell (see below); scar removal at scale is a sign you are dodging failures, not curating a suite.
 
 ## Do not spec absence (absence pinning)
 

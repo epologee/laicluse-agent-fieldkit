@@ -523,7 +523,7 @@
 		},
 		{
 			"name": "house-rules",
-			"version": "2.0.13",
+			"version": "2.0.14",
 			"category": "feedback",
 			"summary": "An opinionated baseline for software craft: naming, testing, and programming doctrine in the tradition of Beck, Martin, and Fowler.",
 			"support": [
@@ -538,9 +538,9 @@
 			"commandCount": 1,
 			"hookFileCount": 0,
 			"latestChange": {
-				"version": "v2.0.10",
+				"version": "v2.0.13",
 				"type": "Changed",
-				"summary": "Migration plans now converge on one implementation."
+				"summary": "Diagnostic test stitches are temporary."
 			}
 		},
 		{
@@ -707,11 +707,11 @@
 		},
 		{
 			"plugin": "house-rules",
-			"packageVersion": "2.0.13",
+			"packageVersion": "2.0.14",
 			"detailPath": "agent-fieldkit/house-rules/",
-			"version": "v2.0.10",
+			"version": "v2.0.13",
 			"type": "Changed",
-			"summary": "Migration plans now converge on one implementation.",
+			"summary": "Diagnostic test stitches are temporary.",
 			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{

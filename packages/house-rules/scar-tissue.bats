@@ -20,6 +20,7 @@ section() {
     abort "wrong skill name" unless metadata.fetch("name") == "scar-tissue"
     description = metadata.fetch("description")
     abort "missing residue trigger" unless description.match?(/superseded residue/i)
+    abort "missing diagnostic-test trigger" unless description.match?(/diagnostic test/i)
     abort "missing handoff trigger" unless description.match?(/before handoff/i)
   ' "$SKILL"
   [ "$status" -eq 0 ]

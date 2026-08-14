@@ -1,7 +1,7 @@
 ---
 name: scar-tissue
 description: >-
-  Use when corrective work leaves superseded residue in an artifact, or before handoff. Remove scar tissue while preserving anything with a current responsibility or reader.
+  Use when corrective work or a temporary diagnostic test leaves superseded residue, or before handoff. Remove residue while preserving current responsibilities.
 user-invocable: true
 ---
 
@@ -18,6 +18,14 @@ Repeated edits are normal. The trigger is not an edit count; it is an old and a 
 Working plans, task notes, unreleased docs, and uncommitted changes are edited in place. Append a correction only when an external reader depends on seeing the history, such as in published changelogs, released documentation, or pushed commits.
 
 Before handoff, ask what each suspicious layer serves today. Remove duplicated, superseded, or unowned material. Keep guards against a current failure mode, compatibility paths with a named current consumer, published history, and tests that assert live behavior. Repository-specific Git, test, migration, and task-tracking rules determine how the host performs that review.
+
+## Resolve stitches during Refactor
+
+A diagnostic stitch is a temporary test introduced to prove that a superseded interpretation has been removed, rather than to specify behavior the system owns now. That interpretation may come from a misunderstood prompt, a false assumption, or advancing understanding. A guard uniquely protects a current requirement or risk; a stitch only describes the interpretation being retired.
+
+Use the stitch for RED and GREEN. During Refactor, keep or rewrite it when it uniquely guards current behavior; remove it when positive coverage already owns the intended behavior. After removal or rewrite, temporarily revert the fix and confirm that the surviving specification goes RED, then restore the fix and confirm GREEN. A stitch introduced by the current change does not enter that change's commit.
+
+For example, a request to make a dental bridge printable might be misread as a request to configure a Windows network bridge. `does not modify Windows network adapters` can prove that interpretation is gone during repair; `queues the dental bridge model for the configured resin printer` is the specification that remains.
 
 ## Explicit invocation
 
