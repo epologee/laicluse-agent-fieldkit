@@ -264,10 +264,14 @@ init_bash_target_repo() {
 	local rc=$status message="$output"
 	run dibs check "$conversation_repo" --json
 
-	[ "$rc" -eq 2 ]
-	echo "$message" | grep -q "cannot determine this command's mutation target"
-	echo "$message" | grep -q 'do not administer dibs on the conversation cwd'
-	echo "$message" | grep -q 'git -C'
+	[ "$rc" -eq 0 ]
+	[ "$(echo "$message" | jq -r '.hookSpecificOutput.permissionDecision')" = "deny" ]
+	[ "$(echo "$message" | jq -r '.hookSpecificOutput.permissionDecisionReason')" = "Dibs lock required for changes." ]
+	local agent_details
+	agent_details="$(echo "$message" | jq -r '.hookSpecificOutput.additionalContext')"
+	echo "$agent_details" | grep -q "cannot determine this command's mutation target"
+	echo "$agent_details" | grep -q 'do not administer dibs on the conversation cwd'
+	echo "$agent_details" | grep -q 'git -C'
 	echo "$output" | grep -q '"state": "free"'
 }
 
@@ -284,8 +288,10 @@ init_bash_target_repo() {
 	local rc=$status message="$output"
 	run dibs check "$conversation_repo" --json
 
-	[ "$rc" -eq 2 ]
-	echo "$message" | grep -q "cannot determine this command's mutation target"
+	[ "$rc" -eq 0 ]
+	[ "$(echo "$message" | jq -r '.hookSpecificOutput.permissionDecision')" = "deny" ]
+	[ "$(echo "$message" | jq -r '.hookSpecificOutput.permissionDecisionReason')" = "Dibs lock required for changes." ]
+	echo "$message" | jq -r '.hookSpecificOutput.additionalContext' | grep -q "cannot determine this command's mutation target"
 	echo "$output" | grep -q '"state": "free"'
 }
 

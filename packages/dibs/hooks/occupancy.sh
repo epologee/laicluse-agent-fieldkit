@@ -323,15 +323,21 @@ occ_codex_bash_target_is_ambiguous() {
 }
 
 occ_block_ambiguous_bash_target() {
-  local cwd="$1"
-  printf '[dibs/occupancy] Codex omitted the execution workdir, so Dibs cannot determine this command'\''s mutation target without treating the conversation cwd (%s) as the target. Dibs does not lock process or conversation CWDs. The command is refused; do not administer dibs on the conversation cwd. Make every mutation target explicit (for Git: '\''git -C "<repo>" ...'\'', otherwise use absolute target paths), then retry.\n' "$cwd" >&2
+  local cwd="$1" details
+  details="$(printf '[dibs/occupancy] Codex omitted the execution workdir, so Dibs cannot determine this command'\''s mutation target without treating the conversation cwd (%s) as the target. Dibs does not lock process or conversation CWDs. The command is refused; do not administer dibs on the conversation cwd. Make every mutation target explicit (for Git: '\''git -C "<repo>" ...'\'', otherwise use absolute target paths), then retry.' "$cwd")"
+  if [ "$(occ_agent_label)" = "codex" ]; then
+    jq -nc --arg details "$details" '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "Dibs lock required for changes.", additionalContext: $details}}'
+    return 0
+  fi
+  printf '%s\n' "$details" >&2
+  return 2
 }
 
 occ_gate() {
   local input="$1" out rc dir dirs
   if [ "$(occ_tool "$input")" = "Bash" ] && occ_codex_bash_target_is_ambiguous "$input"; then
     occ_block_ambiguous_bash_target "$(occ_cwd "$input")"
-    exit 2
+    exit $?
   fi
   dirs="$(occ_gate_dirs "$input")"
   if [ -z "$dirs" ] && [ "$(occ_tool "$input")" != "Bash" ]; then dirs="$(occ_tool_workdir "$input")"; fi

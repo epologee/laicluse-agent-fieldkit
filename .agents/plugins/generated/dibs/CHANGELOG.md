@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.47]
+
+### Changed
+
+- **Codex keeps ambiguous-target denials compact.** The visible block says `Dibs lock required for changes.` while the recovery instructions remain available in the collapsed agent details.
+
 ## [v2.0.46]
 
 ### Fixed
