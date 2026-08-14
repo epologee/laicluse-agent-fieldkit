@@ -18,6 +18,12 @@ Categories:
 Patch-level fixes that change nothing the user can observe are intentionally
 omitted; the broadcast budget is for things the user benefits from knowing.
 
+## [v2.0.13]
+
+### Changed
+
+- **Diagnostic test stitches are temporary.** After RED and GREEN prove a repair, `scar-tissue` now resolves tests that only pin a superseded interpretation while preserving guards for current behavior and risk.
+
 ## [v2.0.10]
 
 ### Changed
