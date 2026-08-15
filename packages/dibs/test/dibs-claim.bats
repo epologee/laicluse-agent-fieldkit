@@ -7,6 +7,10 @@ setup() {
   DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
   NODE_BIN="$(command -v node)"
   export LAICLUSE_HOME="$BATS_TEST_TMPDIR/laicluse"
+  # allow-comment: load-bearing. An agent session may export DIBS_DESCRIPTION
+  # for its own claims; the CLI accepts it as a fallback, so the mandatory
+  # description contract below only holds when the ambient value is cleared.
+  unset DIBS_DESCRIPTION
   DIR="$BATS_TEST_TMPDIR/work"
   mkdir -p "$DIR"
 }
