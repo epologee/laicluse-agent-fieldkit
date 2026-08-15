@@ -12,8 +12,8 @@ default branch's `/docs` folder to serve it as a project page.
 Add the marketplace once:
 
 ```bash
-claude plugins marketplace add epologee/laicluse-agent-fieldkit
-codex plugin marketplace add epologee/laicluse-agent-fieldkit
+claude plugins marketplace add laicluse/agent-fieldkit
+codex plugin marketplace add laicluse/agent-fieldkit
 ```
 
 Then install the package you need:

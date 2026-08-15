@@ -6,7 +6,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { execFileSync } = require("child_process");
 
-const REPO_URL = "https://github.com/epologee/laicluse-agent-fieldkit";
+const REPO_URL = "https://github.com/laicluse/agent-fieldkit";
 const PAGES_URL = "https://laicluse.com";
 const FIELDKIT_PATH = "agent-fieldkit/";
 const FIELDKIT_URL = `${PAGES_URL}/${FIELDKIT_PATH}`;
@@ -791,11 +791,11 @@ function build(repoRoot) {
 		},
 		install: {
 			claude: [
-				"claude plugins marketplace add epologee/laicluse-agent-fieldkit",
+				"claude plugins marketplace add laicluse/agent-fieldkit",
 				...plugins.map((plugin) => `claude plugins install ${plugin.name}@laicluse-agent-fieldkit`),
 			],
 			codex: [
-				"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
+				"codex plugin marketplace add laicluse/agent-fieldkit",
 				...plugins
 					.filter((plugin) => plugin.codex)
 					.map((plugin) => `codex plugin add ${plugin.name}@laicluse-agent-fieldkit`),
@@ -968,7 +968,7 @@ ${readmeHtml}
 
 		<footer class="site-footer">
 			<span>l'Aicluse Agent Fieldkit</span>
-			<a href="https://github.com/epologee/laicluse-agent-fieldkit">github.com/epologee/laicluse-agent-fieldkit</a>
+			<a href="https://github.com/laicluse/agent-fieldkit">github.com/laicluse/agent-fieldkit</a>
 		</footer>
 	</body>
 </html>

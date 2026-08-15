@@ -1,12 +1,12 @@
 #!/usr/bin/env bats
 # repo-universal.bats
-# In block-mode the guard fires on ALL repos, not just the laicluse-agent-fieldkit
-# repo. The shadow log still gets an entry for every violation regardless of
+# In block-mode the guard fires on ALL repositories, not just agent-fieldkit. The
+# shadow log still gets an entry for every violation regardless of
 # origin URL.
 
 load helpers
 
-@test "non-laicluse-agent-fieldkit repo URL still triggers block-mode denial" {
+@test "non-agent-fieldkit repository URL still triggers block-mode denial" {
   export GIT_SHIM_ORIGIN_URL="https://github.com/someorg/otheproject.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 40 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
@@ -18,8 +18,8 @@ load helpers
   [ "$status" -eq 2 ]
 }
 
-@test "laicluse-agent-fieldkit repo URL also triggers block-mode denial" {
-  export GIT_SHIM_ORIGIN_URL="https://github.com/epologee/laicluse-agent-fieldkit.git"
+@test "agent-fieldkit repository URL also triggers block-mode denial" {
+  export GIT_SHIM_ORIGIN_URL="https://github.com/laicluse/agent-fieldkit.git"
   export GIT_SHIM_SHORTSTAT=" 3 files changed, 20 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb')"
   export GIT_SHIM_INTERPRET_TRAILERS_OUTPUT=""
@@ -29,7 +29,7 @@ load helpers
   [ "$status" -eq 2 ]
 }
 
-@test "shadow log gets an entry for a non-laicluse-agent-fieldkit violation" {
+@test "shadow log gets an entry for a non-agent-fieldkit violation" {
   export GIT_SHIM_ORIGIN_URL="https://github.com/acme/other-repo.git"
   export GIT_SHIM_SHORTSTAT=" 5 files changed, 40 insertions(+)"
   export GIT_SHIM_DIFF_NAMES="$(printf 'a.rb\nb.rb\nc.rb\nd.rb\ne.rb')"
