@@ -97,6 +97,24 @@ pre_bash_payload() {
   [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
 }
 
+@test "plugin mutation guard accepts a Dutch update instruction as approval" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "werk de plugins in de Claude runtime bij")"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "plugin mutation guard rejects a negated Dutch update instruction" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "je hoeft de plugins niet bij te werken, alleen inspecteren")"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
+}
+
 @test "plugin mutation guard does not block read-only plugin inspection" {
   payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin list --json" "Inspect the plugin state")"
 

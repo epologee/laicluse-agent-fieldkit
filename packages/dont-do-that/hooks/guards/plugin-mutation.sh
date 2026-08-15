@@ -11,7 +11,9 @@ dd_plugin_mutation_approved() {
   fi
 
   grep -qiE '\b(plugin|plugins|marketplace)\b' <<< "$user" || return 1
-  grep -qiE '\b(add|install|update|upgrade|remove|uninstall|enable|disable|activate|refresh|run|execute|approve|allow|voeg|installeer|verwijder|deinstalleer|activeer|deactiveer|ververs|draai|voer|doe|mag|akkoord|goedgekeurd)\b' <<< "$user"
+  grep -qiE '\b(add|install|update|upgrade|remove|uninstall|enable|disable|activate|refresh|run|execute|approve|allow|voeg|installeer|verwijder|deinstalleer|activeer|deactiveer|ververs|draai|voer|doe|mag|akkoord|goedgekeurd|bijwerken|bijgewerkt)\b' <<< "$user" && return 0
+  # allow-comment: load-bearing. Dutch splits its update verb ("werk de plugins bij"), and the word boundary on werk keeps the negated "bij te werken" out.
+  grep -qiE '\bwerk\b.{0,80}\bbij\b' <<< "$user"
 }
 
 guard_plugin_mutation() {
