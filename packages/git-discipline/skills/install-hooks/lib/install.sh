@@ -62,7 +62,8 @@ git_dir=$(cd "$git_dir" && pwd)
 # ---------------------------------------------------------------------------
 
 target_dir=""
-hooks_path_config=$(git config --get core.hooksPath 2>/dev/null || true)
+hooks_path_config=$(git config --local --get core.hooksPath 2>/dev/null || true)
+configure_local_hooks_path=0
 
 if [[ -n "$hooks_path_config" ]]; then
   # core.hooksPath can be relative to the repo root.
@@ -76,6 +77,11 @@ if [[ -n "$hooks_path_config" ]]; then
 else
   target_dir="$git_dir/hooks"
   hooks_dir_label="$git_dir/hooks"
+  inherited_hooks_path=$(git config --get core.hooksPath 2>/dev/null || true)
+  if [[ -n "$inherited_hooks_path" ]]; then
+    configure_local_hooks_path=1
+    hooks_dir_label="$git_dir/hooks (repo-local override of inherited core.hooksPath)"
+  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -144,6 +150,9 @@ ts_label=$(date +%Y%m%dT%H%M%S)
 
 if [[ "$dry_run" -eq 0 ]]; then
   mkdir -p "$target_dir"
+  if [[ "$configure_local_hooks_path" -eq 1 ]]; then
+    git config --local core.hooksPath "$target_dir"
+  fi
 fi
 
 # rendered_source <hook-name>
@@ -223,6 +232,9 @@ printf '  plugin path : %s\n' "$plugin_install_path"
 
 if [[ "$dry_run" -eq 1 ]]; then
   printf '  mode        : dry-run (no files written)\n'
+  if [[ "$configure_local_hooks_path" -eq 1 ]]; then
+    printf '  would-set   : repo-local core.hooksPath=%s\n' "$target_dir"
+  fi
 fi
 
 if [[ "${#installed[@]}" -gt 0 ]]; then

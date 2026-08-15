@@ -52,7 +52,7 @@
 					<p class="lede">Coordinates verified worktree candidates, atomic default-branch merges, and shared commit and push enforcement.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.53</span>
+						<span>2.0.54</span>
 						<span>13 skills</span>
 					</div>
 				</div>
@@ -60,7 +60,7 @@
 
 			<section class="detail-content-section">
 				<article class="readme-content">
-<p>Parallel-worktree Git flow plus commit and push enforcement for agent sessions and direct CLI use. Each mutating agent owns a linked feature worktree; the primary checkout is not an authoring checkout. Verified candidates become real two-parent default-branch merge commits through an atomic ref update, without a canonical checkout or a long-lived merge lock.</p>
+<p>Git guardrails and an optional parallel-worktree flow for agent sessions and direct CLI use. Canonical-checkout authoring remains the default. Use a linked worktree when concurrency, a live checkout, change risk, or another concrete constraint makes isolation safer; repositories that always need that flow can opt in with local <code>laicluse.requireWorktree=true</code>. Verified candidates become real two-parent default-branch merge commits through an atomic ref update, without a canonical checkout bottleneck or a long-lived merge lock.</p>
 <p>Use it when commits and pushes need the same discipline regardless of whether they come from Claude Code, Codex, or a direct terminal. The plugin gives the agent workflow skills for common git moves and installs hook backstops so message schema, wip commits, and push policy do not depend on memory.</p>
 <h2 id="what-it-does">What it does</h2>
 <p><code>git-discipline</code> has three parts:</p>
@@ -138,7 +138,7 @@ git-discipline merge --local|--remote</code></pre>
 <tr><th>Hook</th><th>Purpose</th></tr>
 </thead>
 <tbody>
-<tr><td><code>pre-commit</code></td><td>blocks commits in the primary checkout and on the default branch</td></tr>
+<tr><td><code>pre-commit</code></td><td>when local <code>laicluse.requireWorktree=true</code>, blocks commits in the primary checkout and on the default branch; otherwise it does not constrain authoring location</td></tr>
 <tr><td><code>commit-msg</code></td><td>runs <code>validate-body.sh</code> on every non-Claude commit</td></tr>
 <tr><td><code>prepare-commit-msg</code></td><td>pre-fills the editor with a layer-classified template</td></tr>
 <tr><td><code>post-commit</code></td><td>logs <code>--no-verify</code> usage to <code>${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log</code></td></tr>

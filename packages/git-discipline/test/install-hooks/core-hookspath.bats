@@ -29,3 +29,15 @@ load helpers
   [[ "$output" == *"core.hooksPath"* ]]
   [[ "$output" == *".githooks"* ]]
 }
+
+@test "an inherited global core.hooksPath is never an install target" {
+  local shared_hooks="$BATS_TEST_TMPDIR/global-hooks"
+  git config --global core.hooksPath "$shared_hooks"
+
+  run_install "$TEST_REPO"
+
+  [ "$status" -eq 0 ]
+  [ -f "$TEST_REPO/.git/hooks/commit-msg" ]
+  [ ! -e "$shared_hooks/commit-msg" ]
+  [ "$(git -C "$TEST_REPO" config --local --get core.hooksPath)" = "$TEST_REPO/.git/hooks" ]
+}

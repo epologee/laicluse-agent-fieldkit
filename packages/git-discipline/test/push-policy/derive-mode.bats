@@ -94,6 +94,7 @@ load helpers
   local fakebin="$BATS_TEST_TMPDIR/bin"
   mkdir -p "$repo" "$fakebin"
   git -C "$repo" init -b trunk >/dev/null
+  git -C "$repo" config core.hooksPath /dev/null
   git -C "$repo" config user.email test@example.invalid
   git -C "$repo" config user.name Test
   git -C "$repo" config codingAgent.git.pushAccess write

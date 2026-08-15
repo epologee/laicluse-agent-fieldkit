@@ -14,7 +14,7 @@ The hooks:
 
 | Hook | Purpose |
 |------|---------|
-| `pre-commit` | Blocks ordinary commits in the primary checkout and on the dynamically resolved default branch; authoring belongs in a linked feature worktree. |
+| `pre-commit` | When local `laicluse.requireWorktree=true`, blocks ordinary commits in the primary checkout and on the dynamically resolved default branch. Without that opt-in, canonical-checkout authoring remains available. |
 | `commit-msg` | Validates the commit message against `validate-body.sh` (the same lib as the PreToolUse guard). |
 | `prepare-commit-msg` | Pre-fills the editor window with a structured body template based on the staged diff. |
 | `post-commit` | Detects `--no-verify` usage and logs it to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log`. |
@@ -37,7 +37,7 @@ behavior never diverges.
 ## What the skill does
 
 1. Verifies that we are inside a git repo (`git rev-parse --git-dir`).
-2. Detects whether `core.hooksPath` is set, and picks the correct target directory (the common Git directory's `hooks/`, shared by every linked worktree, or the value of `core.hooksPath`).
+2. Detects whether this repository has a local `core.hooksPath`, and picks the correct target directory (the common Git directory's `hooks/`, shared by every linked worktree, or that repo-local path). An inherited global `core.hooksPath` is never an install target; the installer creates a repo-local override instead of modifying hooks used by unrelated repositories.
 3. Finds the plugin root from the `lib/install.sh` script's own location and
    bakes that absolute path into each hook (placeholder
    `__PLUGIN_INSTALL_PATH__` is replaced). Re-running after a plugin update or
@@ -54,6 +54,18 @@ behavior never diverges.
 - `--force`: makes a backup for each conflicting hook
   (`<hook>.bak.<timestamp>`) and then overwrites.
 - `--dry-run`: shows what would happen without writing anything.
+
+## Worktree policy
+
+Installing git-discipline does not make worktrees mandatory. The canonical checkout and current branch remain the normal authoring location. Use a linked worktree when isolation solves a concrete risk: the canonical checkout is live or consumed by another system, Dibs reports another coding agent there, the change is consequential enough to deserve an isolated candidate, or another concurrency or recovery concern makes shared authoring unsafe. This list is illustrative, not exhaustive.
+
+Repositories that should always use the verified candidate flow can opt in locally:
+
+```bash
+git config --local laicluse.requireWorktree true
+```
+
+Only that local setting activates the native `pre-commit` authoring block and default-branch topology check in `pre-push`. A global setting is deliberately ignored.
 
 ## How to use
 

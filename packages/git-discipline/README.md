@@ -1,6 +1,6 @@
 # git-discipline
 
-Parallel-worktree Git flow plus commit and push enforcement for agent sessions and direct CLI use. Each mutating agent owns a linked feature worktree; the primary checkout is not an authoring checkout. Verified candidates become real two-parent default-branch merge commits through an atomic ref update, without a canonical checkout or a long-lived merge lock.
+Git guardrails and an optional parallel-worktree flow for agent sessions and direct CLI use. Canonical-checkout authoring remains the default. Use a linked worktree when concurrency, a live checkout, change risk, or another concrete constraint makes isolation safer; repositories that always need that flow can opt in with local `laicluse.requireWorktree=true`. Verified candidates become real two-parent default-branch merge commits through an atomic ref update, without a canonical checkout bottleneck or a long-lived merge lock.
 
 Use it when commits and pushes need the same discipline regardless of whether
 they come from Claude Code, Codex, or a direct terminal. The plugin gives the
@@ -144,7 +144,7 @@ sourced from `skills/commit-discipline/git-hooks/`):
 
 | Hook | Purpose |
 |------|---------|
-| `pre-commit` | blocks commits in the primary checkout and on the default branch |
+| `pre-commit` | when local `laicluse.requireWorktree=true`, blocks commits in the primary checkout and on the default branch; otherwise it does not constrain authoring location |
 | `commit-msg` | runs `validate-body.sh` on every non-Claude commit |
 | `prepare-commit-msg` | pre-fills the editor with a layer-classified template |
 | `post-commit` | logs `--no-verify` usage to `${LAICLUSE_HOME:-~/.laicluse}/git-discipline/git-discipline-no-verify.log` |

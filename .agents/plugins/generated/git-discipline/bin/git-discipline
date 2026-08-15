@@ -71,6 +71,20 @@ function currentBranch() {
   return result.stdout;
 }
 
+function repositoryRequiresWorktree() {
+  const configured = runGit(
+    ['config', '--local', '--bool', '--get', 'laicluse.requireWorktree'],
+    { allowFailure: true },
+  );
+  if (configured.status === 1) return false;
+  if (configured.status !== 0) {
+    throw new GitDisciplineError(
+      `Cannot read local laicluse.requireWorktree: ${configured.stderr || `exit ${configured.status}`}`,
+    );
+  }
+  return configured.stdout === 'true';
+}
+
 function requireCleanWorktree() {
   if (gitOutput(['status', '--porcelain'])) {
     throw new GitDisciplineError('Working tree is dirty; commit the candidate before continuing.');
@@ -366,6 +380,8 @@ function mergeCommand(argumentsList) {
 }
 
 function guardCommitCommand() {
+  if (!repositoryRequiresWorktree()) return;
+
   const defaultName = defaultBranch();
   const branchName = currentBranch();
   if (branchName === defaultName) {
@@ -379,6 +395,8 @@ function guardCommitCommand() {
 }
 
 function guardPushCommand() {
+  if (!repositoryRequiresWorktree()) return;
+
   const defaultName = defaultBranch();
   const updates = readFileSync(0, 'utf8').split('\n').filter(Boolean);
   for (const update of updates) {
