@@ -50,7 +50,7 @@
     },
     "plugin-mutation": {
       "lane": "pre-bash",
-      "order": 37,
+      "order": 55,
       "function": "guard_plugin_mutation",
       "contract": "tool-call"
     },

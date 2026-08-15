@@ -9,12 +9,12 @@
 #   dd_stop_active    - 0/1 based on stop_hook_active
 #   dd_session_id     - session id from input JSON
 #   dd_transcript     - transcript path, resolving session fallback
-#   dd_last_user_text - latest operator message from payload or transcript
 #   dd_state_file     - per-session guard state under LAICLUSE_HOME
 #   dd_assistant_text - last-turn assistant text, optional line-tracking
 #   dd_is_wip         - 0 if the assistant text contains 🚧
 #   dd_emit_block     - Stop-style block JSON with mnemonic prefix
 #   dd_emit_deny      - PreToolUse stderr + exit 2, mnemonic prefix
+#   dd_emit_ask       - PreToolUse permissionDecision ask, deny where unsupported (allow-comment: keeps the public helper index complete)
 #   dd_emit_context   - PostToolUse additionalContext JSON, mnemonic prefix
 #
 # Every emit helper prefixes the message with "[dont-do-that/<mnemonic>] ".
@@ -76,49 +76,6 @@ dd_transcript() {
     fi
   done
   return 1
-}
-
-dd_last_user_text() {
-  local input="$1" direct tr transcript_user
-  tr=$(dd_transcript "$input" 2>/dev/null || true)
-  if [ -f "$tr" ]; then
-    transcript_user=$(tail -200 "$tr" \
-    | jq -s -r '
-def textify:
-if . == null then ""
-elif type == "string" then .
-elif type == "array" then
-map(
-if type == "string" then .
-elif type == "object" then (.text? // (.content? | textify) // "")
-else "" end
-) | join("\n")
-elif type == "object" then (.text? // (.content? | textify) // "")
-else "" end;
-[
-.[]
-| select(
-    .type == "user"
-    or .role == "user"
-    or .message.role == "user"
-    or (.type == "response_item" and .payload.type == "message" and .payload.role == "user")
-  )
-| select(((.message.content? // .content?) | type) != "array"
-    or (((.message.content? // .content?) | map(.type? // "")) | index("tool_result") | not))
-| (.payload.content? // .message.content? // .content? // .text? // empty | textify)
-| select(length > 0)
-] | last // ""
-' 2>/dev/null \
-      | tail -c 2000)
-    if [ -n "$transcript_user" ]; then
-      printf '%s\n' "$transcript_user"
-      return 0
-    fi
-  fi
-
-  direct=$(jq -r '.last_user_message // .user_message // empty' <<< "$input" 2>/dev/null)
-  [ -n "$direct" ] || return 1
-  printf '%s\n' "$direct" | tail -c 2000
 }
 
 dd_state_file() {
@@ -216,6 +173,17 @@ dd_emit_deny() {
   local msg="$2"
   printf '[dont-do-that/%s] %s\n' "$mnemonic" "$msg" >&2
   exit 2
+}
+
+# dd_emit_ask <mnemonic> <message>. allow-comment: load-bearing. PreToolUse hook that routes the decision to the operator through the host's own permission prompt, which shows them the exact pending command. Claude renders permissionDecision "ask"; an agent without an ask channel falls back to the hard deny carrying the same reason. Use this instead of inferring approval from the operator's wording: the host owns the question, the guard only decides which commands deserve one.
+dd_emit_ask() {
+  local mnemonic="$1"
+  local msg="$2"
+  if [ "$(dd_agent)" = "claude" ]; then
+    jq -cn --arg r "[dont-do-that/${mnemonic}] ${msg}" '{hookSpecificOutput:{hookEventName:"PreToolUse", permissionDecision:"ask", permissionDecisionReason:$r}}'
+    exit 0
+  fi
+  dd_emit_deny "$mnemonic" "$msg"
 }
 
 # dd_emit_context <mnemonic> <message>

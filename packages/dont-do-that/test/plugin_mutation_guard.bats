@@ -7,67 +7,40 @@ pre_bash_payload() {
     '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, last_user_message:$user, tool_input:{command:$cmd}}'
 }
 
-@test "plugin mutation guard blocks machine-wide Codex activation without current approval" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin add dibs@example" "Merge the plugin worktree")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
-}
-
-@test "plugin mutation guard allows an explicitly approved Codex activation" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin add dibs@example" "Run codex plugin add for dibs now")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "plugin mutation guard reads current approval from a Codex transcript" {
-  transcript="$BATS_TEST_TMPDIR/codex.jsonl"
-  jq -cn '{type:"response_item", payload:{type:"message", role:"user", content:[{type:"input_text", text:"Update the Claude plugins now"}]}}' > "$transcript"
-  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" --arg transcript "$transcript" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, transcript_path:$transcript, tool_input:{command:"claude plugins update dibs@example"}}')"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "current Codex transcript approval wins over stale payload text" {
-  transcript="$BATS_TEST_TMPDIR/codex.jsonl"
-  jq -cn '{type:"response_item", payload:{type:"message", role:"user", content:[{type:"input_text", text:"Update the Claude plugins now"}]}}' > "$transcript"
-  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" --arg transcript "$transcript" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, transcript_path:$transcript, last_user_message:"Inspect plugin state only", tool_input:{command:"claude plugins update dibs@example"}}')"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "plugin mutation guard resolves Codex rollout transcripts by session id" {
-  session_id="01a0000d-d47f-7092-8d5e-188da6b8ba23"
-  transcript_dir="$BATS_TEST_TMPDIR/home/.codex/sessions/2026/08/14"
-  mkdir -p "$transcript_dir"
-  transcript="$transcript_dir/rollout-2026-08-14T13-35-01-$session_id.jsonl"
-  jq -cn '{type:"response_item", payload:{type:"message", role:"user", content:[{type:"input_text", text:"Update the Claude plugins now"}]}}' > "$transcript"
-  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" --arg session_id "$session_id" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:$session_id, last_user_message:"Inspect plugin state only", tool_input:{command:"claude plugins update dibs@example"}}')"
-
-  run bash -c 'printf "%s" "$1" | HOME="$3" DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH" "$BATS_TEST_TMPDIR/home"
-
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "plugin mutation guard blocks Claude plugin updates without current approval" {
+@test "plugin mutation guard asks the operator through the Claude permission prompt" {
   payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Finish the source change")"
 
   run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
 
+  [ "$status" -eq 0 ]
+  [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
+  [ "$(jq -r '.hookSpecificOutput.hookEventName' <<< "$output")" = "PreToolUse" ]
+  [[ "$(jq -r '.hookSpecificOutput.permissionDecisionReason' <<< "$output")" == *"machine-wide plugin mutation"* ]]
+}
+
+@test "plugin mutation guard asks regardless of how the operator phrased the turn" {
+  phrasings=(
+    "werk de plugins in de Claude runtime bij"
+    "update the plugins now"
+    "raak de plugins niet aan"
+    ""
+  )
+
+  for phrasing in "${phrasings[@]}"; do
+    payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "$phrasing")"
+    run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+    [ "$status" -eq 0 ]
+    [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
+  done
+}
+
+@test "plugin mutation guard denies on an agent without an ask channel" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin add dibs@example" "Run codex plugin add for dibs now")"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
   [ "$status" -eq 2 ]
-  [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
+  [[ "$output" == *"machine-wide plugin mutation"* ]]
 }
 
 @test "plugin mutation guard covers marketplace, removal, and wrapped mutations" {
@@ -82,37 +55,10 @@ pre_bash_payload() {
 
   for command in "${commands[@]}"; do
     payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "$command" "Inspect the plugin state")"
-    run bash -c 'printf "%s" "$1" | DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-    [ "$status" -eq 2 ]
-    [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
+    run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+    [ "$status" -eq 0 ]
+    [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
   done
-}
-
-@test "plugin mutation guard rejects a negated plugin instruction as approval" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin add dibs@example" "Do not update or reinstall the plugin; merge the worktree")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
-}
-
-@test "plugin mutation guard accepts a Dutch update instruction as approval" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "werk de plugins in de Claude runtime bij")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "plugin mutation guard rejects a negated Dutch update instruction" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "je hoeft de plugins niet bij te werken, alleen inspecteren")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"machine-wide plugin mutation blocked"* ]]
 }
 
 @test "plugin mutation guard does not block read-only plugin inspection" {
