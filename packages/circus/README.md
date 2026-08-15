@@ -55,15 +55,7 @@ using the last committed `CIRCUS.md` as the ancestor. On a real conflict
 (`CLAUDE.md` and `AGENTS.md` changed differently), the running agent merges;
 circus itself does not.
 
-**Plugin level (`circus plugins`).** Applies the public `how-plugins-work`
-sync model to local marketplace repos. `SKILL.md` is shared source when
-behavior is agent-agnostic. `SKILL.claude.md` and `SKILL.codex.md` are
-agent-specific sources; they may exist as a pair for parity-by-variant, or
-singly when a multi-agent plugin has partial skill coverage. Claude manifests
-remain source; Codex manifests and `.agents/plugins/marketplace.json` are
-generated adapters. When suffix sources are present, circus materializes the
-runtime `SKILL.md` only for the agents that have source coverage. If Codex
-rejects a Claude-only frontmatter field, circus materializes a sanitized generated package under `.agents/plugins/generated/<plugin>/`. If Codex needs hooks, use `hooks/hooks.codex.json`; circus materializes it as runtime `hooks/hooks.json` in that generated package and keeps Claude-only hook metadata out of Codex's strict hook schema. Generated hook commands also detect a missing plugin runtime before launching their entrypoint. `PreToolUse` fails closed with a restart instruction; other lifecycle events report the same condition as a warning so an obsolete session cannot produce a stream of exit-127 failures. Circus owns that executable adapter logic; generated manifests and runtime packages remain output.
+**Plugin level (`circus plugins`).** Applies the public `how-plugins-work` sync model to local marketplace repos. `SKILL.md` is shared source when behavior is agent-agnostic. `SKILL.claude.md` and `SKILL.codex.md` are agent-specific sources; they may exist as a pair for parity-by-variant, or singly when a multi-agent plugin has partial skill coverage. Claude manifests remain source; Codex manifests and `.agents/plugins/marketplace.json` are generated adapters. When suffix sources are present, circus materializes the runtime `SKILL.md` only for the agents that have source coverage. If Codex rejects a Claude-only frontmatter field, circus materializes a sanitized generated package under `.agents/plugins/generated/<plugin>/`. If Codex needs hooks, use `hooks/hooks.codex.json`; circus materializes it as runtime `hooks/hooks.json` in that generated package and keeps Claude-only hook metadata out of Codex's strict hook schema. Generated Codex hook commands retain the first runtime they use for each plugin version under the host-provided `PLUGIN_DATA` directory. A later plugin update can remove the old Codex cache directory without invalidating running or resumed sessions; a session that had not used its hook yet may adopt the one unambiguous active sibling version. Direct plugin roots stay direct. Hook-bearing generated manifests carry a `+codex.hooks.1` cachebuster so a change to this adapter contract cannot be skipped as an unchanged source-package version. `PreToolUse` still fails closed when neither a retained nor active runtime exists, while other lifecycle events report that condition as a warning. Claude hooks keep using Claude Code's native version-retention window. Circus owns the executable adapter logic; generated manifests and runtime packages remain output.
 
 ## Usage
 

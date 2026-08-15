@@ -36,8 +36,8 @@ display_name() {
 }
 
 codex_plugin_payload() {
-  local manifest="$1" plugin="$2"
-  jq -n --slurpfile manifest "$manifest" --arg plugin "$plugin" --arg category "Productivity" '
+  local manifest="$1" plugin="$2" cachebuster="${3:-}"
+  jq -n --slurpfile manifest "$manifest" --arg plugin "$plugin" --arg category "Productivity" --arg cachebuster "$cachebuster" '
     def titlecase: split("-") | map(if length > 0 then (.[0:1] | ascii_upcase) + .[1:] else . end) | join(" ");
     def shortdesc: if length <= 120 then . else .[0:117] + "..." end;
     ($manifest[0]) as $m |
@@ -45,7 +45,7 @@ codex_plugin_payload() {
     (($m.author | if type == "object" then .name else . end) // "local") as $author |
     {
       name: $m.name,
-      version: $m.version,
+      version: (if $cachebuster == "" then $m.version else (($m.version | split("+")[0]) + "+codex." + $cachebuster) end),
       description: $desc,
       author: {
 	name: ($author | tostring)
@@ -119,7 +119,7 @@ validate_codex_hooks_config() {
 }
 
 codex_hook_command() {
-  local plugin="$1" event="$2" command="$3" marker prefix remainder runtime_path trailing message
+  local plugin="$1" event="$2" command="$3" marker prefix remainder runtime_path trailing message bootstrap
   marker='${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}'
   case "$command" in
     *"$marker"*) ;;
@@ -135,15 +135,16 @@ codex_hook_command() {
     *) die "plugin $plugin $event hook has an invalid plugin-root command: $command" ;;
   esac
 
-  message="$plugin $event hook runtime is unavailable; restart this Codex session."
+  bootstrap='loaded_root="${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"; plugin_data="${PLUGIN_DATA:-${CLAUDE_PLUGIN_DATA:-}}"; runtime_root="$loaded_root"; case "$loaded_root" in */plugins/cache/*/*/*) version="${loaded_root##*/}"; retained_base="$plugin_data/.runtime/hooks"; retained_link="$retained_base/by-version/$version"; if [ -x "$retained_link'"$runtime_path"'" ]; then runtime_root="$retained_link"; else source_root="$loaded_root"; if [ ! -x "$source_root'"$runtime_path"'" ]; then plugin_base="${loaded_root%/*}"; source_root=""; source_count=0; for candidate in "$plugin_base"/*; do if [ -d "$candidate" ] && [ -x "$candidate'"$runtime_path"'" ]; then source_root="$candidate"; source_count=$((source_count + 1)); fi; done; [ "$source_count" -eq 1 ] || source_root=""; fi; if [ -n "$source_root" ] && [ -n "$plugin_data" ]; then original_umask="$(umask)"; umask 077; mkdir -p "$retained_base/snapshots" "$retained_base/by-version"; if [ -L "$retained_link" ] && [ ! -e "$retained_link" ]; then rm -f "$retained_link"; fi; stage="$(mktemp -d "$retained_base/snapshots/$version.XXXXXX")" || stage=""; published=0; if [ -n "$stage" ] && cp -R "$source_root/." "$stage" && [ -x "$stage'"$runtime_path"'" ] && ln -s "../snapshots/${stage##*/}" "$retained_link" 2>/dev/null; then published=1; fi; if [ -x "$retained_link'"$runtime_path"'" ]; then runtime_root="$retained_link"; else runtime_root="$source_root"; fi; if [ -n "$stage" ] && [ "$published" -eq 0 ]; then rm -rf "$stage"; fi; umask "$original_umask"; else runtime_root="$source_root"; fi; fi ;; esac; hook_entry="$runtime_root'"$runtime_path"'"; export PLUGIN_ROOT="$runtime_root" CLAUDE_PLUGIN_ROOT="$runtime_root"; '
+  message="$plugin $event hook has no retained or active runtime; restart this Codex session."
   if [ "$event" = "PreToolUse" ]; then
-    printf 'plugin_root="${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"; hook_entry="$plugin_root%s"; if [ ! -x "$hook_entry" ]; then printf '\''%%s\\n'\'' '\''%s'\'' >&2; exit 2; fi; %s"$hook_entry"%s\n' \
-      "$runtime_path" "$message" "$prefix" "$trailing"
+    printf '%sif [ ! -x "$hook_entry" ]; then printf '\''%%s\\n'\'' '\''%s'\'' >&2; exit 2; fi; %s"$hook_entry"%s\n' \
+      "$bootstrap" "$message" "$prefix" "$trailing"
     return 0
   fi
 
-  printf 'plugin_root="${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}"; hook_entry="$plugin_root%s"; if [ ! -x "$hook_entry" ]; then printf '\''%%s\\n'\'' '\''{"systemMessage":"%s"}'\''; exit 0; fi; %s"$hook_entry"%s\n' \
-    "$runtime_path" "$message" "$prefix" "$trailing"
+  printf '%sif [ ! -x "$hook_entry" ]; then printf '\''%%s\\n'\'' '\''{"systemMessage":"%s"}'\''; exit 0; fi; %s"$hook_entry"%s\n' \
+    "$bootstrap" "$message" "$prefix" "$trailing"
 }
 
 write_codex_hooks_config() {
@@ -357,7 +358,11 @@ generate_into() {
       copy_codex_root_files "$plugin_dir" "$target_dir"
       copy_codex_agents "$plugin_dir" "$target_dir"
       copy_codex_hooks "$name" "$plugin_dir" "$target_dir"
-      codex_plugin_payload "$manifest" "$name" > "$target_dir/.codex-plugin/plugin.json"
+      if has_codex_hooks "$plugin_dir"; then
+		codex_plugin_payload "$manifest" "$name" "hooks.1" > "$target_dir/.codex-plugin/plugin.json"
+      else
+		codex_plugin_payload "$manifest" "$name" > "$target_dir/.codex-plugin/plugin.json"
+      fi
     else
       if [ -f "$plugin_dir/hooks/hooks.json" ]; then
 				validate_codex_hooks_config "$name" "$plugin_dir/hooks/hooks.json"

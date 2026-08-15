@@ -1,5 +1,11 @@
 # Circus changelog
 
+## [v2.0.4]
+
+### Fixed
+
+- **Codex plugin updates no longer break hooks in parallel sessions.** Generated hook commands retain an immutable runtime per plugin version in `PLUGIN_DATA`, and hook-bearing manifests carry a Codex-only adapter cachebuster, so Codex can deliver the wrapper and remove its old cache directory without invalidating hook registries already loaded by running or resumed sessions.
+
 ## [v2.0.3]
 
 ### Fixed
