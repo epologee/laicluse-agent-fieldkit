@@ -129,7 +129,7 @@ acquisition points are:
 
 - **Pre-mutation hook.** A coding agent claims the directory at its first
   mutating file edit (`Edit`/`Write`/`MultiEdit`/`apply_patch`) or a `Bash`
-  command it detects as writing, not when the session starts. Relative write targets resolve from the tool call's own workdir. When Codex omits that workdir, Dibs refuses ambiguous relative or implicit mutation targets instead of locking the conversation cwd; explicit absolute targets remain available. Occupancy only
+  command it detects as writing, not when the session starts. Relative write targets resolve from the tool call's own workdir. When Codex omits that workdir, an existing claim lets normal target analysis use the conversation directory as its fallback basis. Without that claim, Dibs refuses ambiguous relative or implicit mutations and never claims the conversation directory silently; explicit absolute targets remain available. Occupancy only
   gates the write-output: several agents may read, think, and run commands from
   the same directory, and dibs only arbitrates who may write. Because a claim needs a description, an
   agent that writes before administering a dibs is told to run

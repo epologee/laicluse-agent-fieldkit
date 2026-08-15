@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.49]
+
+### Fixed
+
+- **Claimed Codex repositories no longer require shell rewrites when hook payloads omit `workdir`.** An existing claim lets Dibs use the conversation directory as the fallback basis for normal target analysis; unclaimed ambiguous mutations remain blocked, and additional write targets still need their own claims.
+
 ## [v2.0.48]
 
 ### Fixed

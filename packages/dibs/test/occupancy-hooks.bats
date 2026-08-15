@@ -51,15 +51,25 @@ run_bash_hook() {
 	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
 }
 
-init_bash_target_repo() {
+init_test_repo() {
 	local repo="$1"
+	local branch="${2:-}"
 	mkdir -p "$repo"
-	git -C "$repo" init -q
+	if [ -n "$branch" ]; then
+		git -C "$repo" init -q -b "$branch"
+	else
+		git -C "$repo" init -q
+	fi
+	git -C "$repo" config core.hooksPath /dev/null
 	git -C "$repo" config user.email test@example.invalid
 	git -C "$repo" config user.name Test
 	printf 'root\n' > "$repo/README.md"
 	git -C "$repo" add README.md
 	git -C "$repo" commit -qm init
+}
+
+init_bash_target_repo() {
+	init_test_repo "$1"
 }
 
 @test "gate hard-denies a write when a live other-session agent holds the dir" {
@@ -154,13 +164,7 @@ init_bash_target_repo() {
 
 @test "gate does not record the actual default branch as work description" {
   local repo="$BATS_TEST_TMPDIR/default-branch-repo"
-  mkdir -p "$repo"
-  git -C "$repo" init -b trunk >/dev/null
-  git -C "$repo" config user.email test@example.invalid
-  git -C "$repo" config user.name Test
-  echo root > "$repo/README.md"
-  git -C "$repo" add README.md
-  git -C "$repo" commit -m init >/dev/null
+  init_test_repo "$repo" trunk
   git -C "$repo" remote add origin git@example.invalid:org/repo.git
   git -C "$repo" update-ref refs/remotes/origin/trunk HEAD
   git -C "$repo" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
@@ -175,13 +179,7 @@ init_bash_target_repo() {
 
 @test "gate treats current HEAD as default when origin HEAD is absent" {
   local repo="$BATS_TEST_TMPDIR/current-head-default-repo"
-  mkdir -p "$repo"
-  git -C "$repo" init -b main >/dev/null
-  git -C "$repo" config user.email test@example.invalid
-  git -C "$repo" config user.name Test
-  echo root > "$repo/README.md"
-  git -C "$repo" add README.md
-  git -C "$repo" commit -m init >/dev/null
+  init_test_repo "$repo" main
   git -C "$repo" checkout -b trunk >/dev/null
   git -C "$repo" commit --allow-empty -m "trunk default" >/dev/null
 
@@ -208,13 +206,7 @@ init_bash_target_repo() {
 
 @test "Bash mutating command gates an absolute target git worktree" {
 	local repo="$BATS_TEST_TMPDIR/repo"
-	mkdir -p "$repo"
-	git -C "$repo" init >/dev/null
-	git -C "$repo" config user.email test@example.invalid
-	git -C "$repo" config user.name Test
-	echo root > "$repo/README.md"
-	git -C "$repo" add README.md
-	git -C "$repo" commit -m init >/dev/null
+	init_test_repo "$repo"
 
 	tail -f /dev/null >/dev/null 2>&1 & local other=$!
 	dibs claim "$repo" --pid "$other" --agent codex --session other-sess >/dev/null
@@ -273,6 +265,24 @@ init_bash_target_repo() {
 	echo "$output" | grep -q '"state": "free"'
 }
 
+@test "Codex accepts an ambiguous Bash mutation after claiming the conversation repo" {
+	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
+	local command
+	init_bash_target_repo "$conversation_repo"
+
+	export DIBS_HOLDER_PID=$$ PLUGIN_ROOT="$REPO_ROOT/packages/dibs"
+	dibs claim "$conversation_repo" --pid $$ --agent codex --session sess-1 \
+		--owner sess-1 --description "commit the claimed repository" >/dev/null
+	command="$(printf 'git commit -m \"$(cat <<'\''EOF'\''\nSubject\n\nBody.\n\nSlice: docs-only\nEOF\n)\"')"
+	jq -nc --arg cwd "$conversation_repo" --arg command "$command" \
+		'{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, session_id:"sess-1", tool_input:{command:$command}}' > "$BATS_TEST_TMPDIR/in.json"
+
+	run "$HOOK" < "$BATS_TEST_TMPDIR/in.json"
+
+	[ "$status" -eq 0 ]
+	[ -z "$output" ]
+}
+
 @test "Codex refuses an unresolved Bash target when its hook payload omits workdir" {
 	local conversation_repo="$BATS_TEST_TMPDIR/conversation-repo"
 	init_bash_target_repo "$conversation_repo"
@@ -323,13 +333,7 @@ init_bash_target_repo() {
 @test "opt-in worktree requirement denies primary checkout mutation and allows linked worktree" {
 	local primary="$BATS_TEST_TMPDIR/primary"
 	local linked="$BATS_TEST_TMPDIR/linked"
-	mkdir -p "$primary"
-	git -C "$primary" init >/dev/null
-	git -C "$primary" config user.email test@example.invalid
-	git -C "$primary" config user.name Test
-	echo root > "$primary/README.md"
-	git -C "$primary" add README.md
-	git -C "$primary" commit -m init >/dev/null
+	init_test_repo "$primary"
 	git -C "$primary" config laicluse.requireWorktree true
 	git -C "$primary" worktree add -b linked "$linked" >/dev/null
 
@@ -390,13 +394,7 @@ init_bash_target_repo() {
 @test "apply_patch gates the target git worktree instead of an occupied parent cwd" {
   local parent="$BATS_TEST_TMPDIR/repo"
   local child="$parent/worktrees/child"
-  mkdir -p "$parent"
-  git -C "$parent" init >/dev/null
-  git -C "$parent" config user.email test@example.invalid
-  git -C "$parent" config user.name Test
-  echo root > "$parent/README.md"
-  git -C "$parent" add README.md
-  git -C "$parent" commit -m init >/dev/null
+  init_test_repo "$parent"
   git -C "$parent" worktree add -b child "$child" >/dev/null
 
   tail -f /dev/null >/dev/null 2>&1 & local other=$!
@@ -422,13 +420,7 @@ init_bash_target_repo() {
 @test "apply_patch gates a freeform raw patch string by its target git worktree" {
   local parent="$BATS_TEST_TMPDIR/repo"
   local child="$parent/worktrees/child"
-  mkdir -p "$parent"
-  git -C "$parent" init >/dev/null
-  git -C "$parent" config user.email test@example.invalid
-  git -C "$parent" config user.name Test
-  echo root > "$parent/README.md"
-  git -C "$parent" add README.md
-  git -C "$parent" commit -m init >/dev/null
+  init_test_repo "$parent"
   git -C "$parent" worktree add -b child "$child" >/dev/null
 
   tail -f /dev/null >/dev/null 2>&1 & local other=$!
@@ -687,13 +679,7 @@ PS
 
 @test "a read-only command that references another repo path does not claim it" {
   local other_repo="$BATS_TEST_TMPDIR/other"
-  mkdir -p "$other_repo"
-  git -C "$other_repo" init >/dev/null
-  git -C "$other_repo" config user.email test@example.invalid
-  git -C "$other_repo" config user.name Test
-  echo root > "$other_repo/README.md"
-  git -C "$other_repo" add README.md
-  git -C "$other_repo" commit -m init >/dev/null
+  init_test_repo "$other_repo"
 
   export DIBS_HOLDER_PID=$$
   run_bash_hook "grep -r needle $other_repo 2>/dev/null"
