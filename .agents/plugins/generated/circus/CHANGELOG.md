@@ -1,5 +1,11 @@
 # Circus changelog
 
+## [v2.0.5]
+
+### Improved
+
+- **Retained Codex hook runtimes now carry their actual source version and stronger regression coverage.** Concurrent first invocations converge on one complete snapshot, paths with spaces stay valid, both plugin-root variables point at the retained runtime, and direct roots plus ambiguous or missing recovery inputs keep their existing behavior.
+
 ## [v2.0.4]
 
 ### Fixed
