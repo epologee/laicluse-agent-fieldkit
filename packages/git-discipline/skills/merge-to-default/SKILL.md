@@ -71,6 +71,12 @@ The verification command must cover the relevant behavior at the exact candidate
 
 The executable creates a merge commit whose first parent is the verified default tip, whose second parent is the candidate, and whose tree equals the candidate tree. `--local` rejects repositories with remotes. It uses `git update-ref <ref> <new> <expected>` when the default is not checked out, or Git's `receive.denyCurrentBranch=updateInstead` path when a clean default worktree must remain coherent. `--remote` uses a normal non-force push. If another merge wins first, the compare-and-swap fails without changing the default ref. Rebase on the new tip, rerun the relevant verification, and retry until the candidate wins or a genuine gate is reached. Do not add a long-lived merge lock.
 
+## Deployment checkout contention means wait
+
+Before deployment, inspect the canonical deploy checkout's occupancy and Git state. If it is held by another session, dirty with unrelated changes, or contains committed-but-unintegrated work, stop deployment and wait for that owner to finish and release it. Report the occupied checkout and the work blocking deployment; do not turn this ordinary wait into a workaround.
+
+Do not detach, stash, reset, rebase, merge, publish unrelated work, or substitute the authoring worktree to get around that contention. Resume only the deployment step once the canonical checkout is available and can be updated to the exact merged SHA.
+
 Keep the source worktree and branch until merge and any required deployment are proven complete; cleanup belongs to `bonsai:prune`. Deployment is repository-specific and must use the exact merged SHA from a clean deploy checkout, never this authoring worktree.
 
 Report the candidate SHA, verified base SHA, merge SHA, target, race retries, and deployment state when deployment was part of the order.
