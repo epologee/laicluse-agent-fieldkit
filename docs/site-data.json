@@ -1,7 +1,7 @@
 {
 	"generatedBy": "bin/build-pages",
 	"source": "packages/*/.claude-plugin/plugin.json, packages/*/README.md, packages/*/CHANGELOG.md, .agents/plugins/marketplace.json",
-	"repository": "https://github.com/epologee/laicluse-agent-fieldkit",
+	"repository": "https://github.com/laicluse/agent-fieldkit",
 	"marketplace": {
 		"name": "laicluse-agent-fieldkit",
 		"displayName": "l'Aicluse Agent Fieldkit",
@@ -98,7 +98,7 @@
 	},
 	"install": {
 		"claude": [
-			"claude plugins marketplace add epologee/laicluse-agent-fieldkit",
+			"claude plugins marketplace add laicluse/agent-fieldkit",
 			"claude plugins install how-plugins-work@laicluse-agent-fieldkit",
 			"claude plugins install bonsai@laicluse-agent-fieldkit",
 			"claude plugins install dibs@laicluse-agent-fieldkit",
@@ -123,7 +123,7 @@
 			"claude plugins install circus@laicluse-agent-fieldkit"
 		],
 		"codex": [
-			"codex plugin marketplace add epologee/laicluse-agent-fieldkit",
+			"codex plugin marketplace add laicluse/agent-fieldkit",
 			"codex plugin add how-plugins-work@laicluse-agent-fieldkit",
 			"codex plugin add bonsai@laicluse-agent-fieldkit",
 			"codex plugin add dibs@laicluse-agent-fieldkit",
@@ -160,7 +160,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/how-plugins-work/",
 			"sourcePath": "packages/how-plugins-work",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/how-plugins-work",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/how-plugins-work",
 			"skillCount": 3,
 			"commandCount": 2,
 			"hookFileCount": 0,
@@ -182,7 +182,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/bonsai/",
 			"sourcePath": "packages/bonsai",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/bonsai",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/bonsai",
 			"skillCount": 3,
 			"commandCount": 2,
 			"hookFileCount": 0,
@@ -204,7 +204,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/dibs/",
 			"sourcePath": "packages/dibs",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dibs",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/dibs",
 			"skillCount": 2,
 			"commandCount": 4,
 			"hookFileCount": 3,
@@ -226,7 +226,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/self-improvement/",
 			"sourcePath": "packages/self-improvement",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/self-improvement",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/self-improvement",
 			"skillCount": 1,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -248,7 +248,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/git-discipline/",
 			"sourcePath": "packages/git-discipline",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/git-discipline",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/git-discipline",
 			"skillCount": 13,
 			"commandCount": 3,
 			"hookFileCount": 26,
@@ -270,7 +270,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/dont-do-that/",
 			"sourcePath": "packages/dont-do-that",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/dont-do-that",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/dont-do-that",
 			"skillCount": 3,
 			"commandCount": 2,
 			"hookFileCount": 28,
@@ -292,7 +292,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/eye-of-the-beholder/",
 			"sourcePath": "packages/eye-of-the-beholder",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/eye-of-the-beholder",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/eye-of-the-beholder",
 			"skillCount": 5,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -314,7 +314,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/intervision/",
 			"sourcePath": "packages/intervision",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/intervision",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/intervision",
 			"skillCount": 1,
 			"commandCount": 2,
 			"hookFileCount": 0,
@@ -336,7 +336,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/anger-management/",
 			"sourcePath": "packages/anger-management",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/anger-management",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/anger-management",
 			"skillCount": 15,
 			"commandCount": 7,
 			"hookFileCount": 0,
@@ -358,7 +358,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/drydry/",
 			"sourcePath": "packages/drydry",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/drydry",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/drydry",
 			"skillCount": 8,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -380,7 +380,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/pattern-memory/",
 			"sourcePath": "packages/pattern-memory",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/pattern-memory",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/pattern-memory",
 			"skillCount": 1,
 			"commandCount": 2,
 			"hookFileCount": 0,
@@ -402,7 +402,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/vaultsync/",
 			"sourcePath": "packages/vaultsync",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/vaultsync",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/vaultsync",
 			"skillCount": 1,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -424,7 +424,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/laicluse-agent-fieldkit/",
 			"sourcePath": "packages/laicluse-agent-fieldkit",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/laicluse-agent-fieldkit",
 			"skillCount": 1,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -445,7 +445,7 @@
 			"codex": false,
 			"detailPath": "agent-fieldkit/autonomous/",
 			"sourcePath": "packages/autonomous",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/autonomous",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/autonomous",
 			"skillCount": 3,
 			"commandCount": 2,
 			"hookFileCount": 0,
@@ -467,7 +467,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/clipboard/",
 			"sourcePath": "packages/clipboard",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/clipboard",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/clipboard",
 			"skillCount": 1,
 			"commandCount": 2,
 			"hookFileCount": 0,
@@ -489,7 +489,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/gurus/",
 			"sourcePath": "packages/gurus",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/gurus",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/gurus",
 			"skillCount": 4,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -511,7 +511,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/rover/",
 			"sourcePath": "packages/rover",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/rover",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/rover",
 			"skillCount": 8,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -533,7 +533,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/house-rules/",
 			"sourcePath": "packages/house-rules",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/house-rules",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/house-rules",
 			"skillCount": 4,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -555,7 +555,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/whywhy/",
 			"sourcePath": "packages/whywhy",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/whywhy",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/whywhy",
 			"skillCount": 1,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -577,7 +577,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/lifeline/",
 			"sourcePath": "packages/lifeline",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/lifeline",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/lifeline",
 			"skillCount": 3,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -599,7 +599,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/saysay/",
 			"sourcePath": "packages/saysay",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/saysay",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/saysay",
 			"skillCount": 1,
 			"commandCount": 3,
 			"hookFileCount": 0,
@@ -621,7 +621,7 @@
 			"codex": true,
 			"detailPath": "agent-fieldkit/circus/",
 			"sourcePath": "packages/circus",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/tree/main/packages/circus",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/circus",
 			"skillCount": 2,
 			"commandCount": 1,
 			"hookFileCount": 0,
@@ -640,7 +640,7 @@
 			"version": "v2.0.51",
 			"type": "Breaking",
 			"summary": "Public repositories no longer qualify for automatic trunk pushes just because one author appears in their history.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
 			"plugin": "dibs",
@@ -649,7 +649,7 @@
 			"version": "v2.0.48",
 			"type": "Fixed",
 			"summary": "Codex no longer exposes ambiguous-target diagnostics in the conversation.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/dibs/CHANGELOG.md"
 		},
 		{
 			"plugin": "dont-do-that",
@@ -658,7 +658,7 @@
 			"version": "v2.0.41",
 			"type": "Added",
 			"summary": "Machine-wide plugin changes now require explicit operator approval.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
 			"plugin": "how-plugins-work",
@@ -667,7 +667,7 @@
 			"version": "v2.0.39",
 			"type": "Fixed",
 			"summary": "Local Codex marketplace changes now finish by integration, not reinstallation.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/how-plugins-work/CHANGELOG.md"
 		},
 		{
 			"plugin": "bonsai",
@@ -676,7 +676,7 @@
 			"version": "v2.0.32",
 			"type": "Fixed",
 			"summary": "Local-only repositories use their configured default branch.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/bonsai/CHANGELOG.md"
 		},
 		{
 			"plugin": "rover",
@@ -685,7 +685,7 @@
 			"version": "v2.0.24",
 			"type": "Fixed",
 			"summary": "Pride review works without a remote.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/rover/CHANGELOG.md"
 		},
 		{
 			"plugin": "intervision",
@@ -694,7 +694,7 @@
 			"version": "v2.0.16",
 			"type": "Fixed",
 			"summary": "Codex now gives Claude enough time to finish peer reviews.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/intervision/CHANGELOG.md"
 		},
 		{
 			"plugin": "anger-management",
@@ -703,7 +703,7 @@
 			"version": "v2.0.15",
 			"type": "Changed",
 			"summary": "Codex-only background diagnosis resolves the cheap model dynamically.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/anger-management/CHANGELOG.md"
 		},
 		{
 			"plugin": "house-rules",
@@ -712,7 +712,7 @@
 			"version": "v2.0.13",
 			"type": "Changed",
 			"summary": "Diagnostic test stitches are temporary.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/house-rules/CHANGELOG.md"
 		},
 		{
 			"plugin": "autonomous",
@@ -721,7 +721,7 @@
 			"version": "v2.0.1",
 			"type": "Breaking",
 			"summary": "autonomous is no longer advertised to Codex.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/autonomous/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/autonomous/CHANGELOG.md"
 		},
 		{
 			"plugin": "clipboard",
@@ -730,7 +730,7 @@
 			"version": "v2.0.8",
 			"type": "Fixed",
 			"summary": "Codex now gets its own /clipboard helper-resolution instructions.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/clipboard/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/clipboard/CHANGELOG.md"
 		},
 		{
 			"plugin": "vaultsync",
@@ -739,7 +739,7 @@
 			"version": "v2.0.10",
 			"type": "Fixed",
 			"summary": "Commit-message provider failures remain the primary sync diagnosis.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/vaultsync/CHANGELOG.md"
 		},
 		{
 			"plugin": "saysay",
@@ -748,7 +748,7 @@
 			"version": "v2.0.8",
 			"type": "Fixed",
 			"summary": "Codex speech now survives the tool call.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/saysay/CHANGELOG.md"
 		},
 		{
 			"plugin": "self-improvement",
@@ -757,7 +757,7 @@
 			"version": "v2.0.0",
 			"type": "Changed",
 			"summary": "First l'Aicluse release.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/self-improvement/CHANGELOG.md"
 		},
 		{
 			"plugin": "eye-of-the-beholder",
@@ -766,7 +766,7 @@
 			"version": "v2.1.0",
 			"type": "Added",
 			"summary": "/taste-test: elicit a visual direction without having to describe it.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/eye-of-the-beholder/CHANGELOG.md"
 		},
 		{
 			"plugin": "gurus",
@@ -775,7 +775,7 @@
 			"version": "v2.0.1",
 			"type": "Fixed",
 			"summary": "Codex guru panels no longer suggest /rover:rover as their default autonomous handoff.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/gurus/CHANGELOG.md"
 		},
 		{
 			"plugin": "drydry",
@@ -784,7 +784,7 @@
 			"version": "v2.0.0",
 			"type": "Breaking",
 			"summary": "Marketplace identity moved to Fieldkit.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/drydry/CHANGELOG.md"
 		},
 		{
 			"plugin": "circus",
@@ -793,7 +793,7 @@
 			"version": "v2.0.5",
 			"type": "Improved",
 			"summary": "Retained Codex hook runtimes now carry their actual source version and stronger regression coverage.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/circus/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/circus/CHANGELOG.md"
 		},
 		{
 			"plugin": "laicluse-agent-fieldkit",
@@ -802,7 +802,7 @@
 			"version": "v2.0.3",
 			"type": "Added",
 			"summary": "$whats-new now works in Codex.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/laicluse-agent-fieldkit/CHANGELOG.md"
 		},
 		{
 			"plugin": "whywhy",
@@ -811,7 +811,7 @@
 			"version": "v2.0.1",
 			"type": "Added",
 			"summary": "whywhy now ships from the public laicluse-agent-fieldkit marketplace.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/whywhy/CHANGELOG.md"
 		},
 		{
 			"plugin": "lifeline",
@@ -820,7 +820,7 @@
 			"version": "v2.0.2",
 			"type": "Added",
 			"summary": "rethink returns a drifting project to first principles before another local fix is attempted.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/lifeline/CHANGELOG.md"
 		},
 		{
 			"plugin": "pattern-memory",
@@ -829,7 +829,7 @@
 			"version": "v2.0.0",
 			"type": "Changed",
 			"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry.",
-			"sourceUrl": "https://github.com/epologee/laicluse-agent-fieldkit/blob/main/packages/pattern-memory/CHANGELOG.md"
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/pattern-memory/CHANGELOG.md"
 		}
 	]
 }
