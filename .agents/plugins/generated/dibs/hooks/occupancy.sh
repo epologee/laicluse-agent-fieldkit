@@ -323,12 +323,13 @@ occ_codex_bash_target_is_ambiguous() {
 }
 
 occ_block_ambiguous_bash_target() {
-  local cwd="$1" details
-  details="$(printf '[dibs/occupancy] Codex omitted the execution workdir, so Dibs cannot determine this command'\''s mutation target without treating the conversation cwd (%s) as the target. Dibs does not lock process or conversation CWDs. The command is refused; do not administer dibs on the conversation cwd. Make every mutation target explicit (for Git: '\''git -C "<repo>" ...'\'', otherwise use absolute target paths), then retry.' "$cwd")"
+  local cwd="$1"
   if [ "$(occ_agent_label)" = "codex" ]; then
-    jq -nc --arg details "$details" '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "Dibs lock required for changes.", additionalContext: $details}}'
+    jq -nc '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "Dibs lock required for changes."}}'
     return 0
   fi
+  local details
+  details="$(printf '[dibs/occupancy] Codex omitted the execution workdir, so Dibs cannot determine this command'\''s mutation target without treating the conversation cwd (%s) as the target. Dibs does not lock process or conversation CWDs. The command is refused; do not administer dibs on the conversation cwd. Make every mutation target explicit (for Git: '\''git -C "<repo>" ...'\'', otherwise use absolute target paths), then retry.' "$cwd")"
   printf '%s\n' "$details" >&2
   return 2
 }

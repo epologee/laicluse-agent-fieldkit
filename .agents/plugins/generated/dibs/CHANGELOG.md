@@ -4,6 +4,12 @@ The post-update broadcast shows the topmost section once per machine whenever
 the installed `version` in `.claude-plugin/plugin.json` changes. Keep entries
 short; categories are Breaking, Added, Changed, Fixed.
 
+## [v2.0.48]
+
+### Fixed
+
+- **Codex no longer exposes ambiguous-target diagnostics in the conversation.** The denial contains only `Dibs lock required for changes.` because Codex renders hook context visibly; the Dibs skill owns the agent recovery procedure.
+
 ## [v2.0.47]
 
 ### Changed
