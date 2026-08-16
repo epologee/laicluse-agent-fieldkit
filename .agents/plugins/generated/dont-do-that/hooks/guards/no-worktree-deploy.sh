@@ -9,11 +9,15 @@ guard_no_worktree_deploy() {
   [ -z "$cmd" ] && return 0
   [ -z "$cwd" ] && cwd="$PWD"
 
-  grep -Eq '^[[:space:]]*git([[:space:]]|$)' <<< "$cmd" && return 0
-
-  grep -Eq '(^|[[:space:]]|;|&&|\|\|)ansible-playbook([[:space:]]|$)' <<< "$cmd" || return 0
-
-  grep -Eq '(^|[[:space:]])(--check|--syntax-check|--version|--help|--list-tasks|--list-hosts|--list-tags|-h)([[:space:]=]|$)' <<< "$cmd" && return 0
+  local segment deploy=""
+  while IFS= read -r segment; do
+    grep -Eq '^[[:space:]]*git([[:space:]]|$)' <<< "$segment" && continue
+    grep -Eq '(^|[[:space:]])ansible-playbook([[:space:]]|$)' <<< "$segment" || continue
+    grep -Eq '(^|[[:space:]])(--check|--syntax-check|--version|--help|--list-tasks|--list-hosts|--list-tags|-h)([[:space:]=]|$)' <<< "$segment" && continue
+    deploy="$segment"
+    break
+  done < <(dd_command_segments "$cmd")
+  [ -n "$deploy" ] || return 0
 
   local gd cgd
   gd=$(git -C "$cwd" rev-parse --git-dir 2>/dev/null) || return 0

@@ -78,6 +78,38 @@ dd_transcript() {
   return 1
 }
 
+# dd_command_segments <command>. allow-comment: load-bearing. Prints one top-level shell segment per line, splitting on unquoted && || ; | & and newlines while leaving quoted text intact, so a guard that classifies "what this command does" reads every subcommand instead of only the head. Without it a gate is bypassed by putting the interesting call second, and a quoted separator inside a commit message or PR title is not mistaken for one.
+dd_command_segments() {
+  local cmd="$1" seg="" quote="" ch i
+  for (( i=0; i<${#cmd}; i++ )); do
+    ch="${cmd:i:1}"
+    if [ -n "$quote" ]; then
+      seg+="$ch"
+      if [ "$ch" = '\' ] && [ "$quote" = '"' ]; then
+        i=$((i + 1))
+        seg+="${cmd:i:1}"
+        continue
+      fi
+      [ "$ch" = "$quote" ] && quote=""
+      continue
+    fi
+    case "$ch" in
+      \'|\")
+        quote="$ch"
+        seg+="$ch"
+        ;;
+      '&'|'|'|';'|$'\n')
+        printf '%s\n' "$seg"
+        seg=""
+        ;;
+      *)
+        seg+="$ch"
+        ;;
+    esac
+  done
+  printf '%s\n' "$seg"
+}
+
 dd_state_file() {
   local name="$1" sid="$2"
   [ -n "$name" ] || return 1

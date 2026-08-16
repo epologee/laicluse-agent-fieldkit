@@ -7,12 +7,17 @@ guard_pr_discipline() {
   cmd=$(jq -r '.tool_input.command // empty' <<< "$input" 2>/dev/null)
   [ -z "$cmd" ] && return 0
 
-  local cmd_after_cd
-  cmd_after_cd=$(printf '%s' "$cmd" | sed -E 's/^[[:space:]]*cd[[:space:]]+[^&]+&&[[:space:]]*//')
-  [[ "$cmd_after_cd" =~ ^[[:space:]]*gh[[:space:]]+pr[[:space:]]+(create|edit)([[:space:]]|$) ]] || return 0
+  local segment pr_call=""
+  while IFS= read -r segment; do
+    if [[ "$segment" =~ ^[[:space:]]*gh[[:space:]]+pr[[:space:]]+(create|edit)([[:space:]]|$) ]]; then
+      pr_call="$segment"
+      break
+    fi
+  done < <(dd_command_segments "$cmd")
+  [ -n "$pr_call" ] || return 0
 
   local title
-  title=$(grep -oE -- "--title[[:space:]]+(\"[^\"]*\"|'[^']*'|[^[:space:]]+)" <<< "$cmd" \
+  title=$(grep -oE -- "--title[[:space:]]+(\"[^\"]*\"|'[^']*'|[^[:space:]]+)" <<< "$pr_call" \
     | head -1 \
     | sed -E "s/^--title[[:space:]]+//; s/^[\"']//; s/[\"']$//")
 
