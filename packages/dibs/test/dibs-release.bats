@@ -1,7 +1,10 @@
 #!/usr/bin/env bats
 # Contract tests for bin/dibs release: only the holder may release.
 
+load helpers
+
 setup() {
+  dibs_clear_ambient_identity
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
   DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
   NODE_BIN="$(command -v node)"

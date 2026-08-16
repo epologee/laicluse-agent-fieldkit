@@ -5,7 +5,10 @@
 # and listed with 'dibs excludes', and the agent-config homes plus /tmp are
 # built-in defaults every install ships with.
 
+load helpers
+
 setup() {
+  dibs_clear_ambient_identity
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
   DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
   NODE_BIN="$(command -v node)"

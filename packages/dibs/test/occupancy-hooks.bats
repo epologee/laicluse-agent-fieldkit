@@ -142,6 +142,16 @@ init_bash_target_repo() {
   echo "$output" | grep -q "\"pid\": $$"
 }
 
+@test "the missing-dibs denial hands back a claim bound to this session" {
+  unset DIBS_DESCRIPTION
+  payload="$(jq -cn --arg cwd "$DIR" '{hook_event_name:"PreToolUse", tool_name:"Write", cwd:$cwd, session_id:"sess-from-payload", tool_input:{file_path:($cwd+"/f.txt"), content:"x"}}')"
+
+  run bash -c 'printf "%s" "$1" | bash "$2"' _ "$payload" "$HOOK"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--session sess-from-payload"* ]]
+}
+
 @test "gate records DIBS_DESCRIPTION on hook claims" {
   export DIBS_HOLDER_PID=$$ DIBS_DESCRIPTION="Fix Dibs Lock Labels"
   run_hook PreToolUse Write

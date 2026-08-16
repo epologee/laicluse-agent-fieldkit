@@ -2,7 +2,10 @@
 # Contract tests for the lock store: realpath keying under LAICLUSE_HOME, the
 # sha-named path shape, and the no-flock / node-built-ins-only guarantees.
 
+load helpers
+
 setup() {
+  dibs_clear_ambient_identity
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
   DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
   LIB="$REPO_ROOT/packages/dibs/bin/dibs-lib.mjs"

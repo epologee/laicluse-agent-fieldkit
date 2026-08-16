@@ -303,8 +303,10 @@ occ_refused_by_other() {
 }
 
 occ_block_no_dibs() {
-  local dir="$1"
-  printf '[dibs/occupancy] %s has no dibs registered for you, so this write is refused. Administer one first: run '\''dibs claim %s --description "<one line: what you are doing here>"'\'' with a description you compose yourself, then retry.\n' "$dir" "$dir" >&2
+  local dir="$1" input="${2:-}" sid binding=""
+  sid="$(occ_session "$input")"
+  [ -n "$sid" ] && binding=" --session $sid"
+  printf '[dibs/occupancy] %s has no dibs registered for you, so this write is refused. Administer one first: run '\''dibs claim %s%s --description "<one line: what you are doing here>"'\'' with a description you compose yourself, then retry. The session flag binds the lock to this conversation; a claim without it belongs to the shell that ran it and is gone before your next write.\n' "$dir" "$dir" "$binding" >&2
 }
 
 occ_codex_bash_target_is_ambiguous() {
@@ -372,7 +374,7 @@ occ_gate() {
       exit 2
     fi
     if printf '%s' "$out" | grep -q 'work description is required'; then
-      occ_block_no_dibs "$dir"
+      occ_block_no_dibs "$dir" "$input"
       exit 2
     fi
     continue

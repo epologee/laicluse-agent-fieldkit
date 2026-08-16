@@ -2,7 +2,10 @@
 # Contract tests for bin/dibs release-all: release every lock this session holds
 # across all directories in one sweep, keyed by holder identity (pid/session/owner).
 
+load helpers
+
 setup() {
+  dibs_clear_ambient_identity
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
   DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
   NODE_BIN="$(command -v node)"

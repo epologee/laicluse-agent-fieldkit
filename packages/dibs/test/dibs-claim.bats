@@ -2,15 +2,14 @@
 # Contract tests for bin/dibs claim: exclusive occupancy, refuse-with-holder,
 # idempotent re-claim, and stale takeover when the holder pid is dead.
 
+load helpers
+
 setup() {
+  dibs_clear_ambient_identity
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
   DIBS="$REPO_ROOT/packages/dibs/bin/dibs"
   NODE_BIN="$(command -v node)"
   export LAICLUSE_HOME="$BATS_TEST_TMPDIR/laicluse"
-  # allow-comment: load-bearing. An agent session may export DIBS_DESCRIPTION
-  # for its own claims; the CLI accepts it as a fallback, so the mandatory
-  # description contract below only holds when the ambient value is cleared.
-  unset DIBS_DESCRIPTION
   DIR="$BATS_TEST_TMPDIR/work"
   mkdir -p "$DIR"
 }
@@ -41,6 +40,32 @@ dibs() {
   run dibs_raw claim "$DIR" --pid $$ --agent claude --json
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"state": "held-by-self"'
+}
+
+@test "claim inherits the session identity a coding agent exports" {
+  run env CLAUDE_CODE_SESSION_ID=sess-xyz CLAUDECODE=1 \
+    "$NODE_BIN" "$DIBS" claim "$DIR" --description "session bound claim" --json
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"session": "sess-xyz"'
+  echo "$output" | grep -q '"agent": "claude"'
+}
+
+@test "an exported agent pid does not become the holder, only DIBS_HOLDER_PID does" {
+  run env CLAUDE_PID=1 CLAUDE_CODE_SESSION_ID=sess-xyz \
+    "$NODE_BIN" "$DIBS" claim "$DIR" --description "pid stays local" --json
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  ! echo "$output" | grep -q '"pid": 1'
+}
+
+@test "explicit claim flags win over the exported session" {
+  run env CLAUDE_CODE_SESSION_ID=sess-xyz CLAUDE_PID=1 \
+    "$NODE_BIN" "$DIBS" claim "$DIR" --pid $$ --agent codex --session sess-flag --description "flags win" --json
+  [ "$status" -eq 0 ]
+  run dibs check "$DIR" --json
+  echo "$output" | grep -q '"session": "sess-flag"'
+  echo "$output" | grep -q '"agent": "codex"'
 }
 
 @test "claim on a free dir succeeds and writes a lock file" {
