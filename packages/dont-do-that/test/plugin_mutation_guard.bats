@@ -3,8 +3,8 @@
 DISPATCH="$BATS_TEST_DIRNAME/../hooks/dispatch.sh"
 
 pre_bash_payload() {
-  jq -cn --arg cwd "$1" --arg cmd "$2" --arg user "$3" \
-    '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, last_user_message:$user, tool_input:{command:$cmd}}'
+  jq -cn --arg cwd "$1" --arg cmd "$2" --arg user "$3" --arg mode "${4:-default}" \
+    '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, last_user_message:$user, permission_mode:$mode, tool_input:{command:$cmd}}'
 }
 
 @test "plugin mutation guard asks the operator through the Claude permission prompt" {
@@ -41,6 +41,34 @@ pre_bash_payload() {
 
   [ "$status" -eq 2 ]
   [[ "$output" == *"machine-wide plugin mutation"* ]]
+}
+
+@test "plugin mutation guard denies in a mode that resolves the prompt without the operator" {
+  for mode in auto bypassPermissions; do
+    payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Update the plugins now" "$mode")"
+
+    run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"machine-wide plugin mutation"* ]]
+  done
+}
+
+@test "plugin mutation guard denies when the payload names no permission mode" {
+  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, tool_input:{command:"claude plugins update dibs@example"}}')"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 2 ]
+}
+
+@test "plugin mutation guard asks while edits are auto-accepted but shell is not" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Update the plugins now" "acceptEdits")"
+
+  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 0 ]
+  [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
 }
 
 @test "plugin mutation guard denies when no agent signalled an ask channel" {

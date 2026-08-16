@@ -211,6 +211,13 @@ dd_emit_deny() {
 dd_emit_ask() {
   local mnemonic="$1"
   local msg="$2"
+  local input="${3:-}"
+  local mode
+  mode=$(jq -r '.permission_mode // empty' <<< "$input" 2>/dev/null)
+  case "$mode" in
+    default|acceptEdits) ;;
+    *) dd_emit_deny "$mnemonic" "$msg Refused rather than asked: this session runs in permission mode '${mode:-unknown}', where the prompt is resolved without the operator seeing it." ;;
+  esac
   if [ "${DD_AGENT:-}" = "claude" ]; then
     jq -cn --arg r "[dont-do-that/${mnemonic}] ${msg}" '{hookSpecificOutput:{hookEventName:"PreToolUse", permissionDecision:"ask", permissionDecisionReason:$r}}'
     exit 0

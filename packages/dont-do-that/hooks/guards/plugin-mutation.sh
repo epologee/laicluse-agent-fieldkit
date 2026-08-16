@@ -13,6 +13,6 @@ guard_plugin_mutation() {
   claude_mutation='([[:alnum:]_.\/-]+\/)?claude[[:space:]]+plugins?[[:space:]]+((install|uninstall|update|enable|disable)([[:space:]]|$)|marketplace[[:space:]]+(add|remove|update)([[:space:]]|$))'
 
   if grep -Eq "${prefix}${assignments}${wrappers}(${codex_mutation}|${claude_mutation})" <<< "$cmd"; then
-    dd_emit_ask plugin-mutation "machine-wide plugin mutation: this replaces hook paths and runtime code for every live coding session on this machine. For a local marketplace that already points at the primary checkout, testing the candidate and merging it beats reinstalling it."
+    dd_emit_ask plugin-mutation "machine-wide plugin mutation: this replaces hook paths and runtime code for every live coding session on this machine. For a local marketplace that already points at the primary checkout, testing the candidate and merging it beats reinstalling it." "$input"
   fi
 }
