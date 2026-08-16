@@ -260,7 +260,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.53",
+			"version": "2.0.54",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -634,6 +634,15 @@
 	],
 	"changelog": [
 		{
+			"plugin": "dont-do-that",
+			"packageVersion": "2.0.54",
+			"detailPath": "agent-fieldkit/dont-do-that/",
+			"version": "v2.0.41",
+			"type": "Added",
+			"summary": "Machine-wide plugin changes now require explicit operator approval.",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
+		},
+		{
 			"plugin": "git-discipline",
 			"packageVersion": "2.0.54",
 			"detailPath": "agent-fieldkit/git-discipline/",
@@ -641,15 +650,6 @@
 			"type": "Fixed",
 			"summary": "Installing git-discipline no longer turns worktrees into a machine-wide default.",
 			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
-		},
-		{
-			"plugin": "dont-do-that",
-			"packageVersion": "2.0.53",
-			"detailPath": "agent-fieldkit/dont-do-that/",
-			"version": "v2.0.41",
-			"type": "Added",
-			"summary": "Machine-wide plugin changes now require explicit operator approval.",
-			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
 		},
 		{
 			"plugin": "dibs",

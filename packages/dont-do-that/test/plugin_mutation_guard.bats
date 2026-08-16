@@ -3,105 +3,64 @@
 DISPATCH="$BATS_TEST_DIRNAME/../hooks/dispatch.sh"
 
 pre_bash_payload() {
-  jq -cn --arg cwd "$1" --arg cmd "$2" --arg user "$3" --arg mode "${4:-default}" \
-    '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, last_user_message:$user, permission_mode:$mode, tool_input:{command:$cmd}}'
+  jq -cn --arg cwd "$1" --arg cmd "$2" --arg mode "${3:-default}" \
+    '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, permission_mode:$mode, tool_input:{command:$cmd}}'
 }
 
-@test "plugin mutation guard asks the operator through the Claude permission prompt" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Finish the source change")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 0 ]
-  [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
-  [ "$(jq -r '.hookSpecificOutput.hookEventName' <<< "$output")" = "PreToolUse" ]
-  [[ "$(jq -r '.hookSpecificOutput.permissionDecisionReason' <<< "$output")" == *"machine-wide plugin mutation"* ]]
+run_guard() {
+  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$1" "$DISPATCH"
 }
 
-@test "plugin mutation guard asks regardless of how the operator phrased the turn" {
-  phrasings=(
-    "werk de plugins in de Claude runtime bij"
-    "update the plugins now"
-    "raak de plugins niet aan"
-    ""
-  )
-
-  for phrasing in "${phrasings[@]}"; do
-    payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "$phrasing")"
-    run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-    [ "$status" -eq 0 ]
-    [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
+@test "updating an installed plugin is ordinary work, in any permission mode" {
+  for mode in default auto bypassPermissions; do
+    for command in "claude plugins update dibs@example" "codex plugin update dibs@example"; do
+      run_guard "$(pre_bash_payload "$BATS_TEST_TMPDIR" "$command" "$mode")"
+      [ "$status" -eq 0 ]
+      [ -z "$output" ]
+    done
   done
 }
 
-@test "plugin mutation guard denies on an agent without an ask channel" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin add dibs@example" "Run codex plugin add for dibs now")"
+@test "enabling an installed plugin is ordinary work" {
+  run_guard "$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins enable dibs@example" "bypassPermissions")"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "registering a marketplace asks the operator when the prompt is shown" {
+  run_guard "$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins marketplace add /tmp/example" "default")"
+
+  [ "$status" -eq 0 ]
+  [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
+}
+
+@test "removing protection is gated even where a prompt would be answered for you" {
+  for command in "claude plugins uninstall dont-do-that@example" "claude plugins disable dont-do-that@example" "codex plugin marketplace add /tmp/example"; do
+    run_guard "$(pre_bash_payload "$BATS_TEST_TMPDIR" "$command" "bypassPermissions")"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"DD_PLUGIN_MUTATION=asked"* ]]
+  done
+}
+
+@test "the operator escape lets the gated command through without a prompt" {
+  run_guard "$(pre_bash_payload "$BATS_TEST_TMPDIR" "DD_PLUGIN_MUTATION=asked claude plugins marketplace add /tmp/example" "bypassPermissions")"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "an agent without an ask channel gets the deny with the same escape" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins uninstall dibs@example" "default")"
 
   run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
 
   [ "$status" -eq 2 ]
-  [[ "$output" == *"machine-wide plugin mutation"* ]]
-}
-
-@test "plugin mutation guard denies in a mode that resolves the prompt without the operator" {
-  for mode in auto bypassPermissions; do
-    payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Update the plugins now" "$mode")"
-
-    run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-    [ "$status" -eq 2 ]
-    [[ "$output" == *"machine-wide plugin mutation"* ]]
-  done
-}
-
-@test "plugin mutation guard denies when the payload names no permission mode" {
-  payload="$(jq -cn --arg cwd "$BATS_TEST_TMPDIR" '{hook_event_name:"PreToolUse", tool_name:"Bash", cwd:$cwd, tool_input:{command:"claude plugins update dibs@example"}}')"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 2 ]
-}
-
-@test "plugin mutation guard asks while edits are auto-accepted but shell is not" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Update the plugins now" "acceptEdits")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 0 ]
-  [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
-}
-
-@test "plugin mutation guard denies when no agent signalled an ask channel" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Update the plugins now")"
-
-  run bash -c 'printf "%s" "$1" | env -u DD_AGENT DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"machine-wide plugin mutation"* ]]
-}
-
-@test "plugin mutation guard covers marketplace, removal, and wrapped mutations" {
-  commands=(
-    "codex plugin marketplace upgrade example"
-    "codex plugin remove dibs@example"
-    "command codex plugin disable dibs@example"
-    "claude plugin marketplace add /tmp/example"
-    "claude plugins uninstall dibs@example"
-    "env LANG=en_US.UTF-8 claude plugins enable dibs@example"
-  )
-
-  for command in "${commands[@]}"; do
-    payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "$command" "Inspect the plugin state")"
-    run bash -c 'printf "%s" "$1" | DD_AGENT=claude DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
-    [ "$status" -eq 0 ]
-    [ "$(jq -r '.hookSpecificOutput.permissionDecision' <<< "$output")" = "ask" ]
-  done
+  [[ "$output" == *"DD_PLUGIN_MUTATION=asked"* ]]
 }
 
 @test "plugin mutation guard does not block read-only plugin inspection" {
-  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin list --json" "Inspect the plugin state")"
-
-  run bash -c 'printf "%s" "$1" | DD_AGENT=codex DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+  run_guard "$(pre_bash_payload "$BATS_TEST_TMPDIR" "codex plugin list --json" "default")"
 
   [ "$status" -eq 0 ]
   [ -z "$output" ]
