@@ -110,6 +110,38 @@ dd_command_segments() {
   printf '%s\n' "$seg"
 }
 
+# dd_command_unquoted <segment>. allow-comment: load-bearing. Prints the segment with every quoted span blanked out, so a matcher sees only what the shell would execute as words. Command text quoted inside an echo, a commit message or a test fixture is data, and a gate that fires on it blocks writing about the command instead of running it.
+dd_command_unquoted() {
+  local seg="$1" out="" quote="" ch i
+  for (( i=0; i<${#seg}; i++ )); do
+    ch="${seg:i:1}"
+    if [ -n "$quote" ]; then
+      if [ "$ch" = '\' ] && [ "$quote" = '"' ]; then
+        i=$((i + 1))
+        out+="  "
+        continue
+      fi
+      if [ "$ch" = "$quote" ]; then
+        quote=""
+        out+=" "
+      else
+        out+=" "
+      fi
+      continue
+    fi
+    case "$ch" in
+      \'|\")
+        quote="$ch"
+        out+=" "
+        ;;
+      *)
+        out+="$ch"
+        ;;
+    esac
+  done
+  printf '%s\n' "$out"
+}
+
 dd_state_file() {
   local name="$1" sid="$2"
   [ -n "$name" ] || return 1
