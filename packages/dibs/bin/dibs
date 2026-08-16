@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { claim, release, releaseAll, check, formatHolder, listExcludes, excludeDir, includeDir } from './dibs-lib.mjs';
+import { readFileSync } from 'node:fs';
+import { claim, release, releaseAll, check, formatHolder, listExcludes, excludeDir, includeDir, resolveContext } from './dibs-lib.mjs';
 
 const USAGE = `usage: dibs <command> <dir> [options]
 
@@ -13,6 +14,7 @@ commands:
   exclude <dir>   never lock <dir> (persists to the excludes file)
   include <dir>   lock <dir> again (drops it from the excludes file)
   excludes        list directories dibs never locks (built-in defaults + configured)
+  resolve         read a hook payload on stdin, print the identity and target fields it yields
 
 options:
   --pid <n>            pid whose liveness defines the lock; pass your long-lived
@@ -63,7 +65,7 @@ function parse(args) {
   });
 }
 
-if (!['claim', 'release', 'release-all', 'check', 'exclude', 'include', 'excludes'].includes(command)) {
+if (!['claim', 'release', 'release-all', 'check', 'exclude', 'include', 'excludes', 'resolve'].includes(command)) {
   die(`unknown command: ${command}`);
 }
 
@@ -119,6 +121,20 @@ function formatExcludeChange(result) {
 
 if (command === 'excludes') {
   emit(listExcludes(), formatExcludeList(listExcludes()));
+}
+
+if (command === 'resolve') {
+  const raw = readFileSync(0, 'utf8');
+  let payload = {};
+  if (raw.trim()) {
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      die('resolve needs a hook payload as JSON on stdin');
+    }
+  }
+  process.stdout.write(`${JSON.stringify(resolveContext(payload, process.env))}\n`);
+  process.exit(0);
 }
 
 if (command === 'exclude' || command === 'include') {

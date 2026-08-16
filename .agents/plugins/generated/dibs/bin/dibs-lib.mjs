@@ -167,6 +167,42 @@ function isAlive(pid) {
   }
 }
 
+// allow-comment: load-bearing contract. One place turns a host's hook payload plus its environment into the fields dibs needs, so a host that supplies less produces one named gap instead of a patch at whichever call site noticed first. Every field a caller cannot determine is listed in `missing`, and callers decide what a gap means: `workdir` absent is why a Codex Bash target cannot be resolved, `description` absent is why a claim would be anonymous. `conversationDir` is reported separately from `workdir` on purpose, because the directory a conversation runs in is not evidence about what a command writes to.
+export function resolveContext(payload = {}, env = process.env) {
+  const agent = env.DIBS_AGENT || (env.PLUGIN_ROOT ? 'codex' : env.CLAUDE_PLUGIN_ROOT ? 'claude' : 'agent');
+  const session = payload.session_id || payload.sessionId || env.DIBS_SESSION || env.CLAUDE_CODE_SESSION_ID || '';
+  const codexOwner = agent === 'codex'
+    ? (env.CMUX_TAB_ID || env.CMUX_WORKSPACE_ID || env.CODEX_THREAD_ID || '')
+    : '';
+  const owner = env.DIBS_OWNER || codexOwner || session;
+  const description = env.DIBS_DESCRIPTION || '';
+
+  const conversationDir = existingDir(payload.cwd);
+  const toolInput = payload.tool_input && typeof payload.tool_input === 'object' ? payload.tool_input : {};
+  const declaredWorkdir = toolInput.workdir || toolInput.cwd || '';
+  const shellWithoutWorkdir = !declaredWorkdir && agent === 'codex' && payload.tool_name === 'Bash';
+  const workdir = declaredWorkdir
+    ? existingDir(declaredWorkdir.startsWith('/') ? declaredWorkdir : join(conversationDir || '', declaredWorkdir))
+    : (shellWithoutWorkdir ? '' : conversationDir);
+
+  const missing = [];
+  if (!session) missing.push('session');
+  if (!owner) missing.push('owner');
+  if (!description) missing.push('description');
+  if (!workdir) missing.push('workdir');
+
+  return { agent, session, owner, description, workdir, conversationDir, missing };
+}
+
+function existingDir(candidate) {
+  if (!candidate) return '';
+  try {
+    return existsSync(candidate) ? realpathSync(candidate) : '';
+  } catch {
+    return '';
+  }
+}
+
 export function normalizeDescription(description) {
   if (description == null) return null;
   const compact = String(description)
