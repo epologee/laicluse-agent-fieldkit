@@ -175,11 +175,11 @@ dd_emit_deny() {
   exit 2
 }
 
-# dd_emit_ask <mnemonic> <message>. allow-comment: load-bearing. PreToolUse hook that routes the decision to the operator through the host's own permission prompt, which shows them the exact pending command. Claude renders permissionDecision "ask"; an agent without an ask channel falls back to the hard deny carrying the same reason. Use this instead of inferring approval from the operator's wording: the host owns the question, the guard only decides which commands deserve one.
+# dd_emit_ask <mnemonic> <message>. allow-comment: load-bearing. PreToolUse hook that routes the decision to the operator through the host's own permission prompt, which shows them the exact pending command. Use it instead of inferring approval from the operator's wording: the host owns the question, the guard only decides which commands deserve one. The ask needs an explicit DD_AGENT=claude rather than dd_agent's claude default, because an unset or unknown agent has no proven ask channel and would silently proceed on JSON it cannot read; everything except a signalled Claude falls back to the hard deny with the same reason. Emitting exit 0 keeps stdout a single JSON object, which only holds while this remains the last guard in its lane.
 dd_emit_ask() {
   local mnemonic="$1"
   local msg="$2"
-  if [ "$(dd_agent)" = "claude" ]; then
+  if [ "${DD_AGENT:-}" = "claude" ]; then
     jq -cn --arg r "[dont-do-that/${mnemonic}] ${msg}" '{hookSpecificOutput:{hookEventName:"PreToolUse", permissionDecision:"ask", permissionDecisionReason:$r}}'
     exit 0
   fi

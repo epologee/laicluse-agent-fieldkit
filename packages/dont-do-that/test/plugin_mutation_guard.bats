@@ -43,6 +43,15 @@ pre_bash_payload() {
   [[ "$output" == *"machine-wide plugin mutation"* ]]
 }
 
+@test "plugin mutation guard denies when no agent signalled an ask channel" {
+  payload="$(pre_bash_payload "$BATS_TEST_TMPDIR" "claude plugins update dibs@example" "Update the plugins now")"
+
+  run bash -c 'printf "%s" "$1" | env -u DD_AGENT DD_ONLY_PRETOOLUSE_GUARDS=plugin-mutation bash "$2"' _ "$payload" "$DISPATCH"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"machine-wide plugin mutation"* ]]
+}
+
 @test "plugin mutation guard covers marketplace, removal, and wrapped mutations" {
   commands=(
     "codex plugin marketplace upgrade example"
