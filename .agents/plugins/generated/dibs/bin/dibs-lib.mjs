@@ -152,10 +152,6 @@ function occupancyRoot(dir) {
   return gitWorktreeRoot(realpath) || realpath;
 }
 
-function lockPathFor(dir) {
-  return lockPathForRealpath(occupancyRoot(dir));
-}
-
 function lockPathForRealpath(realpath) {
   const sha = createHash('sha256').update(realpath).digest('hex');
   return join(locksDir(), `${sha}.lock`);
