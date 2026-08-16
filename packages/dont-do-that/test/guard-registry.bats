@@ -31,6 +31,15 @@ posttool_edit() {
   [[ "$output" == *"not provided by event PostToolUse"* ]]
 }
 
+@test "validator rejects a guard ordered after one that emits an ask" {
+  tmp="$(mktemp)"
+  jq '.guards.followup.order = 99' "$REGISTRY" > "$tmp"
+  run bash "$VALIDATE" "$tmp"
+  rm -f "$tmp"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"terminates the dispatcher"* ]]
+}
+
 @test "validator rejects an unknown agent policy value" {
   tmp="$(mktemp)"
   jq '.guards.dash.agents.codex = "maybe"' "$REGISTRY" > "$tmp"

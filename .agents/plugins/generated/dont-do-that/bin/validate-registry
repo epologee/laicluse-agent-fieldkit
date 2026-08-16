@@ -111,5 +111,23 @@ if [ "${#missing[@]}" -gt 0 ]; then
   exit 1
 fi
 
+terminal=()
+while IFS=$'\t' read -r id lane order; do
+  script="$guards_dir/$id.sh"
+  [ -f "$script" ] || continue
+  grep -q 'dd_emit_ask' "$script" || continue
+  while IFS=$'\t' read -r other_id other_order; do
+    if [ "$other_id" != "$id" ] && [ "$other_order" -gt "$order" ]; then
+      terminal+=("guard ${other_id}: ordered after ${id}, which emits an ask that terminates the dispatcher; nothing after it can deny or add context")
+    fi
+  done < <(jq -r --arg lane "$lane" '.guards | to_entries[] | select(.value.lane == $lane) | "\(.key)\t\(.value.order)"' "$REGISTRY")
+done < <(jq -r '.guards | to_entries[] | "\(.key)\t\(.value.lane)\t\(.value.order)"' "$REGISTRY")
+
+if [ "${#terminal[@]}" -gt 0 ]; then
+  printf 'validate-registry: %s places guards after a terminal decision:\n' "$REGISTRY" >&2
+  printf '  - %s\n' "${terminal[@]}" >&2
+  exit 1
+fi
+
 guard_count=$(jq -r '.guards | length' "$REGISTRY")
 printf 'validate-registry: %s ok (%s guards)\n' "$REGISTRY" "$guard_count"
