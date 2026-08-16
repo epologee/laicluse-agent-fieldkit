@@ -260,7 +260,7 @@
 		},
 		{
 			"name": "dont-do-that",
-			"version": "2.0.49",
+			"version": "2.0.50",
 			"category": "workflow",
 			"summary": "Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.",
 			"support": [
@@ -653,7 +653,7 @@
 		},
 		{
 			"plugin": "dont-do-that",
-			"packageVersion": "2.0.49",
+			"packageVersion": "2.0.50",
 			"detailPath": "agent-fieldkit/dont-do-that/",
 			"version": "v2.0.41",
 			"type": "Added",
