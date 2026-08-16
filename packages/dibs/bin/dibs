@@ -190,7 +190,7 @@ try {
     else if (result.state === 'not-held') emit(result, 'not held; nothing to release');
     else emit(result, `refused: ${formatHolder(result.holder)}`, 1);
   } else {
-    const result = check({ dir, maxAgeHours });
+    const result = check({ dir, maxAgeHours, session: values.session, owner: values.owner, agent: values.agent });
     if (result.state === 'excluded') emit(result, `excluded: ${result.realpath}; dibs does not lock this directory`);
     else if (result.state === 'free') emit(result, `free: ${result.realpath}`);
     else if (result.state === 'corrupt') emit(result, `corrupt lock for ${result.realpath}; the next claimer will break it`);

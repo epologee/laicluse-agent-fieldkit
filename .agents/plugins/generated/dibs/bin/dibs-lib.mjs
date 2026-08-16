@@ -419,7 +419,18 @@ export function releaseAll({ pid, session, owner, agent }) {
   return { ok: true, state: 'released-all', released, count: released.length };
 }
 
-export function check({ dir, maxAgeHours }) {
+// allow-comment: load-bearing contract. The single answer to "is this lock mine". A session id names one conversation and is checked first; an owner names the seat that conversation runs in, so it also recognises a resume with a fresh session id, but only for the same agent, since two agents can share a seat. Callers must not re-derive this from the holder record: a second opinion about identity is how a hook and the CLI came to disagree about who held a directory.
+export function heldBySelf(holder, { session, owner, agent } = {}) {
+  if (!holder) return { self: false, reason: 'no-holder' };
+  if (!session && !owner) return { self: false, reason: 'no-identity' };
+  if (session && holder.session && session === holder.session) return { self: true, reason: 'session' };
+  if (owner && holder.owner && owner === holder.owner && agent === holder.agent) {
+    return { self: true, reason: 'owner' };
+  }
+  return { self: false, reason: 'other-session' };
+}
+
+export function check({ dir, maxAgeHours, session, owner, agent }) {
   const realpath = occupancyRoot(dir);
   if (isExcluded(realpath)) return { state: 'excluded', path: null, realpath };
   const path = lockPathForRealpath(realpath);
@@ -430,6 +441,7 @@ export function check({ dir, maxAgeHours }) {
       : { state: 'free', path, realpath };
   }
   const decision = classifyHolder(existing, maxAgeHours);
+  const mine = heldBySelf(existing, { session, owner, agent });
   return {
     state: 'held',
     path,
@@ -438,5 +450,7 @@ export function check({ dir, maxAgeHours }) {
     sameHost: existing.hostname === hostname(),
     alive: decision.alive,
     stale: decision.breakable,
+    self: mine.self,
+    selfReason: mine.reason,
   };
 }
