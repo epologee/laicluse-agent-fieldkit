@@ -1,10 +1,13 @@
 #!/usr/bin/env bats
+
+load helpers
 # Contract tests for the dibs occupancy enforcement hook. End-to-end cases run
 # the real hooks/occupancy.sh; unit cases source it (the main dispatch is
 # guarded behind a sourced-vs-executed check). A temp LAICLUSE_HOME keeps the
 # lock store hermetic and DIBS_HOLDER_PID pins the recorded holder pid.
 
 setup() {
+  dibs_clear_ambient_identity
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
   HOOK="$REPO_ROOT/packages/dibs/hooks/occupancy.sh"
   NODE_BIN="$(command -v node)"

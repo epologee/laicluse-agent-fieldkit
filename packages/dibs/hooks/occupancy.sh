@@ -7,7 +7,12 @@ OCC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 occ_event()   { jq -r '.hook_event_name // empty' <<< "$1" 2>/dev/null; }
 occ_tool()    { jq -r '.tool_name // empty' <<< "$1" 2>/dev/null; }
-occ_session() { jq -r '.session_id // .sessionId // empty' <<< "$1" 2>/dev/null; }
+occ_session() {
+  local resolved
+  resolved="$(occ_field session)"
+  [ -n "$resolved" ] && { printf '%s\n' "$resolved"; return 0; }
+  jq -r '.session_id // .sessionId // empty' <<< "$1" 2>/dev/null
+}
 
 occ_completed_handoff() {
   local message
@@ -196,7 +201,9 @@ occ_agent_label() {
 }
 
 occ_owner() {
-  local input="$1" agent sid
+  local input="$1" agent sid resolved
+  resolved="$(occ_field owner)"
+  [ -n "$resolved" ] && { printf '%s\n' "$resolved"; return 0; }
   if [ -n "${DIBS_OWNER:-}" ]; then printf '%s\n' "$DIBS_OWNER"; return 0; fi
   agent="$(occ_agent_label)"
   sid="$(occ_session "$input")"
@@ -324,21 +331,14 @@ occ_codex_bash_target_is_ambiguous() {
   [ "$?" -eq 3 ]
 }
 
+# allow-comment: load-bearing. Ownership is decided by the dibs library, never re-derived here. The hook passes the identity it resolved and reads the verdict; a second implementation in bash is how the two came to disagree about who held a directory. The recorded pid stays out of it: it says whether a holder still runs, not whose holder it is.
 occ_current_session_holds_dir() {
-  local input="$1" dir="$2" dibs out my_pid holder_pid my_owner holder_owner my_sid holder_sid
+  local input="$1" dir="$2" dibs out
   dibs="$(occ_dibs_bin)" || return 1
   [ -n "$dir" ] || return 1
-  out="$(node "$dibs" check "$dir" --json 2>/dev/null)" || return 1
+  out="$(node "$dibs" check "$dir" --session "$(occ_session "$input")" --owner "$(occ_owner "$input")" --agent "$(occ_agent_label)" --json 2>/dev/null)" || return 1
   [ "$(printf '%s' "$out" | jq -r '.state // empty' 2>/dev/null)" = "held" ] || return 1
-  my_pid="$(occ_holder_pid "${OCC_PPID:-$PPID}")"
-  holder_pid="$(printf '%s' "$out" | jq -r '.holder.pid // empty' 2>/dev/null)"
-  [ -n "$my_pid" ] && [ "$my_pid" = "$holder_pid" ] && return 0
-  my_owner="$(occ_owner "$input")"
-  holder_owner="$(printf '%s' "$out" | jq -r '.holder.owner // empty' 2>/dev/null)"
-  [ -n "$my_owner" ] && [ "$my_owner" = "$holder_owner" ] && return 0
-  my_sid="$(occ_session "$input")"
-  holder_sid="$(printf '%s' "$out" | jq -r '.holder.session // empty' 2>/dev/null)"
-  [ -n "$my_sid" ] && [ "$my_sid" = "$holder_sid" ]
+  [ "$(printf '%s' "$out" | jq -r '.self // false' 2>/dev/null)" = "true" ]
 }
 
 occ_block_ambiguous_bash_target() {
@@ -353,8 +353,22 @@ occ_block_ambiguous_bash_target() {
   return 2
 }
 
+# allow-comment: load-bearing. Resolve the host's payload once through the dibs library and cache the fields for this invocation, so every branch below reads the same identity and the same target instead of deriving its own. A host that supplies less then produces one named gap in `missing` rather than a differently-shaped answer per call site.
+occ_resolve() {
+  local input="$1" dibs
+  [ -n "${OCC_RESOLVED:-}" ] && return 0
+  dibs="$(occ_dibs_bin)" || return 1
+  OCC_RESOLVED="$(printf '%s' "$input" | node "$dibs" resolve 2>/dev/null)" || return 1
+  export OCC_RESOLVED
+}
+
+occ_field() {
+  printf '%s' "${OCC_RESOLVED:-}" | jq -r --arg f "$1" '.[$f] // empty' 2>/dev/null
+}
+
 occ_gate() {
   local input="$1" out rc dir dirs
+  occ_resolve "$input" || true
   if [ "$(occ_tool "$input")" = "Bash" ] && occ_codex_bash_target_is_ambiguous "$input" && ! occ_current_session_holds_dir "$input" "$(occ_cwd "$input")"; then
     occ_block_ambiguous_bash_target "$(occ_cwd "$input")"
     exit $?
