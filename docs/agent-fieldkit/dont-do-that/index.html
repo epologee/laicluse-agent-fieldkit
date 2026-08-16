@@ -52,7 +52,7 @@
 					<p class="lede">Runs guardrail hooks and correction skills for common agent reflexes before they become repository damage.</p>
 					<div class="plugin-meta detail-meta" aria-label="Package metadata">
 						<span class="support-pill both">Claude + Codex</span>
-						<span>2.0.50</span>
+						<span>2.0.51</span>
 						<span>3 skills</span>
 					</div>
 				</div>
@@ -87,7 +87,7 @@
 <li><code>no-remote-create</code>: blocks <code>gh repo create</code>, <code>gh repo fork</code>, <code>git remote add</code>, and <code>git remote set-url</code>. Claude, Codex.</li>
 <li><code>no-worktree-deploy</code>: blocks <code>ansible-playbook</code> from a git worktree unless read-only flags are used. Claude, Codex.</li>
 <li><code>no-worktree-marketplace</code>: blocks any linked git worktree passed as a persistent Claude or Codex marketplace source, regardless of the command's current directory; primary checkouts and remote sources remain valid. Claude, Codex.</li>
-<li><code>plugin-mutation</code>: routes machine-wide Claude and Codex plugin installs, updates, removals, enablement changes, and marketplace mutations to the operator. Claude gets the host's own permission prompt through PreToolUse <code>permissionDecision: &quot;ask&quot;</code>, which shows the exact pending command; every other host gets a hard deny carrying the same reason. A local Codex marketplace that already points at the primary checkout needs only candidate integration. Requires a Claude build that understands the <code>ask</code> decision: an older host that ignores it lets the command through instead of blocking it, so pin this guard's protection to a current Claude Code. Claude, Codex.</li>
+<li><code>plugin-mutation</code>: routes machine-wide Claude and Codex plugin installs, updates, removals, enablement changes, and marketplace mutations to the operator. Claude gets the host's own permission prompt through PreToolUse <code>permissionDecision: &quot;ask&quot;</code>, which shows the exact pending command; every other host gets a hard deny carrying the same reason. A local Codex marketplace that already points at the primary checkout needs only candidate integration. The Claude path expects a host that understands the <code>ask</code> decision. Claude, Codex.</li>
 <li><code>pr-discipline</code>: blocks weak <code>gh pr create</code> / <code>gh pr edit</code> titles and template or tooling-attribution bodies. Claude, Codex.</li>
 <li><code>dash-bash</code>: denies Bash commands containing a real em-dash or en-dash before any side effect occurs. Claude, Codex.</li>
 <li><code>followup</code>: blocks <code>gh api</code> bodies that quietly defer work without <code>Bewust uitgesteld:</code>. Claude, Codex.</li>
