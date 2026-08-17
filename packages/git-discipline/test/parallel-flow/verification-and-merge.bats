@@ -32,14 +32,25 @@ load helpers
   [[ "$output" == *"has no passing verification"* ]]
 }
 
-@test "local target refuses a repository with a remote" {
+@test "local target merges a repository with a remote without touching origin" {
   add_origin
   create_feature_commit
+  local base candidate remote_before
+  base=$(git -C "$TEST_REPO" rev-parse refs/heads/main)
+  candidate=$(git -C "$TEST_REPO" rev-parse HEAD)
+  remote_before=$(git -C "$REMOTE_REPO" rev-parse refs/heads/main)
 
   run bash -c "cd '$TEST_REPO' && '$GIT_DISCIPLINE' verify --local -- true"
+  [ "$status" -eq 0 ]
 
-  [ "$status" -ne 0 ]
-  [[ "$output" == *"Local target requires a repository without remotes"* ]]
+  run bash -c "cd '$TEST_REPO' && '$GIT_DISCIPLINE' merge --local"
+  [ "$status" -eq 0 ]
+
+  local merged parents
+  merged=$(git -C "$TEST_REPO" rev-parse refs/heads/main)
+  parents=$(git -C "$TEST_REPO" show -s --format=%P "$merged")
+  [ "$parents" = "$base $candidate" ]
+  [ "$(git -C "$REMOTE_REPO" rev-parse refs/heads/main)" = "$remote_before" ]
 }
 
 @test "local merge keeps a checked-out default worktree coherent" {

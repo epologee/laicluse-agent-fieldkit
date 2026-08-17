@@ -35,19 +35,22 @@ Repository policy determines the only valid merge target:
 |------|--------|
 | `local-only` | Use `--local`; atomically update the local default ref. |
 | `auto-trunk` | Use `--remote`; the non-force push is normal completion. |
-| `gated-trunk` | Use `--remote` only when the operator explicitly ordered this default merge; that order is the go for the published or shared ref update. |
+| `gated-trunk` | Use `--local`: the merge commit updates the local default ref and publication stays a separate decision. Use `--remote` only when the operator's order names publishing this default, in their own words (push, publish, origin, live). Invoking this skill orders the merge, not the publication; a merge order is never by itself the go for a shared ref update. |
 | `pr-flow` | Do not update the default ref directly. Follow the repository's PR flow; the remote merge remains an explicit operator gate. |
 | `external` | Do not update the default ref; there is no write access. |
 
 ```bash
 case "$MODE" in
   local-only) TARGET=--local ;;
-  auto-trunk|gated-trunk) TARGET=--remote ;;
+  auto-trunk) TARGET=--remote ;;
+  gated-trunk) TARGET=--local ;;
   pr-flow) echo "Default is protected; use the repository PR flow." >&2; exit 1 ;;
   external) echo "Repository is external; default cannot be updated from this checkout." >&2; exit 1 ;;
   *) echo "Unknown git-discipline mode: $MODE" >&2; exit 1 ;;
 esac
 ```
+
+Raise `gated-trunk` to `TARGET=--remote` only after reading the operator's order again and finding publication in it. When the order is silent about publishing, finish on the local default and report that the remote is untouched; the operator can order the push as its own step.
 
 ## Prepare and verify the candidate
 
@@ -67,6 +70,12 @@ The verification command must cover the relevant behavior at the exact candidate
 ```
 
 The executable creates a merge commit whose first parent is the verified default tip, whose second parent is the candidate, and whose tree equals the candidate tree. `--local` rejects repositories with remotes. It uses `git update-ref <ref> <new> <expected>` when the default is not checked out, or Git's `receive.denyCurrentBranch=updateInstead` path when a clean default worktree must remain coherent. `--remote` uses a normal non-force push. If another merge wins first, the compare-and-swap fails without changing the default ref. Rebase on the new tip, rerun the relevant verification, and retry until the candidate wins or a genuine gate is reached. Do not add a long-lived merge lock.
+
+## A refusal from the shared command is the result
+
+The executable owns this operation end to end, so whatever it reports is the outcome of the step. When it refuses, report that refusal together with the state it found and stop. `The candidate cannot be the default branch <name>` means the candidate is already integrated: name the merge commit that carries it and finish there. A missing verification, a dirty tree, or a lost compare-and-swap race are answered by verifying, committing, or rebasing and rerunning the same command.
+
+Never finish a refused step by hand with direct Git commands, and never substitute an adjacent action for the one that turned out to be unnecessary. A step that had nothing left to do is a complete result; hand-finishing it converts a no-op into a state change nobody ordered.
 
 ## Deployment checkout contention means wait
 

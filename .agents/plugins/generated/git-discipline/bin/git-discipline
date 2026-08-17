@@ -97,11 +97,6 @@ function targetFrom(argumentsList) {
   if (local === remote) {
     throw new GitDisciplineError('Choose exactly one target: --local or --remote.');
   }
-  if (local && gitOutput(['remote'])) {
-    throw new GitDisciplineError(
-      'Local target requires a repository without remotes; resolve repository policy before continuing.',
-    );
-  }
   return local ? 'local' : 'remote';
 }
 

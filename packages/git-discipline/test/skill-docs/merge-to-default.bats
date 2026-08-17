@@ -33,6 +33,19 @@ setup() {
   grep -q 'external' "$SKILL"
 }
 
+@test "a merge order is not by itself a publication order" {
+  grep -q 'gated-trunk) TARGET=--local' "$SKILL"
+  ! grep -q 'auto-trunk|gated-trunk) TARGET=--remote' "$SKILL"
+  grep -q 'Invoking this skill orders the merge, not the publication' "$SKILL"
+  grep -q "operator's order names publishing this default" "$SKILL"
+}
+
+@test "a refused step ends the operation instead of being hand-finished" {
+  grep -q 'The candidate cannot be the default branch' "$SKILL"
+  grep -q 'Never finish a refused step by hand with direct Git commands' "$SKILL"
+  grep -q 'never substitute an adjacent action' "$SKILL"
+}
+
 @test "deployment waits for an occupied or divergent canonical checkout" {
   grep -q 'held by another session' "$SKILL"
   grep -q 'committed-but-unintegrated work' "$SKILL"
