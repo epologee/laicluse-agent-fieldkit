@@ -116,6 +116,11 @@
       "name": "circus",
       "description": "One source of truth for shared and agent-specific instructions, project-level CIRCUS.md sync, Codex plugin adapters, and marketplace versioning across coding agents.",
       "source": "./packages/circus"
+    },
+    {
+      "name": "xquik",
+      "description": "Use Xquik for bounded Twitter/X advanced search, profile and trend reads, typed SDK integrations, exports, monitors, webhooks, and confirmation-gated account actions through REST or MCP.",
+      "source": "./packages/xquik"
     }
   ]
 }

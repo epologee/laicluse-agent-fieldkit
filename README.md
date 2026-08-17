@@ -88,6 +88,9 @@ The marketplace currently ships:
 - `whywhy`: drills a configurable why-chain into a question or goal, then
   reads the chain for assumptions, forks, and better framing.
 - `circus`: builds shared and agent-specific instruction targets, keeps project-level CIRCUS.md/CLAUDE.md/AGENTS.md aligned, and generates and versions multi-agent plugin adapters.
+- `xquik`: route bounded Twitter/X advanced search, profiles, trends, SDK
+  integrations, exports, monitors, webhooks, and confirmation-gated account
+  actions through current REST or MCP contracts.
 
 ## Development
 

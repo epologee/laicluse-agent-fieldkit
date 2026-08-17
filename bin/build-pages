@@ -105,6 +105,10 @@ const copy = {
 		category: "review",
 		summary: "Drills a configurable why-chain into a question or goal, then reads the chain for assumptions, forks, and a better-framed direction.",
 	},
+	xquik: {
+		category: "workflow",
+		summary: "Routes bounded Twitter/X search, profiles, trends, SDK integrations, exports, monitors, webhooks, and approved account actions through current REST or MCP contracts.",
+	},
 	lifeline: {
 		category: "review",
 		summary: "Three lifelines for when a first answer is not enough: research before choosing, verify doubtful claims, and rethink drifting projects from first principles.",

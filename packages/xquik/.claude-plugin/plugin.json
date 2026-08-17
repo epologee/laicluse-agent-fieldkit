@@ -1,0 +1,23 @@
+{
+  "name": "xquik",
+  "description": "Use Xquik for bounded Twitter/X advanced search, profile and trend reads, typed SDK integrations, exports, monitors, webhooks, and confirmation-gated account actions through REST or MCP.",
+  "version": "2.0.1",
+  "author": {
+    "name": "Xquik",
+    "url": "https://github.com/Xquik-dev"
+  },
+  "homepage": "https://docs.xquik.com",
+  "repository": "https://github.com/Xquik-dev/x-twitter-scraper",
+  "license": "MIT",
+  "keywords": [
+    "xquik",
+    "twitter-api",
+    "twitter-advanced-search",
+    "tweet-search",
+    "x-data",
+    "mcp",
+    "sdk",
+    "monitoring",
+    "webhooks"
+  ]
+}

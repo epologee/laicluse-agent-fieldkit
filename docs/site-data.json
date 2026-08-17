@@ -88,12 +88,12 @@
 		}
 	],
 	"counts": {
-		"sourcePackages": 22,
+		"sourcePackages": 23,
 		"publicProjects": 3,
-		"codexPackages": 21,
+		"codexPackages": 22,
 		"claudeOnlyPackages": 1,
-		"changelogEntries": 22,
-		"skillEntries": 84,
+		"changelogEntries": 23,
+		"skillEntries": 85,
 		"hookFiles": 57
 	},
 	"install": {
@@ -120,7 +120,8 @@
 			"claude plugins install whywhy@laicluse-agent-fieldkit",
 			"claude plugins install lifeline@laicluse-agent-fieldkit",
 			"claude plugins install saysay@laicluse-agent-fieldkit",
-			"claude plugins install circus@laicluse-agent-fieldkit"
+			"claude plugins install circus@laicluse-agent-fieldkit",
+			"claude plugins install xquik@laicluse-agent-fieldkit"
 		],
 		"codex": [
 			"codex plugin marketplace add laicluse/agent-fieldkit",
@@ -144,7 +145,8 @@
 			"codex plugin add whywhy@laicluse-agent-fieldkit",
 			"codex plugin add lifeline@laicluse-agent-fieldkit",
 			"codex plugin add saysay@laicluse-agent-fieldkit",
-			"codex plugin add circus@laicluse-agent-fieldkit"
+			"codex plugin add circus@laicluse-agent-fieldkit",
+			"codex plugin add xquik@laicluse-agent-fieldkit"
 		]
 	},
 	"plugins": [
@@ -630,6 +632,28 @@
 				"type": "Improved",
 				"summary": "Retained Codex hook runtimes now carry their actual source version and stronger regression coverage."
 			}
+		},
+		{
+			"name": "xquik",
+			"version": "2.0.1",
+			"category": "workflow",
+			"summary": "Routes bounded Twitter/X search, profiles, trends, SDK integrations, exports, monitors, webhooks, and approved account actions through current REST or MCP contracts.",
+			"support": [
+				"Claude Code",
+				"Codex"
+			],
+			"codex": true,
+			"detailPath": "agent-fieldkit/xquik/",
+			"sourcePath": "packages/xquik",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/tree/main/packages/xquik",
+			"skillCount": 1,
+			"commandCount": 0,
+			"hookFileCount": 0,
+			"latestChange": {
+				"version": "v2.0.1",
+				"type": "Added",
+				"summary": "xquik joins the Fieldkit marketplace for Claude Code and Codex."
+			}
 		}
 	],
 	"changelog": [
@@ -830,6 +854,15 @@
 			"type": "Changed",
 			"summary": "Introduced Pattern Memory as a local-first implementation-pattern registry.",
 			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/pattern-memory/CHANGELOG.md"
+		},
+		{
+			"plugin": "xquik",
+			"packageVersion": "2.0.1",
+			"detailPath": "agent-fieldkit/xquik/",
+			"version": "v2.0.1",
+			"type": "Added",
+			"summary": "xquik joins the Fieldkit marketplace for Claude Code and Codex.",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/xquik/CHANGELOG.md"
 		}
 	]
 }
