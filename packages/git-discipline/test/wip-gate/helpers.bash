@@ -9,6 +9,8 @@
 #   git rev-parse --verify --quiet <ref>        - upstream existence check
 #   git rev-parse --short <sha>                 - short-form commit
 #   git rev-list <range>                        - commits in the push range
+#                                                 (one arg, or several when the
+#                                                  range excludes two refs)
 #   git log -1 --pretty=format:%B <sha>         - commit body
 #   git log -1 --pretty=format:%s <sha>         - commit subject
 #   git interpret-trailers --parse              - parse trailers from stdin
@@ -186,7 +188,7 @@ if [[ "${args[0]}" = "show" ]]; then
 fi
 
 if [[ "${args[0]}" = "rev-list" ]]; then
-  range="${args[1]}"
+  range="${args[*]:1}"
   key=$(printf '%s' "$range" | sed 's/[^A-Za-z0-9]/_/g')
   var="GIT_SHIM_REV_LIST__${key}"
   if [[ -n "${!var:-}" ]]; then

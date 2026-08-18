@@ -13,9 +13,21 @@
 #
 # Public functions:
 #   wip_gate_parse_range <upstream-ref> <local-ref>
-#       Echoes the rev-list range "<upstream>..<local>". When the upstream
-#       does not exist (initial push of a new branch), echoes just "<local>"
-#       so git rev-list scans every reachable commit on the new branch.
+#       Echoes the rev-list range covering <local-ref> minus the upstream and
+#       minus the resolved default branch. A force-push after a rebase reports
+#       the pre-rebase remote tip as its upstream, so excluding the default
+#       branch as well keeps the commits the branch caught up on out of the
+#       range. When neither ref resolves (initial push of a new branch in a
+#       repo without an origin HEAD), echoes just "<local>" so git rev-list
+#       scans every reachable commit on the new branch.
+#   wip_gate_scoped_range <local-ref> <exclude-ref>...
+#       Builds that range from a local ref and any number of exclusions,
+#       dropping the ones that do not resolve. A single exclusion keeps the
+#       readable "<exclude>..<local>" form; several emit "^a ^b <local>".
+#   wip_gate_rev_list <range>
+#       Runs git rev-list over a range built by the functions above. A range is
+#       one or more arguments, so every caller reads it through this function
+#       rather than expanding it itself.
 #   wip_gate_find_wip_commits <range>
 #       For each commit in <range>, parses the body via
 #       `git interpret-trailers --parse` and emits the SHA on stdout when the
@@ -43,29 +55,69 @@ wip_gate_parse_range() {
   local upstream="$1"
   local local_ref="$2"
 
-  # Initial push: upstream is empty, all-zero SHA, or not resolvable.
-  if [[ -z "$upstream" ]] \
-     || [[ "$upstream" =~ ^0+$ ]] \
-     || ! git rev-parse --verify --quiet "$upstream" >/dev/null 2>&1; then
-    printf '%s' "$local_ref"
-    return 0
-  fi
+  local default_ref
+  default_ref=$(wip_gate_resolve_default_ref)
 
-  printf '%s..%s' "$upstream" "$local_ref"
+  wip_gate_scoped_range "$local_ref" "$upstream" "$default_ref"
 }
 
 # allow-comment: wip_gate_resolve_default_ref echoes origin/<default> from Git's
-# allow-comment: origin/HEAD metadata. Returns non-zero when none resolves so the
-# allow-comment: caller can fall back to the tracked upstream without guessing names.
+# allow-comment: origin/HEAD metadata, and only when that ref resolves to an
+# allow-comment: object. Returns non-zero otherwise so the caller can fall back
+# allow-comment: to the tracked upstream without guessing names.
 wip_gate_resolve_default_ref() {
   local sym
   sym=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)
-  if [[ -n "$sym" ]]; then
-    printf '%s' "$sym"
-    return 0
-  fi
+  [[ -z "$sym" ]] && return 1
+  git rev-parse --verify --quiet "$sym" >/dev/null 2>&1 || return 1
 
-  return 1
+  printf '%s' "$sym"
+}
+
+# allow-comment: wip_gate_scoped_range <local-ref> <exclude-ref>... is the one
+# allow-comment: place a push range is built. It keeps the exclusions that
+# allow-comment: resolve (an empty ref, the all-zero sha git reports for a
+# allow-comment: branch the remote does not have yet, and a deleted ref all drop
+# allow-comment: out) and de-duplicates them, so pushing the default branch
+# allow-comment: itself names its remote tip once. One exclusion prints the
+# allow-comment: two-dot form both hooks have always used; two or more print
+# allow-comment: caret form, which is several arguments and therefore only safe
+# allow-comment: through wip_gate_rev_list.
+wip_gate_scoped_range() {
+  local local_ref="$1"
+  shift
+
+  local excludes="" first="" count=0 ref
+  for ref in "$@"; do
+    [[ -z "$ref" ]] && continue
+    [[ "$ref" =~ ^0+$ ]] && continue
+    case " $excludes " in *" ^$ref "*) continue ;; esac
+    git rev-parse --verify --quiet "$ref" >/dev/null 2>&1 || continue
+
+    excludes+="^$ref "
+    [[ -z "$first" ]] && first="$ref"
+    count=$((count + 1))
+  done
+
+  if [[ "$count" -eq 0 ]]; then
+    printf '%s' "$local_ref"
+  elif [[ "$count" -eq 1 ]]; then
+    printf '%s..%s' "$first" "$local_ref"
+  else
+    printf '%s%s' "$excludes" "$local_ref"
+  fi
+}
+
+# allow-comment: wip_gate_rev_list <range> is the only reader of a range built
+# allow-comment: here; the caret form is several arguments, so the expansion is
+# allow-comment: deliberately unquoted and lives in one place instead of at each
+# allow-comment: call site.
+wip_gate_rev_list() {
+  local range="$1"
+  [[ -z "$range" ]] && return 0
+
+  # shellcheck disable=SC2086
+  git rev-list $range 2>/dev/null || true
 }
 
 # allow-comment: wip_gate_commit_is_ours <sha> [identity-email] returns 0 when the
@@ -104,16 +156,18 @@ wip_gate_commit_is_ours() {
 # allow-comment: prefix up to " push ", tokenizes the remaining args
 # allow-comment: (skipping flags and stopping at shell separators or
 # allow-comment: redirections), pairs remote/refspec positionals, and
-# allow-comment: resolves the rev-list range. With no explicit refspec it
-# allow-comment: scopes to origin/<default>..HEAD (the work not yet on the
-# allow-comment: default branch) so a rebased branch does not drag every
-# allow-comment: catching-up commit in, falling back to the tracked upstream
+# allow-comment: resolves the rev-list range. Every shape excludes the default
+# allow-comment: branch, so a rebased branch never drags the commits it caught
+# allow-comment: up on into the range. With no explicit refspec that is
+# allow-comment: origin/<default>..HEAD, falling back to the tracked upstream
 # allow-comment: only when no default branch resolves. With an explicit
-# allow-comment: remote+refspec (git push -u origin <branch>) it scopes to
-# allow-comment: origin/<branch>..<local> when that upstream already exists,
-# allow-comment: else to origin/<default>..<local> on a brand new branch's
-# allow-comment: first push, falling back to a full local_ref scan only when
-# allow-comment: no default branch resolves either.
+# allow-comment: remote+refspec (git push origin <branch>) both origin/<branch>
+# allow-comment: and origin/<default> are excluded: after a rebase the former is
+# allow-comment: the stale pre-rebase tip and the latter is what actually
+# allow-comment: bounds the branch's own work. On a brand new branch's first
+# allow-comment: push origin/<branch> does not resolve and that leaves
+# allow-comment: origin/<default>..<local>; with neither resolving it falls back
+# allow-comment: to a full local_ref scan.
 wip_gate_resolve_push_range() {
   local command="$1"
 
@@ -149,38 +203,20 @@ wip_gate_resolve_push_range() {
       remote_branch="$refspec"
     fi
     [[ -z "$local_ref" ]] && local_ref="HEAD"
-    local upstream="$remote/$remote_branch"
 
-    if git rev-parse --verify --quiet "$upstream" >/dev/null 2>&1; then
-      printf '%s..%s' "$upstream" "$local_ref"
-    else
-      # allow-comment: the explicit upstream (origin/<branch>) does not exist
-      # allow-comment: yet on a brand new branch's first push. Scope to
-      # allow-comment: origin/<default>..local_ref when a default branch
-      # allow-comment: resolves, same as the no-explicit-refspec case below,
-      # allow-comment: instead of scanning every commit reachable from
-      # allow-comment: local_ref (which drags in the whole pre-discipline
-      # allow-comment: repo history on a repo's very first feature branch).
-      local default_ref
-      default_ref=$(wip_gate_resolve_default_ref)
-      if [[ -n "$default_ref" ]] \
-	&& git rev-parse --verify --quiet "$default_ref" >/dev/null 2>&1; then
-	printf '%s..%s' "$default_ref" "$local_ref"
-      else
-	printf '%s' "$local_ref"
-      fi
-    fi
-  else
+    local upstream="$remote/$remote_branch"
     local default_ref
     default_ref=$(wip_gate_resolve_default_ref)
-    if [[ -n "$default_ref" ]] \
-       && git rev-parse --verify --quiet "$default_ref" >/dev/null 2>&1; then
-      printf '%s..%s' "$default_ref" "HEAD"
-    else
-      local upstream
+
+    wip_gate_scoped_range "$local_ref" "$upstream" "$default_ref"
+  else
+    local default_ref upstream=""
+    default_ref=$(wip_gate_resolve_default_ref)
+    if [[ -z "$default_ref" ]]; then
       upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)
-      wip_gate_parse_range "$upstream" "HEAD"
     fi
+
+    wip_gate_scoped_range "HEAD" "$default_ref" "$upstream"
   fi
 }
 
@@ -189,7 +225,7 @@ wip_gate_find_wip_commits() {
   [[ -z "$range" ]] && return 0
 
   local commits sha body slice_value
-  commits=$(git rev-list "$range" 2>/dev/null || true)
+  commits=$(wip_gate_rev_list "$range")
   [[ -z "$commits" ]] && return 0
 
   local me

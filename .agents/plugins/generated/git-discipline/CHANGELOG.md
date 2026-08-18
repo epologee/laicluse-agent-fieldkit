@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.56]
+
+### Fixed
+
+- **A rebased branch no longer drags the default branch's own commits into the push gates.** Naming a remote and branch on the push (`git push --force-with-lease origin <branch>`) measured against the remote branch tip, which a rebase leaves pointing at the pre-rebase commit; every commit the branch caught up on then counted as new and was judged for its body. Every push shape now also excludes the default branch, so only the branch's own commits are gated. The git-native `pre-push` hook, which reported the same stale tip, is scoped the same way.
+
 ## [v2.0.54]
 
 ### Fixed

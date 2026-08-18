@@ -238,7 +238,7 @@
 		},
 		{
 			"name": "git-discipline",
-			"version": "2.0.55",
+			"version": "2.0.56",
 			"category": "workflow",
 			"summary": "Coordinates verified worktree candidates, atomic default-branch merges, and shared commit and push enforcement.",
 			"support": [
@@ -253,9 +253,9 @@
 			"commandCount": 3,
 			"hookFileCount": 26,
 			"latestChange": {
-				"version": "v2.0.54",
+				"version": "v2.0.56",
 				"type": "Fixed",
-				"summary": "Installing git-discipline no longer turns worktrees into a machine-wide default."
+				"summary": "A rebased branch no longer drags the default branch's own commits into the push gates."
 			}
 		},
 		{
@@ -634,6 +634,15 @@
 	],
 	"changelog": [
 		{
+			"plugin": "git-discipline",
+			"packageVersion": "2.0.56",
+			"detailPath": "agent-fieldkit/git-discipline/",
+			"version": "v2.0.56",
+			"type": "Fixed",
+			"summary": "A rebased branch no longer drags the default branch's own commits into the push gates.",
+			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
+		},
+		{
 			"plugin": "dibs",
 			"packageVersion": "2.0.55",
 			"detailPath": "agent-fieldkit/dibs/",
@@ -650,15 +659,6 @@
 			"type": "Added",
 			"summary": "Machine-wide plugin changes now require explicit operator approval.",
 			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/dont-do-that/CHANGELOG.md"
-		},
-		{
-			"plugin": "git-discipline",
-			"packageVersion": "2.0.55",
-			"detailPath": "agent-fieldkit/git-discipline/",
-			"version": "v2.0.54",
-			"type": "Fixed",
-			"summary": "Installing git-discipline no longer turns worktrees into a machine-wide default.",
-			"sourceUrl": "https://github.com/laicluse/agent-fieldkit/blob/main/packages/git-discipline/CHANGELOG.md"
 		},
 		{
 			"plugin": "how-plugins-work",

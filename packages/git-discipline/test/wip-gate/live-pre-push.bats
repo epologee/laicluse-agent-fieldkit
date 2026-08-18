@@ -95,3 +95,44 @@ BODY
   [ -f "$GIT_DISCIPLINE_WIP_PUSH_LOG" ]
   grep -q "|env" "$GIT_DISCIPLINE_WIP_PUSH_LOG"
 }
+
+# Build a default branch that moved ahead with a commit whose body predates the
+# discipline, plus a feature branch that was pushed before being rebased on top
+# of it. The force-push then reports a stale remote sha for the feature branch.
+make_rebased_feature() {
+  pushd "$TEST_REPO" >/dev/null
+  printf 'first\n' > seed.txt
+  git add seed.txt
+  git -c commit.gpgsign=false commit -q -m "Seed initial file"
+  git push -q -u origin main
+  git remote set-head origin -a >/dev/null
+
+  git checkout -q -b feature
+  printf 'one\n' > feature.txt
+  git add feature.txt
+  git -c commit.gpgsign=false commit -q -m "Add one feature line"
+  git push -q -u origin feature
+
+  git checkout -q main
+  printf 'a\nb\nc\nd\ne\nf\n' > widget.txt
+  printf 'x\ny\nz\n' > pipeline.txt
+  git add widget.txt pipeline.txt
+  git -c commit.gpgsign=false commit -q -m "Rework the widget pipeline"
+  git push -q origin main
+
+  git checkout -q feature
+  git -c commit.gpgsign=false rebase -q main
+  popd >/dev/null
+}
+
+@test "installed pre-push lets a rebased branch through instead of judging the default branch it caught up on" {
+  make_rebased_feature
+  run_install
+
+  pushd "$TEST_REPO" >/dev/null
+  run git push --force-with-lease origin feature
+  popd >/dev/null
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"Body schema misses in push range"* ]]
+}

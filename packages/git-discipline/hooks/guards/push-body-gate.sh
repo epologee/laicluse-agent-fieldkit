@@ -22,7 +22,7 @@ guard_push_body_gate() {
   [[ -z "$range" ]] && return 0
 
   local commits
-  commits=$(git rev-list "$range" 2>/dev/null || true)
+  commits=$(wip_gate_rev_list "$range")
   [[ -z "$commits" ]] && return 0
 
   local me

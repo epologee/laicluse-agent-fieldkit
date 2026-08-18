@@ -11,10 +11,11 @@
 #   `git push` accepts a great variety of refspecs, options, and remote
 #   shorthands. Re-implementing git's own parser here is out of scope. The
 #   guard handles the two common shapes:
-#     1. Bare `git push` (no remote, no refspec)         -> use @{u}..HEAD.
-#     2. `git push <remote>` (no refspec)                -> use @{u}..HEAD.
-#     3. `git push <remote> <branch>`                    -> use <remote>/<branch>..<branch>.
-#     4. `git push <remote> <local>:<remote-branch>`     -> use <remote>/<remote-branch>..<local>.
+#     1. Bare `git push` (no remote, no refspec)         -> scope to the default branch.
+#     2. `git push <remote>` (no refspec)                -> scope to the default branch.
+#     3. `git push <remote> <branch>`                    -> also exclude <remote>/<branch>.
+#     4. `git push <remote> <local>:<remote-branch>`     -> also exclude <remote>/<remote-branch>.
+#   wip_gate_resolve_push_range in hooks/lib/wip-gate.sh owns the exact ranges.
 #   allow-comment: workaround for the 50-commit fallback that re-validated already-pushed commits and tripped parallel sessions; exotic forms now scan HEAD~1..HEAD only.
 #
 # Bypass paths.
