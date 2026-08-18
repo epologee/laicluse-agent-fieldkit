@@ -1,5 +1,11 @@
 # Circus changelog
 
+## [v2.0.6]
+
+### Fixed
+
+- **A plugin build no longer takes the generated runtime away while it refills it.** The build cleared `.agents/plugins/generated/<plugin>/` before copying the new tree in, so anything running out of that directory in the meantime failed: a `git push` whose hook lives there reported a missing plugin binary, and a Codex session could read a half-written tree. Builds now stage the whole tree first and replace each target in place, so a reader sees either the old file or the new one.
+
 ## [v2.0.5]
 
 ### Improved

@@ -39,8 +39,10 @@ if [[ -f "$DENY_LIB" ]]; then
 fi
 
 if [[ ! -x "$GIT_DISCIPLINE" ]]; then
-  printf 'git-discipline/pre-push: flow command not found at %s\n' "$GIT_DISCIPLINE" >&2
-  printf '  Re-run /git-discipline:install-hooks to refresh the plugin path.\n' >&2
+  printf 'git-discipline/pre-push: no executable git-discipline at %s\n' "$GIT_DISCIPLINE" >&2
+  printf '  That path holds the installed plugin, so check that it exists and is\n' >&2
+  printf '  executable, or re-run /git-discipline:install-hooks to point the hook at\n' >&2
+  printf '  the current install.\n' >&2
   exit 1
 fi
 

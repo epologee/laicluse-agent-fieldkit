@@ -407,7 +407,7 @@ generate_into() {
 expected_files() {
   local out_root="$1"
   {
-    find "$out_root/.agents" -type f 2>/dev/null
+    find "$out_root/.agents" -type f 2>/dev/null || true
     find "$out_root" -path "*/.codex-plugin/plugin.json" -type f 2>/dev/null
     find "$out_root" -path "*/skills/*/SKILL.md" -type f 2>/dev/null
   } | sort -u
@@ -416,16 +416,60 @@ expected_files() {
 actual_files() {
   local repo="$1"
   {
-    find "$repo/.agents" -type f 2>/dev/null
+    find "$repo/.agents" -type f 2>/dev/null || true
     find "$repo" -not -path "*/worktrees/*" -path "*/.codex-plugin/plugin.json" -type f 2>/dev/null
     generated_claude_skill_targets "$repo"
   } | sort -u
 }
 
+prune_empty_parents() {
+  local repo="$1" dir="$2"
+  while [ -n "$dir" ] && [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+    rmdir "$repo/$dir" 2>/dev/null || break
+    dir="$(dirname "$dir")"
+  done
+}
+
+# Publish a staged build into the repository without ever taking a generated
+# file away. Git hooks and Codex sessions run straight out of the generated
+# tree, so each target is replaced by an atomic rename within its own
+# directory: a reader sees either the old file or the new one, never a gap.
+# Targets that the build no longer produces are removed afterwards, which is
+# what keeps a dropped adapter from lingering as drift.
+publish_generated() {
+  local staged="$1" repo="$2" rel target expected_rel actual_rel
+  expected_rel="$staged/.circus-publish-expected"
+  actual_rel="$staged/.circus-publish-actual"
+  expected_files "$staged" | sed "s#^$staged/##" | sort -u > "$expected_rel"
+  actual_files "$repo" | sed "s#^$repo/##" | sort -u > "$actual_rel"
+
+  while IFS= read -r rel; do
+    [ -n "$rel" ] || continue
+    target="$repo/$rel"
+    if [ -f "$target" ] && cmp -s "$staged/$rel" "$target"; then
+      continue
+    fi
+    mkdir -p "$(dirname "$target")"
+    cp -p "$staged/$rel" "$target.circus-new"
+    mv -f "$target.circus-new" "$target"
+  done < "$expected_rel"
+
+  while IFS= read -r rel; do
+    [ -n "$rel" ] || continue
+    rm -f "$repo/$rel"
+    prune_empty_parents "$repo" "$(dirname "$rel")"
+  done < <(comm -13 "$expected_rel" "$actual_rel")
+
+  rm -f "$expected_rel" "$actual_rel"
+}
+
 cmd_build() {
-  local repo
+  local repo staged
   repo="$(repo_root "${1:-$PWD}")"
-  generate_into "$repo" "$repo"
+  staged="$(mktemp -d)"
+  trap "rm -rf '$staged'" EXIT
+  generate_into "$repo" "$staged"
+  publish_generated "$staged" "$repo"
   printf 'circus plugins: wrote %s and .codex-plugin manifests (%s)\n' "$CODEX_MARKETPLACE_FILE" "$repo"
 }
 
