@@ -151,3 +151,67 @@ make_rebased_feature() {
   [[ "$output" == *"no executable git-discipline at $gone/bin/git-discipline"* ]]
   [[ "$output" != *"flow command"* ]]
 }
+
+# A pre-push body as earlier versions installed it: the range is one rev-list
+# argument and the body loop judges each commit itself. Those copies live in
+# each user's hooks directory and only update on a reinstall, so the libraries
+# they load must keep gating correctly without one.
+write_legacy_pre_push() {
+  local plugin_root="$REPO_ROOT/packages/git-discipline"
+  cat > "$TEST_REPO/.git/hooks/pre-push" <<HOOK
+#!/bin/bash
+set -uo pipefail
+PLUGIN_PATH="$plugin_root"
+push_updates=\$(cat)
+. "\$PLUGIN_PATH/hooks/lib/wip-gate.sh"
+. "\$PLUGIN_PATH/hooks/lib/validate-body.sh"
+me=\$(git config user.email 2>/dev/null || true)
+misses=""
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "\$local_sha" ] || continue
+  range=\$(wip_gate_parse_range "\$remote_sha" "\$local_sha")
+  while IFS= read -r bsha; do
+    [ -n "\$bsha" ] || continue
+    wip_gate_commit_is_ours "\$bsha" "\$me" || continue
+    if bline=\$(vb_validate_commit "\$bsha"); then continue; fi
+    misses="\$misses \$bsha"
+  done < <(git rev-list "\$range" 2>/dev/null || true)
+done <<< "\$push_updates"
+if [ -n "\$misses" ]; then
+  printf 'legacy body gate:%s\n' "\$misses" >&2
+  exit 1
+fi
+exit 0
+HOOK
+  chmod +x "$TEST_REPO/.git/hooks/pre-push"
+}
+
+@test "a pre-push body installed before this version still passes a rebased branch" {
+  make_rebased_feature
+  run_install
+  write_legacy_pre_push
+
+  pushd "$TEST_REPO" >/dev/null
+  run git push --force-with-lease origin feature
+  popd >/dev/null
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"legacy body gate"* ]]
+}
+
+@test "a pre-push body installed before this version still gates unshipped work" {
+  make_rebased_feature
+  run_install
+  write_legacy_pre_push
+
+  pushd "$TEST_REPO" >/dev/null
+  printf 'aa\nbb\ncc\ndd\nee\nff\n' > sloppy.txt
+  printf 'gg\nhh\nii\n' > sloppy2.txt
+  git add sloppy.txt sloppy2.txt
+  git -c commit.gpgsign=false commit --no-verify -q -m "Rewrite the feature without a body"
+  run git push --force-with-lease origin feature
+  popd >/dev/null
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"legacy body gate"* ]]
+}

@@ -9,8 +9,7 @@
 #   git rev-parse --verify --quiet <ref>        - upstream existence check
 #   git rev-parse --short <sha>                 - short-form commit
 #   git rev-list <range>                        - commits in the push range
-#                                                 (one arg, or several when the
-#                                                  range excludes two refs)
+#   git merge-base --is-ancestor <sha> <ref>    - has <sha> already shipped
 #   git log -1 --pretty=format:%B <sha>         - commit body
 #   git log -1 --pretty=format:%s <sha>         - commit subject
 #   git interpret-trailers --parse              - parse trailers from stdin
@@ -82,6 +81,15 @@ wip_shim_set_show() {
   key=$(printf '%s' "$1" | sed 's/[^A-Za-z0-9]/_/g')
   eval "export GIT_SHIM_SHOW_SHORTSTAT__${key}=\"\$2\""
   eval "export GIT_SHIM_SHOW_NAMES__${key}=\"\$3\""
+}
+
+# wip_shim_set_published <sha>
+# Mark a commit as already on the default branch, the way
+# `git merge-base --is-ancestor` reports it in a real repository.
+wip_shim_set_published() {
+  local key
+  key=$(printf '%s' "$1" | sed 's/[^A-Za-z0-9]/_/g')
+  eval "export GIT_SHIM_PUBLISHED__${key}=1"
 }
 
 # wip_shim_set_revlist <range> <sha-list-newline-separated>
@@ -187,8 +195,16 @@ if [[ "${args[0]}" = "show" ]]; then
   exit 0
 fi
 
+if [[ "${args[0]}" = "merge-base" && "${args[1]}" = "--is-ancestor" ]]; then
+  sha="${args[2]}"
+  key=$(printf '%s' "$sha" | sed 's/[^A-Za-z0-9]/_/g')
+  var="GIT_SHIM_PUBLISHED__${key}"
+  [[ -n "${!var:-}" ]] && exit 0
+  exit 1
+fi
+
 if [[ "${args[0]}" = "rev-list" ]]; then
-  range="${args[*]:1}"
+  range="${args[1]}"
   key=$(printf '%s' "$range" | sed 's/[^A-Za-z0-9]/_/g')
   var="GIT_SHIM_REV_LIST__${key}"
   if [[ -n "${!var:-}" ]]; then

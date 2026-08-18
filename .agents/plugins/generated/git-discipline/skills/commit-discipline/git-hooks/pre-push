@@ -111,7 +111,7 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       bsub=$(git log -1 --pretty=format:%s "$bsha" 2>/dev/null || true)
       bshort=$(git rev-parse --short "$bsha" 2>/dev/null || printf '%s' "${bsha:0:7}")
       all_body="$all_body"$'\n'"  $bshort \"$bsub\": $bline"
-    done < <(wip_gate_rev_list "$range")
+    done < <(git rev-list "$range" 2>/dev/null || true)
   fi
 done <<< "$push_updates"
 

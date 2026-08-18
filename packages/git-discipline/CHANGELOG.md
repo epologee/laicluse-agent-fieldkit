@@ -19,17 +19,17 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.58]
+
+### Fixed
+
+- **A commit that already shipped is never judged again at push time.** A force-push after a rebase measured against the pre-rebase remote tip, so every commit the branch had caught up on from the default branch counted as new work and was held to the body schema; the push was denied over commits that were published a month earlier and could only be "fixed" by rewriting public history. Both push gates now skip any commit that is already an ancestor of the default branch. The rule sits in the libraries the git hooks load on every run rather than in their push-range arithmetic, so a `pre-push` hook installed by an earlier version applies it too, without a reinstall.
+
 ## [v2.0.57]
 
 ### Fixed
 
 - **An unreachable plugin path now says so.** The `pre-push` hook reported "flow command not found" when its check was whether an executable file sits at the configured plugin path, which sent readers looking for a `flow` subcommand that never existed. The message names the path it tested and what to do about it.
-
-## [v2.0.56]
-
-### Fixed
-
-- **A rebased branch no longer drags the default branch's own commits into the push gates.** Naming a remote and branch on the push (`git push --force-with-lease origin <branch>`) measured against the remote branch tip, which a rebase leaves pointing at the pre-rebase commit; every commit the branch caught up on then counted as new and was judged for its body. Every push shape now also excludes the default branch, so only the branch's own commits are gated. The git-native `pre-push` hook, which reported the same stale tip, is scoped the same way.
 
 ## [v2.0.54]
 

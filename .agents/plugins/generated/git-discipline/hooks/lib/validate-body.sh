@@ -153,6 +153,8 @@ _vb_why_block() {
 # validator. Provides _vb_ui_touched_files and _vb_is_ui_touch.
 _VB_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
 # shellcheck disable=SC1091
+. "$_VB_LIB_DIR/published-commit.sh"
+# shellcheck disable=SC1091
 . "$_VB_LIB_DIR/ui-touch.sh"
 
 # ---------------------------------------------------------------------------
@@ -812,6 +814,14 @@ vb_validate_commit() {
   # allow-comment: routes through here exempts it uniformly.
   slice=$(git log -1 --pretty=format:%B "$sha" 2>/dev/null | git interpret-trailers --parse 2>/dev/null | sed -n 's/^Slice:[[:space:]]*//p' | head -1)
   if [[ "$slice" = "wip" ]]; then
+    return 0
+  fi
+  # allow-comment: a commit that already sits on the default branch has shipped;
+  # allow-comment: asking a later push to improve its body would be asking for a
+  # allow-comment: rewrite of public history. The push ranges narrow the walk,
+  # allow-comment: but only this predicate holds for every push shape and for
+  # allow-comment: hook bodies installed before the range arithmetic changed.
+  if published_commit_is_published "$sha"; then
     return 0
   fi
   shortstat=$(GIT_DISCIPLINE_VALIDATE_CONTEXT="$sha" _vb_delta_shortstat)
