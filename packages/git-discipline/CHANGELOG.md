@@ -19,6 +19,12 @@ omitted; the broadcast budget is for things the user benefits from knowing.
 Version numbers may therefore be non-contiguous (an internal refactor bumps
 the version without producing an entry here).
 
+## [v2.0.57]
+
+### Fixed
+
+- **An unreachable plugin path now says so.** The `pre-push` hook reported "flow command not found" when its check was whether an executable file sits at the configured plugin path, which sent readers looking for a `flow` subcommand that never existed. The message names the path it tested and what to do about it.
+
 ## [v2.0.56]
 
 ### Fixed

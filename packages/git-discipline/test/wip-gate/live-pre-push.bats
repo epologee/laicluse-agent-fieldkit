@@ -136,3 +136,18 @@ make_rebased_feature() {
   [ "$status" -eq 0 ]
   [[ "$output" != *"Body schema misses in push range"* ]]
 }
+
+@test "an unreachable plugin path names the path instead of a missing subcommand" {
+  run_install
+  make_wip_commit
+
+  pushd "$TEST_REPO" >/dev/null
+  gone="$BATS_TEST_TMPDIR/gone-plugin"
+  sed -i.bak "s#^PLUGIN_PATH=.*#PLUGIN_PATH=\"$gone\"#" .git/hooks/pre-push
+  run git push -u origin feature
+  popd >/dev/null
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"no executable git-discipline at $gone/bin/git-discipline"* ]]
+  [[ "$output" != *"flow command"* ]]
+}
