@@ -81,3 +81,9 @@ run_bonsai() { "$NODE_BIN" "$BONSAI" "$@"; }
   run grep -rEi "'wx'|O_EXCL|O_EXLOCK|flock" "$REPO_ROOT/packages/bonsai/bin"
   [ "$status" -ne 0 ]
 }
+
+@test "the claimed lock records DIBS_OWNER so another process can recognise it as its own" {
+  DIBS_HOLDER_PID=$$ DIBS_OWNER=conveyor:some-run run run_bonsai create owner-feature --repo "$FIX" --json
+  [ "$status" -eq 0 ]
+  "$NODE_BIN" "$DIBS" check "$FIX/worktrees/owner-feature" --json | grep -q '"owner": "conveyor:some-run"'
+}

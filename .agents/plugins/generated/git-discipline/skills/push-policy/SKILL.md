@@ -53,11 +53,17 @@ are covered by `test/push-policy/derive-mode.bats`.
 - **push_access**: `write` or `external` (via `gh` viewer permission, with an
   owner-heuristic fallback against the `codingAgent.git.owners` global).
 
+## Where the work has to land
+
+The mode says what you may push; it does not say where the work has to arrive. Ask that second question before you pick a branch: which ref does this change take effect from? A deploy watching the default branch, a plugin or package installed from the default branch, a published artifact, a consumer that pulls it. When that ref is the default branch, a feature branch does not deliver the change at all.
+
+The landing ref decides the branch, not habit. In a trunk repo (`auto-trunk`, `gated-trunk`) the default branch is the working line; open a feature branch only when something concrete needs the isolation. If work already sits on a branch and the landing ref is the default, finishing it means merging it there with `/git-discipline:merge-to-default`, or naming that merge as the operator's call and asking for it. Pushing the branch and stopping leaves the change where nothing reads it, while the report says the work is done.
+
 ## Five modes
 
 - **local-only**: no remote. Never mention pushing at all.
-- **auto-trunk**: a private, individual repo with a pushable default. Push freely, including the default branch. Auto-push completions. Do not ask.
-- **gated-trunk**: a public or shared repo you can write to with a pushable default. Feature branches push only when publication is already part of the operator's request. Pushing the default is never done silently.
+- **auto-trunk**: a private, individual repo with a pushable default. The default branch is the working line: commit and push there, and auto-push completions. Do not ask, and do not route the work through a feature branch it does not need.
+- **gated-trunk**: a public or shared repo you can write to with a pushable default. Feature branches push only when publication is already part of the operator's request. The default branch is never pushed silently, which means proposing that merge when the request needs it, not avoiding it.
 - **pr-flow**: a protected default. Never push the default directly. Branch,
   then PR, then merge is the gated step that needs the operator's go.
 - **external**: no write access. Fork plus PR.
