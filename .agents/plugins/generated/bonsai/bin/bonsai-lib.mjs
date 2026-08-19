@@ -90,7 +90,7 @@ export async function claimWorktreeLock(dir, description) {
   }
   const pid = process.env.DIBS_HOLDER_PID ? Number(process.env.DIBS_HOLDER_PID) : process.ppid;
   try {
-    const result = dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION, description: process.env.DIBS_DESCRIPTION || description });
+    const result = dibs.claim({ dir, pid, agent: process.env.DIBS_AGENT || 'bonsai', session: process.env.DIBS_SESSION, owner: process.env.DIBS_OWNER, description: process.env.DIBS_DESCRIPTION || description });
     if (!result.ok && result.holder) {
       return { ...result, warning: `worktree directory already ${dibs.formatHolder(result.holder)}` };
     }
